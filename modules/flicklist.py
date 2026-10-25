@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from modules import tracker, util
 from modules.util import Failed
 
@@ -32,6 +34,7 @@ class FlickList(tracker.TrackerAPI):
             logger.secret(self.api_key)
         self.user_agent = f"Kometa/{self.requests.local} (+https://kometa.wiki)"
         self._me = None
+        self._resolved_list_entry = None
         self._ratings = None
         self._ratings_error = None
         self._user_ratings = {}
@@ -262,6 +265,7 @@ class FlickList(tracker.TrackerAPI):
 
     def _resolve_list(self, list_id_or_name):
         """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
+        self._resolved_list_entry = None
         as_id = None
         if isinstance(list_id_or_name, int) and not isinstance(list_id_or_name, bool):
             as_id = list_id_or_name
@@ -273,16 +277,19 @@ class FlickList(tracker.TrackerAPI):
         if as_id is not None:
             for entry in own_lists:
                 if entry.get("id") == as_id:
+                    self._resolved_list_entry = entry
                     return as_id, False
             raise Failed(f"FlickList Error: List id {as_id} not found among your own lists")
         name = str(list_id_or_name).strip()
         for entry in own_lists:
             if str(entry.get("name") or "").strip() == name:
+                self._resolved_list_entry = entry
                 return entry.get("id"), False
         created = self._request("/sync/lists", json_data={"name": name, "privacy": "private"}, method="POST")
         new_id = created.get("id") if created else None
         if new_id is None:
             raise Failed(f"FlickList Error: Could not create list '{name}'")
+        self._resolved_list_entry = created
         return new_id, True
 
     @staticmethod
@@ -312,13 +319,15 @@ class FlickList(tracker.TrackerAPI):
             verb = "add" if action == "add" else "remove"
             logger.info(f"FlickList List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found)")
 
-    def sync_list(self, convert, list_id_or_name, ids):
+    def sync_list(self, convert, list_id_or_name, ids, mode="sync"):
         """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie").
 
         Matching is by candidate-key-set intersection via tracker.plan_list_sync - see its
         docstring for why. This method keeps list resolution, the current-items fetch, logging
         and batching; the diff itself lives in the shared layer.
         """
+        if mode not in ("sync", "append"):
+            raise Failed(f"FlickList Error: invalid list mode: {mode}")
         list_id, created = self._resolve_list(list_id_or_name)
         if created and logger:
             logger.info(f"FlickList List '{list_id_or_name}' not found; created a new list (id {list_id})")
@@ -336,4 +345,17 @@ class FlickList(tracker.TrackerAPI):
         add_payloads = [{"ids": ids_block, "media_type": media_type} for ids_block, media_type in add]
         remove_payloads = [{"ids": item_ids, "media_type": media_type} for item_ids, media_type in remove]
         self._sync_batch(list_id, "add", add_payloads)
-        self._sync_batch(list_id, "remove", remove_payloads)
+        if mode == "sync":
+            self._sync_batch(list_id, "remove", remove_payloads)
+        if logger:
+            logger.info(f"FlickList list {list_id_or_name} updated ({mode})")
+            username = (self._me or {}).get("username")
+            if username:
+                entry = self._resolved_list_entry or {}
+                if not entry.get("slug"):
+                    try:
+                        entry = next((item for item in self._request_paginated("/sync/lists") or [] if item.get("id") == list_id), entry)
+                    except Failed as e:
+                        logger.warning(f"FlickList Warning: Could not resolve the list URL: {e}")
+                if entry.get("slug"):
+                    logger.info(f"List: https://flicklist.tv/u/{quote(str(username), safe='')}/lists/{quote(str(entry['slug']), safe='')}")

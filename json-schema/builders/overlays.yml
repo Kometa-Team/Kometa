@@ -489,7 +489,7 @@ overlays:
       list_minimum: 1
 
   # ---------------------------------------------------------------------------
-  # BUILDER — tautulli_watched: overlay on most-watched items in the past month
+  # BUILDER — tautulli_top: overlay on most-played items in the past month
   # ---------------------------------------------------------------------------
   Tautulli Watched:
     overlay:
@@ -503,7 +503,7 @@ overlays:
       back_color: "#5E35B1CC"
       back_padding: 8
       back_radius: 5
-    tautulli_watched:
+    tautulli_top:
       list_days: 30
       list_size: 20
       list_minimum: 3

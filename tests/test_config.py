@@ -17,7 +17,7 @@ import modules.builder  # noqa: F401 — pre-import to break circular deps
 import modules.config as config_module
 from modules.config import ConfigFile
 from modules.util import Failed
-from tests.conftest import FakeLogger, FakeRequests
+from tests.conftest import FakeLogger, FakeRequests, InMemoryYAMLRequests
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -157,17 +157,42 @@ def make_config(
     config_yaml: str = BASE_CONFIG,
     attrs: dict | None = None,
     secrets: dict | None = None,
+    real_yaml: bool = False,
 ) -> ConfigFile:
-    """Build a ConfigFile from *config_yaml* with all dependencies mocked."""
+    """Build a ConfigFile from *config_yaml* with all dependencies mocked; the config file is served from memory unless real_yaml=True (needed to read the saved file back)."""
     config_path = tmp_path / "config.yml"
     config_path.write_text(config_yaml, encoding="utf-8")
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
-    return ConfigFile(FakeRequests(), str(tmp_path), merged_attrs, secrets or {})
+    requests = FakeRequests() if real_yaml else InMemoryYAMLRequests()
+    return ConfigFile(requests, str(tmp_path), merged_attrs, secrets or {})
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # Config file discovery
 # ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.parametrize("attrs, expected_mode", [({}, "items(tmdb:550|tmdb:603)"), ({"ignore_schedules": True}, "full"), ({"libraries": "Movies"}, "full"), ({"mode": "index(a)"}, "index(a)"), ({"mode": "full", "ignore_schedules": True}, "full")])
+def test_items_schedule_config_selection(tmp_path, monkeypatch, attrs, expected_mode):
+    class MondayDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 6, 15, 12, tzinfo=tz)
+
+    monkeypatch.setattr(config_module, "datetime", MondayDateTime)
+    captured = {}
+    original_plex = config_module.Plex
+
+    def capture_plex(*args, **kwargs):
+        for argument in args:
+            if isinstance(argument, dict) and "schedule_mode" in argument:
+                captured.update(argument)
+        return original_plex(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture_plex)
+    config_yaml = BASE_CONFIG.replace("    collection_files: []", "    collection_files: []\n    schedule:\n      - schedule: weekly(monday)\n        mode: items(tmdb:550|tmdb:603)\n      - schedule: daily\n        mode: full")
+    make_config(tmp_path, config_yaml=config_yaml, attrs={"time_obj": datetime(2026, 6, 15, 12), **attrs})
+    assert captured["schedule_mode"] == expected_mode
 
 
 class TestConfigDiscovery:
@@ -178,7 +203,7 @@ class TestConfigDiscovery:
     def test_raises_failed_when_file_missing(self, tmp_path):
         with pytest.raises(Failed, match="config not found"):
             ConfigFile(
-                FakeRequests(),
+                InMemoryYAMLRequests(),
                 str(tmp_path),
                 {**_default_attrs(str(tmp_path / "nope.yml"))},
                 secrets={},
@@ -192,7 +217,7 @@ class TestConfigDiscovery:
             "time_obj": datetime(2026, 6, 14, 18, 53),
             "time": "18:53",
         }
-        cf = ConfigFile(FakeRequests(), str(tmp_path), attrs, secrets={})
+        cf = ConfigFile(InMemoryYAMLRequests(), str(tmp_path), attrs, secrets={})
         assert cf.config_path == str(tmp_path / "config.yml")
 
     def test_raises_failed_when_no_config_in_default_dir(self, tmp_path):
@@ -202,7 +227,7 @@ class TestConfigDiscovery:
             "time": "18:53",
         }
         with pytest.raises(Failed, match="config not found"):
-            ConfigFile(FakeRequests(), str(tmp_path), attrs, secrets={})
+            ConfigFile(InMemoryYAMLRequests(), str(tmp_path), attrs, secrets={})
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -265,23 +290,46 @@ plex:
         with pytest.raises(Failed, match="tmdb"):
             make_config(tmp_path, config_yaml=config)
 
-    def test_missing_plex_section(self, tmp_path):
-        """Config without a top-level plex: section still works if no library has per-library plex."""
+    def test_missing_plex_section_fails_every_library_without_its_own_plex_settings(self, tmp_path):
         config = """
-settings:
-  cache: false
-libraries:
-  Movies:
-    collection_files: []
-tmdb:
-  apikey: fake
-plex:
-  url: http://localhost
-  token: fake
-"""
-        # This should succeed because plex config is present at the top level
+    settings:
+      cache: false
+    libraries:
+      Movies:
+        collection_files: []
+    tmdb:
+      apikey: fake
+    """
+        with pytest.raises(Failed, match="No libraries were found in config"):
+            make_config(tmp_path, config_yaml=config)
+        assert any("url attribute must be set under plex globally or under this specific Library" in message for message in config_module.logger.error_messages)
+        assert any("Library Connection Failed" in message for message in config_module.logger.info_messages)
+
+    def test_per_library_plex_settings_stand_in_for_a_missing_top_level_section(self, tmp_path, monkeypatch):
+        captured = {}
+        original_plex = config_module.Plex
+
+        def capture_plex(config, params):
+            captured.update(params["plex"])
+            return original_plex(config, params)
+
+        monkeypatch.setattr(config_module, "Plex", capture_plex)
+        config = """
+    settings:
+      cache: false
+    libraries:
+      Movies:
+        collection_files: []
+        plex:
+          url: http://library-plex:32400
+          token: library-token
+    tmdb:
+      apikey: fake
+    """
         cf = make_config(tmp_path, config_yaml=config)
-        assert cf is not None
+        assert len(cf.libraries) == 1
+        assert captured["url"] == "http://library-plex:32400"
+        assert captured["token"] == "library-token"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -547,7 +595,12 @@ class TestNotify:
     def test_notify_calls_webhooks_error_hooks(self, tmp_path):
         cf = make_config(tmp_path)
         cf.notify("Something went wrong")
-        cf.Webhooks.error_hooks.assert_called_once()
+        cf.Webhooks.error_hooks.assert_called_once_with("Something went wrong", server=None, library=None, collection=None, playlist=None, critical=True)
+
+    def test_notify_forwards_its_context_to_the_error_hooks(self, tmp_path):
+        cf = make_config(tmp_path)
+        cf.notify("boom", server="srv", library="Movies", collection="Coll", playlist="Pl", critical=False)
+        cf.Webhooks.error_hooks.assert_called_once_with("boom", server="srv", library="Movies", collection="Coll", playlist="Pl", critical=False)
 
     def test_notify_redacts_secrets_before_calling_error_webhooks(self, tmp_path):
         cf = make_config(tmp_path)
@@ -558,12 +611,12 @@ class TestNotify:
     def test_notify_delete_calls_webhooks_delete_hooks(self, tmp_path):
         cf = make_config(tmp_path)
         cf.notify_delete("Collection deleted")
-        cf.Webhooks.delete_hooks.assert_called_once()
+        cf.Webhooks.delete_hooks.assert_called_once_with("Collection deleted", server=None, library=None)
 
 
 class TestMediastingers:
     def test_mediastingers_calls_get_yaml(self, tmp_path):
-        requests = FakeRequests()
+        requests = InMemoryYAMLRequests()
         requests.get_yaml = MagicMock(return_value={"media": "stuff"})
         config_path = tmp_path / "config.yml"
         config_path.write_text(BASE_CONFIG, encoding="utf-8")
@@ -625,7 +678,7 @@ plex:
         custom = tmp_path / "custom_config.yml"
         custom.write_text(BASE_CONFIG, encoding="utf-8")
         cf = ConfigFile(
-            FakeRequests(),
+            InMemoryYAMLRequests(),
             str(tmp_path),
             _default_attrs(str(custom)),
             secrets={},
@@ -726,3 +779,95 @@ def test_config_skips_missing_asset_roots(tmp_path, grouped):
     config = make_config(tmp_path, config_yaml=BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:{value}"))
     assert config.libraries[0].asset_directory == [str(root)]
     assert any(str(missing) in message for message in config_module.logger.warning_messages)
+
+
+class TestMyAnimeListSecret:
+    def _config(self, mal_yaml: str) -> str:
+        return BASE_CONFIG + "\n" + mal_yaml
+
+    def _capture(self, monkeypatch):
+        calls = []
+
+        def capture(*args, **kwargs):
+            calls.append(args)
+            return MagicMock()
+
+        monkeypatch.setattr(config_module, "MyAnimeList", capture)
+        return calls
+
+    def test_official_client_missing_secret_connects_without_writing_null(self, tmp_path, monkeypatch):
+        from modules.mal import OFFICIAL_CLIENT_ID
+
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config(f"""
+mal:
+  client_id: {OFFICIAL_CLIENT_ID}
+  authorization:
+    access_token: at
+    token_type: Bearer
+    expires_in: 3600
+    refresh_token: rt
+"""),
+            real_yaml=True,
+        )
+        assert config.MyAnimeList is not None
+        assert calls[0][3]["client_id"] == OFFICIAL_CLIENT_ID
+        assert calls[0][3]["client_secret"] is None
+        assert "client_secret" not in (tmp_path / "config.yml").read_text(encoding="utf-8")
+        assert not any("client_secret" in message for message in config_module.logger.error_messages)
+        assert not any("client_secret" in message for message in config_module.logger.warning_messages)
+
+    def test_official_client_blank_secret_connects(self, tmp_path, monkeypatch):
+        from modules.mal import OFFICIAL_CLIENT_ID
+
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config(f"""
+mal:
+  client_id: {OFFICIAL_CLIENT_ID}
+  client_secret:
+  authorization:
+    access_token: at
+    refresh_token: rt
+"""),
+        )
+        assert config.MyAnimeList is not None
+        assert calls[0][3]["client_secret"] is None
+        assert not any("client_secret" in message for message in config_module.logger.error_messages)
+        assert not any("client_secret is blank" in message for message in config_module.logger.warning_messages)
+
+    def test_other_client_missing_secret_still_fails(self, tmp_path, monkeypatch):
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config("""
+mal:
+  client_id: user-app-id
+  authorization:
+    access_token: at
+    refresh_token: rt
+"""),
+            real_yaml=True,
+        )
+        assert config.MyAnimeList is None
+        assert calls == []
+        saved = (tmp_path / "config.yml").read_text(encoding="utf-8")
+        assert "client_secret" in saved
+        assert any("mal sub-attribute client_secret not found" in message for message in config_module.logger.error_messages)
+
+    def test_other_client_blank_secret_still_fails(self, tmp_path, monkeypatch):
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config("""
+mal:
+  client_id: user-app-id
+  client_secret:
+"""),
+        )
+        assert config.MyAnimeList is None
+        assert calls == []
+        assert any("mal sub-attribute client_secret is blank" in message for message in config_module.logger.warning_messages)

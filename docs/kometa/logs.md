@@ -221,6 +221,12 @@ This table details examples of the most commonly-seen `[INFO]` events and what t
 	</tr>
 </table>
 
+### Temporary Plex image upload errors
+
+Kometa retries poster, background, logo, and square-art uploads when Plex returns HTTP 502, 503, or 504. It makes at most three upload attempts, waiting 2 seconds before the second attempt and 5 seconds before the third. If all three attempts receive these errors, Kometa logs the item, image, and final HTTP status, skips that image update, and continues the run without a traceback. This also applies to artwork resets, overlay application, and overlay removal. Failed overlay removal keeps the overlay label and original poster backup so removal can be retried. Retry messages identify the item and image.
+
+A gateway error does not establish that the image is missing. URL uploads still make these three attempts even if the source URL is permanently broken; this can add 7 seconds for that image on each run. Failed uploads are not cached as successes. Source URL validation and fallback are separate from these Plex retries. Other errors retain their existing handling and diagnostic details.
+
 ### Other Troubleshooting Examples
 
 The Log files will contain a great deal of detail about what exactly is happening and why. Generally speaking, if you're having a problem with Kometa the answer will be found here. 

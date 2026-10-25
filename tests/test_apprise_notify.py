@@ -53,8 +53,7 @@ class TestAppriseNotifyInit:
             AppriseNotify(requests=None, params=_make_params())
 
     @patch("modules.apprise_notify.apprise_lib")
-    def test_succeeds_when_services_loaded(self, mock_lib):
-        """No exception raised when at least one service loads successfully."""
+    def test_registers_the_config_file_with_apprise_when_services_load(self, mock_lib):
         from modules.apprise_notify import AppriseNotify
 
         ac = MagicMock()
@@ -62,8 +61,10 @@ class TestAppriseNotifyInit:
         mock_lib.AppriseConfig.return_value = ac
         mock_lib.Apprise.return_value = apobj
 
-        instance = AppriseNotify(requests=None, params=_make_params())
-        assert instance is not None
+        AppriseNotify(requests=None, params=_make_params())
+
+        ac.add.assert_called_once_with("/config/apprise.yml")
+        apobj.add.assert_called_once_with(ac)
 
 
 # ---------------------------------------------------------------------------

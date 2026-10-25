@@ -92,6 +92,8 @@ class TestInit:
             "list_cache",
             "list_ids",
             "imdb_keywords",
+            "imdb_ratings",
+            "imdb_genres",
             "imdb_parental",
             "ergast_race",
             "overlay_value_cache",
@@ -415,6 +417,17 @@ class TestMdbCache:
         assert result == {}
         assert expired is None
 
+    def test_cached_myanimelist_rating_is_parsed(self, tmp_path):
+        from modules.mdblist import MDbObj
+
+        cache = make_cache(tmp_path)
+        cache.update_mdb(False, "mal", _make_mdb_obj(myanimelist_rating=8.45), expiration=30)
+        result, expired = cache.query_mdb("mal", expiration=30)
+
+        assert expired is False
+        assert {"source": "myanimelist", "value": 8.45} in result["ratings"]
+        assert MDbObj(result).myanimelist_rating == 8.45
+
     def test_invalid_rating_is_not_written(self, tmp_path):
         cache = make_cache(tmp_path)
 
@@ -518,6 +531,104 @@ class TestImdbKeywords:
         result, expired = cache.query_imdb_keywords("tt000", expiration=30)
         assert result == {}
         assert expired is None
+
+
+class TestImdbRatings:
+    def test_round_trip_including_missing_rating(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_ratings({"tt0111161": 9.3, "tt0000000": None}, expiration=30)
+        fresh, missing = cache.query_imdb_ratings(["tt0111161", "tt0000000", "tt9999999"], expiration=30)
+        assert fresh == {"tt0111161": 9.3, "tt0000000": None}
+        assert missing == ["tt9999999"]
+
+    def test_expired_row_is_missing_and_refresh_resets_ttl(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_imdb_ratings({"tt0111161": 7.5}, expiration=10)
+        old = (datetime.now() - timedelta(days=11)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.execute("UPDATE imdb_ratings SET expiration_date = ?", (old,))
+        fresh, missing = cache.query_imdb_ratings(["tt0111161"], expiration=10)
+        assert fresh == {}
+        assert missing == ["tt0111161"]
+
+        cache.update_imdb_ratings({"tt0111161": 8.1}, expiration=10)
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.row_factory = sqlite3.Row
+            stored = conn.execute("SELECT average_rating, expiration_date FROM imdb_ratings WHERE imdb_id = ?", ("tt0111161",)).fetchone()
+        assert stored["average_rating"] == 8.1
+        assert stored["expiration_date"] == datetime.now().strftime("%Y-%m-%d")
+        fresh, missing = cache.query_imdb_ratings(["tt0111161"], expiration=10)
+        assert fresh == {"tt0111161": 8.1}
+        assert missing == []
+
+    def test_new_rows_are_staggered_inside_the_expiration_window(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_imdb_ratings({"tt0111161": 7.5}, expiration=10)
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.row_factory = sqlite3.Row
+            stored = conn.execute("SELECT expiration_date FROM imdb_ratings WHERE imdb_id = ?", ("tt0111161",)).fetchone()
+        age_days = (datetime.now() - datetime.strptime(stored["expiration_date"], "%Y-%m-%d")).days
+        assert 1 <= age_days <= 10
+        fresh, missing = cache.query_imdb_ratings(["tt0111161"], expiration=10)
+        assert missing == []
+        assert fresh["tt0111161"] == 7.5
+
+    def test_query_and_update_chunk_past_sqlite_variable_limit(self, tmp_path):
+        cache = make_cache(tmp_path)
+        ratings = {f"tt{i:07d}": float(i % 10) for i in range(600)}
+        cache.update_imdb_ratings(ratings, expiration=30)
+        fresh, missing = cache.query_imdb_ratings(list(ratings), expiration=30)
+        assert missing == []
+        assert fresh == ratings
+
+
+class TestImdbGenres:
+    def test_round_trip_including_missing_genres(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_genres({"tt0111161": ["Drama", "Crime"], "tt0000000": []}, expiration=30)
+        fresh, missing = cache.query_imdb_genres(["tt0111161", "tt0000000", "tt9999999"], expiration=30)
+        assert fresh == {"tt0111161": ["Drama", "Crime"], "tt0000000": []}
+        assert missing == ["tt9999999"]
+
+    def test_expired_row_is_missing_and_refresh_resets_ttl(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_imdb_genres({"tt0111161": ["Drama"]}, expiration=10)
+        old = (datetime.now() - timedelta(days=11)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.execute("UPDATE imdb_genres SET expiration_date = ?", (old,))
+        fresh, missing = cache.query_imdb_genres(["tt0111161"], expiration=10)
+        assert fresh == {}
+        assert missing == ["tt0111161"]
+
+        cache.update_imdb_genres({"tt0111161": ["Crime", "Drama"]}, expiration=10)
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.row_factory = sqlite3.Row
+            stored = conn.execute("SELECT genres, expiration_date FROM imdb_genres WHERE imdb_id = ?", ("tt0111161",)).fetchone()
+        assert stored["genres"] == "Crime|Drama"
+        assert stored["expiration_date"] == datetime.now().strftime("%Y-%m-%d")
+        fresh, missing = cache.query_imdb_genres(["tt0111161"], expiration=10)
+        assert fresh == {"tt0111161": ["Crime", "Drama"]}
+        assert missing == []
+
+    def test_new_rows_are_staggered_inside_the_expiration_window(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_imdb_genres({"tt0111161": ["Drama"]}, expiration=10)
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.row_factory = sqlite3.Row
+            stored = conn.execute("SELECT expiration_date FROM imdb_genres WHERE imdb_id = ?", ("tt0111161",)).fetchone()
+        age_days = (datetime.now() - datetime.strptime(stored["expiration_date"], "%Y-%m-%d")).days
+        assert 1 <= age_days <= 10
+        fresh, missing = cache.query_imdb_genres(["tt0111161"], expiration=10)
+        assert missing == []
+        assert fresh["tt0111161"] == ["Drama"]
+
+    def test_query_and_update_chunk_past_sqlite_variable_limit(self, tmp_path):
+        cache = make_cache(tmp_path)
+        genres = {f"tt{i:07d}": ["Drama"] if i % 2 else [] for i in range(600)}
+        cache.update_imdb_genres(genres, expiration=30)
+        fresh, missing = cache.query_imdb_genres(list(genres), expiration=30)
+        assert missing == []
+        assert fresh == genres
 
 
 class TestImdbParental:

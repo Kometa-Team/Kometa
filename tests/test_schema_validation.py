@@ -132,7 +132,7 @@ def test_schedule_properties_use_shared_definition(schema_path: Path) -> None:
     def references_shared_schedule(declaration):
         if declaration.get("$ref") == "#/definitions/schedule":
             return True
-        return any(item.get("$ref") == "#/definitions/schedule" for item in declaration.get("allOf", []))
+        return any(references_shared_schedule(item) for key in ("allOf", "anyOf", "oneOf") for item in declaration.get(key, []))
 
     assert all(references_shared_schedule(declaration) for declaration in declarations)
 
@@ -311,3 +311,17 @@ def test_asset_directory_schema_type_groups(group):
     document = {"libraries": {"Custom Name": {"collection_files": []}}, "settings": {"asset_directory": {group: ["config/assets/Ozzy"]}}, "plex": {"url": "http://localhost:32400", "token": "test"}, "tmdb": {"apikey": "test"}}
     errors = list(Draft7Validator(schema).iter_errors(document))
     assert bool(errors) is (group not in ["shows", "music"])
+
+
+@pytest.mark.parametrize("value", [None, 1, 100, 1000])
+def test_plex_bulk_edit_batch_size_schema_accepts_valid_values(value):
+    schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
+    validator = Draft7Validator({"$ref": "#/definitions/operations", "definitions": schema["definitions"]})
+    assert not list(validator.iter_errors({"plex_bulk_edit_batch_size": value}))
+
+
+@pytest.mark.parametrize("value", [0, -1, 1.5, "100", True])
+def test_plex_bulk_edit_batch_size_schema_rejects_invalid_values(value):
+    schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
+    validator = Draft7Validator({"$ref": "#/definitions/operations", "definitions": schema["definitions"]})
+    assert list(validator.iter_errors({"plex_bulk_edit_batch_size": value}))

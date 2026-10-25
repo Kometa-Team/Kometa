@@ -6,7 +6,6 @@ import warnings
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from types import SimpleNamespace
-from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -16,6 +15,7 @@ from requests.exceptions import HTTPError
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401
+from tests.factories import FakeImageResponse, make_image_requests, make_requests
 
 
 class TestVersion:
@@ -114,13 +114,6 @@ class TestYAMLReadOnly:
         yaml.data["a"] = 2
         yaml.save()
         assert path.read_text() == "a: 2\n"
-
-
-def make_requests():
-    """Bare Requests instance without hitting the network or cloudscraper."""
-    from modules.request import Requests
-
-    return Requests.__new__(Requests)
 
 
 class RecordingSession:
@@ -319,29 +312,12 @@ class TestGetStream:
         assert req.session.calls[0][2].get("timeout") == request_module.DEFAULT_TIMEOUT
 
 
-class _FakeImageResponse:
-    def __init__(self, status_code=200, content_type="image/png", content=b"fake-png-bytes"):
-        self.status_code = status_code
-        self.headers = {"Content-Type": content_type}
-        self.content = content
-
-
-def make_image_requests():
-    """Bare Requests instance with just the attributes get_image() touches, plus its get()/head() cast to MagicMock for mock-attribute access (same cast pattern test_plex.py uses for this pyright gotcha)."""
-    req = make_requests()
-    req._image_url_cache = {}
-    req.image_content_types = ["image/png", "image/jpeg", "image/webp"]
-    req.get = MagicMock()
-    req.head = MagicMock()
-    return req, cast(MagicMock, req.get), cast(MagicMock, req.head)
-
-
 class TestGetImageMemoization:
     """get_image() used to hit the network on every call, even for a URL already fetched this run."""
 
     def test_repeat_url_does_not_refetch(self):
         req, mock_get, _ = make_image_requests()
-        mock_get.return_value = _FakeImageResponse()
+        mock_get.return_value = FakeImageResponse()
         first = req.get_image("https://example.com/badge.png")
         second = req.get_image("https://example.com/badge.png")
         assert first is second
@@ -349,7 +325,7 @@ class TestGetImageMemoization:
 
     def test_different_urls_both_fetch(self):
         req, mock_get, _ = make_image_requests()
-        mock_get.return_value = _FakeImageResponse()
+        mock_get.return_value = FakeImageResponse()
         req.get_image("https://example.com/a.png")
         req.get_image("https://example.com/b.png")
         assert mock_get.call_count == 2
@@ -358,7 +334,7 @@ class TestGetImageMemoization:
         from modules.util import Failed
 
         req, mock_get, _ = make_image_requests()
-        mock_get.side_effect = [_FakeImageResponse(status_code=404), _FakeImageResponse(status_code=200)]
+        mock_get.side_effect = [FakeImageResponse(status_code=404), FakeImageResponse(status_code=200)]
         with pytest.raises(Failed):
             req.get_image("https://example.com/missing.png")
         second = req.get_image("https://example.com/missing.png")
@@ -369,7 +345,7 @@ class TestGetImageMemoization:
         from modules.util import Failed
 
         req, mock_get, _ = make_image_requests()
-        mock_get.return_value = _FakeImageResponse(content_type="text/html")
+        mock_get.return_value = FakeImageResponse(content_type="text/html")
         with pytest.raises(Failed):
             req.get_image("https://example.com/not-an-image")
         with pytest.raises(Failed):
@@ -378,7 +354,7 @@ class TestGetImageMemoization:
 
     def test_cached_response_content_unchanged(self):
         req, mock_get, _ = make_image_requests()
-        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        mock_get.return_value = FakeImageResponse(content=b"real-bytes")
         first = req.get_image("https://example.com/badge.png")
         second = req.get_image("https://example.com/badge.png")
         assert first.content == b"real-bytes"
@@ -387,7 +363,7 @@ class TestGetImageMemoization:
     def test_session_argument_path_also_memoizes(self):
         req, _, _unused_head = make_image_requests()
         session = MagicMock()
-        session.get.return_value = _FakeImageResponse()
+        session.get.return_value = FakeImageResponse()
         req.get_image("https://example.com/badge.png", session=session)
         req.get_image("https://example.com/badge.png", session=session)
         assert session.get.call_count == 1
@@ -398,21 +374,21 @@ class TestGetImageValidateOnly:
 
     def test_validate_only_uses_head_not_get(self):
         req, mock_get, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse()
+        mock_head.return_value = FakeImageResponse()
         req.get_image("https://example.com/badge.png", validate_only=True)
         assert mock_head.call_count == 1
         assert mock_get.call_count == 0
 
     def test_default_still_uses_get(self):
         req, mock_get, mock_head = make_image_requests()
-        mock_get.return_value = _FakeImageResponse()
+        mock_get.return_value = FakeImageResponse()
         req.get_image("https://example.com/badge.png")
         assert mock_get.call_count == 1
         assert mock_head.call_count == 0
 
     def test_validate_only_repeat_url_does_not_refetch(self):
         req, _, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse()
+        mock_head.return_value = FakeImageResponse()
         first = req.get_image("https://example.com/badge.png", validate_only=True)
         second = req.get_image("https://example.com/badge.png", validate_only=True)
         assert first is second
@@ -422,7 +398,7 @@ class TestGetImageValidateOnly:
         from modules.util import Failed
 
         req, _, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse(status_code=404)
+        mock_head.return_value = FakeImageResponse(status_code=404)
         with pytest.raises(Failed):
             req.get_image("https://example.com/missing.png", validate_only=True)
 
@@ -430,15 +406,15 @@ class TestGetImageValidateOnly:
         from modules.util import Failed
 
         req, _, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse(content_type="text/html")
+        mock_head.return_value = FakeImageResponse(content_type="text/html")
         with pytest.raises(Failed):
             req.get_image("https://example.com/not-an-image", validate_only=True)
 
     def test_head_and_get_cache_entries_are_independent(self):
         """A validate_only HEAD response (no body) must never be served back to a caller that needs real content, or vice versa."""
         req, mock_get, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse()
-        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        mock_head.return_value = FakeImageResponse()
+        mock_get.return_value = FakeImageResponse(content=b"real-bytes")
         head_result = req.get_image("https://example.com/badge.png", validate_only=True)
         get_result = req.get_image("https://example.com/badge.png")
         assert head_result is not get_result
@@ -448,7 +424,7 @@ class TestGetImageValidateOnly:
     def test_session_argument_path_uses_head_when_validate_only(self):
         req, _, _unused_head = make_image_requests()
         session = MagicMock()
-        session.head.return_value = _FakeImageResponse()
+        session.head.return_value = FakeImageResponse()
         req.get_image("https://example.com/badge.png", session=session, validate_only=True)
         assert session.head.call_count == 1
         assert session.head.call_args.kwargs.get("allow_redirects") is True
@@ -456,7 +432,7 @@ class TestGetImageValidateOnly:
 
 
 class TestGetImageStableAssetSkip:
-    """validate_only checks against Kometa's own shipped assets (Default-Images, People-Images-*) skip the network round-trip entirely - only arbitrary user url_poster/url_background/url_logo/url_square_art values need live validation."""
+    """Only Default-Images artwork skips validation; person images can be missing."""
 
     def test_kometa_team_url_skips_network_when_validate_only(self):
         req, mock_get, mock_head = make_image_requests()
@@ -465,17 +441,19 @@ class TestGetImageStableAssetSkip:
         assert mock_head.call_count == 0
         assert mock_get.call_count == 0
 
-    def test_kometa_team_people_images_url_skips_network_when_validate_only(self):
+    @pytest.mark.parametrize("repository", ["People-Images", "People-Images-bw", "People-Images-Portrait", "Other-Artwork", "Default-Images-copy"])
+    def test_other_kometa_repositories_are_validated(self, repository):
         req, mock_get, mock_head = make_image_requests()
-        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/People-Images-Portrait/master/A/Images/Actor.jpg", validate_only=True)
-        assert result is None
-        assert mock_head.call_count == 0
-        assert mock_get.call_count == 0
+        mock_head.return_value = FakeImageResponse()
+        url = f"https://raw.githubusercontent.com/Kometa-Team/{repository}/master/A/Images/Actor.jpg"
+        assert req.get_image(url, validate_only=True) is mock_head.return_value
+        mock_head.assert_called_once_with(url, header=True)
+        mock_get.assert_not_called()
 
     def test_kometa_team_url_still_fetches_when_not_validate_only(self):
         """The skip is scoped to validate_only - a real poster/background/logo download must still hit the network."""
         req, mock_get, mock_head = make_image_requests()
-        mock_get.return_value = _FakeImageResponse()
+        mock_get.return_value = FakeImageResponse()
         result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png")
         assert result is not None
         assert mock_get.call_count == 1
@@ -484,14 +462,14 @@ class TestGetImageStableAssetSkip:
     def test_arbitrary_user_url_still_validated(self):
         """The staleness risk this validation exists to catch is arbitrary/user-supplied URLs - those must never be skipped."""
         req, mock_get, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse()
+        mock_head.return_value = FakeImageResponse()
         req.get_image("https://example.com/my-custom-poster.jpg", validate_only=True)
         assert mock_head.call_count == 1
 
     def test_other_github_org_url_still_validated(self):
-        """Only the Kometa-Team org prefix is trusted - a different GitHub org/user is not Kometa's own maintained content."""
+        """Artwork outside Default-Images is validated regardless of its owner."""
         req, mock_get, mock_head = make_image_requests()
-        mock_head.return_value = _FakeImageResponse()
+        mock_head.return_value = FakeImageResponse()
         req.get_image("https://raw.githubusercontent.com/some-other-user/posters/master/poster.jpg", validate_only=True)
         assert mock_head.call_count == 1
 

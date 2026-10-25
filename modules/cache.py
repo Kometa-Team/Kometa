@@ -112,6 +112,13 @@ class Cache:
                     imdb_id TEXT,
                     media_type TEXT,
                     expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS xml_map (
+                    key INTEGER PRIMARY KEY,
+                    library_id INTEGER NOT NULL,
+                    parent_rating_key TEXT NOT NULL,
+                    season_rating_key TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    UNIQUE(library_id, parent_rating_key, season_rating_key))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_to_tmdb_map (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
@@ -323,6 +330,10 @@ class Cache:
                     key INTEGER PRIMARY KEY,
                     tvdb_id TEXT,
                     library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS lidarr_adds (
+                    key INTEGER PRIMARY KEY,
+                    mbid TEXT,
+                    library TEXT)""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS serializd_watched_sync (
                     key INTEGER PRIMARY KEY,
                     account TEXT,
@@ -353,6 +364,16 @@ class Cache:
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
                     keywords TEXT,
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_ratings (
+                    key INTEGER PRIMARY KEY,
+                    imdb_id TEXT UNIQUE,
+                    average_rating REAL,
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_genres (
+                    key INTEGER PRIMARY KEY,
+                    imdb_id TEXT UNIQUE,
+                    genres TEXT,
                     expiration_date TEXT)""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_parental (
                     key INTEGER PRIMARY KEY,
@@ -709,7 +730,7 @@ class Cache:
                         {"source": "tomatoesaudience", "value": row["tomatoesaudience_rating"] if row["tomatoesaudience_rating"] else None},
                         {"source": "tmdb", "value": row["tmdb_rating"] if row["tmdb_rating"] else None},
                         {"source": "letterboxd", "value": row["letterboxd_rating"] if row["letterboxd_rating"] else None},
-                        {"source": "myanimelist_rating", "value": row["myanimelist_rating"] if row["myanimelist_rating"] else None},
+                        {"source": "myanimelist", "value": row["myanimelist_rating"] if row["myanimelist_rating"] else None},
                     ]
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
@@ -1355,6 +1376,9 @@ class Cache:
     def query_sonarr_adds(self, tvdb_id, library):
         return self.query_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
 
+    def query_lidarr_adds(self, mbid, library):
+        return self.query_arr_adds(mbid, library, "lidarr", "mbid")
+
     def query_arr_adds(self, t_id, library, arr, id_type):
         arr, id_type = sql_identifier(arr), sql_identifier(id_type)
         with self.connection as connection:
@@ -1362,7 +1386,7 @@ class Cache:
                 cursor.execute(f"SELECT * FROM {arr}_adds WHERE {id_type} = ? AND library = ?", (t_id, library))  # nosec B608 - identifiers validated by sql_identifier()
                 row = cursor.fetchone()
                 if row and row[id_type]:
-                    return int(row[id_type])
+                    return row[id_type] if arr == "lidarr" else int(row[id_type])
         return None
 
     def update_radarr_adds(self, tmdb_id, library):
@@ -1370,6 +1394,9 @@ class Cache:
 
     def update_sonarr_adds(self, tvdb_id, library):
         return self.update_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
+
+    def update_lidarr_adds(self, mbid, library):
+        return self.update_arr_adds(mbid, library, "lidarr", "mbid")
 
     def query_serializd_watched(self, account, tmdb_id, season_number):
         with self.connection as connection:
@@ -1409,6 +1436,23 @@ class Cache:
                     list_key = row["key"]
         return list_key
 
+    def query_xml_updated_at(self, library_id):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT parent_rating_key, season_rating_key, updated_at FROM xml_map WHERE library_id = ?", (library_id,))
+                return {(row["parent_rating_key"], row["season_rating_key"]): row["updated_at"] for row in cursor}
+
+    def update_xml_updated_at(self, library_id, updates):
+        if not updates:
+            return
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(
+                    """INSERT INTO xml_map(library_id, parent_rating_key, season_rating_key, updated_at) VALUES(?, ?, ?, ?)
+                    ON CONFLICT(library_id, parent_rating_key, season_rating_key) DO UPDATE SET updated_at = excluded.updated_at""",
+                    [(library_id, parent_key, season_key, updated_at) for parent_key, season_key, updated_at in updates],
+                )
+
     def query_list_cache(self, list_type, list_data, expiration):
         list_key = None
         expired = None
@@ -1435,7 +1479,7 @@ class Cache:
         ids = []
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM list_ids WHERE list_key = ?", (list_key,))
+                cursor.execute("SELECT * FROM list_ids WHERE list_key = ? ORDER BY key", (list_key,))
                 for row in cursor:
                     ids.append((row["media_id"], row["media_type"]))
         return ids
@@ -1444,6 +1488,153 @@ class Cache:
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("DELETE FROM list_ids WHERE list_key = ?", (list_key,))
+
+    def query_imdb_ratings(self, imdb_ids, expiration):
+        """Return ``(fresh, missing)`` for a batch of IMDb ids.
+
+        ``fresh`` maps ids whose row is still inside ``expiration`` days to the stored
+        rating (``None`` when the title was cached as having no rating). ``missing``
+        is every id with no row or an expired row, in request order.
+        """
+        fresh = {}
+        missing = []
+        if not imdb_ids:
+            return fresh, missing
+        found = {}
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = list(imdb_ids[start : start + 500])
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id, average_rating, expiration_date FROM imdb_ratings WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    for row in cursor:
+                        found[row["imdb_id"]] = row
+        now = datetime.now()
+        for imdb_id in imdb_ids:
+            row = found.get(imdb_id)
+            if not row or not row["expiration_date"]:
+                missing.append(imdb_id)
+                continue
+            try:
+                stored_on = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            except (TypeError, ValueError):
+                missing.append(imdb_id)
+                continue
+            if (now - stored_on).days > expiration:
+                missing.append(imdb_id)
+            else:
+                fresh[imdb_id] = row["average_rating"]
+        return fresh, missing
+
+    def update_imdb_ratings(self, ratings, expiration):
+        """Store ``{imdb_id: average_rating or None}``.
+
+        New rows are staggered inside the expiration window, matching the other IMDb
+        caches, so a library-sized insert does not expire on one day. Refreshing a
+        row that is already stored starts a full ``expiration`` window from today.
+        """
+        if not ratings:
+            return
+        imdb_ids = list(ratings)
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                existing = set()
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = imdb_ids[start : start + 500]
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id FROM imdb_ratings WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    existing.update(row["imdb_id"] for row in cursor)
+                cursor.executemany("INSERT OR IGNORE INTO imdb_ratings(imdb_id) VALUES(?)", [(imdb_id,) for imdb_id in imdb_ids])
+                now = datetime.now()
+                updates = []
+                for imdb_id in imdb_ids:
+                    if imdb_id in existing:
+                        expiration_date = now
+                    else:
+                        expiration_date = now - timedelta(days=random.randint(1, expiration))
+                    updates.append((ratings[imdb_id], expiration_date.strftime("%Y-%m-%d"), imdb_id))
+                cursor.executemany("UPDATE imdb_ratings SET average_rating = ?, expiration_date = ? WHERE imdb_id = ?", updates)
+
+    def query_imdb_genres(self, imdb_ids, expiration):
+        """Return ``(fresh, missing)`` for a batch of IMDb ids.
+
+        ``fresh`` maps ids whose row is still inside ``expiration`` days to the stored
+        genres (``[]`` when the title was cached as having no genres). ``missing``
+        is every id with no row or an expired row, in request order.
+        """
+        fresh = {}
+        missing = []
+        if not imdb_ids:
+            return fresh, missing
+        found = {}
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = list(imdb_ids[start : start + 500])
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id, genres, expiration_date FROM imdb_genres WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    for row in cursor:
+                        found[row["imdb_id"]] = row
+        now = datetime.now()
+        for imdb_id in imdb_ids:
+            row = found.get(imdb_id)
+            if not row or not row["expiration_date"]:
+                missing.append(imdb_id)
+                continue
+            try:
+                stored_on = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            except (TypeError, ValueError):
+                missing.append(imdb_id)
+                continue
+            if (now - stored_on).days > expiration:
+                missing.append(imdb_id)
+            else:
+                fresh[imdb_id] = row["genres"].split("|") if row["genres"] else []
+        return fresh, missing
+
+    def update_imdb_genres(self, genres, expiration):
+        """Store ``{imdb_id: [genre, ...] or []}``.
+
+        Genres are stored pipe-separated. New rows are staggered inside the expiration
+        window, matching the other IMDb caches, so a library-sized insert does not expire
+        on one day. Refreshing a row that is already stored starts a full ``expiration``
+        window from today.
+        """
+        if not genres:
+            return
+        imdb_ids = list(genres)
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                existing = set()
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = imdb_ids[start : start + 500]
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id FROM imdb_genres WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    existing.update(row["imdb_id"] for row in cursor)
+                cursor.executemany("INSERT OR IGNORE INTO imdb_genres(imdb_id) VALUES(?)", [(imdb_id,) for imdb_id in imdb_ids])
+                now = datetime.now()
+                updates = []
+                for imdb_id in imdb_ids:
+                    names = genres[imdb_id] or []
+                    stored = "|".join(str(name) for name in names if name)
+                    if imdb_id in existing:
+                        expiration_date = now
+                    else:
+                        expiration_date = now - timedelta(days=random.randint(1, expiration))
+                    updates.append((stored or None, expiration_date.strftime("%Y-%m-%d"), imdb_id))
+                cursor.executemany("UPDATE imdb_genres SET genres = ?, expiration_date = ? WHERE imdb_id = ?", updates)
 
     def query_imdb_keywords(self, imdb_id, expiration):
         imdb_dict = {}

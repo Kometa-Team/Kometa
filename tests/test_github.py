@@ -30,9 +30,24 @@ class TestGitHub:
         adapter._configs_url = "https://example.com/configs.yml"
         assert adapter.configs_url == "https://example.com/configs.yml"
 
-    def test_configs_url_fetches_when_unset(self, adapter):
-        adapter._requests = MagicMock(return_value={"default": "url"})
-        assert adapter.configs_url is not None
+    @pytest.mark.parametrize(
+        ("local", "latest", "branch", "tags", "expected"),
+        [
+            ("2.4.8", "2.5.0", "nightly", ["2.4.8"], "v2.4.8/"),
+            ("2.5.0", "2.5.0", "nightly", ["2.5.0"], "master/"),
+            ("2.5.0", "2.5.0", "master", ["2.5.0"], "v2.5.0/"),
+            ("2.4.8", "2.5.0", "nightly", ["2.0.0"], "master/"),
+        ],
+        ids=["tagged_release_behind_latest", "current_on_a_non_master_branch", "current_on_master", "no_tag_for_the_local_version"],
+    )
+    def test_configs_url_uses_the_versioned_configs_only_when_a_release_tag_exists(self, adapter, local, latest, branch, tags, expected):
+        from modules.github import configs_raw_url
+
+        adapter.requests.local.main = local
+        adapter.requests.latest.main = latest
+        adapter.requests.branch = branch
+        adapter._config_tags = tags
+        assert adapter.configs_url == f"{configs_raw_url}/{expected}"
 
     def test_translation_keys_returns_cached_list(self, adapter):
         adapter._translation_keys = ["en"]

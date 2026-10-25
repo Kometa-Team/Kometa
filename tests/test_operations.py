@@ -984,22 +984,25 @@ class TestFlushCombinedEdits:
         library.Plex.editTags.assert_any_call("genre", "Action", remove=False)
 
     def test_mixed_run_only_merges_multi_attribute_items(self):
-        """Two items in the same run - one needs 2 attribute types (merged into 1 PUT), the
-        other needs only 1 (goes through the normal path) - total 2 PUTs, not 3."""
+        """One item needs rating + genre (merged into one PUT); the other already has the rating, so it needs only a genre and takes the normal flush path."""
         merged_item = make_mass_edit_item(1, "Merged Movie")
-        single_item = make_mass_edit_item(2, "Single Movie")
+        single_item = make_mass_edit_item(2, "Single Movie", rating=7.5)
         library = make_mass_edit_library(
             [merged_item, single_item],
             mass_critic_rating_update=["7.5"],
             mass_genre_update=[["Action"]],
         )
-        # Both items share the same config, so both get rating + genre and both should merge.
         ops = Operations(config=MagicMock(), library=library)
 
         ops.run_operations()
 
-        assert library.Plex.batchMultiEdits.call_count == 2  # one merged PUT per item, not per attribute type
+        assert library.Plex.batchMultiEdits.call_count == 2  # one PUT per item
+        library.Plex.batchMultiEdits.assert_any_call([merged_item])
+        library.Plex.batchMultiEdits.assert_any_call([single_item])
         assert library._save_multi_edits_with_retry.call_count == 2
+        assert [c.args for c in library.Plex.editField.call_args_list if c.args[0] == "rating"] == [("rating", "7.5")]  # only the merged item needs the rating
+        library.Plex.editTags.assert_any_call("genre", ["Action"], remove=False)  # merged item: combined path
+        library.Plex.editTags.assert_any_call("genre", "Action", remove=False)  # single item: per-value path
 
     def test_no_mass_update_flags_does_nothing(self):
         item = make_mass_edit_item(1, "Movie A")
@@ -1240,3 +1243,31 @@ class TestModuleConstants:
 
         values = list(tmdb_release_types.values())
         assert len(values) == len(set(values)), "tmdb_release_types has duplicate IDs"
+
+
+@pytest.mark.parametrize("field", ["audienceRating", "rating", "userRating"])
+@pytest.mark.parametrize("episode", [False, True])
+@pytest.mark.parametrize("draw, expected", [(0, "0.0"), (57, "5.7"), (100, "10.0")])
+@pytest.mark.parametrize("retry", [False, True])
+def test_random_rating_source(monkeypatch, field, episode, draw, expected, retry):
+    item = make_mass_edit_item(1, "Test")
+    rating_type = {"audienceRating": "audience", "rating": "critic", "userRating": "user"}[field]
+    operation = f"mass_{'episode_' if episode else ''}{rating_type}_rating_update"
+    library = make_mass_edit_library([item], **{operation: ["random"]})
+    if episode:
+        library.is_movie = False
+        library.is_show = True
+        library.cached_item_subitems.return_value = [SimpleNamespace(ratingKey=2, audienceRating=None, rating=None, userRating=None, seasonNumber=1, episodeNumber=1)]
+    if retry:
+        target = library.cached_item_subitems.return_value[0] if episode else item
+        setattr(target, field, ((draw + 1) % 101) / 10)
+        randint = MagicMock(side_effect=[(draw + 1) % 101, (draw + 1) % 101, draw])
+    else:
+        randint = MagicMock(return_value=draw)
+    monkeypatch.setattr(ops_module.random, "randint", randint)
+
+    Operations(config=MagicMock(), library=library).run_operations()
+
+    assert randint.call_count == (3 if retry else 1)
+    assert all(call.args == (0, 100) for call in randint.call_args_list)
+    library.Plex.editField.assert_any_call(field, expected)

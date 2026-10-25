@@ -40,8 +40,20 @@
     "sonarr": {
       "$ref": "#/definitions/sonarr-api"
     },
+    "seerr": {
+      "$ref": "#/definitions/seerr-api"
+    },
     "radarr": {
       "$ref": "#/definitions/radarr-api"
+    },
+    "lidarr": {
+      "$ref": "#/definitions/lidarr-api"
+    },
+    "lastfm": {
+      "$ref": "#/definitions/lastfm-api"
+    },
+    "ytmusic": {
+      "$ref": "#/definitions/ytmusic-api"
     },
     "settings": {
       "$ref": "#/definitions/settings"
@@ -82,6 +94,23 @@
     "tmdb"
   ],
   "definitions": {
+    "seerr-overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "standard": { "$ref": "#/definitions/seerr-request-overrides" },
+        "4k": { "$ref": "#/definitions/seerr-request-overrides" }
+      }
+    },
+    "seerr-request-overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "server_id": { "type": "integer", "minimum": 1 },
+        "quality_profile": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "minLength": 1 }] },
+        "root_folder": { "type": "string", "minLength": 1 }
+      }
+    },
     "schedule": {
       "oneOf": [
         {
@@ -447,6 +476,8 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "access_token": {"type": "string", "description": "TMDb v4 API Read Access Token, used only for TMDb list_export"},
+        "authorization": {"type": "object", "description": "TMDb user authorization saved after the first TMDb list export", "properties": {"access_token": {"type": "string"}, "account_id": {"type": "string"}}, "additionalProperties": false},
         "apikey": {
           "anyOf": [
             {
@@ -1085,6 +1116,19 @@
       "required": [],
       "title": "omdb"
     },
+    "lastfm-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apikey": {"type": ["string", "null"]}
+      },
+      "title": "lastfm"
+    },
+    "ytmusic-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "ytmusic"
+    },
     "mdblist-api": {
       "type": "object",
       "additionalProperties": false,
@@ -1508,6 +1552,40 @@
       "required": [],
       "title": "anidb"
     },
+    "seerr-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "apikey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["url", "apikey"],
+      "title": "seerr"
+    },
+    "seerr-api-lib": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "apikey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [],
+      "title": "seerr"
+    },
     "sonarr-api": {
       "type": "object",
       "additionalProperties": false,
@@ -1756,6 +1834,35 @@
         ]
       },
       "title": "sonarr"
+    },
+    "lidarr-api": {
+      "$ref": "#/definitions/lidarr-config"
+    },
+    "lidarr-api-lib": {
+      "$ref": "#/definitions/lidarr-config"
+    },
+    "lidarr-config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {"type": ["string", "null"]},
+        "token": {"type": ["string", "null"]},
+        "add_missing": {"type": "boolean"},
+        "add_existing": {"type": "boolean"},
+        "upgrade_existing": {"type": "boolean"},
+        "monitor_existing": {"type": "boolean"},
+        "ignore_cache": {"type": "boolean"},
+        "root_folder_path": {"type": ["string", "null"]},
+        "monitor": {"type": "string", "enum": ["all", "future", "missing", "existing", "first", "latest", "none"]},
+        "monitor_new_albums": {"type": "string", "enum": ["all", "none", "new"]},
+        "quality_profile": {"type": ["string", "integer", "null"]},
+        "tag": {"type": ["string", "array", "null"], "items": {"type": "string"}},
+        "search": {"type": "boolean"},
+        "lidarr_path": {"type": ["string", "null"]},
+        "plex_path": {"type": ["string", "null"]}
+      },
+      "required": [],
+      "title": "lidarr"
     },
     "radarr-api": {
       "type": "object",
@@ -4641,7 +4748,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|seerr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4688,6 +4795,12 @@
             "sonarr": {
               "$ref": "#/definitions/sonarr-api-lib"
             },
+            "seerr": {
+              "$ref": "#/definitions/seerr-api-lib"
+            },
+            "lidarr": {
+              "$ref": "#/definitions/lidarr-api-lib"
+            },
             "tautulli": {
               "$ref": "#/definitions/tautulli-api"
             },
@@ -4698,8 +4811,39 @@
               "$ref": "#/definitions/template-variables-library"
             },
             "schedule": {
-              "description": "Used to schedule when a library is run using the schedule options.",
-              "allOf": [{"$ref": "#/definitions/schedule"}]
+              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(duration), diff, index(range), or items(ids) modes. Added durations accept a positive integer followed by m, h, or d; no unit means days.",
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/schedule"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "schedule",
+                      "mode"
+                    ],
+                    "properties": {
+                      "schedule": {
+                        "allOf": [
+                          {
+                            "$ref": "#/definitions/schedule"
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "pattern": "^(full|diff|[Aa][Dd][Dd][Ee][Dd]\\(0*[1-9][0-9]*[mhdMHD]?\\)|index\\([A-Za-z](-[A-Za-z]#?)?\\)|items\\(((tmdb|tvdb|plex):0*[1-9][0-9]*|imdb:tt[0-9]+)(\\|((tmdb|tvdb|plex):0*[1-9][0-9]*|imdb:tt[0-9]+))*\\))$"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              ]
             },
             "schedule_overlays": {
               "description": "Used to schedule when overlays are run for this library.",
@@ -5037,6 +5181,11 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "plex_bulk_edit_batch_size": {
+              "description": "Maximum number of items per Plex bulk edit batch. Omit or set to null to process all items in one batch.",
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
             "assets_for_all": {
               "type": "boolean"
             },
@@ -6131,13 +6280,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                       }
                     }
                   ]
@@ -6167,13 +6316,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                       }
                     }
                   ]
@@ -6208,6 +6357,7 @@
                         "trakt",
                         "tvdb",
                         "plex",
+                        "ytmusic",
                         "lock",
                         "unlock"
                       ]
@@ -6219,13 +6369,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                               }
                             }
                           ]
@@ -6259,6 +6409,7 @@
                         "trakt",
                         "tvdb",
                         "plex",
+                        "ytmusic",
                         "lock",
                         "unlock"
                       ]
@@ -6270,13 +6421,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                               }
                             }
                           ]
@@ -6408,6 +6559,15 @@
               }
             },
             "sonarr_remove_by_tag": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lidarr_add_all_existing": {
+              "type": "boolean"
+            },
+            "lidarr_remove_by_tag": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -6780,6 +6940,10 @@
           "description": "Changes the name_mapping for all collections. Use <<key_name>> as a placeholder.",
           "type": "string"
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "description": "Override Radarr add_missing for all collections in this defaults file.",
           "type": "boolean"
@@ -7207,6 +7371,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -7506,6 +7674,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -7988,6 +8160,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -8260,6 +8436,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -8639,6 +8819,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -8920,6 +9104,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -9251,6 +9439,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -9531,6 +9723,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -9855,6 +10051,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -10139,6 +10339,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -10523,6 +10727,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -10803,6 +11011,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -11211,6 +11423,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -11483,6 +11699,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -11820,6 +12040,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -12100,6 +12324,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -12434,6 +12662,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -12714,6 +12946,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13141,6 +13377,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -13424,6 +13664,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13697,6 +13941,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13902,6 +14150,10 @@
         "^schedule_.+$": {
           "type": "string"
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific seasonal collection by key.",
           "type": "boolean"
@@ -15188,6 +15440,10 @@
             }
           ]
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -15297,6 +15553,10 @@
           ]
         },
         "^mdblist_list_.+$": {},
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "type": "boolean"
         },

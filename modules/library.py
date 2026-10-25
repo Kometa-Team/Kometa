@@ -1,6 +1,8 @@
 import os
+import re
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timezone
 
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
@@ -9,7 +11,8 @@ from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
-from modules.util import Failed, NotScheduled
+from modules.schedule_mode import parse_added_duration
+from modules.util import Failed, NotScheduled, PlexImageUploadError
 
 logger = util.logger
 
@@ -19,6 +22,8 @@ class Library(ABC):
         self.session = None
         self.Radarr = None
         self.Sonarr = None
+        self.Seerr = None
+        self.Lidarr = None
         self.Tautulli = None
         self.Tracearr = None
         self.Webhooks = None
@@ -50,6 +55,9 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        self.scheduled_cached_keys = set()
+        self.scheduled_item_keys = set()
+        self.schedule_mode = params.get("schedule_mode", "full")
         # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
         self.filter_attr_cache = {}
         self.run_again = []
@@ -69,6 +77,8 @@ class Library(ABC):
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
+        self.xml_library_id = int(self.image_table_name.rsplit("_", 1)[1]) if self.image_table_name else None
+        self.xml_updates = []
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
@@ -132,6 +142,8 @@ class Library(ABC):
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
+        self.lidarr_add_all_existing = params["lidarr_add_all_existing"]
+        self.lidarr_remove_by_tag = params["lidarr_remove_by_tag"]
         self.update_blank_track_titles = params["update_blank_track_titles"]
         self.remove_title_parentheses = params["remove_title_parentheses"]
         self.remove_overlays = params["remove_overlays"]
@@ -153,6 +165,7 @@ class Library(ABC):
             "removed": 0,
             "radarr": 0,
             "sonarr": 0,
+            "lidarr": 0,
             "names": [],
         }
         self.status = {}
@@ -179,6 +192,7 @@ class Library(ABC):
             or self.mass_studio_update
             or self.radarr_add_all_existing
             or self.sonarr_add_all_existing
+            or self.lidarr_add_all_existing
             or self.mass_poster_update
             or self.mass_background_update
             or self.mass_logo_update
@@ -193,6 +207,7 @@ class Library(ABC):
             or self.mass_collection_mode
             or self.radarr_remove_by_tag
             or self.sonarr_remove_by_tag
+            or self.lidarr_remove_by_tag
             or self.show_unmanaged
             or self.show_unconfigured
             or self.metadata_backup
@@ -322,6 +337,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {poster.attribute} update skipped for {item.title}: {e}; {poster.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {poster.attribute} {poster.message}")
             except (Failed, RequestException):
@@ -339,6 +356,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {background.prefix}background update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {background.attribute} update skipped for {item.title}: {e}; {background.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {background.attribute} {background.message}")
             except (Failed, RequestException):
@@ -356,6 +375,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {logo.attribute} update skipped for {item.title}: {e}; {logo.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {logo.attribute} {logo.message}")
             except (Failed, RequestException):
@@ -373,6 +394,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {square_art.attribute} update skipped for {item.title}: {e}; {square_art.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {square_art.attribute} {square_art.message}")
             except (Failed, RequestException):
@@ -475,6 +498,7 @@ class Library(ABC):
                 "tmdb_profile",
                 "tmdb_list_poster",
                 "tvdb_list_poster",
+                "ytmusic_list",
                 f"tvdb_{image_type}",
                 "asset_directory",
                 f"pmm_{image_type}",
@@ -553,7 +577,13 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, builder_level=None, load=False) -> list: ...
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False) -> list: ...
+
+    @abstractmethod
+    def get_items_added_since(self, builder_level, cutoff) -> list: ...
+
+    @abstractmethod
+    def cached_item_subitems(self, item, method_name) -> list: ...
 
     @abstractmethod
     def get_ids(self, item) -> tuple: ...
@@ -561,8 +591,8 @@ class Library(ABC):
     def add_additions(self, collection, items, is_movie):
         self._add_to_file("Added", collection, items, is_movie)
 
-    def add_missing(self, collection, items, is_movie):
-        self._add_to_file("Missing", collection, items, is_movie)
+    def add_missing(self, collection, items, is_movie, is_music=False):
+        self._add_to_file("Missing", collection, items, is_movie, is_music=is_music)
 
     def add_removed(self, collection, items, is_movie):
         self._add_to_file("Removed", collection, items, is_movie)
@@ -570,13 +600,17 @@ class Library(ABC):
     def add_filtered(self, collection, items, is_movie):
         self._add_to_file("Filtered", collection, items, is_movie)
 
-    def _add_to_file(self, file_type, collection, items, is_movie):
+    def _add_to_file(self, file_type, collection, items, is_movie, is_music=False):
         if collection not in self.report_data:
             self.report_data[collection] = {}
         parts = isinstance(items[0], str)
         if parts:
             other = f"Parts {file_type}"
             section = other
+        elif is_music:
+            music_level = {True: "Artists", "artist": "Artists", "album": "Albums", "track": "Tracks"}.get(is_music, "Artists")
+            other = f"{music_level} {file_type}"
+            section = f"{other} (MusicBrainz IDs)"
         elif is_movie:
             other = f"Movies {file_type}"
             section = f"{other} (TMDb IDs)"
@@ -590,7 +624,7 @@ class Library(ABC):
         else:
             for title, item_id in items:
                 if item_id:
-                    self.report_data[collection][section][int(item_id)] = title
+                    self.report_data[collection][section][str(item_id) if is_music else int(item_id)] = title
                 else:
                     if other not in self.report_data[collection]:
                         self.report_data[collection][other] = []
@@ -604,10 +638,99 @@ class Library(ABC):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_all()
+        items = self.get_cached_items()
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items
+
+    def get_cached_items(self):
+        """Return the unscoped top-level item snapshot cached for this run."""
+        return self.get_all(ignore_schedule_scope=True)
+
+    def _schedule_item_keys(self, items):
+        """Return the top-level Plex rating keys selected by today's schedule mode."""
+        if self.schedule_mode == "full":
+            return {item.ratingKey for item in items}
+        if self.schedule_mode.startswith("items(") and self.schedule_mode.endswith(")"):
+            identifiers = set()
+            for value in self.schedule_mode[6:-1].split("|"):
+                id_type, separator, item_id = value.strip().lower().partition(":")
+                if not separator or not ((id_type in {"tmdb", "tvdb", "plex"} and re.fullmatch(r"[0-9]+", item_id) and int(item_id) > 0) or (id_type == "imdb" and re.fullmatch(r"tt[0-9]+", item_id))):
+                    raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected items(tmdb:<id>|tvdb:<id>|imdb:<id>|plex:<ratingKey>)")
+                identifiers.add((id_type, item_id if id_type == "imdb" else str(int(item_id))))
+            if getattr(self, "is_show", False):
+                for id_type, item_id in list(identifiers):
+                    if id_type == "tmdb":
+                        tvdb_id = self.config.Convert.tmdb_to_tvdb(int(item_id))
+                        if tvdb_id:
+                            identifiers.add(("tvdb", str(tvdb_id)))
+            selected = set()
+            for item in items:
+                if ("plex", str(item.ratingKey)) in identifiers:
+                    selected.add(item.ratingKey)
+                    continue
+                if getattr(self, "is_music", False) or all(id_type == "plex" for id_type, _ in identifiers):
+                    continue
+                # Resolve IDs before the scoped library mapping is built, including
+                # legacy Plex agents and runs with the persistent cache disabled.
+                media_type, main_ids, imdb_ids = self.config.Convert.get_id(item, self)
+                provider = "tmdb" if media_type == "movie" else "tvdb"
+                item_ids = {(provider, str(item_id)) for item_id in main_ids or []}
+                item_ids.update(("imdb", str(item_id).lower()) for item_id in imdb_ids or [])
+                if identifiers.intersection(item_ids):
+                    selected.add(item.ratingKey)
+            return selected
+        if self.schedule_mode == "diff":
+            if not getattr(self, "is_show", False):
+                return {item.ratingKey for item in items if item.ratingKey not in self.scheduled_cached_keys}
+            changed_shows = set()
+            cached_updates = self.config.Cache.query_xml_updated_at(self.xml_library_id) if self.xml_library_id else {}
+            for index, show in enumerate(items, 1):
+                logger.ghost(f"Loading Seasons: {index}/{len(items)} {show.title}")
+                for season in self.cached_item_subitems(show, "seasons"):
+                    season_key = str(season.ratingKey)
+                    updated_at = str(getattr(season, "updatedAt", ""))
+                    parent_key = str(show.ratingKey)
+                    self.xml_updates.append((parent_key, season_key, updated_at))
+                    if cached_updates.get((parent_key, season_key)) != updated_at:
+                        changed_shows.add(int(show.ratingKey))
+            return changed_shows
+        if self.schedule_mode.lower().startswith("added(") and self.schedule_mode.endswith(")"):
+            try:
+                duration = parse_added_duration(self.schedule_mode)
+            except ValueError as error:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; {error}") from error
+            try:
+                cutoff = datetime.now(timezone.utc) - duration
+            except OverflowError as error:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added duration is too large") from error
+            scheduled_keys = {item.ratingKey for item in items if getattr(item, "addedAt", None) and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff}
+            if getattr(self, "is_show", False):
+                for episode in self.get_items_added_since("episode", cutoff):
+                    if getattr(episode, "grandparentRatingKey", None) is not None:
+                        scheduled_keys.add(int(episode.grandparentRatingKey))
+            return scheduled_keys
+        index_match = re.fullmatch(r"index\(([a-z])(?:-([a-z])(#)?)?\)", self.schedule_mode)
+        if index_match:
+            start, end, include_non_alphabetical = index_match.groups()
+            end = end or start
+            if start > end:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; index range must be ascending")
+
+            def index_initial(item):
+                title = str(getattr(item, "titleSort", None) or getattr(item, "title", "")).lstrip()
+                return title[:1].lower()
+
+            return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
+        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<positive integer>[m|h|d]), index(<range>), or items(<ids>)")
+
+    @property
+    def has_schedule_scope(self):
+        return self.schedule_mode != "full"
+
+    def is_scheduled_item(self, item):
+        """Return whether an item belongs to the scheduled top-level library scope."""
+        return any(key in self.scheduled_item_keys for key in (getattr(item, "ratingKey", None), getattr(item, "parentRatingKey", None), getattr(item, "grandparentRatingKey", None)))
 
     def refresh_item_cache_and_mappings(self):
         """Reload library items and rebuild every rating-key-based lookup.
@@ -631,12 +754,12 @@ class Library(ABC):
         self.cached_items = {}
         self.filter_attr_cache = {}
 
-        items = self.get_all(load=True)
+        items = self.get_all(load=True, ignore_schedule_scope=True)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         if not getattr(self, "is_music", False):
             self.map_guids(items)
-        return items
+        return [item for item in items if item.ratingKey in self.scheduled_item_keys] if self.has_schedule_scope else items
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):
@@ -691,3 +814,39 @@ class Library(ABC):
         self.plex_map_levels.update({self.type, self.type.lower()})
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
+        self.cache_imdb_ratings()
+        self.cache_imdb_genres()
+
+    def cache_imdb_ratings(self):
+        """Batch-fill the local IMDb rating cache with this library's ids.
+
+        Called when the library finishes loading so later IMDb direct rating lookups
+        read the cache instead of requesting one title at a time.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not self.imdb_map:
+            return
+        imdb_ids = [imdb_id for imdb_id in self.imdb_map if imdb_id]
+        if not imdb_ids:
+            return
+        try:
+            imdb.cache_library_ratings(imdb_ids)
+        except Exception as error:
+            logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")
+
+    def cache_imdb_genres(self):
+        """Batch-fill the local IMDb genre cache with this library's ids.
+
+        Called when the library finishes loading so later IMDb genre lookups
+        read the cache instead of requesting one title at a time.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not self.imdb_map:
+            return
+        imdb_ids = [imdb_id for imdb_id in self.imdb_map if imdb_id]
+        if not imdb_ids:
+            return
+        try:
+            imdb.cache_library_genres(imdb_ids)
+        except Exception as error:
+            logger.error(f"IMDb Error: Failed to cache genres for {self.name}: {error}")

@@ -62,6 +62,9 @@ search_sorts = ["mal_id", "title", "type", "rating", "start_date", "end_date", "
 search_combos = [f"{s}.{d}" for s in search_sorts for d in ["desc", "asc"]]
 base_url = "https://api.myanimelist.net/v2/"
 jikan_base_url = "https://malapi.animemap.dev/v4/"
+# Kometa Utilities "Use Kometa App". Its client secret stays on the utilities server.
+# MAL refreshes this public client with client_id and refresh_token only.
+OFFICIAL_CLIENT_ID = "006daa2b5a3ae32abaac83f55f9b1ccf"
 uni_code_verifier = "k_UHwN_eHAPQVXiceC-rYGkozKqrJmKxPUIUOBIKo1noq_4XGRVCViP_dGcwB-fkPql8f56mmWj5aWCa2HDeugf6sRvnc9Rjhbb1vKGYLY0IwWsDNXRqXdksaVGJthux"
 urls = {
     "oauth_token": "https://myanimelist.net/v1/oauth2/token",
@@ -185,7 +188,11 @@ class MyAnimeList:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            data = {"client_id": self.client_id, "client_secret": self.client_secret, "refresh_token": self.authorization["refresh_token"], "grant_type": "refresh_token"}
+            if self.client_id == OFFICIAL_CLIENT_ID:
+                # Public-client refresh: same form body as other apps, without client_secret.
+                data = {"client_id": self.client_id, "refresh_token": self.authorization["refresh_token"], "grant_type": "refresh_token"}
+            else:
+                data = {"client_id": self.client_id, "client_secret": self.client_secret, "refresh_token": self.authorization["refresh_token"], "grant_type": "refresh_token"}
             refreshed_authorization = self._oauth(data)
             return self._save(refreshed_authorization)
         return False

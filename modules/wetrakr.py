@@ -471,13 +471,15 @@ class WeTrakr(tracker.TrackerAPI):
             verb = "add" if action == "add" else "remove"
             logger.info(f"WeTrakr List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found, {errored_total} errored, {already_total} already present)")
 
-    def sync_list(self, convert, list_id_or_name, ids):
+    def sync_list(self, convert, list_id_or_name, ids, mode="sync"):
         """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie").
 
         Matching is by candidate-key-set intersection via tracker.plan_list_sync - see its
         docstring for why. This method keeps list resolution, the current-items fetch, logging
         and batching; the diff itself lives in the shared layer.
         """
+        if mode not in ("sync", "append"):
+            raise Failed(f"WeTrakr Error: invalid list mode: {mode}")
         list_id, created = self._resolve_list(list_id_or_name)
         if created and logger:
             logger.info(f"WeTrakr List '{list_id_or_name}' not found; created a new list (id {list_id})")
@@ -495,4 +497,8 @@ class WeTrakr(tracker.TrackerAPI):
         if unmatched and logger:
             logger.warning(f"WeTrakr Warning: {unmatched} existing list item(s) had no usable id at all; leaving them in place")
         self._sync_batch(list_id, "add", add)
-        self._sync_batch(list_id, "remove", remove)
+        if mode == "sync":
+            self._sync_batch(list_id, "remove", remove)
+        if logger:
+            logger.info(f"WeTrakr list {list_id_or_name} updated ({mode})")
+            logger.info(f"List: https://wetrakr.com/lists/{list_id}")

@@ -37,6 +37,8 @@ mal:
 
 *All other attributes will be filled in by Kometa as part of the authentication process*
 
+A block from Kometa Utilities **Use Kometa App** does not include `client_secret`. Kometa accepts that block and refreshes its token without a secret. Any other `client_id` still requires `client_secret`.
+
 ### Authenticating outside Kometa
 
 The simplest and preferred way to authenticate against MyAnimeList is the [Kometa Utilities](./authentication.md).

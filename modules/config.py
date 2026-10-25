@@ -4,7 +4,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-from modules import operations, radarr, sonarr, util
+from modules import lidarr, operations, radarr, sonarr, util
 from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.apprise_notify import AppriseNotify
@@ -17,8 +17,10 @@ from modules.github import GitHub
 from modules.gotify import Gotify
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
+from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
-from modules.mal import MyAnimeList
+from modules.lidarr import Lidarr
+from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
@@ -28,6 +30,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.seerr import Seerr
 from modules.serializd import Serializd
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
@@ -41,6 +44,7 @@ from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
 from modules.wetrakr import WeTrakr
 from modules.yamtrack import YamTrack
+from modules.ytmusic import YouTubeMusic
 
 logger = util.logger
 
@@ -174,7 +178,9 @@ mass_image_options = {
     "tmdb": "Use TMDb Images",
     "tvdb": "Use TVDb Images",
 }
+mass_poster_options = {**mass_image_options, "ytmusic": "Use YouTube Music Artist Images (Music Libraries Only)"}
 mass_episode_rating_options = {
+    "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
     "remove": "Remove and Lock Rating",
@@ -188,6 +194,7 @@ mass_episode_rating_options = {
     "floppy": "Use Floppy User Rating",
 }
 mass_rating_options = {
+    "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
     "remove": "Remove and Lock Rating",
@@ -234,6 +241,8 @@ library_operations = {
     "radarr_remove_by_tag": "str",
     "sonarr_add_all_existing": "bool",
     "sonarr_remove_by_tag": "str",
+    "lidarr_add_all_existing": "bool",
+    "lidarr_remove_by_tag": "str",
     "mass_content_rating_update": mass_content_options,
     "mass_collection_content_rating_update": "dict",
     "mass_genre_update": mass_genre_options,
@@ -284,6 +293,7 @@ class ConfigFile:
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
+        self.runtime_mode = attrs.get("mode")
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = None
@@ -326,6 +336,8 @@ class ConfigFile:
             logger.debug("")
 
         self.data = self.Requests.file_yaml(self.config_path).data
+        self.Seerr = None
+        self.seerr_config = None
 
         def replace_attr(all_data, in_attr, par):
             if "settings" not in all_data:
@@ -387,6 +399,8 @@ class ConfigFile:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
                 if "sonarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["sonarr_add_all_existing"] = self.data["libraries"][library].pop("sonarr_add_all")
+                if "lidarr_add_all" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["lidarr_add_all_existing"] = self.data["libraries"][library].pop("lidarr_add_all")
                 if "plex" in self.data["libraries"][library] and self.data["libraries"][library]["plex"]:
                     replace_attr(self.data["libraries"][library], "asset_directory", "plex")
                     replace_attr(self.data["libraries"][library], "sync_mode", "plex")
@@ -408,11 +422,16 @@ class ConfigFile:
                 if "sonarr" in self.data["libraries"][library] and self.data["libraries"][library]["sonarr"]:
                     if "add" in self.data["libraries"][library]["sonarr"]:
                         self.data["libraries"][library]["sonarr"]["add_missing"] = self.data["libraries"][library]["sonarr"].pop("add")
+                if "lidarr" in self.data["libraries"][library] and self.data["libraries"][library]["lidarr"]:
+                    if "add" in self.data["libraries"][library]["lidarr"]:
+                        self.data["libraries"][library]["lidarr"]["add_missing"] = self.data["libraries"][library]["lidarr"].pop("add")
                 if "operations" in self.data["libraries"][library] and self.data["libraries"][library]["operations"]:
                     if "radarr_add_all" in self.data["libraries"][library]["operations"]:
                         self.data["libraries"][library]["operations"]["radarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("radarr_add_all")
                     if "sonarr_add_all" in self.data["libraries"][library]["operations"]:
                         self.data["libraries"][library]["operations"]["sonarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("sonarr_add_all")
+                    if "lidarr_add_all" in self.data["libraries"][library]["operations"]:
+                        self.data["libraries"][library]["operations"]["lidarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("lidarr_add_all")
                     if "mass_imdb_parental_labels" in self.data["libraries"][library]["operations"] and self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"]:
                         if self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] == "with_none":
                             self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] = "none"
@@ -496,6 +515,11 @@ class ConfigFile:
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
             self.data["sonarr"] = temp
+        if "lidarr" in self.data:
+            temp = self.data.pop("lidarr")
+            if temp and "add" in temp:
+                temp["add_missing"] = temp.pop("add")
+            self.data["lidarr"] = temp
         if "mal" in self.data:
             self.data["mal"] = self.data.pop("mal")
 
@@ -657,13 +681,14 @@ class ConfigFile:
                     logger.warning(options)
             return default
 
-        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False):
+        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False, allow_ytmusic=False):
             image_config = input_dict.get(image_type)
             if not image_config:
                 return None
             if not isinstance(image_config, dict):
                 image_config = {"source": image_config}
-            options = {k: v for k, v in mass_image_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
+            base_options = mass_poster_options if allow_ytmusic else mass_image_options
+            options = {k: v for k, v in base_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
             _language = check_for_attribute(image_config, "language", default_is_none=True, do_print=False, save=False)
             if _language is not None:
                 _language = str(_language).lower()
@@ -675,6 +700,8 @@ class ConfigFile:
             else:
                 source = check_for_attribute(image_config, "source", test_list=options, default_is_none=True, save=False)
                 sources = [source] if source else []
+            if allow_ytmusic and "ytmusic" in sources and not self.YouTubeMusic:
+                raise Failed("Config Error: poster source ytmusic requires a working YouTube Music connection")
             parsed = {
                 "source": source,
                 "sources": sources,
@@ -1068,6 +1095,20 @@ class ConfigFile:
         logger.save_errors = True
         logger.separator()
 
+        if self.data.get("seerr"):
+            logger.info("Connecting to Seerr...")
+            try:
+                self.seerr_config = {
+                    "url": check_for_attribute(self.data, "url", parent="seerr", var_type="url", throw=True),
+                    "apikey": check_for_attribute(self.data, "apikey", parent="seerr", throw=True),
+                }
+                self.Seerr = Seerr(self.Requests, self.seerr_config)
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"Seerr Configuration {'Failed' if self.Seerr is None else 'Successful'}")
+        else:
+            logger.info("seerr attribute not found")
+
         try:
             self.TMDb = None
             if "tmdb" in self.data:
@@ -1112,6 +1153,31 @@ class ConfigFile:
 
             logger.separator()
 
+            self.LastFM = None
+            if "lastfm" in self.data:
+                logger.info("Connecting to Last.fm...")
+                try:
+                    lastfm_connector = LastFM(check_for_attribute(self.data, "apikey", parent="lastfm", throw=True, save=False))
+                    lastfm_connector.validate_connection()
+                    self.LastFM = lastfm_connector
+                except Failed as e:
+                    logger.error(e)
+                logger.info(f"Last.fm Connection {'Failed' if self.LastFM is None else 'Successful'}")
+            else:
+                logger.info("lastfm attribute not found")
+
+            logger.separator()
+
+            self.YouTubeMusic = None
+            logger.info("Connecting to YouTube Music (Public Mode)...")
+            try:
+                self.YouTubeMusic = YouTubeMusic()
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"YouTube Music Connection {'Failed' if self.YouTubeMusic is None else 'Successful (Public Mode)'}")
+
+            logger.separator()
+
             self.MDBList = MDBList(self.Requests, self.Cache)
             if "mdblist" in self.data:
                 logger.info("Connecting to MDBList...")
@@ -1136,13 +1202,19 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
+                    mal_client_id = check_for_attribute(self.data, "client_id", parent="mal", throw=True)
+                    if mal_client_id == OFFICIAL_CLIENT_ID:
+                        # The utilities "Use Kometa App" block omits client_secret. Do not fail, and do not write client_secret: null.
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", default_is_none=True, save=False, do_print=False)
+                    else:
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                     self.MyAnimeList = MyAnimeList(
                         self.Requests,
                         self.Cache,
                         self.read_only,
                         {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
+                            "client_id": mal_client_id,
+                            "client_secret": mal_client_secret,
                             "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                             "config_path": self.config_path,
@@ -1406,6 +1478,23 @@ class ConfigFile:
                 "cutoff_search": check_for_attribute(self.data, "cutoff_search", parent="sonarr", var_type="bool", default=False),
                 "sonarr_path": check_for_attribute(self.data, "sonarr_path", parent="sonarr", default_is_none=True),
                 "plex_path": check_for_attribute(self.data, "plex_path", parent="sonarr", default_is_none=True),
+            }
+            self.general["lidarr"] = {
+                "url": check_for_attribute(self.data, "url", parent="lidarr", var_type="url", default_is_none=True),
+                "token": check_for_attribute(self.data, "token", parent="lidarr", default_is_none=True),
+                "add_missing": check_for_attribute(self.data, "add_missing", parent="lidarr", var_type="bool", default=False),
+                "add_existing": check_for_attribute(self.data, "add_existing", parent="lidarr", var_type="bool", default=False),
+                "upgrade_existing": check_for_attribute(self.data, "upgrade_existing", parent="lidarr", var_type="bool", default=False),
+                "monitor_existing": check_for_attribute(self.data, "monitor_existing", parent="lidarr", var_type="bool", default=False),
+                "ignore_cache": check_for_attribute(self.data, "ignore_cache", parent="lidarr", var_type="bool", default=False),
+                "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="lidarr", default_is_none=True),
+                "monitor": check_for_attribute(self.data, "monitor", parent="lidarr", test_list=lidarr.monitor_descriptions, default="all"),
+                "monitor_new_albums": check_for_attribute(self.data, "monitor_new_albums", parent="lidarr", test_list=lidarr.monitor_new_albums_descriptions, default="all"),
+                "quality_profile": check_for_attribute(self.data, "quality_profile", parent="lidarr", default_is_none=True),
+                "tag": check_for_attribute(self.data, "tag", parent="lidarr", var_type="lower_list", default_is_none=True),
+                "search": check_for_attribute(self.data, "search", parent="lidarr", var_type="bool", default=False),
+                "lidarr_path": check_for_attribute(self.data, "lidarr_path", parent="lidarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="lidarr", default_is_none=True),
             }
             self.general["tautulli"] = {
                 "url": check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True),
@@ -1845,23 +1934,26 @@ class ConfigFile:
                                 if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
                                 elif op in ["mass_poster_update", "mass_background_update"]:
+                                    source_options = mass_poster_options if op in ("mass_poster_update", "mass_background_update") else mass_image_options
                                     _language = check_for_attribute(input_dict, "language", default_is_none=True, save=False)
                                     if _language is not None:
                                         _language = str(_language).lower()
                                         if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
                                             raise Failed(f"Config Error: {op} language {_language} is not a valid ISO 639-1 language code")
                                     if isinstance(input_dict.get("source"), list):
-                                        sources = check_for_attribute(input_dict, "source", test_list=mass_image_options, var_type="lower_list", default_is_none=True, save=False)
+                                        sources = check_for_attribute(input_dict, "source", test_list=source_options, var_type="lower_list", default_is_none=True, save=False)
                                         source = sources[0] if sources else None
                                     else:
                                         source = check_for_attribute(
                                             input_dict,
                                             "source",
-                                            test_list=mass_image_options,
+                                            test_list=source_options,
                                             default_is_none=True,
                                             save=False,
                                         )
                                         sources = [source] if source else []
+                                    if op in ("mass_poster_update", "mass_background_update") and "ytmusic" in sources and not self.YouTubeMusic:
+                                        raise Failed("Config Error: mass_poster_update source ytmusic requires a working YouTube Music connection")
                                     section_final[op] = {
                                         "source": source,
                                         "sources": sources,
@@ -1872,8 +1964,8 @@ class ConfigFile:
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
                                 elif op == "mass_image_update":
-                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
-                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True, allow_ytmusic=True)
+                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True, allow_ytmusic=True)
                                     logo_update = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True, allow_tvdb=True)
                                     square_art_update = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False, allow_tvdb=True)
                                     if "squart_art" in input_dict and "square_art" not in input_dict:
@@ -2038,15 +2130,45 @@ class ConfigFile:
                 params["default_dir"] = default_dir
 
                 params["skip_library"] = False
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
+                params["schedule_mode"] = self.runtime_mode or "full"
+                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:
                         logger.debug(f"Value: {lib['schedule']}")
-                        try:
-                            util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
-                        except NotScheduled:
-                            params["skip_library"] = True
+                        schedule_entries = util.get_list(lib["schedule"], split=False)
+                        if any(isinstance(entry, dict) for entry in schedule_entries):
+                            schedule_modes = []
+                            for entry in schedule_entries:
+                                if not isinstance(entry, dict) or set(entry) != {"schedule", "mode"}:
+                                    logger.error("Config Error: each library schedule mode must contain schedule and mode attributes")
+                                    continue
+                                schedule = entry["schedule"]
+                                mode = entry["mode"]
+                                if not isinstance(schedule, str):
+                                    logger.error("Config Error: library schedule mode schedule must be a string")
+                                    continue
+                                if not isinstance(mode, str):
+                                    logger.error(f"Config Error: schedule mode for {schedule} must be a string")
+                                    continue
+                                schedule_modes.append((schedule, mode.lower()))
+                            if not schedule_modes:
+                                params["skip_library"] = True
+                            else:
+                                for schedule, mode in schedule_modes:
+                                    try:
+                                        util.schedule_check("schedule", schedule, current_time, self.run_hour)
+                                        params["schedule_mode"] = mode
+                                        break
+                                    except NotScheduled:
+                                        continue
+                                else:
+                                    params["skip_library"] = True
+                        else:
+                            try:
+                                util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
+                            except NotScheduled:
+                                params["skip_library"] = True
 
                 old_reset = None
                 old_schedule = None
@@ -2208,6 +2330,34 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    library.Seerr = self.Seerr
+                    if lib and "seerr" in lib:
+                        try:
+                            seerr_params = {
+                                "url": check_for_attribute(
+                                    lib,
+                                    "url",
+                                    parent="seerr",
+                                    var_type="url",
+                                    default=self.seerr_config["url"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                                "apikey": check_for_attribute(
+                                    lib,
+                                    "apikey",
+                                    parent="seerr",
+                                    default=self.seerr_config["apikey"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                            }
+                            library.Seerr = self.Seerr if self.seerr_config == seerr_params else Seerr(self.Requests, seerr_params)
+                            logger.info(f"{display_name} library's Seerr Configuration Successful")
+                        except Failed as e:
+                            library.Seerr = None
+                            logger.error(e)
+                            logger.info(f"{display_name} library's Seerr Configuration Failed")
                     global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], library.type)
                     library.asset_directory, library.collection_asset_directory = util.resolve_asset_directories(configured_assets, library.type, global_items, global_collections)
                     if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
@@ -2539,6 +2689,41 @@ class ConfigFile:
                         logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
+
+                if self.general["lidarr"]["url"] or (lib and "lidarr" in lib):
+                    logger.info("")
+                    logger.separator("Lidarr Configuration", space=False, border=False)
+                    logger.info("")
+                    logger.info(f"Connecting to {display_name} library's Lidarr...")
+                    logger.info("")
+                    try:
+                        library.Lidarr = Lidarr(
+                            self.Requests,
+                            self.Cache,
+                            library,
+                            {
+                                "url": check_for_attribute(lib, "url", parent="lidarr", var_type="url", default=self.general["lidarr"]["url"], req_default=True, save=False),
+                                "token": check_for_attribute(lib, "token", parent="lidarr", default=self.general["lidarr"]["token"], req_default=True, save=False),
+                                "add_missing": check_for_attribute(lib, "add_missing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["add_missing"], save=False),
+                                "add_existing": check_for_attribute(lib, "add_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["add_existing"], save=False),
+                                "upgrade_existing": check_for_attribute(lib, "upgrade_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["upgrade_existing"], save=False),
+                                "monitor_existing": check_for_attribute(lib, "monitor_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["monitor_existing"], save=False),
+                                "ignore_cache": check_for_attribute(lib, "ignore_cache", parent="lidarr", var_type="bool", default=self.general["lidarr"]["ignore_cache"], save=False),
+                                "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="lidarr", default=self.general["lidarr"]["root_folder_path"], req_default=True, save=False),
+                                "monitor": check_for_attribute(lib, "monitor", parent="lidarr", test_list=lidarr.monitor_descriptions, default=self.general["lidarr"]["monitor"], save=False),
+                                "monitor_new_albums": check_for_attribute(lib, "monitor_new_albums", parent="lidarr", test_list=lidarr.monitor_new_albums_descriptions, default=self.general["lidarr"]["monitor_new_albums"], save=False),
+                                "quality_profile": check_for_attribute(lib, "quality_profile", parent="lidarr", default=self.general["lidarr"]["quality_profile"], req_default=True, save=False),
+                                "tag": check_for_attribute(lib, "tag", parent="lidarr", var_type="lower_list", default=self.general["lidarr"]["tag"], default_is_none=True, save=False),
+                                "search": check_for_attribute(lib, "search", parent="lidarr", var_type="bool", default=self.general["lidarr"]["search"], save=False),
+                                "lidarr_path": check_for_attribute(lib, "lidarr_path", parent="lidarr", default=self.general["lidarr"]["lidarr_path"], default_is_none=True, save=False),
+                                "plex_path": check_for_attribute(lib, "plex_path", parent="lidarr", default=self.general["lidarr"]["plex_path"], default_is_none=True, save=False),
+                            },
+                        )
+                    except Failed as e:
+                        logger.stacktrace()
+                        logger.error(e)
+                        logger.info("")
+                    logger.info(f"{display_name} library's Lidarr Connection {'Failed' if library.Lidarr is None else 'Successful'}")
 
                 if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")

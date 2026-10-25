@@ -404,14 +404,16 @@
             "description": "Gets the Tautulli Most Popular List",
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
+            "works_with_music": "Yes",
             "works_with_playlists_and_custom_sort": "Yes"
         },
         {
-            "builder": "tautulli_watched",
-            "hyperlink": "https://kometa.wiki/en/nightly/files/builders/tautulli/watched/",
-            "description": "Gets the Tautulli Most Watched List",
+            "builder": "tautulli_top",
+            "hyperlink": "https://kometa.wiki/en/nightly/files/builders/tautulli/top/",
+            "description": "Gets the Tautulli Top List",
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
+            "works_with_music": "Yes",
             "works_with_playlists_and_custom_sort": "Yes"
         }
     ],

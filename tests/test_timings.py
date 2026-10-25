@@ -7,6 +7,7 @@ sqlite file, no real Kometa config.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import os
 import time
@@ -43,6 +44,33 @@ def disabled_registry(monkeypatch):
 # ═══════════════════════════════════════════════════════════════════════
 # Registry accumulation
 # ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.parametrize("announcement", ["banner", "plex_request_log"])
+def test_startup_logging_uses_logger_initialized_after_import(monkeypatch, tmp_path, announcement):
+    monkeypatch.setattr(timings_module.util, "logger", None)
+    spec = importlib.util.spec_from_file_location("startup_timings", timings_module.__file__)
+    startup_timings = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(startup_timings)
+
+    logger = MagicMock()
+    monkeypatch.setattr(timings_module.util, "logger", logger)
+    registry = startup_timings.TimingRegistry()
+    registry.enabled = True
+    if announcement == "banner":
+        monkeypatch.setattr(startup_timings, "git_sha", lambda: "test-sha")
+        registry.banner()
+        registry.banner()
+        logger.info.assert_called_once_with("KOMETA_TIMINGS enabled (git SHA: test-sha)")
+    else:
+        monkeypatch.setattr(startup_timings, "LOG_PLEX_REQUESTS", True)
+        try:
+            registry.enable_plex_request_log(str(tmp_path))
+            logger.info.assert_called_once()
+            assert logger.info.call_args.args[0].startswith("KOMETA_LOG_PLEX_REQUESTS enabled - writing ")
+            assert len(list(tmp_path.glob("plex-request-census-*.csv"))) == 1
+        finally:
+            registry.close_plex_request_log()
 
 
 def test_record_accumulates_seconds_and_calls(enabled_registry):

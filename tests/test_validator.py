@@ -342,6 +342,10 @@ def test_detect_schema_type_playlist():
     assert detect_schema_type({"playlists": {}}) == "playlist_files"
 
 
+def test_detect_schema_type_music_playlist():
+    assert detect_schema_type({"music_playlists": {}}) == "playlist_files"
+
+
 def test_detect_schema_type_metadata():
     assert detect_schema_type({"metadata": {}}) == "metadata_files"
 

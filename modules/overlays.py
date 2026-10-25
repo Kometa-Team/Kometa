@@ -9,9 +9,35 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder, prefetch_gather_ids
-from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError, PlexImageUploadError
 
 logger = util.logger
+
+
+def overlay_change_reason(cached_state, current_hashes, updated_names=(), has_overlay=True):
+    """Return the render reason, preserving removal and overlay ordering priorities."""
+    reason = "" if has_overlay else "No Overlay Label"
+    if not reason:
+        for name in cached_state:
+            if name not in current_hashes:
+                reason = f"Overlay Removed: {name}"
+    if not reason:
+        for name, current_hash in current_hashes.items():
+            if name not in cached_state:
+                reason = f"New Overlay: {name}"
+            elif cached_state[name][0] != current_hash:
+                reason = f"Overlay Changed: {name}"
+            elif name in updated_names:
+                reason = f"Overlay Image Updated: {name}"
+    return reason
+
+
+def write_overlay_state(cache, rating_key, state_table, current_hashes, resolved_values, unresolved):
+    """Replace saved state, leaving unresolved overlays eligible for retry."""
+    cache.delete_overlay_state(rating_key, state_table)
+    for name, definition_hash in current_hashes.items():
+        if name not in unresolved:
+            cache.update_overlay_state(rating_key, name, state_table, definition_hash, resolved_values.get(name))
 
 
 class Overlays:
@@ -145,21 +171,8 @@ class Overlays:
                         else:
                             applied_names.append(over_name)
 
-                    overlay_change = "" if has_overlay else "No Overlay Label"
-                    if not overlay_change:
-                        for cached_key in cached_state:
-                            if cached_key not in current_hashes:
-                                overlay_change = f"Overlay Removed: {cached_key}"
-
-                    if not overlay_change:
-                        for over_name in over_names:
-                            mapping_name = properties[over_name].mapping_name
-                            if mapping_name not in cached_state:
-                                overlay_change = f"New Overlay: {mapping_name}"
-                            elif cached_state[mapping_name][0] != current_hashes[mapping_name]:
-                                overlay_change = f"Overlay Changed: {mapping_name}"
-                            elif properties[over_name].updated:
-                                overlay_change = f"Overlay Image Updated: {mapping_name}"
+                    updated_names = {properties[name].mapping_name for name in over_names if properties[name].updated}
+                    overlay_change = overlay_change_reason(cached_state, current_hashes, updated_names, has_overlay)
 
                     if self.cache:
                         for over_name in over_names:
@@ -471,12 +484,7 @@ class Overlays:
                     if self.cache and poster_compare:
                         self.cache.update_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare)
                         state_table = f"{self.library.image_table_name}_overlay_state"
-                        self.cache.delete_overlay_state(item.ratingKey, state_table)
-                        for over_name in over_names:
-                            mapping_name = properties[over_name].mapping_name
-                            if mapping_name in unresolved:
-                                continue
-                            self.cache.update_overlay_state(item.ratingKey, mapping_name, state_table, current_hashes[mapping_name], resolved_values.get(mapping_name))
+                        write_overlay_state(self.cache, item.ratingKey, state_table, current_hashes, resolved_values, unresolved)
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:
@@ -536,14 +544,16 @@ class Overlays:
                                     raise Failed(e)
 
                         added_titles = []
+                        overlay_item_keys = set(properties[prop_name].keys)
                         if builder.found_items:
                             for item in builder.found_items:
                                 if builder.limit and len(added_titles) >= builder.limit:
                                     break
                                 key_to_item[item.ratingKey] = item
                                 added_titles.append(item)
-                                if item.ratingKey not in properties[prop_name].keys:
+                                if item.ratingKey not in overlay_item_keys:
                                     properties[prop_name].keys.append(item.ratingKey)
+                                    overlay_item_keys.add(item.ratingKey)
                         if added_titles:
                             logger.info(f"{len(added_titles)} Items found for {prop_name}")
                             logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
@@ -658,7 +668,11 @@ class Overlays:
             except Failed:
                 pass
         if poster_location:
-            self.library.upload_poster(item, poster_location, url=is_url)
+            try:
+                self.library.upload_poster(item, poster_location, url=is_url)
+            except PlexImageUploadError as e:
+                logger.error(f"Overlay removal skipped for {item_title}: {e}. Continuing the run.")
+                return
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             for loc in locations:
                 if os.path.exists(loc):

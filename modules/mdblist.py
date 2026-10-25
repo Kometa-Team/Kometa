@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from modules import util
 from modules.util import Failed, LimitReached, ServiceError
@@ -460,8 +460,8 @@ class MDBList:
     def sync_list(self, slug, ids, mode="sync", removal_types=None):
         """Update a user-owned static list using MDBList's list item API.
 
-        ``slug`` is the exact list name. MDBList resolves it to the user's
-        numeric list id; write endpoints then require the id and a payload
+        ``slug`` is the exact list name or a numeric list id. MDBList resolves
+        names to the user's numeric list id; write endpoints require the id and a payload
         containing ``tmdb`` identifiers grouped under movies and shows.
         ``removal_types`` optionally limits removals to the supplied media types.
         """
@@ -469,10 +469,16 @@ class MDBList:
             raise Failed(f"MDBList Error: invalid sync mode: {mode}")
         lists, _ = self._request(f"{api_url}lists/user")
         lists = lists if isinstance(lists, list) else lists.get("lists", [])
-        matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+        if isinstance(slug, bool) or not isinstance(slug, (str, int)):
+            raise Failed(f"MDBList Error: invalid list name or id: {slug}")
+        numeric_id = int(slug) if isinstance(slug, int) or (isinstance(slug, str) and slug.isdigit()) else None
+        matches = [item for item in lists if isinstance(item, dict) and (str(item.get("id")) == str(numeric_id) if numeric_id is not None else item.get("name") == slug)]
         if len(matches) > 1:
             raise Failed(f"MDBList Error: Multiple lists named '{slug}' found")
+        created_list = not matches
         if not matches:
+            if numeric_id is not None:
+                raise Failed(f"MDBList Error: list id {numeric_id} was not found among your lists")
             created, _ = self._request(f"{api_url}lists/user/add", json_data={"name": slug})
             if isinstance(created, dict):
                 list_id = created.get("id") or (created.get("list") or {}).get("id")
@@ -485,16 +491,30 @@ class MDBList:
                 list_id = matches[0].get("id") if len(matches) == 1 else None
             if not list_id:
                 raise Failed(f"MDBList Error: could not create list: {slug}")
+            list_entry = created.get("list", created) if isinstance(created, dict) else {}
+            if not isinstance(list_entry, dict):
+                list_entry = {}
+            if matches:
+                list_entry = matches[0]
         else:
-            list_id = matches[0].get("id")
+            list_entry = matches[0]
+            list_id = list_entry.get("id")
 
         existing = []
         if mode == "sync":
             existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
+        existing_ids = {(int(item_id), item_type) for item_id, item_type in existing}
+        desired_ids = set()
         payload = {"movies": [], "shows": []}
         for item_id, item_type in ids:
+            item = (int(item_id), item_type)
+            if item in desired_ids:
+                continue
+            desired_ids.add(item)
+            if mode == "sync" and item in existing_ids:
+                continue
             key = "movies" if item_type == "tmdb" else "shows"
-            payload[key].append({"tmdb": int(item_id)})
+            payload[key].append({"tmdb": item[0]})
         payload = {key: value for key, value in payload.items() if value}
 
         def update_items(action, item_payload, processed, total):
@@ -511,7 +531,7 @@ class MDBList:
         if mode == "sync":
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:
-                if removal_types is None or item_type in removal_types:
+                if (int(item_id), item_type) not in desired_ids and (removal_types is None or item_type in removal_types):
                     key = "movies" if item_type == "tmdb" else "shows"
                     remove_payload[key].append({"tmdb": int(item_id)})
             remove_payload = {key: value for key, value in remove_payload.items() if value}
@@ -527,7 +547,20 @@ class MDBList:
             for key, value in payload.items():
                 for start in range(0, len(value), 100):
                     processed = update_items("add", {key: value[start : start + 100]}, processed, total)
-        logger.info(f"MDBList list {slug} updated ({mode})")
+        if not (list_entry.get("url") or ((list_entry.get("user_name") or list_entry.get("username")) and list_entry.get("slug"))):
+            try:
+                refreshed, _ = self._request(f"{api_url}lists/user")
+                refreshed = refreshed if isinstance(refreshed, list) else refreshed.get("lists", [])
+                list_entry = next((item for item in refreshed if isinstance(item, dict) and str(item.get("id")) == str(list_id)), list_entry)
+            except Failed:
+                pass
+        list_url = list_entry.get("url")
+        user_name = list_entry.get("user_name") or list_entry.get("username")
+        if not list_url and user_name and list_entry.get("slug"):
+            list_url = f"{base_url}{quote(str(user_name), safe='')}/{quote(str(list_entry['slug']), safe='')}"
+        logger.info(f"MDBList list {slug} {'updated' if created_list or payload or (mode == 'sync' and remove_payload) else 'already up to date'} ({mode})")
+        if list_url:
+            logger.info(f"List: {list_url}")
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
@@ -697,11 +730,21 @@ class MDBList:
                         results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
                     continue
 
-                tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
-                if tmdb_id:
-                    m_type = item.get("mediatype") or item.get("type") or "movie"
-                    type_key = "tmdb" if m_type.lower() == "movie" else "tmdb_show"
-                    results.append((tmdb_id, type_key))
+                m_type = (item.get("mediatype") or item.get("type") or "movie").lower()
+                if m_type in ["season", "episode"]:
+                    show_id = util.check_num(item.get("show_id"))
+                    season_number = util.check_num(item.get("season_number"))
+                    if show_id and season_number is not None:
+                        if m_type == "season":
+                            results.append((f"{show_id}_{season_number}", "tmdb_season"))
+                        else:
+                            episode_number = util.check_num(item.get("episode_number"))
+                            if episode_number is not None:
+                                results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
+                elif m_type in ["movie", "show"]:
+                    tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
+                    if tmdb_id:
+                        results.append((tmdb_id, "tmdb" if m_type == "movie" else "tmdb_show"))
 
             offset += len(items)  # type: ignore
 

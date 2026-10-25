@@ -7,6 +7,7 @@ for logger patching.
 
 from __future__ import annotations
 
+import copy
 import json
 from types import SimpleNamespace
 from typing import Any
@@ -160,6 +161,34 @@ class FakeRequests:
     @staticmethod
     def has_new_version() -> bool:
         return False
+
+
+class InMemoryYAML:
+    """Stand-in for ``modules.request.YAML`` exposing the ``.data`` / ``.save()`` surface ``ConfigFile`` uses, backed by a dict instead of a file."""
+
+    def __init__(self, files: dict[str, Any], path: str):
+        self._files = files
+        self.path = path
+        self.data = copy.deepcopy(files[path])
+
+    def save(self) -> None:
+        self._files[self.path] = copy.deepcopy(self.data)
+
+
+class InMemoryYAMLRequests(FakeRequests):
+    """FakeRequests that parses each YAML file once with the real YAML and serves isolated copies; saves stay in memory, so tests that read the file back need FakeRequests."""
+
+    def __init__(self, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
+        self._yaml_files: dict[str, Any] = {}
+
+    def file_yaml(self, path: str, **kwargs: Any) -> Any:
+        # Anything beyond a plain load (read_only and so on) goes to the real class.
+        if kwargs:
+            return super().file_yaml(path, **kwargs)
+        if path not in self._yaml_files:
+            self._yaml_files[path] = super().file_yaml(path).data
+        return InMemoryYAML(self._yaml_files, path)
 
 
 class FakeCache:

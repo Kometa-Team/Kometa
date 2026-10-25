@@ -18,6 +18,7 @@ import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid, playlist_attributes
 from modules.util import Failed
 from tests.conftest import FakeLogger
+from tests.factories import make_builder
 
 # ═══════════════════════════════════════════════════════════════════════
 # Shared fakes
@@ -41,6 +42,7 @@ class FakeShowLibrary:
 class FakeEpisode:
     def __init__(self, rating_key, title):
         self.ratingKey = rating_key
+        self.key = f"/library/metadata/{rating_key}"
         self.title = title
 
 
@@ -89,57 +91,6 @@ class FakeTVDbLibrary:
 # ═══════════════════════════════════════════════════════════════════════
 
 
-def make_builder(**attrs) -> CollectionBuilder:
-    """Create a minimal CollectionBuilder with ``__new__``."""
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    defaults = {
-        "Type": "Collection",
-        "builder_level": "movie",
-        "playlist": False,
-        "libraries": [],
-        "ignore_imdb_ids": [],
-        "ignore_ids": [],
-        "missing_movies": [],
-        "missing_parts": [],
-        "missing_shows": [],
-        "do_missing": True,
-        "filters": [],
-        "details": {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
-        "filtered_keys": {},
-        "found_items": [],
-        "do_report": False,
-        "obj": None,
-        "name": "Test Collection",
-        "builders": [],
-        "items": [],
-        "mdb_list_arr_ids": None,
-        "item_details": {},
-        "asset_directory": None,
-        "collection_asset_directory": None,
-        "collection_assets_configured": False,
-        "overlay": False,
-        "radarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
-        "sonarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
-        "run_again_movies": [],
-        "run_again_shows": [],
-        "notification_additions": [],
-        "notification_removals": [],
-        "added_to_radarr": [],
-        "added_to_sonarr": [],
-        "collection_poster": None,
-        "collection_background": None,
-        "deleted": False,
-        "created": True,
-        "smart_label_collection": False,
-        "check_filters": lambda item, display: True,
-        "value_filters": [],
-    }
-    defaults.update(attrs)
-    for key, value in defaults.items():
-        setattr(builder, key, value)
-    return builder
-
-
 def _episode_builder(library) -> CollectionBuilder:
     return make_builder(
         builder_level="episode",
@@ -161,6 +112,75 @@ def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
     builder = make_builder(build_collection=False, sync_to_mdb_list={"name": "List", "mode": "sync"}, mdb_list_arr_ids=[])
 
     builder.load_collection_items()
+
+    assert builder.items == []
+
+
+def test_load_collection_items_without_items_or_mdblist_sync_raises(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, mdb_list_arr_ids=None)
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
+
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_validates_destination_and_defaults_to_sync(source):
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock())
+    builder = make_builder(config=config)
+
+    builder._list_export({"source": source, "name": "My List"})
+
+    assert builder.list_export == {"source": source, "name": "My List", "mode": "sync"}
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"source": "unknown", "name": "My List"},
+        {"source": "flicklist", "name": "My List", "mode": "replace"},
+        {"source": "flicklist", "name": ""},
+        {"source": "wetrakr", "name": "My List", "extra": True},
+    ],
+)
+def test_list_export_rejects_invalid_options(data):
+    builder = make_builder(config=SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock()))
+
+    with pytest.raises(Failed, match="list_export"):
+        builder._list_export(data)
+
+
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_syncs_empty_builder_results(source, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logs)
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock(), Convert=MagicMock())
+    builder = make_builder(config=config, list_export={"source": source, "name": "My List", "mode": "sync"}, found_items=[])
+
+    builder.export_list()
+
+    if source in ("mdblist", "tmdb", "floppy"):
+        getattr(config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list.assert_called_once_with("My List", [], "sync")
+    else:
+        getattr(config, "FlickList" if source == "flicklist" else "WeTrakr").sync_list.assert_called_once_with(config.Convert, "My List", [], mode="sync")
+    assert logs.info_messages == [f"Exporting 'Test Collection' Collection to {source}"]
+
+
+def test_list_export_uses_builder_results_instead_of_existing_collection_items(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    movie_type = type("Movie", (), {})
+    monkeypatch.setattr(builder_module, "Movie", movie_type)
+    found = movie_type()
+    found.ratingKey = 101
+    stale = movie_type()
+    stale.ratingKey = 202
+    config = SimpleNamespace(MDBList=MagicMock())
+    library = SimpleNamespace(movie_rating_key_map={101: 550, 202: 660})
+    builder = make_builder(config=config, libraries=[library], found_items=[found], items=[stale], list_export={"source": "mdblist", "name": "My List", "mode": "sync"})
+
+    builder.export_list()
+
+    config.MDBList.sync_list.assert_called_once_with("My List", [(550, "tmdb")], "sync")
 
 
 def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
@@ -425,11 +445,51 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_lidarr_artist_uses_unique_plex_title_when_mbid_differs(self, monkeypatch):
+        class FakeArtist:
+            def __init__(self, rating_key, title):
+                self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
+                self.title = title
+                self.guids = []
+
+        artist = FakeArtist(101, "Alannah Myles")
+        library = SimpleNamespace(
+            name="Music",
+            is_music=True,
+            is_movie=False,
+            Lidarr=SimpleNamespace(get_artist_name=lambda mbid: "Alannah Myles"),
+            get_all=MagicMock(return_value=[artist]),
+            fetch_item=MagicMock(return_value=artist),
+        )
+        monkeypatch.setattr(builder_module, "Artist", FakeArtist)
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        builder = make_builder(library=library, libraries=[library], builder_level="artist")
+
+        builder.filter_and_save_items([("6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "mbid")])
+
+        assert builder.found_items == [artist]
+
+    def test_lidarr_unmatched_artist_uses_shared_missing_music_path(self, monkeypatch):
+        library = SimpleNamespace(
+            name="Music",
+            is_music=True,
+            is_movie=False,
+            Lidarr=SimpleNamespace(get_artist_name=lambda mbid: "Alannah Myles"),
+            get_all=MagicMock(return_value=[]),
+        )
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        builder = make_builder(library=library, libraries=[library], builder_level="artist", missing_artists=[])
+
+        assert builder.filter_and_save_items([("6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "mbid")]) is None
+        assert builder.missing_artists == [{"name": "Alannah Myles", "mbid": "6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "reason": "not found"}]
+
     @staticmethod
     def _tmdb_filter_builder(monkeypatch, tmdb_error):
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = "Movie with stale TMDb GUID"
 
         logger = FakeLogger()
@@ -507,6 +567,7 @@ class TestFilterAndSaveItems:
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = f"Movie {rating_key}"
 
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
@@ -582,6 +643,20 @@ class TestFilterAndSaveItems:
         episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
         builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show", seasons={2: FakeSeason(episodes)})))
         builder.filter_and_save_items([("383275_2", "tvdb_season")])
+        assert builder.found_items == episodes
+
+    def test_expands_tmdb_season_into_playlist_episodes(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
+        builder = _episode_builder(FakeTVDbLibrary(FakeShow("Agent Carter", seasons={1: FakeSeason(episodes)})))
+        builder.playlist = True
+        builder.config = SimpleNamespace(Convert=SimpleNamespace(tmdb_to_tvdb=MagicMock(return_value=383275)))
+
+        builder.filter_and_save_items([("61550_1", "tmdb_season")])
+
+        builder.config.Convert.tmdb_to_tvdb.assert_called_once_with(61550, fail=True)
         assert builder.found_items == episodes
 
     def test_deduplicates_episodes(self, monkeypatch):
@@ -681,6 +756,15 @@ class TestLogEpisodeCount:
 
 
 class TestTextfile:
+    def test_tautulli_builders_are_allowed_for_music_collections(self):
+        assert "tautulli_popular" in builder_module.music_attributes
+        assert "tautulli_top" in builder_module.music_attributes
+        assert "tautulli_watched" in builder_module.music_attributes
+        assert "tautulli_popular" in parts_collection_valid
+        assert "tautulli_top" in parts_collection_valid
+        assert builder_module._default_music_level({"tautulli_popular": True}) == "artist"
+        assert builder_module._default_music_level({"tautulli_top": True}) == "album"
+
     def test_registers_multiple_files_as_single_builder(self):
         builder = make_builder()
         builder.config = SimpleNamespace(
@@ -956,7 +1040,7 @@ class TestTvdbOutageResilience:
         logger = FakeLogger()
         monkeypatch.setattr(builder_module, "logger", logger)
         get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
-        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        library = SimpleNamespace(is_movie=False, is_show=True, is_music=False, Sonarr=None)
         builder = make_builder(
             library=library,
             config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
@@ -1226,6 +1310,36 @@ class TestDelete:
 class TestUpdateSmartFilter:
     """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
 
+    @pytest.mark.parametrize("member_count", [0, 10], ids=["empty", "populated"])
+    def test_initialization_preserves_smart_label_filter_and_member_count(self, monkeypatch, member_count):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = MagicMock()
+        library.is_movie = False
+        library.is_show = True
+        library.is_music = False
+        library.type = "Show"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.smart_label_check.return_value = True
+        library.get_collection.return_value = SimpleNamespace(title="Streaming Shows", smart=True)
+        filter_url = "?type=2&sort=originallyAvailableAt:desc&label=123"
+        library.smart_filter.return_value = filter_url
+        library.fetchItems.return_value = [SimpleNamespace(ratingKey=i) for i in range(member_count)]
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        monkeypatch.setattr(CollectionBuilder, "build_filter", lambda *args, **kwargs: (2, "Label filter", filter_url))
+
+        builder = CollectionBuilder(config, MagicMock(), "Streaming Shows", {"smart_label": "release.desc", "plex_all": True}, library=library)
+
+        assert builder.smart_label_url == filter_url
+        assert builder.beginning_count == member_count
+        library.fetchItems.assert_called_once_with(filter_url)
+        library.update_smart_collection.assert_not_called()
+
     @staticmethod
     def _library(existing_filter):
         library = MagicMock()
@@ -1376,7 +1490,274 @@ class TestGatherIds:
             )
 
 
+class TestDolbyVisionNumberFilters:
+    @pytest.mark.parametrize("attribute,valid_values", [("dovi_level", range(1, 14)), ("dovi_profile", [5, 7, 8, 9, 10, 20])])
+    def test_accepts_current_dolby_values(self, attribute, valid_values):
+        builder = make_builder()
+        for value in valid_values:
+            assert builder.validate_attribute(attribute, "", attribute, value, True) == value
+
+    @pytest.mark.parametrize("attribute,invalid_values", [("dovi_level", [0, 14, 20, 1.5]), ("dovi_profile", [0, 1, 6, 11, 21, 7.5])])
+    def test_rejects_values_outside_current_dolby_guidance(self, attribute, invalid_values):
+        builder = make_builder()
+        for value in invalid_values:
+            with pytest.raises((builder_module.BuilderValidationError, Failed)):
+                builder.validate_attribute(attribute, "", attribute, value, True)
+
+    @pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+    @pytest.mark.parametrize("attribute", ["dovi_level", "dovi_profile"])
+    def test_available_as_media_filter_at_each_video_level(self, level, attribute):
+        assert attribute in builder_module.filters[level]
+        assert f"{attribute}.gte" in builder_module.all_filters
+
+
 class TestBuildFilter:
+    @pytest.mark.parametrize("method", ["plex_search", "smart_filter"])
+    @pytest.mark.parametrize("attribute", ["hdr10plus", "atmos"])
+    @pytest.mark.parametrize("level,type_key,plex_field", [("movie", 1, "{attribute}"), ("show", 2, "episode.{attribute}"), ("season", 3, "episode.{attribute}"), ("episode", 4, "{attribute}")])
+    def test_new_media_boolean_uses_plex_filter_for_selected_level(self, method, attribute, level, type_key, plex_field):
+        field = plex_field.format(attribute=attribute)
+        plex_section = MagicMock()
+        plex_section.listFilters.return_value = [SimpleNamespace(filter=field)]
+        library = SimpleNamespace(is_movie=level == "movie", is_show=level != "movie", is_music=False, split=lambda value: (value, "", value), Plex=plex_section)
+        builder = make_builder(library=library, builder_level=level)
+
+        _, _, url = builder.build_filter(method, {"all": {attribute: True}})
+
+        assert url.startswith(f"?type={type_key}&")
+        assert f"{field}=1" in url
+        plex_section.listFilters.assert_called_once_with(level)
+
+    @pytest.mark.parametrize("method", ["plex_search", "smart_filter"])
+    @pytest.mark.parametrize("attribute", ["hdr10plus", "atmos"])
+    def test_new_media_boolean_rejects_level_without_plex_filter(self, method, attribute):
+        plex_section = MagicMock()
+        plex_section.listFilters.return_value = []
+        library = SimpleNamespace(is_movie=False, is_show=True, is_music=False, split=lambda value: (value, "", value), Plex=plex_section)
+        builder = make_builder(library=library, builder_level="season")
+
+        with pytest.raises(builder_module.BuilderValidationError, match="not supported by Plex for season searches"):
+            builder.build_filter(method, {"all": {attribute: True}})
+
+    def test_music_smart_artist_filter_returns_tracks(self):
+        def split(value):
+            for modifier in [".notlast", ".isnot", ".gte", ".gt", ".lte", ".lt", ".before", ".after", ".last", ".is", ".not"]:
+                if value.endswith(modifier):
+                    return value[: -len(modifier)], modifier, value
+            return value, "", value
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({"Airy": "Airy"}, ["Airy"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="item",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"type": "artist", "all": {"artist_mood": "Airy"}},
+            default_sort="random",
+        )
+
+        assert url.startswith("?type=10&")
+        assert "artist.mood=Airy" in url
+        assert "Smart Artist Filter" in details
+
+        _, _, skips_url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {"track_skips.is": 1}},
+            default_sort="random",
+        )
+        assert "track.skipCount%3D=1" in skips_url
+
+        _, _, not_skips_url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {"track_skips.isnot": 1}},
+            default_sort="random",
+        )
+        assert "track.skipCount!%3D=1" in not_skips_url
+
+    def test_music_smart_filter_honors_type_for_artist_level_library(self):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"R&B": "R&B"}, ["R&B"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, default_sort="random")
+
+        assert "Smart Album Filter" in details
+        assert url.startswith("?type=10&")
+        assert builder.smart_filter_result_type == "album"
+
+    def test_music_smart_album_filter_warns_that_tracks_are_used(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"R&B": "R&B"}, ["R&B"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+
+        assert logger.warning_messages == ["Playlist Warning: Smart Playlists do not support albums; the underlying tracks have been added instead"]
+
+    @pytest.mark.parametrize(
+        ("attribute", "value", "plex_field"),
+        [
+            ("artist_title.is", "Artist", "artist.title"),
+            ("artist_rating.is", 5, "artist.userRating"),
+            ("artist_rating.gte", 5, "artist.userRating"),
+            ("artist_genre", "Airy", "artist.genre"),
+            ("artist_collection", "Airy", "artist.collection"),
+            ("artist_country", "Airy", "artist.country"),
+            ("artist_mood", "Airy", "artist.mood"),
+            ("artist_style", "Airy", "artist.style"),
+            ("date_artist_added", 30, "artist.addedAt"),
+            ("date_album_added.last", "10h", "album.addedAt"),
+            ("date_album_released.notlast", "3min", "album.originallyAvailableAt"),
+            ("artist_last_played", 30, "artist.lastViewedAt"),
+            ("unmatched", True, "artist.unmatched"),
+            ("album_title.is", "Artist", "album.title"),
+            ("year", 2020, "album.year"),
+            ("album_decade", "1990s", "album.decade"),
+            ("album_genre", "Airy", "album.genre"),
+            ("album_plays", 1, "album.viewCount"),
+            ("album_last_played", 30, "album.lastViewedAt"),
+            ("album_rating.gte", 5, "album.userRating"),
+            ("album_critic_rating.gte", 5, "album.rating"),
+            ("record_label.is", "Airy", "album.studio"),
+            ("track_last_skipped", 30, "track.lastSkippedAt"),
+            ("track_rating.gte", 5, "track.userRating"),
+            ("track_last_rated", 30, "track.lastRatedAt"),
+            ("track_added_at", 30, "track.addedAt"),
+            ("audio_codec.is", "mp3", "media.audioCodec"),
+            ("trash", True, "track.trash"),
+            ("folder_location", "/music", "source"),
+            ("track_source", "Airy", "track.source"),
+        ],
+    )
+    def test_music_smart_filter_api_fields(self, attribute, value, plex_field):
+        def split(filter_name):
+            for modifier in [".notlast", ".isnot", ".gte", ".gt", ".lte", ".lt", ".before", ".after", ".last", ".is", ".not"]:
+                if filter_name.endswith(modifier):
+                    return filter_name[: -len(modifier)], modifier, filter_name
+            return filter_name, "", filter_name
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({"Airy": "Airy", "Artist": "Artist", "/music": 7}, ["Airy", "Artist", "/music"]),
+            get_search_key=lambda attribute, libtype=None: "media.audioCodec" if attribute == "audio_codec" else "source",
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="item",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, _, url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {attribute: value}},
+            default_sort="random",
+        )
+
+        assert plex_field in url
+
+        expected_result_type = "artist" if "artist." in plex_field else "album" if plex_field.startswith("album.") else "track"
+        assert builder.smart_filter_result_type == expected_result_type
+
+    @pytest.mark.parametrize(
+        ("filter_url", "result_type", "expected_url", "result_count"),
+        [
+            ("?type=10&sort=titleSort&artist.title=Ariana", "artist", "?type=8&sort=titleSort&artist.title=Ariana", 1),
+            ("?type=10&sort=titleSort&unmatched=1", None, "?type=8&sort=titleSort&unmatched=1", 2),
+            ("?type=10&sort=titleSort&album.genre=Country", "album", "?type=9&sort=titleSort&album.genre=Country", 3),
+            ("?type=10&sort=titleSort&track.skipCount%3D=1", "track", "?type=10&sort=titleSort&track.skipCount%3D=1", 4),
+        ],
+    )
+    def test_music_playlist_result_count_uses_filter_item_type(self, filter_url, result_type, expected_url, result_count):
+        library = SimpleNamespace(fetchItems=MagicMock(return_value=[object()] * result_count))
+        builder = make_builder(library=library, smart_filter_result_type=result_type)
+
+        assert builder._music_playlist_result_count(filter_url) == result_count
+        library.fetchItems.assert_called_once_with(expected_url)
+
+    @pytest.mark.parametrize(
+        ("attribute", "value", "expected_filter"),
+        [
+            ("date_album_added", 10, "album.addedAt%3E%3E=-10d"),
+            ("date_album_added.last", "10h", "album.addedAt%3E%3E=-10h"),
+            ("date_album_added.last", "15min", "album.addedAt%3E%3E=-15m"),
+            ("date_album_added.last", "2m", "album.addedAt%3E%3E=-2mon"),
+            ("date_album_released.notlast", "3d", "album.originallyAvailableAt%3C%3C=-3d"),
+            ("date_album_added.after", "2020-01-01", "album.addedAt%3E%3E=2020-01-01"),
+            ("date_album_released.before", "2020-01-01", "album.originallyAvailableAt%3C%3C=2020-01-01"),
+        ],
+    )
+    def test_music_album_date_filter_modifiers(self, attribute, value, expected_filter):
+        def split(filter_name):
+            for modifier in [".notlast", ".before", ".after", ".last", ".not"]:
+                if filter_name.endswith(modifier):
+                    return filter_name[: -len(modifier)], modifier, filter_name
+            return filter_name, "", filter_name
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({}, []),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, _, url = builder.build_filter("smart_filter", {"type": "album", "all": {attribute: value}}, default_sort="random")
+
+        assert expected_filter in url
+
     def test_raises_on_none_filter(self):
         builder = make_builder()
         import modules.util as util
@@ -1922,7 +2303,7 @@ def test_collection_asset_directory_does_not_redirect_other_builders(kind):
 def test_collection_artwork_and_downloads_use_collection_root(tmp_path, asset_folders, monkeypatch):
     import modules.library as library_module
     from modules.request import Requests
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
 
@@ -1973,7 +2354,7 @@ def test_collection_artwork_and_downloads_use_collection_root(tmp_path, asset_fo
 
 def test_collection_asset_downloads_still_respect_download_setting(tmp_path, monkeypatch):
     import modules.library as library_module
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
 
@@ -1995,7 +2376,7 @@ def test_collection_asset_downloads_still_respect_download_setting(tmp_path, mon
 @pytest.mark.parametrize("source", ["tmdb_poster", "tvdb_poster", "tmdb_movie_details"])
 def test_grouped_collection_assets_do_not_download_live_sources(tmp_path, source, monkeypatch):
     import modules.library as library_module
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
     requests = SimpleNamespace(download_image=MagicMock())

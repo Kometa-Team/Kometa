@@ -141,6 +141,125 @@ document$.subscribe(function() {
   })
 })
 
+// Load and render the changelog on the Release Notes page.
+document$.subscribe(function() {
+  const container = document.getElementById("release-notes-content");
+  if (!container || container.dataset.loaded === "true") return;
+  container.dataset.loaded = "true";
+
+  const pathParts = window.location.pathname.split("/").filter(Boolean);
+  const versionIndex = pathParts.indexOf("en");
+  const wikiVersion = versionIndex >= 0 ? pathParts[versionIndex + 1] : "latest";
+  const branches = { latest: "master", develop: "develop", nightly: "nightly" };
+  const branch = branches[wikiVersion] || "master";
+  const hideUnreleased = branch === "master";
+  const sourceURL = container.dataset.changelogUrl + branch + "/CHANGELOG.md";
+  const categories = new Set(["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"]);
+
+  function addInlineText(parent, text) {
+    const pieces = text.split(/(`[^`]+`|\*\*[^*]+\*\*|\*[^*]+\*)/g);
+    pieces.forEach(function (piece) {
+      if (piece.startsWith("`") && piece.endsWith("`")) {
+        const code = document.createElement("code");
+        code.textContent = piece.slice(1, -1);
+        parent.appendChild(code);
+      } else if (piece.startsWith("**") && piece.endsWith("**")) {
+        const strong = document.createElement("strong");
+        strong.textContent = piece.slice(2, -2);
+        parent.appendChild(strong);
+      } else if (piece.startsWith("*") && piece.endsWith("*")) {
+        const emphasis = document.createElement("em");
+        emphasis.textContent = piece.slice(1, -1);
+        parent.appendChild(emphasis);
+      } else {
+        parent.appendChild(document.createTextNode(piece));
+      }
+    });
+  }
+
+  function render(markdown) {
+    const versions = [];
+    let version = null;
+    let category = null;
+    markdown.split(/\r?\n/).forEach(function (line) {
+      if (line.startsWith("## ")) {
+        version = { title: line.slice(3).trim(), sections: [] };
+        versions.push(version);
+        category = null;
+      } else if (version && line.startsWith("### ")) {
+        category = { title: line.slice(4).trim(), entries: [] };
+        version.sections.push(category);
+      } else if (category && /^[-*]\s+/.test(line)) {
+        category.entries.push(line.replace(/^[-*]\s+/, "").trim());
+      } else if (category && line.trim() && !line.startsWith("[")) {
+        const lastEntry = category.entries.length - 1;
+        if (lastEntry >= 0) category.entries[lastEntry] += " " + line.trim();
+      }
+    });
+
+    const fragment = document.createDocumentFragment();
+    versions.forEach(function (release, index) {
+      if (hideUnreleased && /^\[?unreleased\]?$/i.test(release.title)) return;
+      if (/^\[?v?2\.3\.1(?:\]|\s|$)/i.test(release.title)) return;
+      const details = document.createElement("details");
+      details.className = "release-notes__release";
+      details.open = index === 0;
+      const summary = document.createElement("summary");
+      summary.className = "release-notes__heading";
+      const releaseMatch = release.title.match(/^\[?(v\d+[^\]]*)\]?\s+-\s+(\d{4}-\d{2}-\d{2})$/);
+      if (branch !== "master" && /^\[?unreleased\]?$/i.test(release.title)) {
+        summary.textContent = "Develop/Nightly Changes";
+      } else if (releaseMatch) {
+        const versionLabel = document.createElement("code");
+        versionLabel.textContent = releaseMatch[1];
+        summary.appendChild(versionLabel);
+        const releaseDate = document.createElement("span");
+        releaseDate.className = "release-notes__date";
+        releaseDate.textContent = "  Released " + releaseMatch[2];
+        summary.appendChild(releaseDate);
+      } else {
+        summary.textContent = release.title;
+      }
+      details.appendChild(summary);
+      release.sections.forEach(function (section) {
+        if (!categories.has(section.title) || section.entries.length === 0) return;
+        const sectionElement = document.createElement("section");
+        sectionElement.className = "release-notes__section";
+        const heading = document.createElement("h3");
+        heading.textContent = section.title;
+        sectionElement.appendChild(heading);
+        const list = document.createElement("ul");
+        section.entries.forEach(function (entry) {
+          const item = document.createElement("li");
+          addInlineText(item, entry);
+          list.appendChild(item);
+        });
+        sectionElement.appendChild(list);
+        details.appendChild(sectionElement);
+      });
+      fragment.appendChild(details);
+    });
+    container.replaceChildren(fragment);
+  }
+
+  fetch(sourceURL).then(function (response) {
+    if (!response.ok) throw new Error("Could not load release notes.");
+    return response.text();
+  }).then(render).catch(function () {
+    const status = document.createElement("p");
+    status.className = "release-notes__status";
+    status.setAttribute("role", "status");
+    status.textContent = "Release notes could not be loaded right now. You can read the changelog on GitHub.";
+    const link = document.createElement("a");
+    link.href = "https://github.com/Kometa-Team/Kometa/blob/" + branch + "/CHANGELOG.md";
+    link.textContent = "Open CHANGELOG.md";
+    link.rel = "noopener noreferrer";
+    status.appendChild(document.createTextNode(" "));
+    status.appendChild(link);
+    container.replaceChildren(status);
+  });
+});
+
 /*!
  * tablesort v5.2.1 (2021-10-30)
  * http://tristen.ca/tablesort/demo/

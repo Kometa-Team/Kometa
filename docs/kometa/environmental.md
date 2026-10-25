@@ -578,6 +578,31 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-files "Movies.yml|MovieCharts"
             ```
 
+??? blank "Run Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--mode`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_MODE`<a class="headerlink" href="#mode" title="Permanent link">¶</a>"
+
+    <div id="mode" />Set the [library schedule mode](../config/schedule.md#library-schedule-modes) for every library in this run. This overrides configured library schedule modes, including libraries without a matching schedule. Other schedule rules still apply. 
+
+    ???+ tip "Best practices and examples"
+
+        See the [Scheduling Kometa and Library Runs guide](guides/scheduling.md#try-a-mode) for the best practices and some examples of how to use `--mode` effectively against your server.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flag:** `--mode` (ex. `--run --mode 'items(imdb:tt1232829|tmdb:187017)'`)
+
+    **Environment Variable:** `KOMETA_MODE` (ex. `KOMETA_MODE=added(7)`)
+
+    | Mode | What it does | Example command |
+    |:--|:--|:--|
+    | `full` | Processes every top-level item in each library. | `python kometa.py --run --mode full` |
+    | `items(ids)` | Processes only the listed items. Separate IDs with a pipe character. Movies match TMDb IDs, shows match TVDb IDs, and TMDb show IDs are converted to TVDb IDs. IMDb IDs and top-level Plex rating keys work for either. | `python kometa.py --run --mode 'items(imdb:tt0133093)'` |
+    | `added(duration)` | Processes items added to Plex within the last duration. Use a positive integer with `m` (minutes), `h` (hours), or `d` (24-hour days); a bare integer means days. For shows, it also includes shows with recently added episodes. | `python kometa.py --run --mode 'added(30m)'` |
+    | `diff` | Processes items missing from Kometa's previous library cache snapshot. For shows, it compares each season's Plex update time. Requires a persistent Kometa cache. | `python kometa.py --run --mode diff` |
+    | `index(A-Z)` | Processes titles whose first letter is in the inclusive A through Z range. Uses the Plex Sort Title when available. | `python kometa.py --run --mode 'index(A-F)'` |
+    | `index(A-Z#)` | Processes the A through Z range plus titles beginning with a number or symbol. | `python kometa.py --run --mode 'index(A-F#)'` |
+
+    Replace the IDs with those of items in your library. To select multiple items, use a pipe between IDs, for example `python kometa.py --run --mode 'items(imdb:tt0133093|tmdb:550|tvdb:350396|plex:42)'`. Keep the single quotes around modes containing parentheses when using PowerShell. See [Library Schedule Modes](../config/schedule.md#library-schedule-modes) for identifier and matching details.
+
 ??? blank "Ignore Schedules&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-is`/`--ignore-schedules`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_SCHEDULES`<a class="headerlink" href="#ignore-schedules" title="Permanent link">¶</a>"
 
     <div id="ignore-schedules" />Ignore all schedules for the run. Range Scheduled collections (such as Christmas movies) will still be ignored.

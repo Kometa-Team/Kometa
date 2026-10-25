@@ -1,6 +1,7 @@
 import copy
 import math
 import os
+import random
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -57,6 +58,13 @@ def _format_plex_rating(value, source, rating_name):
         raise Failed
     rating = float(value)
     return f"{rating:.1f}"
+
+
+def _random_rating(current):
+    rating = random.randint(0, 100) / 10  # nosec B311
+    while rating == current:
+        rating = random.randint(0, 100) / 10  # nosec B311
+    return rating
 
 
 def _scale_provider_rating(value, source, rating_name, maximum, factor):
@@ -275,6 +283,8 @@ class Operations:
         logger.debug(f"Radarr Remove by Tag: {self.library.radarr_remove_by_tag}")
         logger.debug(f"Sonarr Add All Existing: {self.library.sonarr_add_all_existing}")
         logger.debug(f"Sonarr Remove by Tag: {self.library.sonarr_remove_by_tag}")
+        logger.debug(f"Lidarr Add All Existing: {self.library.lidarr_add_all_existing}")
+        logger.debug(f"Lidarr Remove by Tag: {self.library.lidarr_remove_by_tag}")
         logger.debug(f"Update Blank Track Titles: {self.library.update_blank_track_titles}")
         logger.debug(f"Update Remove Title Parentheses: {self.library.remove_title_parentheses}")
         logger.debug(f"Genre Mapper: {self.library.genre_mapper}")
@@ -322,6 +332,7 @@ class Operations:
 
             radarr_adds = []
             sonarr_adds = []
+            lidarr_adds = []
             label_edits = {"add": {}, "remove": {}}
             rating_edits = {"audienceRating": {}, "rating": {}, "userRating": {}}
             genre_edits = {"add": {}, "remove": {}}
@@ -344,7 +355,7 @@ class Operations:
             def record_image_operation(result, image_type, level):
                 if result:
                     operation, source, status = result
-                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
+                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets", "ytmusic": "YouTube Music"}.get(str(source).lower(), str(source))
                     image_operation_counts[(operation, source, image_type, level, status)] += 1
 
             # Pre-warms reload data for the whole library in batched requests instead of one per item - see plex.py's bulk_reload().
@@ -412,6 +423,15 @@ class Operations:
                         path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
                         path = path[:-1] if path.endswith(("/", "\\")) else path
                         sonarr_adds.append((tvdb_id, path))
+                if self.library.Lidarr and self.library.Lidarr.add_existing and self.library.lidarr_add_all_existing and self.library.is_music:
+                    artist_mbids = [guid.id.removeprefix("mbid://") for guid in getattr(item, "guids", []) if guid.id.startswith("mbid://")]
+                    valid_mbids = [mbid for mbid in artist_mbids if self.library.Lidarr.valid_mbid(mbid)]
+                    if len(valid_mbids) == 1:
+                        lidarr_adds.append((valid_mbids[0], item.title))
+                    elif not valid_mbids:
+                        logger.warning(f"Lidarr Warning: Skipping {item.title}; no valid MusicBrainz artist ID in Plex")
+                    else:
+                        logger.warning(f"Lidarr Warning: Skipping {item.title}; Plex returned multiple MusicBrainz IDs")
 
                 _flicklist_ratings = None
 
@@ -689,7 +709,9 @@ class Operations:
                                 break
                             else:
                                 try:
-                                    if option == "tmdb":
+                                    if option == "random":
+                                        found_rating = _random_rating(current)
+                                    elif option == "tmdb":
                                         found_rating = tmdb_obj().vote_average  # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
@@ -789,6 +811,8 @@ class Operations:
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)
                                         combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = found_rating
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
+                                    else:
+                                        logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                     break
                                 except Failed:
                                     continue
@@ -1234,6 +1258,12 @@ class Operations:
                                 image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
                             elif source == "tmdb":
                                 image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "ytmusic":
+                                try:
+                                    image_url = self.config.YouTubeMusic.artist_image_url(item.title, background=not is_poster) if self.library.is_music and self.config.YouTubeMusic else None
+                                except Exception as e:
+                                    logger.warning(f"YouTube Music Warning: unable to fetch artwork for {item.title} ({type(e).__name__}); continuing with the next image source")
+                                    image_url = None
                             elif source == "plex":
                                 return "plex", None
                             else:
@@ -1460,7 +1490,7 @@ class Operations:
                                     else:
                                         try:
                                             try:
-                                                tmdb_item = tmdb_obj()
+                                                tmdb_item = None if option == "random" else tmdb_obj()
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
@@ -1470,7 +1500,9 @@ class Operations:
                                                     found_rating = ratings[option]  # noqa
                                                 except KeyError:
                                                     found_rating = None
-                                            if tmdb_item and option == "tmdb":
+                                            if option == "random":
+                                                found_rating = _random_rating(current)
+                                            elif tmdb_item and option == "tmdb":
                                                 try:
                                                     found_rating = self.library.get_tmdb_episode(ep, tmdb_item.tmdb_id).vote_average  # noqa
                                                 except Failed as er:
@@ -1511,6 +1543,8 @@ class Operations:
                                                     ep_rating_edits[item_attr][found_rating] = []
                                                 ep_rating_edits[item_attr][found_rating].append(ep)
                                                 item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
+                                            else:
+                                                logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                             break
                                         except Failed:
                                             continue
@@ -1664,6 +1698,15 @@ class Operations:
                 except Failed as e:
                     logger.error(e)
 
+            if self.library.Lidarr and self.library.Lidarr.add_existing and self.library.lidarr_add_all_existing:
+                logger.info("")
+                logger.separator(f"Lidarr Add All Existing: {len(lidarr_adds)} Artists", space=False, border=False)
+                logger.info("")
+                try:
+                    self.library.Lidarr.add_artists(list(dict.fromkeys(lidarr_adds)))
+                except Failed as e:
+                    logger.error(e)
+
             logger.info("")
 
         if self.library.radarr_remove_by_tag:
@@ -1676,6 +1719,11 @@ class Operations:
             logger.separator(f"Sonarr Remove {len(self.library.sonarr_remove_by_tag)} Shows with Tags: {', '.join(self.library.sonarr_remove_by_tag)}", space=False, border=False)
             logger.info("")
             self.library.Sonarr.remove_all_with_tags(self.library.sonarr_remove_by_tag)
+        if self.library.lidarr_remove_by_tag:
+            logger.info("")
+            logger.separator(f"Lidarr Remove Artists with Tags: {', '.join(self.library.lidarr_remove_by_tag)}", space=False, border=False)
+            logger.info("")
+            self.library.Lidarr.remove_all_with_tags(self.library.lidarr_remove_by_tag)
 
         if self.library.delete_collections or self.library.show_unmanaged or self.library.show_unconfigured or self.library.assets_for_all or self.library.mass_collection_mode:
             logger.info("")

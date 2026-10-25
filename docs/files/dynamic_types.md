@@ -1266,6 +1266,58 @@ requirements of creating the collection.
             type: track_mood
         ```
 
+??? blank "`ytmusic_genre_charts` - Collections based on YouTube Music genre charts.<a class="headerlink" href="#ytmusic-genre-charts" title="Permanent link">¶</a>"
+
+    <div id="ytmusic-genre-charts" />Creates a track collection for each genre chart available in the selected YouTube Music country. See the [YouTube Music dynamic charts guide](builders/ytmusic/charts.md) for details.
+
+    <hr style="margin: 0px;">
+
+    **`type` Value:** `ytmusic_genre_charts`
+
+    **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
+
+    ??? blank "`country` - Selects the country chart.<a class="headerlink" href="#ytmusic-genre-charts-country" title="Permanent link">¶</a>"
+
+        <div id="ytmusic-genre-charts-country" />Use a two-letter YouTube Music country code, such as `US` or `GB`. Use `ZZ` or `global` for worldwide charts.
+
+        **Default:** `ZZ`
+
+    ??? blank "`limit` - Caps the number of tracks per collection.<a class="headerlink" href="#ytmusic-genre-charts-limit" title="Permanent link">¶</a>"
+
+        <div id="ytmusic-genre-charts-limit" />Sets the maximum number of tracks included from each chart playlist.
+
+        **Allowed Values:** Number greater than 0
+
+    **Valid Library Types:** Music
+
+    **Key Values:** YouTube Music chart playlist ID
+
+    **Key Name Value:** Genre chart title
+
+    **Default `title_format`:** `Top <<limit>> <<key_name>> <<country>>` (for example, `Top 50 Pop United States`)
+
+    ??? tip "Default Template (Click to Expand)"
+
+        ```yaml
+        default_template:
+          ytmusic_list:
+            playlist: <<key>>
+            limit: <<limit>>
+          builder_level: track
+          collection_order: custom
+        ```
+
+    ???+ example "Example"
+
+        ```yaml
+        dynamic_collections:
+          YouTube Music Genre Charts:
+            type: ytmusic_genre_charts
+            data:
+              country: US
+              limit: 50
+        ```
+
 ??? blank "`style` - Collections based on artist styles.<a class="headerlink" href="#style" title="Permanent link">¶</a>"
 
     <div id="style" />Creates collections for each style associated with an artist found in the library.

@@ -174,3 +174,17 @@ class RunLogSummary:
 
     def severity_rows(self, severity):
         return self.severities.get(severity, Counter()).most_common()
+
+
+def print_status(status, longest, logger):
+    if not status:
+        return
+    logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
+    breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
+    logger.separator(breaker, space=False, border=False, side_space=False, left=True)
+    for name, data in status.items():
+        logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
+        if data["errors"]:
+            for error in data["errors"]:
+                logger.info(error)
+            logger.info("")

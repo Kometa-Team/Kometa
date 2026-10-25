@@ -23,9 +23,22 @@ tmdb:
 | Attribute          | Description                                                                                                                                                                            | Allowed Values (default in **bold**) |                  Required                  |
 |:-------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------|:------------------------------------------:|
 | `apikey`           | User TMDb V3 API key.                                                                                                                                                                  | Any valid API key                    | :fontawesome-solid-circle-check:{ .green } |
+| `access_token`     | TMDb v4 API Read Access Token used for [TMDb list exports](#tmdb-list-export-authorization).                                                                                           | API Read Access Token                |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `language`         | [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) for user language.                                                                                             | Two-letter ISO code, e.g. **`en`**   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `region`           | [ISO 3166-1 code](https://en.wikipedia.org/wiki/ISO_3166-1#Current_codes) for user region.<br>Used with [TMDb Chart Builders](../files/builders/tmdb/overview.md#tmdb-chart-builders). | Two-letter code or leave **blank**   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `cache_expiration` | Number of days before each cache mapping expires and is re-cached.                                                                                                                     | Integer, e.g. **`60`**               |  :fontawesome-solid-circle-xmark:{ .red }  |
+
+## TMDb list export authorization
+
+Using the `list_export` collection attribute to sync collections to TMDb lists needs a TMDb v4 API Read Access Token and your approval to manage lists. Your existing v3 `apikey` remains sufficient for all other TMDb features. Copy the **API Read Access Token** from [your TMDb API settings](https://www.themoviedb.org/settings/api) into the `tmdb` block before the first export:
+
+```yaml
+tmdb:
+  apikey: your-existing-v3-key
+  access_token: your-v4-read-access-token
+```
+
+On the first TMDb list export, Kometa displays a TMDb approval link and waits up to five minutes for approval. Open the link and approve access in your browser; terminal input is not needed. Kometa then saves the user `authorization` under `tmdb` in `config.yml`.
 
 ## Important Notes
 
