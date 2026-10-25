@@ -1782,7 +1782,8 @@
             "type": "object", "additionalProperties": true,
             "properties": {
                 "limit": { "type": "integer", "minimum": 1 },
-                "sort_by": { "type": "string" }
+                "sort_by": { "type": "string" },
+                "exclude_spoiler_tags": { "type": "boolean" }
             }
         },
 

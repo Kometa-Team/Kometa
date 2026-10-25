@@ -21,6 +21,7 @@ class Convert:
         self._mal_to_anidb = {}
         self._anidb_to_mal = {}
         self._anilist_to_anidb = {}
+        self._anidb_to_anilist = {}
         self._anidb_to_imdb = {}
         self._anidb_to_tvdb = {}
         self._anidb_to_tmdb_movie = {}
@@ -40,6 +41,7 @@ class Convert:
             if "anilist_id" in ids:
                 for anilist_id in util.get_list(ids["anilist_id"], int_list=True, return_none=False) or []:
                     self._anilist_to_anidb[anilist_id] = anidb_id
+                    self._anidb_to_anilist.setdefault(anidb_id, anilist_id)
             if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):
                 self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
                 for im_id in self._anidb_to_imdb[anidb_id]:
@@ -89,6 +91,11 @@ class Convert:
         if anidb_id not in self._anidb_to_mal:
             raise MappingConvertError(f"Convert Error: No MyAnimeList ID found for AniDB ID '{anidb_id}'")
         return self._anidb_to_mal[anidb_id]
+
+    def anidb_to_anilist(self, anidb_id):
+        if anidb_id not in self._anidb_to_anilist:
+            raise MappingConvertError(f"Convert Error: No AniList ID found for AniDB ID '{anidb_id}'")
+        return self._anidb_to_anilist[anidb_id]
 
     def anidb_to_ids(self, anidb_ids, library):
         ids = []

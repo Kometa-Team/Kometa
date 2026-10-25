@@ -94,6 +94,22 @@
     "tmdb"
   ],
   "definitions": {
+    "anilist-tag-genre-source": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 1,
+      "properties": {
+        "anilist_tags": { "$ref": "#/definitions/anilist-tag-limit" },
+        "anilist_tags_ns": { "$ref": "#/definitions/anilist-tag-limit" }
+      }
+    },
+    "anilist-tag-limit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["limit"],
+      "properties": { "limit": { "type": "integer", "minimum": 1 } }
+    },
     "seerr-overrides": {
       "type": "object",
       "additionalProperties": false,
@@ -5245,6 +5261,10 @@
                         "source": {
                           "$ref": "#/definitions/mass-metadata-source"
                         },
+                        "limit": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
                         "mappings": {
                           "$ref": "#/definitions/metadata-mapping"
                         }
@@ -5386,6 +5406,9 @@
                     "anidb_1_5",
                     "anidb_1_0",
                     "anidb_0_5",
+                    "anilist",
+                    "anilist_tags",
+                    "anilist_tags_ns",
                     "mal",
                     "lock",
                     "unlock",
@@ -5414,6 +5437,9 @@
                           "anidb_1_5",
                           "anidb_1_0",
                           "anidb_0_5",
+                          "anilist",
+                          "anilist_tags",
+                          "anilist_tags_ns",
                           "mal",
                           "lock",
                           "unlock",
@@ -5426,9 +5452,15 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      {
+                        "$ref": "#/definitions/anilist-tag-genre-source"
                       }
                     ]
                   }
+                },
+                {
+                  "$ref": "#/definitions/anilist-tag-genre-source"
                 }
               ]
             },
