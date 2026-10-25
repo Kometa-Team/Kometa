@@ -1,4 +1,5 @@
 import re
+import time
 
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ConnectTimeout, ReadTimeout, Timeout
@@ -6,6 +7,7 @@ from tenacity import RetryError, retry, retry_if_exception, stop_after_attempt, 
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
+from tmdbapis.api4 import API4
 from tmdbapis.objs.reload import Configuration
 
 from modules import util
@@ -434,6 +436,93 @@ class TMDb:
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()}  # noqa
+
+    def _export_api(self):
+        """Authorize list writes only when a TMDb list export is requested."""
+        settings = self.config.data.get("tmdb", {})
+        authorization = settings.get("authorization") or {}
+        if authorization.get("access_token") and authorization.get("account_id"):
+            logger.secret(authorization["access_token"])
+            return API4(authorization["access_token"], session=self.requests.session, validate=False), authorization["account_id"]
+
+        if self.config.read_only:
+            raise Failed("TMDb Error: list_export requires writable config.yml to save user authorization")
+        read_token = settings.get("access_token")
+        if not read_token:
+            raise Failed("TMDb Error: list_export requires tmdb.access_token in config.yml. Copy the API Read Access Token from https://www.themoviedb.org/settings/api into the tmdb block, then rerun Kometa")
+        logger.secret(read_token)
+        try:
+            api = API4(read_token, session=self.requests.session, validate=False)
+            request_token = api.auth_create_request_token()["request_token"]
+            approval_url = f"https://www.themoviedb.org/auth/access?request_token={request_token}"
+            logger.info(f"Approve TMDb list access at: {approval_url}")
+            logger.info("Waiting for TMDb approval (up to 5 minutes)...")
+            for attempt in range(60):
+                try:
+                    result = api.auth_create_access_token(request_token)
+                    break
+                except TMDbException as e:
+                    if not any(code in str(e) for code in ("(41)", "'status_code': 41", '"status_code": 41')):
+                        raise
+                    if attempt == 59:
+                        raise Failed("TMDb Error: approval timed out. Rerun Kometa and approve access at the new link")
+                    time.sleep(5)
+        except TMDbException as e:
+            raise Failed(f"TMDb Error: list authorization failed: {e}")
+        account_id = result["account_id"]
+        access_token = result["access_token"]
+        logger.secret(access_token)
+        yaml = self.requests.file_yaml(self.config.config_path)
+        if not isinstance(yaml.data.get("tmdb"), dict):
+            yaml.data["tmdb"] = {}
+        yaml.data["tmdb"]["access_token"] = read_token
+        yaml.data["tmdb"]["authorization"] = {"access_token": access_token, "account_id": account_id}
+        yaml.save()
+        settings["access_token"] = read_token
+        settings["authorization"] = {"access_token": access_token, "account_id": account_id}
+        logger.info(f"Saved TMDb list authorization to {self.config.config_path}")
+        return api, account_id
+
+    @staticmethod
+    def _export_pages(fetch):
+        page = 1
+        while True:
+            response = fetch(page)
+            yield from response.get("results", [])
+            if page >= response.get("total_pages", 1):
+                break
+            page += 1
+
+    def sync_list(self, name, ids, mode="sync"):
+        try:
+            api, account_id = self._export_api()
+            lists = list(self._export_pages(lambda page: api.account_get_lists(account_id, page=page)))
+            matches = [entry for entry in lists if str(entry["id"]) == str(name)] if str(name).isdigit() else [entry for entry in lists if entry["name"] == str(name)]
+            if len(matches) > 1:
+                raise Failed(f"TMDb Error: multiple lists named {name}; use a numeric list ID")
+            if matches:
+                list_id = matches[0]["id"]
+                list_name = matches[0]["name"]
+            elif str(name).isdigit():
+                raise Failed(f"TMDb Error: list ID {name} does not belong to the authorized account")
+            else:
+                created = api.list_create_list(str(name), self.language.split("-")[0], public=False)
+                list_id = created["id"]
+                list_name = str(name)
+            current = {(entry["media_type"], int(entry["id"])) for entry in self._export_pages(lambda page: api.list_get_list(list_id, page=page)) if entry.get("media_type") in ("movie", "tv")}
+            desired = {("movie" if kind == "tmdb" else "tv", int(item_id)) for item_id, kind in ids if kind in ("tmdb", "tmdb_show")}
+            removed = sorted(current - desired) if mode == "sync" else []
+            added = sorted(desired - current)
+            for action, entries in ((api.list_remove_items, removed), (api.list_add_items, added)):
+                for start in range(0, len(entries), 100):
+                    batch = [{"media_type": kind, "media_id": item_id} for kind, item_id in entries[start : start + 100]]
+                    result = action(list_id, batch)
+                    if any(not item.get("success", False) for item in result.get("results", [])):
+                        raise Failed(f"TMDb Error: some items in list {list_name} could not be updated")
+            logger.info(f"TMDb list {list_name} {'updated' if added or removed else 'already up to date'} ({mode})")
+            logger.info(f"List: https://www.themoviedb.org/list/{list_id}")
+        except TMDbException as e:
+            raise Failed(f"TMDb Error: list export failed: {e}")
 
     def convert_from(self, tmdb_id, convert_to, is_movie):
         item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)

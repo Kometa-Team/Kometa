@@ -124,6 +124,65 @@ def test_load_collection_items_without_items_or_mdblist_sync_raises(monkeypatch)
         builder.load_collection_items()
 
 
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_validates_destination_and_defaults_to_sync(source):
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock())
+    builder = make_builder(config=config)
+
+    builder._list_export({"source": source, "name": "My List"})
+
+    assert builder.list_export == {"source": source, "name": "My List", "mode": "sync"}
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"source": "unknown", "name": "My List"},
+        {"source": "flicklist", "name": "My List", "mode": "replace"},
+        {"source": "flicklist", "name": ""},
+        {"source": "wetrakr", "name": "My List", "extra": True},
+    ],
+)
+def test_list_export_rejects_invalid_options(data):
+    builder = make_builder(config=SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock()))
+
+    with pytest.raises(Failed, match="list_export"):
+        builder._list_export(data)
+
+
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_syncs_empty_builder_results(source, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logs)
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock(), Convert=MagicMock())
+    builder = make_builder(config=config, list_export={"source": source, "name": "My List", "mode": "sync"}, found_items=[])
+
+    builder.export_list()
+
+    if source in ("mdblist", "tmdb", "floppy"):
+        getattr(config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list.assert_called_once_with("My List", [], "sync")
+    else:
+        getattr(config, "FlickList" if source == "flicklist" else "WeTrakr").sync_list.assert_called_once_with(config.Convert, "My List", [], mode="sync")
+    assert logs.info_messages == [f"Exporting 'Test Collection' Collection to {source}"]
+
+
+def test_list_export_uses_builder_results_instead_of_existing_collection_items(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    movie_type = type("Movie", (), {})
+    monkeypatch.setattr(builder_module, "Movie", movie_type)
+    found = movie_type()
+    found.ratingKey = 101
+    stale = movie_type()
+    stale.ratingKey = 202
+    config = SimpleNamespace(MDBList=MagicMock())
+    library = SimpleNamespace(movie_rating_key_map={101: 550, 202: 660})
+    builder = make_builder(config=config, libraries=[library], found_items=[found], items=[stale], list_export={"source": "mdblist", "name": "My List", "mode": "sync"})
+
+    builder.export_list()
+
+    config.MDBList.sync_list.assert_called_once_with("My List", [(550, "tmdb")], "sync")
+
+
 def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
     monkeypatch.setattr(builder_module, "logger", FakeLogger())
 

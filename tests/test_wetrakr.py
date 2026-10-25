@@ -783,6 +783,25 @@ def test_sync_list_chunks_batches_at_5000_items_and_keeps_body_under_1mb():
     assert len(json.dumps(requests.posts[0][1]).encode("utf-8")) < 1_000_000
 
 
+@pytest.mark.parametrize("mode, expected_posts", [("sync", 1), ("append", 0)])
+def test_sync_list_empty_results_remove_only_in_sync_mode(mode, expected_posts, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(wetrakr_module, "logger", logs)
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": 550}}], headers={}),
+            FakeResponse(json_data={"removed": {"total": 1}}),
+        ],
+        expires_at=_future(),
+    )
+
+    wetrakr.sync_list(FakeConvert(), 1003620444, [], mode=mode)
+
+    assert len(requests.posts) == expected_posts
+    assert logs.info_messages[-2:] == [f"WeTrakr list 1003620444 updated ({mode})", "List: https://wetrakr.com/lists/1003620444"]
+
+
 def test_sync_list_current_item_with_only_imdb_matches_desired_tmdb_via_convert():
     # WeTrakr's ids block has no native id (unlike FlickList's fldb) - imdb->tmdb via Convert is the
     # only bridge available when a current item carries only imdb.

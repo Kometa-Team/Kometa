@@ -34,11 +34,7 @@ tags:
   - test
   - tmdb_birthday
   - changes_webhooks
-  - sync_to_mdb_list
-  - sync_to_flicklist_list
-  - sync_missing_to_flicklist_list
-  - sync_to_wetrakr_list
-  - sync_missing_to_wetrakr_list
+  - list_export
   - run_definition
   - default_percent
   - ignore_blank_results
@@ -77,6 +73,7 @@ collections:
 | `ignore_imdb_ids`            | **Description:** definition level `ignore_imdb_ids` which is combined with the library and global `ignore_imdb_ids`.<br>**Default:** `ignore_imdb_ids` [settings value](../config/settings.md) in the Configuration File<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated String of IMDb IDs                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `limit`                      | **Description:** Used to specify the max number of items for the definition<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `minimum_items`              | **Description:** Minimum items that must be found to add to a definition.<br>**Default:** `minimum_items` [settings value](../config/settings.md) in the Configuration File<br>**Values:** number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `list_export`                | **Description:** Exports builder results to a list. Set `source`, `name`, and optional `mode` (`sync` or `append`). See [List Export](#list-export).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `missing_only_released`      | **Description:** definition Level `missing_only_released` toggle.<br>**Default:** `missing_only_released` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `name_mapping`               | **Description:** Used to specify the folder name in the [Image Assets Directory](../kometa/guides/assets.md) i.e. if your definition name contains characters that are not allowed in file paths (i.e. for windows `<`, `>`, `:`, `"`, `/`, `\`, `?`, `*` cannot be in the file path), but you want them in your name you can this to specify the name in the file system.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `name`                       | **Description:** Used to specify the name of the definition in Plex as different than the mapping name.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -91,12 +88,7 @@ collections:
 | `show_missing`               | **Description:** definition level `show_missing` toggle.<br>**Default:** `show_missing` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `show_unfiltered`            | **Description:** definition level `show_unfiltered` toggle.<br>**Default:** `show_unfiltered` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `smart_label`                | **Description:** Adds a label to all items found by the builder, which is then used to create a Smart Collection searching for the label<br>See [Smart Label Definitions](#smart-label-defintiions) for more information and use-cases                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `sync_missing_to_flicklist_list` | **Description:** Used to also sync missing items to the FlickList List specified by `sync_to_flicklist_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `sync_missing_to_wetrakr_list` | **Description:** Used to also sync missing items to the WeTrakr List specified by `sync_to_wetrakr_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `sync_mode`                  | **Description:** Used to change how builders sync with this definition.<br>**Default:** `sync_mode` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `sync` or `append`<br>See main [settings page](../config/settings.md#sync-mode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `sync_to_mdb_list`           | **Description:** Syncs a collection to an MDBList static list by exact `name`, creating it when absent. Use a name directly or an object with `name` and optional `mode` (`sync` by default, or `append`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `sync_to_flicklist_list`     | **Description:** Syncs a collection to a FlickList list, by numeric list id or exact `name`. A matching list is used if found among your own FlickList lists; otherwise one is created. See [FlickList Sync Example](#flicklist-sync-example) below.<br>**Values:** FlickList list id (number) or list name (string)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `sync_to_wetrakr_list`       | **Description:** Syncs a collection to a WeTrakr list, by numeric list id or exact `name`. A matching list is used if found among your own WeTrakr lists; otherwise one is created. Free WeTrakr accounts are limited to 5 lists of 250 items each. See [WeTrakr Sync Example](#wetrakr-sync-example) below.<br>**Values:** WeTrakr list id (number) or list name (string)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `template`                   | **Description:** Used to specify a template and Template Variables to use for this definition. See the [Templates Page](templates.md) for more information.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `test`                       | **Description:** When running in Test Mode (`--run-tests` [option](../kometa/environmental.md)) only definitions with `test: true` will be run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
@@ -104,10 +96,9 @@ collections:
 | `tmdb_region`                | **Description:** Sets the region for `tmdb_popular`, `tmdb_now_playing`, `tmdb_top_rated`, and `tmdb_upcoming`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `validate_builders`          | **Description:** When set to false the definition will not fail if one Builder fails.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
-### MDBList Sync Example
+### List Export
 
-`sync_to_mdb_list` synchronizes a collection with an MDBList static list. The
-list is found by exact name and created automatically when it does not exist.
+`list_export` is optional. Add it to a collection only when you want to send the current builder results to an external list. Set `source` to `mdblist`, `flicklist`, `wetrakr`, `tmdb`, or `floppy`; set `name` to an exact list name or numeric ID. Kometa creates a named list when it does not exist. `mode` defaults to `sync`, which adds missing items and removes entries absent from the builder results. A successful run with zero results empties the list where the service permits it. Use `append` to add items without removing existing entries. Builder errors do not trigger an export. Exporting runs independently of the Plex collection's `sync_mode` and `minimum_items`.
 
 ```yaml
 collections:
@@ -115,89 +106,24 @@ collections:
     plex_search:
       all:
         added: 30
-    sync_to_mdb_list: "Recently Added"
+    list_export:
+      source: mdblist
+      name: Recently Added
+      mode: sync
 
-  Favourites:
+  Favorites:
     plex_search:
       all:
         user_rating.gte: 8.0
-    sync_to_mdb_list:
-      name: "Favourites"
+    list_export:
+      source: flicklist
+      name: Favorites
       mode: append
 ```
 
-If a list with the name specified exists, it will be used. If no list exists, one will be created.
-The default `mode` is `sync`, which adds missing items and removes items no
-longer present in the collection. Use `append` to add items without removing
-existing list entries. Movies and shows are supported.
+The same structure works for WeTrakr, TMDb, and Floppy by changing `source`. Movies and shows are supported. FlickList and WeTrakr lists do not preserve the collection's custom order; season and episode entries are skipped. An existing FlickList or WeTrakr item that Kometa cannot confidently identify is left in place during sync. Free WeTrakr accounts are limited to five lists of 250 items each.
 
-### FlickList Sync Example
-
-`sync_to_flicklist_list` synchronizes a collection with a list in your FlickList account. The list is
-found by numeric id or exact name among your own lists, and created automatically when no match exists.
-
-```yaml
-collections:
-  Recently Added:
-    plex_search:
-      all:
-        added: 30
-    sync_to_flicklist_list: "Recently Added"
-
-  Missing Movies and Shows:
-    plex_search:
-      all:
-        added: 30
-    sync_to_flicklist_list: "Missing Movies and Shows"
-    sync_missing_to_flicklist_list: true
-```
-
-Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
-FlickList lists do not have a concept of individual seasons or episodes.
-
-FlickList has no list-reorder endpoint, so `sync_to_flicklist_list` cannot
-preserve a collection's custom order on the FlickList side — items land in the list, but not necessarily
-in the same order as the Kometa collection.
-
-If Kometa cannot confidently match an item already in the FlickList list against the collection's current
-contents (for example, an item added to the list some other way that only carries an id type Kometa
-cannot resolve), that item is left in the list rather than removed. A stale, over-cautious leftover is
-preferred over the alternative of the sync deleting something it shouldn't have.
-
-### WeTrakr Sync Example
-
-`sync_to_wetrakr_list` synchronizes a collection with a list in your WeTrakr account. The list is
-found by numeric id or exact name among your own lists, and created automatically when no match exists.
-
-```yaml
-collections:
-  Recently Added:
-    plex_search:
-      all:
-        added: 30
-    sync_to_wetrakr_list: "Recently Added"
-
-  Missing Movies and Shows:
-    plex_search:
-      all:
-        added: 30
-    sync_to_wetrakr_list: "Missing Movies and Shows"
-    sync_missing_to_wetrakr_list: true
-```
-
-Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
-WeTrakr lists do not have a concept of individual seasons or episodes.
-
-Free WeTrakr accounts are limited to 5 lists of 250 items each; syncing a larger collection, or creating a
-6th list, fails with the account's own upgrade message rather than a generic error.
-
-This sync does not preserve a collection's custom order on the WeTrakr side — items land in the list, but
-not necessarily in the same order as the Kometa collection.
-
-If Kometa cannot confidently match an item already in the WeTrakr list against the collection's current
-contents (for example, an item added to the list some other way that only carries an id type Kometa
-cannot resolve), that item is left in the list rather than removed. A stale, over-cautious leftover is
-preferred over the alternative of the sync deleting something it shouldn't have.
+TMDb exports require [user authorization](../config/tmdb.md#tmdb-list-export-authorization). Floppy exports require a [Floppy API token](../config/floppy.md). `list_export` uses builder results that Kometa resolved to Plex items. When sharing a destination list across multiple builders, `sync` can remove entries contributed by the other builder; use separate lists or `append` for that setup.
 
 ## Smart Label Definitions
 

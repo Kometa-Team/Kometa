@@ -1188,6 +1188,7 @@ def run_collection(config, library, metadata, requested_collections, music_playl
 
             items_added = 0
             items_removed = 0
+            list_export_ready = True
             if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -1211,6 +1212,7 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                     except ServiceError:
                         raise
                     except Failed as e:
+                        list_export_ready = False
                         if builder.ignore_blank_results:
                             logger.warning(e)
                         elif builder.obj:
@@ -1246,8 +1248,11 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart and not builder.list_export:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
+
+            if builder.list_export and builder.builders and list_export_ready:
+                builder.export_list()
 
             valid = True
             final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)
