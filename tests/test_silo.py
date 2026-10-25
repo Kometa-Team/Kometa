@@ -60,6 +60,50 @@ def _library(client, **overrides):
     return library
 
 
+def test_silo_skips_plex_maintenance_operations():
+    from collections import defaultdict
+
+    from modules.library import Library
+
+    methods = [
+        "notify",
+        "notify_delete",
+        "_upload_image",
+        "upload_poster",
+        "image_update",
+        "reload",
+        "edit_tags",
+        "item_labels",
+        "find_poster_url",
+        "item_posters",
+        "get_all",
+        "get_items_added_since",
+        "cached_item_subitems",
+        "get_ids",
+    ]
+    shelf = type("Shelf", (Library,), {name: (lambda *args, **kwargs: None) for name in methods})
+    params = defaultdict(lambda: None)
+    params.update(
+        {
+            "name": "Movies",
+            "mapping_name": "Movies",
+            "collection_files": [],
+            "metadata_files": [],
+            "overlay_files": [],
+            "skip_library": False,
+            "asset_depth": 0,
+            "asset_directory": [],
+            "default_dir": "config",
+            "run_order": ["operations", "metadata", "collections", "overlays"],
+        }
+    )
+    library = shelf(SimpleNamespace(Cache=None, default_dir="config"), params)
+
+    assert library.clean_bundles is False
+    assert library.empty_trash is False
+    assert library.optimize is False
+
+
 def test_silo_is_a_registered_server_with_scored_capabilities():
     assert media_server_class("silo") is SiloMediaServer
     assert {capability for capability, _status in SILO_CAPABILITIES.items()} == set(Capability)

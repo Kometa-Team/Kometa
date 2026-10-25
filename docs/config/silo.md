@@ -10,7 +10,7 @@ hide:
 
 Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Posters, backdrops, logos, and overlays are set from a URL. Kometa publishes a local image to [transfer.kometa.wiki](https://transfer.kometa.wiki) and gives Silo that URL. A URL Kometa already has, such as a TMDb image, is given to Silo directly. Labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
 
-Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. When `profile_id` is set, catalog reads send it on the `X-Profile-Id` header.
+Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. When `profile_id` is set, catalog reads send it on the `X-Profile-Id` header. Silo has no clean bundles, empty trash, or optimize operation, so those Plex settings are skipped for a Silo library.
 
 ```yaml title="config.yml Silo sample"
 tmdb:

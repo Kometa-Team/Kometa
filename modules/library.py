@@ -21,6 +21,9 @@ logger = util.logger
 class Library(ABC):
     def __init__(self, config, params):
         self.server = params.get("server") if isinstance(params, dict) else None
+        self.clean_bundles = False
+        self.empty_trash = False
+        self.optimize = False
         self.session = None
         self.Radarr = None
         self.Sonarr = None
