@@ -18,7 +18,7 @@ beautifulsoup4==4.15.0
     # via
     #   fastfingertips
     #   letterboxdpy
-certifi==2026.10.18
+certifi==2026.10.19
     # via
     #   apprise
     #   curl-cffi
