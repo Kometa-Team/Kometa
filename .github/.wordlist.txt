@@ -50,6 +50,7 @@ booleans
 BoxOfficeMojo
 boxofficemojo
 BoxOfficeMojo's
+boxset
 BPjM
 BritBox
 Bullmoose
@@ -126,6 +127,8 @@ ee
 eedd
 EG
 El
+emby
+Emby
 Emmys
 encodings
 ensurepip
@@ -203,6 +206,8 @@ irm
 isort
 iteratively
 ITVX
+jellyfin
+Jellyfin
 jfcherng
 Jinja
 jobTemplate
@@ -268,6 +273,7 @@ mdblist
 MDBList's
 mdblists
 mecha
+MediaBrowser
 MediaStinger
 mediastinger
 Mediastingers
