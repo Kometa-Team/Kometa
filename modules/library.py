@@ -426,11 +426,18 @@ class Library(ABC):
         return poster_uploaded, background_uploaded, logo_uploaded, square_art_uploaded
 
     def get_id_from_maps(self, key):
-        key = int(key)
         if key in self.movie_rating_key_map:
             return self.movie_rating_key_map[key]
-        elif key in self.show_rating_key_map:
+        if key in self.show_rating_key_map:
             return self.show_rating_key_map[key]
+        try:
+            numeric = int(key)
+        except (TypeError, ValueError):
+            return None
+        if numeric in self.movie_rating_key_map:
+            return self.movie_rating_key_map[numeric]
+        if numeric in self.show_rating_key_map:
+            return self.show_rating_key_map[numeric]
 
     def _add_to_plex_map(self, key, values):
         key = int(key)

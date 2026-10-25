@@ -13,6 +13,14 @@ plex:                              # Can be individually specified per library a
   empty_trash: false
   optimize: false
   verify_ssl: true
+# media_servers:                   # Optional named servers. A library selects one with server.
+#   Shelf:
+#     type: silo                    # silo or plex
+#     url: http://192.168.1.12:8090 # Silo native API. Kometa appends /api/v2
+#     token:                        # Session token or API key
+#     profile_id:                   # Sent as X-Profile-Id for catalog reads
+#     timeout: 60
+#     verify_ssl: true
 tmdb:
   apikey:                          # Enter TMDb API Key (REQUIRED)
   cache_expiration: 60
@@ -30,6 +38,10 @@ libraries:                         # This is called out once within the config.y
     overlay_files:
     - default: ribbon              # This is a file within Kometa's defaults folder
                                    # see the wiki for how to use local files, folders, URLs, or files from git
+# Films:                           # Example library on the named Silo server above
+#   server: Shelf
+#   collection_files:
+#   - default: basic
   TV Shows:
     remove_overlays: false         # Set this to true to remove all overlays
     collection_files:

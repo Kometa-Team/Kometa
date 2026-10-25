@@ -7,6 +7,14 @@
     "plex": {
       "$ref": "#/definitions/plex-server"
     },
+    "media_servers": {
+      "description": "Named media servers in addition to the required plex server. A library selects one with server.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/definitions/media-server"
+      }
+    },
     "tmdb": {
       "$ref": "#/definitions/tmdb-api"
     },
@@ -394,6 +402,67 @@
         "url"
       ],
       "title": "plex"
+    },
+    "media-server": {
+      "description": "A named media server. type selects the server. A library uses the name with server.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Media server type.",
+          "type": "string",
+          "enum": ["plex", "silo"]
+        },
+        "url": {
+          "description": "Server URL. For Silo, /api/v2 is added when the URL does not already end with it.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "token": {
+          "description": "Bearer session token or API key.",
+          "type": "string",
+          "minLength": 1
+        },
+        "timeout": {
+          "description": "Connection timeout in seconds.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "verify_ssl": {
+          "description": "Turn SSL verification on or off for this server.",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "db_cache": {
+          "description": "Plex database cache size in MB. Used when type is plex.",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "pattern": "^$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile_id": {
+          "description": "Silo profile id. Catalog reads send it as the X-Profile-Id header.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["type", "url", "token"],
+      "title": "media-server"
     },
     "plex-server-lib": {
       "description": "Describes the Plex server where this library is found.",
@@ -4778,6 +4847,11 @@
             "library_name": {
               "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Kometa to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
               "type": "string"
+            },
+            "server": {
+              "description": "Name of an entry under media_servers. Omit to use the plex server.",
+              "type": "string",
+              "minLength": 1
             },
             "report_path": {
               "description": "Location to save the YAML Report file for a library.\nThe report_path attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Collection, Metadata, Overlay or Playlist file. If your Collection file creates a collection with Movie 1, Movie 2 and Movie 3 but your Plex library only has Movie 1 and Movie 3, then the missing YAML file will be updated to inform the user that Movie 2 was missing from the library.",

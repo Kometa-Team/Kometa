@@ -6,7 +6,7 @@ hide:
 ---
 # Library Attributes
 
-Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants Kometa to act on.
+Within the [Configuration File](overview.md), the `libraries` attribute specifies the libraries that the user wants Kometa to act on. A library uses the `plex` server unless it sets [`server`](silo.md) to a named `media_servers` entry.
 
 Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or "execute the following Collection Definition files".
 These attributes can be specified individually per library, or can be inherited from the global value if it has been set.
@@ -56,6 +56,36 @@ The available attributes for each library are as follows:
 
         * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (**http://192.168.1.12:32400**) which is defined using the global
           `plex` mapping. `"Movies02"` will use the plex server **http://192.168.1.35:32400** which is defined under its `plex` mapping over the global mapping.
+
+??? blank "`server` - Used to select a named media server.<a class="headerlink" href="#server" title="Permanent link">¶</a>"
+
+    <div id="server" />The `server` attribute selects an entry from [`media_servers`](silo.md). Leave it unset to use the `plex` server.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `server`
+
+    **Accepted Values:** The name of a `media_servers` entry.
+
+    **Default Value:** The `plex` server
+
+    ???+ example "Example"
+
+        ```yaml
+        media_servers:
+          Shelf:
+            type: silo
+            url: http://192.168.1.12:8090
+            token: ####################
+        libraries:
+          Movies:
+            collection_files:
+              - default: basic
+          Films:
+            server: Shelf
+            collection_files:
+              - default: basic
+        ```
 
 ??? blank "`language` - Used to define the language for generated collection titles and metadata.<a class="headerlink" href="#language" title="Permanent link">¶</a>"
 

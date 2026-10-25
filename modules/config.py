@@ -22,7 +22,7 @@ from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
-from modules.media_server import PlexMediaServer
+from modules.media_server import PlexMediaServer, build_media_server
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
 from modules.notifiarr import Notifiarr
@@ -33,6 +33,7 @@ from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.seerr import Seerr
 from modules.serializd import Serializd
+from modules.silo import Silo, SiloMediaServer
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
@@ -1507,6 +1508,14 @@ class ConfigFile:
                 "server_id": check_for_attribute(self.data, "server_id", parent="tracearr", default_is_none=True),
             }
 
+            self.media_servers = {}
+            raw_servers = self.data.get("media_servers") if isinstance(self.data, dict) else None
+            if raw_servers is not None:
+                if not isinstance(raw_servers, dict) or not raw_servers:
+                    raise Failed("Config Error: media_servers must be a dictionary of named servers")
+                for server_name, server_data in raw_servers.items():
+                    self.media_servers[str(server_name)] = build_media_server(str(server_name), server_data)
+
             self.libraries = []
             self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
@@ -2265,73 +2274,91 @@ class ConfigFile:
 
                 try:
                     logger.info("")
-                    logger.separator("Plex Configuration", space=False, border=False)
-                    params["plex"] = {
-                        "url": check_for_attribute(
-                            lib,
-                            "url",
-                            parent="plex",
-                            var_type="url",
-                            default=self.general["plex"]["url"],
-                            req_default=True,
-                            save=False,
-                        ),
-                        "token": check_for_attribute(
-                            lib,
-                            "token",
-                            parent="plex",
-                            default=self.general["plex"]["token"],
-                            req_default=True,
-                            save=False,
-                        ),
-                        "timeout": check_for_attribute(
-                            lib,
-                            "timeout",
-                            parent="plex",
-                            var_type="int",
-                            default=self.general["plex"]["timeout"],
-                            save=False,
-                        ),
-                        "verify_ssl": check_for_attribute(
-                            lib,
-                            "verify_ssl",
-                            parent="plex",
-                            var_type="bool",
-                            default=self.general["plex"]["verify_ssl"],
-                            default_is_none=True,
-                            save=False,
-                        ),
-                        "db_cache": check_for_attribute(
-                            lib,
-                            "db_cache",
-                            parent="plex",
-                            var_type="int",
-                            default=self.general["plex"]["db_cache"],
-                            default_is_none=True,
-                            save=False,
-                        ),
-                    }
-                    for attr in ["clean_bundles", "empty_trash", "optimize"]:
-                        try:
-                            params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
-                        except Failed:
-                            test_attr = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
-                            if test_attr is not True and test_attr is not False:
-                                params["plex"][attr] = False
-                                try:
-                                    util.schedule_check(attr, test_attr, current_time, self.run_hour)
-                                    params["plex"][attr] = True
-                                except NotScheduled:
-                                    logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
-                            else:
-                                params["plex"][attr] = test_attr
+                    server_name = str(lib["server"]) if lib and lib.get("server") else None
+                    named_server = None
+                    if server_name:
+                        if server_name not in self.media_servers:
+                            raise Failed(f"Config Error: Library {display_name} server '{server_name}' is not defined in media_servers")
+                        named_server = self.media_servers[server_name]
+                    if isinstance(named_server, SiloMediaServer):
+                        logger.separator("Silo Configuration", space=False, border=False)
+                        params["server"] = named_server
+                        library = Silo(self, params)
+                    else:
+                        logger.separator("Plex Configuration", space=False, border=False)
+                        params["plex"] = {
+                            "url": check_for_attribute(
+                                lib,
+                                "url",
+                                parent="plex",
+                                var_type="url",
+                                default=self.general["plex"]["url"],
+                                req_default=True,
+                                save=False,
+                            ),
+                            "token": check_for_attribute(
+                                lib,
+                                "token",
+                                parent="plex",
+                                default=self.general["plex"]["token"],
+                                req_default=True,
+                                save=False,
+                            ),
+                            "timeout": check_for_attribute(
+                                lib,
+                                "timeout",
+                                parent="plex",
+                                var_type="int",
+                                default=self.general["plex"]["timeout"],
+                                save=False,
+                            ),
+                            "verify_ssl": check_for_attribute(
+                                lib,
+                                "verify_ssl",
+                                parent="plex",
+                                var_type="bool",
+                                default=self.general["plex"]["verify_ssl"],
+                                default_is_none=True,
+                                save=False,
+                            ),
+                            "db_cache": check_for_attribute(
+                                lib,
+                                "db_cache",
+                                parent="plex",
+                                var_type="int",
+                                default=self.general["plex"]["db_cache"],
+                                default_is_none=True,
+                                save=False,
+                            ),
+                        }
+                        for attr in ["clean_bundles", "empty_trash", "optimize"]:
+                            try:
+                                params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
+                            except Failed:
+                                test_attr = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
+                                if test_attr is not True and test_attr is not False:
+                                    params["plex"][attr] = False
+                                    try:
+                                        util.schedule_check(attr, test_attr, current_time, self.run_hour)
+                                        params["plex"][attr] = True
+                                    except NotScheduled:
+                                        logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
+                                else:
+                                    params["plex"][attr] = test_attr
 
-                    if params["plex"]["url"].lower() == "env":
-                        params["plex"]["url"] = self.env_plex_url
-                    if params["plex"]["token"].lower() == "env":
-                        params["plex"]["token"] = self.env_plex_token
-                    params["server"] = PlexMediaServer.from_config(params["plex"])
-                    library = Plex(self, params)
+                        if params["plex"]["url"].lower() == "env":
+                            params["plex"]["url"] = self.env_plex_url
+                        if params["plex"]["token"].lower() == "env":
+                            params["plex"]["token"] = self.env_plex_token
+                        if isinstance(named_server, PlexMediaServer):
+                            for attr in ("url", "token", "timeout", "verify_ssl", "db_cache"):
+                                value = getattr(named_server, attr)
+                                if value is not None:
+                                    params["plex"][attr] = value
+                            params["server"] = named_server
+                        else:
+                            params["server"] = PlexMediaServer.from_config(params["plex"])
+                        library = Plex(self, params)
                     library.Seerr = self.Seerr
                     if lib and "seerr" in lib:
                         try:
@@ -2818,7 +2845,7 @@ class ConfigFile:
             self.library_map = {_l.original_mapping_name: _l for _l in self.libraries}
 
             if len(self.libraries) > 0:
-                logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
+                logger.info(f"{len(self.libraries)} Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
                 raise Failed("Config Error: No libraries were found in config")
 

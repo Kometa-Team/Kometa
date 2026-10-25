@@ -1,8 +1,8 @@
 """Media server connection and the capability matrix each server can be queried for.
 
-Plex is the only supported server. The matrix follows the feature rows in
-Kometa-Team/Kometa#3351. Servers are not equivalent, so callers ask the
-matrix before using a feature instead of assuming every backend matches Plex.
+The matrix follows the feature rows in Kometa-Team/Kometa#3351. Servers are not
+equivalent, so callers ask the matrix before using a feature instead of assuming
+every backend matches Plex.
 """
 
 from abc import ABC, abstractmethod
@@ -303,6 +303,12 @@ class PlexMediaServer(MediaServer):
 _SERVER_CLASSES = {PlexMediaServer.type_name: PlexMediaServer}
 
 
+def register_media_server(server_class):
+    """Register a media server class so config type names can construct it."""
+    _SERVER_CLASSES[server_class.type_name] = server_class
+    return server_class
+
+
 def media_server_class(type_name):
     """Return the media server class for a config type name."""
     try:
@@ -310,3 +316,36 @@ def media_server_class(type_name):
     except KeyError:
         supported = ", ".join(sorted(_SERVER_CLASSES))
         raise Failed(f"Media server type '{type_name}' is not supported. Options: {supported}") from None
+
+
+def build_media_server(name, data):
+    """Build a named server from one ``media_servers`` entry. This does not open a connection."""
+    if not isinstance(data, dict):
+        raise Failed(f"Config Error: media_servers.{name} must be a dictionary")
+    server_type = str(data.get("type") or "").strip().lower()
+    if not server_type:
+        raise Failed(f"Config Error: media_servers.{name} requires type")
+    url = data.get("url")
+    token = data.get("token")
+    if not url or not str(url).strip():
+        raise Failed(f"Config Error: media_servers.{name} requires url")
+    if not token or not str(token).strip():
+        raise Failed(f"Config Error: media_servers.{name} requires token")
+    timeout = 60 if data.get("timeout") is None else data.get("timeout")
+    if isinstance(timeout, bool) or not isinstance(timeout, int):
+        raise Failed(f"Config Error: media_servers.{name} timeout must be an integer")
+    payload = {
+        "url": str(url).strip().rstrip("/"),
+        "token": token,
+        "timeout": timeout,
+        "verify_ssl": data.get("verify_ssl"),
+        "db_cache": data.get("db_cache"),
+    }
+    if server_type == "silo":
+        from modules.silo import SiloMediaServer
+
+        return SiloMediaServer.from_config(payload, name=str(name), profile_id=data.get("profile_id"))
+    if server_type == "plex":
+        return PlexMediaServer.from_config(payload, name=str(name))
+    media_server_class(server_type)
+    raise Failed(f"Media server type '{server_type}' cannot be built from media_servers")
