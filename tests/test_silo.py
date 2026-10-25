@@ -299,6 +299,28 @@ def test_library_builds_collections_and_refuses_missing_capabilities():
         library.Plex.listFilters("movie")
 
 
+def test_get_all_reports_loaded_progress_for_each_catalog_page():
+    ghosts = []
+    silo_module.logger.ghost = lambda text="": ghosts.append(str(text))
+    session = FakeSession(
+        [
+            FakeResponse({"items": [{"content_id": "movie:one", "title": "One", "tmdb_id": 1}], "total": 2, "page": {"has_more": True, "next_cursor": "page-2"}}),
+            FakeResponse({"items": [{"content_id": "movie:two", "title": "Two", "tmdb_id": 2}], "total": 2, "page": {"has_more": False}}),
+        ]
+    )
+    library = _library(SiloClient(_server(), session=session))
+
+    items = library.get_all()
+
+    assert [item.ratingKey for item in items] == ["movie:one", "movie:two"]
+    assert ghosts == ["Loaded: 1/2", "Loaded: 2/2"]
+    assert "Loading All Movies from Library: Films" in silo_module.logger.info_messages
+    assert silo_module.logger.info_messages.count("Loaded: 1/2") == 1
+    assert silo_module.logger.info_messages.count("Loaded: 2/2") == 1
+    assert "Loaded 2 Movies" in silo_module.logger.info_messages
+    assert session.calls[1]["params"]["cursor"] == "page-2"
+
+
 def test_get_all_loads_provider_ids_and_keeps_string_rating_keys():
     session = FakeSession(
         [

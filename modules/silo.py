@@ -141,8 +141,7 @@ class SiloClient:
         except ValueError as error:
             raise Failed(f"Silo Error: {method} {path} did not return JSON") from error
 
-    def _items(self, method, path, params=None, json_body=None):
-        items = []
+    def _pages(self, method, path, params=None, json_body=None):
         query = dict(params or {})
         body = dict(json_body or {})
         while True:
@@ -151,17 +150,25 @@ class SiloClient:
             else:
                 data, _headers = self.request(method, path, params=query, json_body=body)
             if isinstance(data, list):
-                return data
+                yield data, len(data)
+                return
             page_items = (data or {}).get("items") or []
-            items.extend(page_items)
+            total = (data or {}).get("total") if isinstance(data, dict) else None
+            yield page_items, total if isinstance(total, int) else None
             page = (data or {}).get("page") or {}
             cursor = page.get("next_cursor")
             if not page.get("has_more") or not cursor:
-                return items
+                return
             if method == "GET":
                 query["cursor"] = cursor
             else:
                 body["cursor"] = cursor
+
+    def _items(self, method, path, params=None, json_body=None):
+        items = []
+        for page_items, _total in self._pages(method, path, params=params, json_body=json_body):
+            items.extend(page_items)
+        return items
 
     def list_libraries(self):
         return self._items("GET", "/libraries")
@@ -226,12 +233,18 @@ class SiloClient:
         self.request("DELETE", path)
 
     def browse(self, library_id, media_type=None, query=None, limit=200):
+        items = []
+        for page_items, _total in self.catalog_pages(library_id, media_type=media_type, query=query, limit=limit):
+            items.extend(page_items)
+        return items
+
+    def catalog_pages(self, library_id, media_type=None, query=None, limit=200):
         params = {"source": "query", "library_id": library_id, "limit": min(limit or 200, 200)}
         if media_type:
             params["type"] = media_type
         if query:
             params["q"] = query
-        return self._items("GET", "/catalog", params=params)
+        return self._pages("GET", "/catalog", params=params)
 
     def query(self, library_id, query_definition, limit=100):
         body = {"library_id": library_id, "limit": min(limit or 100, 100), "groups": _query_groups(query_definition)}
@@ -472,8 +485,22 @@ class Silo(Library):
         if not builder_level and self._all_items and not load:
             return list(self._all_items)
         media_type = _media_type(self, builder_level)
-        cards = self.client.browse(self.library_id, media_type=media_type)
-        items = [self._item_with_ids(card) for card in cards]
+        label = _load_label(self, builder_level)
+        logger.info(f"Loading All {label} from Library: {self.name}")
+        items = []
+        total = None
+        for page_items, page_total in self.client.catalog_pages(self.library_id, media_type=media_type):
+            if isinstance(page_total, int):
+                total = page_total
+            for card in page_items:
+                items.append(self._item_with_ids(card))
+                overall = total if isinstance(total, int) and total >= len(items) else len(items)
+                logger.ghost(f"Loaded: {len(items)}/{overall}")
+            if page_items:
+                overall = total if isinstance(total, int) and total >= len(items) else len(items)
+                logger.exorcise()
+                logger.info(f"Loaded: {len(items)}/{overall}")
+        logger.info(f"Loaded {len(items)} {label}")
         if not builder_level:
             self._all_items = list(items)
         return items
@@ -812,6 +839,12 @@ def _remember(external_id, rating_key, dict_map):
         dict_map[external_id] = [rating_key]
     elif rating_key not in current:
         current.append(rating_key)
+
+
+def _load_label(library, builder_level):
+    level = str(builder_level or library.type or "item").lower()
+    names = {"movie": "Movie", "show": "Show", "series": "Show", "episode": "Episode", "season": "Season"}
+    return f"{names.get(level, level.capitalize())}s"
 
 
 def _media_type(library, builder_level):

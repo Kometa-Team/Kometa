@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
 - Report Silo user and profile ids when a request fails because the configured profile was not found. (#3351)
 - Skip Plex clean bundles, empty trash, and optimize on Silo, Jellyfin, and Emby libraries. (#3351)
+- Report Silo library load progress with the loaded and total counts while caching a library. (#3351)
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739
