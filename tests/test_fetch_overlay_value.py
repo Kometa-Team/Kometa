@@ -332,3 +332,27 @@ def test_serializd_rating_resolves_tvdb_show_id_to_tmdb():
 
     assert plx.fetch_overlay_value(_item(), "serializd_rating") == 9.07
     plx.config.Serializd.get_show_rating.assert_called_once_with(1429)
+
+
+# ── anidb_* variable dispatch ──────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    ("variable_name", "expected"),
+    [
+        ("anidb_rating", 8.12),
+        ("anidb_average_rating", 7.95),
+        ("anidb_score_rating", 7.4),
+    ],
+)
+def test_anidb_rating_variables_return_their_rating(variable_name, expected):
+    # Every anidb_* overlay variable must resolve to its AniDB value (anidb_rating -> permanent rating).
+    plx = _make_plex(get_ids=MagicMock(return_value=(None, 121361, None)))
+    plx.config.Convert = MagicMock()
+    plx.config.Convert.ids_to_anidb.return_value = 17290
+    plx.config.AniDB = MagicMock()
+    plx.config.AniDB.get_anime.return_value = SimpleNamespace(rating=8.12, average=7.95, score=7.4, ratings_valid=True)
+
+    assert variable_name in vars_by_type["show"]
+    assert plx.fetch_overlay_value(_item(), variable_name) == expected
+    plx.config.AniDB.get_anime.assert_called_once_with(17290)
