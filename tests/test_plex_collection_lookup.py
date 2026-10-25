@@ -47,7 +47,7 @@ def _load_plex(monkeypatch):
     monkeypatch.setitem(sys.modules, "modules.util", fake_util)
 
     fake_library = types.ModuleType("modules.library")
-    fake_library.Library = type("Library", (), {})
+    fake_library.Library = type("Library", (), {"require": lambda self, capability: None, "supports": lambda self, capability: True})
     monkeypatch.setitem(sys.modules, "modules.library", fake_library)
 
     fake_poster = types.ModuleType("modules.poster")

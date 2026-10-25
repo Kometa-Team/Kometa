@@ -8,6 +8,7 @@ from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
+from modules.media_server import Capability
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
@@ -19,6 +20,7 @@ logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
+        self.server = params.get("server") if isinstance(params, dict) else None
         self.session = None
         self.Radarr = None
         self.Sonarr = None
@@ -228,6 +230,15 @@ class Library(ABC):
         if output:
             logger.info("")
             logger.info(output)
+
+    def supports(self, capability: Capability) -> bool:
+        return self.server is not None and self.server.supports(capability)
+
+    def require(self, capability: Capability):
+        """Raise ``Failed`` when this library's server cannot perform ``capability``."""
+        if self.server is None:
+            raise Failed("Media server is not configured for this library")
+        return self.server.require(capability)
 
     def item_is_ignored(self, item, tmdb_id=None, tvdb_id=None, imdb_id=None):
         if not self.ignore_ids and not self.ignore_imdb_ids:

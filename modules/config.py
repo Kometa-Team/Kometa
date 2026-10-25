@@ -22,6 +22,7 @@ from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
+from modules.media_server import PlexMediaServer
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
 from modules.notifiarr import Notifiarr
@@ -2329,6 +2330,7 @@ class ConfigFile:
                         params["plex"]["url"] = self.env_plex_url
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
+                    params["server"] = PlexMediaServer.from_config(params["plex"])
                     library = Plex(self, params)
                     library.Seerr = self.Seerr
                     if lib and "seerr" in lib:

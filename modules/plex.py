@@ -20,6 +20,7 @@ from tenacity import retry, retry_if_exception, retry_if_exception_type, retry_i
 
 from modules import builder, timings, util
 from modules.library import Library
+from modules.media_server import Capability, PlexMediaServer
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError
@@ -964,21 +965,26 @@ class TracedPlexServer(PlexServer):
 
 class Plex(Library):
     def __init__(self, config, params):
+        if isinstance(params, dict) and params.get("server") is None and isinstance(params.get("plex"), dict):
+            params["server"] = PlexMediaServer.from_config(params["plex"])
         super().__init__(config, params)
+        server = self.server
+        if not isinstance(server, PlexMediaServer):
+            raise Failed("Plex Error: Library is not connected to a Plex server")
         self.plex = params["plex"]
-        self.url = self.plex["url"]
+        self.url = server.url
         self.clean_bundles = params["plex"]["clean_bundles"]
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
         self.session = self.config.Requests.session
-        if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
+        if server.verify_ssl is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
             self.session = self.config.Requests.create_session(verify_ssl=False)
-        if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
+        if server.verify_ssl is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
             self.session = self.config.Requests.create_session()
-        self.token = self.plex["token"]
-        self.timeout = self.plex["timeout"]
+        self.token = server.token
+        self.timeout = server.timeout
         logger.secret(self.url)
         logger.secret(self.token)
         try:
@@ -992,10 +998,10 @@ class Plex(Library):
             try:
                 db_cache = srv_settings.get("DatabaseCacheSize")
                 logger.info(f"Plex DB cache setting: {db_cache.value} MB")
-                if self.plex["db_cache"] and self.plex["db_cache"] != db_cache.value:
-                    db_cache.set(self.plex["db_cache"])
+                if server.db_cache and server.db_cache != db_cache.value:
+                    db_cache.set(server.db_cache)
                     self.PlexServer.settings.save()
-                    logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
+                    logger.info(f"Plex DB Cache updated to {server.db_cache} MB")
             except NotFound:
                 logger.info("Plex DB cache setting: Unknown")
             try:
@@ -1193,6 +1199,8 @@ class Plex(Library):
         return results
 
     def upload_theme(self, item, url=None, filepath=None):
+        self.require(Capability.UPLOAD_THEME_SONG)
+        self.require(Capability.UPLOAD_THEME_VIDEO)
         key = f"/library/metadata/{item.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
@@ -1202,6 +1210,7 @@ class Plex(Library):
 
     @PLEX_RETRY
     def create_playlist(self, name, items):
+        self.require(Capability.CREATE_PLAYLIST)
         return self.PlexServer.createPlaylist(name, items=items)
 
     @PLEX_RETRY
@@ -1228,6 +1237,7 @@ class Plex(Library):
         return result
 
     def delete_collection(self, obj, notify=True, delete_message=None):
+        self.require(Capability.DELETE_COLLECTION)
         result = self.delete(obj, notify=notify, delete_message=delete_message)
         self.stats["deleted"] += 1
         return result
@@ -1262,6 +1272,7 @@ class Plex(Library):
 
     @PLEX_RETRY
     def item_labels(self, item):
+        self.require(Capability.GET_ITEM_LABELS)
         try:
             return item.labels
         except BadRequest:
@@ -1536,14 +1547,17 @@ class Plex(Library):
 
     @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
+        self.require(Capability.UPLOAD_POSTER)
         self._upload_image_request(item.uploadPoster, upload_context=f"{item.title}: poster ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_background(self, item, image, url=False):
+        self.require(Capability.UPLOAD_BACKDROP)
         self._upload_image_request(item.uploadArt, upload_context=f"{item.title}: background ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
+        self.require(Capability.UPLOAD_LOGO)
         self._upload_image_request(item.uploadLogo, upload_context=f"{item.title}: logo ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
@@ -1909,6 +1923,7 @@ class Plex(Library):
             return None
 
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
+        self.require(Capability.NATIVE_SMART_COLLECTIONS)
         existing_collection = self._collection_by_title(title)
         if existing_collection is not None:
             logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
@@ -1919,6 +1934,7 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def create_smart_playlist(self, title, uri_args):
+        self.require(Capability.CREATE_PLAYLIST)
         if not self.is_music:
             raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
         args = {"type": self.Plex.CONTENT_TYPE, "title": title, "smart": 1, "uri": self._smart_playlist_uri(uri_args)}
@@ -1958,6 +1974,7 @@ class Plex(Library):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
+        self.require(Capability.UPDATE_SMART_FILTER)
         self.test_smart_filter(uri_args)
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 

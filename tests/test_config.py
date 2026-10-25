@@ -16,6 +16,7 @@ import pytest
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 import modules.config as config_module
 from modules.config import ConfigFile
+from modules.media_server import Capability, PlexMediaServer
 from modules.util import Failed
 from tests.conftest import FakeLogger, FakeRequests, InMemoryYAMLRequests
 
@@ -165,6 +166,52 @@ def make_config(
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
     requests = FakeRequests() if real_yaml else InMemoryYAMLRequests()
     return ConfigFile(requests, str(tmp_path), merged_attrs, secrets or {})
+
+
+def test_config_attaches_a_plex_media_server(tmp_path, monkeypatch):
+    seen = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        seen.append(args[1])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    make_config(tmp_path)
+
+    server = seen[0]["server"]
+    assert isinstance(server, PlexMediaServer)
+    assert server.url == "http://localhost:32400"
+    assert server.token == "fake-plex-token"
+    assert server.type_name == "plex"
+    assert server.supports(Capability.CREATE_COLLECTION)
+    assert not server.supports(Capability.SMART_COLLECTION_WORKAROUND)
+
+
+def test_per_library_plex_block_is_the_media_server(tmp_path, monkeypatch):
+    seen = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        seen.append(args[1])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    config_yaml = BASE_CONFIG.replace(
+        "libraries:\n  Movies:\n    collection_files: []",
+        "libraries:\n  Movies:\n    collection_files: []\n    plex:\n      url: http://override:32400\n      token: override-token\n      timeout: 15\n      verify_ssl: false\n      db_cache: 80",
+    )
+    make_config(tmp_path, config_yaml=config_yaml)
+
+    server = seen[0]["server"]
+    assert isinstance(server, PlexMediaServer)
+    assert server.url == "http://override:32400"
+    assert server.token == "override-token"
+    assert server.timeout == 15
+    assert server.verify_ssl is False
+    assert server.db_cache == 80
+    assert seen[0]["plex"]["url"] == server.url
+    assert seen[0]["plex"]["token"] == server.token
 
 
 # ═══════════════════════════════════════════════════════════════════════
