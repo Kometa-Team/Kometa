@@ -344,7 +344,7 @@ def test_unsupported_media_server_type_fails_config(tmp_path):
     config_yaml = BASE_CONFIG + """
 media_servers:
   Shelf:
-    type: emby
+    type: kodi
     url: http://localhost:8096
     token: token
 """
@@ -393,6 +393,46 @@ media_servers:
     assert [library.original_mapping_name for library in config.libraries] == ["Films"]
 
 
+def test_jellyfin_library_connects_without_a_plex_block(tmp_path, monkeypatch):
+    jellyfin_calls = []
+
+    def capture_jellyfin(*args, **kwargs):
+        jellyfin_calls.append(args[1])
+        return _library_double(args[1]["mapping_name"])
+
+    def reject_plex(*args, **kwargs):
+        raise AssertionError("Plex was opened for a Jellyfin library")
+
+    monkeypatch.setattr(config_module, "Jellyfin", capture_jellyfin)
+    monkeypatch.setattr(config_module, "Plex", reject_plex)
+    config = make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+libraries:
+  Films:
+    server: Cinema
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+media_servers:
+  Cinema:
+    type: jellyfin
+    url: http://localhost:8096
+    token: jellyfin-token
+    user: user-1
+""",
+    )
+
+    assert len(jellyfin_calls) == 1
+    server = jellyfin_calls[0]["server"]
+    assert isinstance(server, config_module.JellyfinMediaServer)
+    assert server.user_id == "user-1"
+    assert "plex" not in jellyfin_calls[0]
+    assert [library.original_mapping_name for library in config.libraries] == ["Films"]
+
+
 def test_config_schema_accepts_silo_without_a_plex_block():
     schema = json.loads((Path(__file__).resolve().parents[1] / "json-schema" / "config-schema.json").read_text(encoding="utf-8"))
     validator = Draft7Validator(schema)
@@ -401,6 +441,16 @@ def test_config_schema_accepts_silo_without_a_plex_block():
             "tmdb": {"apikey": "key"},
             "media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}},
             "libraries": {"Films": {"server": "Shelf", "collection_files": []}},
+        }
+    )
+    validator.validate(
+        {
+            "tmdb": {"apikey": "key"},
+            "media_servers": {
+                "Cinema": {"type": "jellyfin", "url": "http://localhost:8096", "token": "jellyfin-token", "user": "user-1"},
+                "Theater": {"type": "emby", "url": "http://localhost:8096", "token": "emby-token"},
+            },
+            "libraries": {"Films": {"server": "Cinema", "collection_files": []}},
         }
     )
     validator.validate({"plex": {"url": "http://localhost:32400", "token": "token"}, "tmdb": {"apikey": "key"}})

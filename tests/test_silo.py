@@ -121,7 +121,7 @@ def test_build_media_server_reads_a_silo_block_without_connecting():
     with pytest.raises(Failed, match="timeout must be an integer"):
         build_media_server("Shelf", {"type": "silo", "url": "http://silo", "token": "token", "timeout": True})
     with pytest.raises(Failed, match="not supported"):
-        build_media_server("Shelf", {"type": "emby", "url": "http://silo", "token": "token"})
+        build_media_server("Shelf", {"type": "kodi", "url": "http://silo", "token": "token"})
 
 
 def test_client_pages_catalog_results_and_quotes_collection_ids():

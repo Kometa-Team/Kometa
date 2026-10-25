@@ -122,7 +122,7 @@ def test_require_rejects_unsupported_capabilities_and_returns_partial_limits():
         raise AssertionError("Plex smart-collection workaround was allowed")
 
     try:
-        media_server_class("emby")
+        media_server_class("kodi")
     except Failed as error:
         assert "not supported" in str(error)
         assert "plex" in str(error)

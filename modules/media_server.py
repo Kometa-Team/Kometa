@@ -345,6 +345,11 @@ def build_media_server(name, data):
         from modules.silo import SiloMediaServer
 
         return SiloMediaServer.from_config(payload, name=str(name), profile_id=data.get("profile_id"))
+    if server_type in ("jellyfin", "emby"):
+        from modules.mediabrowser import EmbyMediaServer, JellyfinMediaServer
+
+        server_class = JellyfinMediaServer if server_type == "jellyfin" else EmbyMediaServer
+        return server_class.from_config(payload, name=str(name), user_id=data.get("user"))
     if server_type == "plex":
         return PlexMediaServer.from_config(payload, name=str(name))
     media_server_class(server_type)

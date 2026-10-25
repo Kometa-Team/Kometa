@@ -410,7 +410,7 @@
         "type": {
           "description": "Media server type.",
           "type": "string",
-          "enum": ["plex", "silo"]
+          "enum": ["plex", "silo", "jellyfin", "emby"]
         },
         "url": {
           "description": "Server URL. For Silo, /api/v2 is added when the URL does not already end with it.",
@@ -456,6 +456,11 @@
         },
         "profile_id": {
           "description": "Silo profile id. Catalog reads send it as the X-Profile-Id header.",
+          "type": "string",
+          "minLength": 1
+        },
+        "user": {
+          "description": "Jellyfin or Emby user id. Catalog and playlist calls use this user. When omitted, Kometa uses the first administrator.",
           "type": "string",
           "minLength": 1
         }

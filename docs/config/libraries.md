@@ -59,13 +59,13 @@ The available attributes for each library are as follows:
 
 ??? blank "`server` - Used to select a named media server.<a class="headerlink" href="#server" title="Permanent link">¶</a>"
 
-    <div id="server" />The `server` attribute selects an entry from [`media_servers`](silo.md). Leave it unset to use the `plex` server.
+    <div id="server" />The `server` attribute selects an entry from [`media_servers`](silo.md). Leave it unset to use the `plex` server. Jellyfin and Emby entries are described in [Jellyfin and Emby](jellyfin.md).
 
     <hr style="margin: 0px;">
 
     **Attribute:** `server`
 
-    **Accepted Values:** The name of a `media_servers` entry.
+    **Accepted Values:** The name of a `media_servers` entry. The entry `type` may be `plex`, `silo`, `jellyfin`, or `emby`.
 
     **Default Value:** The `plex` server
 

@@ -23,6 +23,7 @@ from modules.lidarr import Lidarr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.media_server import PlexMediaServer, build_media_server
+from modules.mediabrowser import Emby, EmbyMediaServer, Jellyfin, JellyfinMediaServer
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
 from modules.notifiarr import Notifiarr
@@ -2284,6 +2285,10 @@ class ConfigFile:
                         logger.separator("Silo Configuration", space=False, border=False)
                         params["server"] = named_server
                         library = Silo(self, params)
+                    elif isinstance(named_server, (JellyfinMediaServer, EmbyMediaServer)):
+                        logger.separator(f"{named_server.type_label} Configuration", space=False, border=False)
+                        params["server"] = named_server
+                        library = Jellyfin(self, params) if isinstance(named_server, JellyfinMediaServer) else Emby(self, params)
                     else:
                         logger.separator("Plex Configuration", space=False, border=False)
                         plex_defaults = dict(self.general["plex"])

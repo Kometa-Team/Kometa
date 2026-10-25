@@ -3,7 +3,7 @@
 ## This file is a template remove the .template to use the file
 
 ## TMDb is required. Plex is required for libraries that use Plex.
-## A Silo library can omit plex and set server to a media_servers entry.
+## A Silo, Jellyfin, or Emby library can omit plex and set server to a media_servers entry.
 
 plex:                              # Required for libraries that use Plex. Omit this block when every library selects another server
   url: http://192.168.1.12:32400   # Enter Plex URL (REQUIRED); this needs to point to your server, not app.plex.tv
@@ -16,10 +16,11 @@ plex:                              # Required for libraries that use Plex. Omit 
   verify_ssl: true
 # media_servers:                   # Optional named servers. A library selects one with server.
 #   Shelf:
-#     type: silo                    # silo or plex
+#     type: silo                    # plex, silo, jellyfin, or emby
 #     url: http://192.168.1.12:8090 # Silo native API. Kometa appends /api/v2
 #     token:                        # Session token or API key
-#     profile_id:                   # Sent as X-Profile-Id for catalog reads
+#     profile_id:                   # Silo only. Sent as X-Profile-Id for catalog reads
+#     user:                         # Jellyfin or Emby user id. Omit to use the first administrator
 #     timeout: 60
 #     verify_ssl: true
 tmdb:

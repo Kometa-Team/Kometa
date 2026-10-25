@@ -181,6 +181,10 @@ Configuration = [
     { TMDb = "config/tmdb.md" },
 ] },
     { "Optional Services" = [
+    { "Media Servers" = [
+    { Silo = "config/silo.md" },
+    { "Jellyfin and Emby" = "config/jellyfin.md" },
+] },
     { "Metadata and Tracking" = [
     { FlickList = "config/flicklist.md" },
     { Floppy = "config/floppy.md" },
@@ -202,7 +206,6 @@ Configuration = [
     { Sonarr = "config/sonarr.md" },
 ] },
     { "Activity Monitoring" = [
-    { Silo = "config/silo.md" },
     { Tautulli = "config/tautulli.md" },
     { Tracearr = "config/tracearr.md" },
 ] },
