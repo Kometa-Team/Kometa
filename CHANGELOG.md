@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix cached MDBList entries never returning the MyAnimeList rating: `query_mdb()` rebuilt that rating with the source label `myanimelist_rating`, which `MDbObj` does not recognize, so `mdb_myanimelist` in `mass_*_rating_update` operations, `<<mdb_myanimelist_rating>>` overlay text and `value_filter` only worked on a fresh MDBList fetch. #3773
+- Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739
