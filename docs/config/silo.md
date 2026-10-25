@@ -8,7 +8,7 @@ hide:
 
 [Silo](https://silo.pzyzbyx.pw/api/v2/docs) is a media server. A library uses Silo when its [`server`](libraries.md#server) attribute names a `media_servers` entry. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
-Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Image uploads, labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
+Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Posters, backdrops, logos, and overlays are set from a URL. Kometa publishes a local image to [transfer.kometa.wiki](https://transfer.kometa.wiki) and gives Silo that URL. A URL Kometa already has, such as a TMDb image, is given to Silo directly. Labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
 
 Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. When `profile_id` is set, catalog reads send it on the `X-Profile-Id` header.
 

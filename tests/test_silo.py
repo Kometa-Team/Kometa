@@ -22,8 +22,8 @@ class FakeSession:
         self.calls = []
         self.responses = list(responses)
 
-    def request(self, method, url, params=None, json=None, headers=None, timeout=None):
-        self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers, "timeout": timeout})
+    def request(self, method, url, params=None, json=None, headers=None, timeout=None, files=None):
+        self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers, "timeout": timeout, "files": files})
         return self.responses.pop(0)
 
 
@@ -38,6 +38,7 @@ def _library(client, **overrides):
     library.server = overrides.get("server") or _server()
     library.client = client
     library.library_id = "lib-1"
+    library.timeout = library.server.timeout
     library.is_movie = True
     library.is_show = False
     library.type = "Movie"
@@ -68,10 +69,6 @@ def test_silo_is_a_registered_server_with_scored_capabilities():
         Capability.ADD_TAG,
         Capability.REMOVE_TAG,
         Capability.GET_ITEM_LABELS,
-        Capability.UPLOAD_POSTER,
-        Capability.UPLOAD_BACKDROP,
-        Capability.UPLOAD_LOGO,
-        Capability.UPLOAD_OVERLAY,
         Capability.UPLOAD_THEME_SONG,
         Capability.UPLOAD_THEME_VIDEO,
         Capability.BATCH_TAGS,
@@ -89,6 +86,10 @@ def test_silo_is_a_registered_server_with_scored_capabilities():
         Capability.PARSE_SMART_FILTER,
         Capability.SYNC_TAGS,
         Capability.SET_USER_RATING,
+        Capability.UPLOAD_POSTER,
+        Capability.UPLOAD_BACKDROP,
+        Capability.UPLOAD_LOGO,
+        Capability.UPLOAD_OVERLAY,
         Capability.UPLOAD_BANNER,
         Capability.FIND_POSTER_ASSET,
         Capability.FIND_BACKDROP_ASSET,
@@ -184,8 +185,6 @@ def test_library_builds_collections_and_refuses_missing_capabilities():
     assert library.stats["deleted"] == 1
     assert deleted == ["Collection Heat deleted"]
 
-    with pytest.raises(Failed, match="does not support"):
-        library.upload_poster(item, "poster.jpg")
     with pytest.raises(Failed, match="cannot upload image bytes"):
         library.image_update(item, "banner.jpg", poster=False, image_type="banner")
     with pytest.raises(Failed, match="query documents"):
@@ -222,3 +221,94 @@ def test_get_all_loads_provider_ids_and_keeps_string_rating_keys():
     found = added.get_items_added_since(None, cutoff)
     assert found[0].ratingKey == "movie:new"
     assert added.client.session.calls[0]["json"]["groups"][0]["rules"][0]["value"] == cutoff.isoformat()
+
+
+def test_publish_image_puts_the_file_on_transfer(monkeypatch, tmp_path):
+    image = tmp_path / "Heat Poster.png"
+    image.write_bytes(b"png-bytes")
+    captured = {}
+
+    class Response:
+        status_code = 200
+        text = "https://transfer.kometa.wiki/token/kometa-poster.png\n"
+
+    def fake_put(url, data=None, headers=None, timeout=None):
+        captured["url"] = url
+        captured["body"] = data.read()
+        captured["headers"] = headers
+        captured["timeout"] = timeout
+        return Response()
+
+    monkeypatch.setattr(silo_module.requests, "put", fake_put)
+    assert silo_module.publish_image(image, filename="kometa-poster.png", timeout=12) == "https://transfer.kometa.wiki/token/kometa-poster.png"
+    assert captured["url"] == "https://transfer.kometa.wiki/kometa-poster.png"
+    assert captured["body"] == b"png-bytes"
+    assert captured["headers"] == {"Max-Days": "7"}
+    assert "Authorization" not in captured["headers"]
+    assert captured["timeout"] == 12
+
+    missing = Response()
+    missing.status_code = 500
+    missing.text = "nope"
+    monkeypatch.setattr(silo_module.requests, "put", lambda *args, **kwargs: missing)
+    with pytest.raises(Failed, match="transfer.kometa.wiki returned 500"):
+        silo_module.publish_image(image)
+
+
+def test_local_poster_is_published_then_applied(monkeypatch, tmp_path):
+    poster = tmp_path / "overlay.jpg"
+    poster.write_bytes(b"jpeg")
+    published = "https://transfer.kometa.wiki/abc/overlay.jpg"
+    monkeypatch.setattr(silo_module, "publish_image", lambda location, filename=None, timeout=60: published)
+    session = FakeSession([FakeResponse({"content_id": "movie:heat-1995"})])
+    library = _library(SiloClient(_server(), session=session))
+    item = SiloItem({"content_id": "movie:heat-1995", "title": "Heat"}, library)
+
+    assert library.upload_poster(item, str(poster)) is True
+    assert session.calls[0]["method"] == "POST"
+    assert session.calls[0]["url"].endswith("/admin/items/movie%3Aheat-1995/images/apply")
+    assert session.calls[0]["json"] == {"type": "poster", "original_url": published}
+    assert session.calls[0]["files"] is None
+
+    overlay = SimpleNamespace(is_poster=True, is_background=False, is_logo=False, is_url=False, location=str(poster))
+    session.responses.append(FakeResponse({"content_id": "movie:heat-1995"}))
+    assert library._upload_image(item, overlay) is True
+    assert session.calls[1]["json"]["original_url"] == published
+
+
+def test_remote_poster_is_given_to_silo_without_publishing(monkeypatch):
+    def fail_publish(*_args, **_kwargs):
+        raise AssertionError("local publish")
+
+    monkeypatch.setattr(silo_module, "publish_image", fail_publish)
+    session = FakeSession([FakeResponse({"ok": True}), FakeResponse({"ok": True})])
+    library = _library(SiloClient(_server(), session=session))
+    item = SiloItem({"content_id": "movie:heat-1995", "title": "Heat"}, library)
+    remote = "https://image.tmdb.org/t/p/original/poster.jpg"
+
+    library.upload_poster(item, remote, url=True)
+    assert session.calls[0]["json"]["original_url"] == remote
+
+    assert library.image_update(item, None, tmdb=("tmdb", remote)) == ("Reset", "TMDb", "Updated")
+    assert session.calls[1]["json"] == {"type": "poster", "original_url": remote}
+    assert library.image_update(item, None, tmdb=("lock", None)) == ("Lock", "Silo", "Failed")
+
+
+def test_collection_artwork_uses_the_source_url_field(monkeypatch, tmp_path):
+    poster = tmp_path / "collection.png"
+    poster.write_bytes(b"png")
+    published = "https://transfer.kometa.wiki/abc/collection.png"
+    monkeypatch.setattr(silo_module, "publish_image", lambda location, filename=None, timeout=60: published)
+    session = FakeSession([FakeResponse({"id": "col 1"}), FakeResponse({"id": "col 1"})])
+    library = _library(SiloClient(_server(), session=session))
+    collection = SiloCollection({"id": "col 1", "title": "Heat"})
+
+    library.upload_poster(collection, str(poster))
+    assert session.calls[0]["method"] == "PUT"
+    assert session.calls[0]["url"].endswith("/admin/collections/col%201/poster")
+    assert session.calls[0]["files"] == {"source_url": (None, published)}
+    assert session.calls[0]["json"] is None
+
+    library.upload_background(collection, "https://image.tmdb.org/backdrop.jpg", url=True)
+    assert session.calls[1]["url"].endswith("/admin/collections/col%201/backdrop")
+    assert session.calls[1]["files"]["source_url"] == (None, "https://image.tmdb.org/backdrop.jpg")

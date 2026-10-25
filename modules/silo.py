@@ -1,10 +1,15 @@
 """Silo media server client and library.
 
 Silo is a media server peer of Plex. Kometa talks to its native ``/api/v2`` API.
-Collection membership is addressed with the catalog content id. Image byte uploads,
-labels, item deletion, and playlists are refused through the capability matrix.
+Collection membership is addressed with the catalog content id. Poster, backdrop,
+logo, and overlay images are applied from a URL. A local file is published to
+transfer.kometa.wiki first. Labels, item deletion, and playlists are refused
+through the capability matrix.
 """
 
+import os
+import re
+import uuid
 from collections.abc import Iterable
 from urllib.parse import quote
 
@@ -19,6 +24,39 @@ logger = util.logger
 
 LIBRARY_TYPES = {"movies": "Movie", "series": "Show"}
 TAG_FIELDS = {"genre": "genres", "studio": "studios", "network": "networks", "country": "countries"}
+TRANSFER_BASE = "https://transfer.kometa.wiki"
+TRANSFER_MAX_DAYS = "7"
+IMAGE_EXTENSIONS = {".jpg", ".png", ".webp"}
+ARTWORK_KINDS = {"poster": "poster", "background": "backdrop", "backdrop": "backdrop", "logo": "logo"}
+IMAGE_SOURCES = {"tmdb": "TMDb", "tvdb": "TVDb", "trakt": "Trakt", "ytmusic": "YouTube Music"}
+
+
+def _transfer_filename(location, kind):
+    extension = os.path.splitext(str(location))[1].lower()
+    if extension == ".jpeg":
+        extension = ".jpg"
+    if extension not in IMAGE_EXTENSIONS:
+        extension = ".jpg"
+    return f"kometa-{kind}-{uuid.uuid4().hex[:12]}{extension}"
+
+
+def publish_image(location, filename=None, timeout=60):
+    """Publish a local image and return the public URL Silo can download."""
+    path = os.fspath(location)
+    if not os.path.isfile(path):
+        raise Failed(f"Silo Error: Image file not found: {path}")
+    name = filename or _transfer_filename(path, "image")
+    name = re.sub(r"[^A-Za-z0-9._-]", "-", name).strip("-.") or "image.jpg"
+    try:
+        with open(path, "rb") as handle:
+            response = requests.put(f"{TRANSFER_BASE}/{quote(name)}", data=handle, headers={"Max-Days": TRANSFER_MAX_DAYS}, timeout=timeout)
+    except requests.RequestException as error:
+        raise Failed(f"Silo Error: Could not publish {os.path.basename(path)} to transfer.kometa.wiki: {error}") from error
+    body = (response.text or "").strip()
+    if response.status_code >= 400 or not body.startswith(f"{TRANSFER_BASE}/"):
+        detail = body.replace("\n", " ")[:200]
+        raise Failed(f"Silo Error: transfer.kometa.wiki returned {response.status_code}{f': {detail}' if detail else ''}")
+    return body
 
 
 def api_base(url):
@@ -83,9 +121,9 @@ class SiloClient:
         if server.verify_ssl is False:
             self.session.verify = False
 
-    def request(self, method, path, params=None, json_body=None, headers=None):
+    def request(self, method, path, params=None, json_body=None, headers=None, files=None):
         try:
-            response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, headers=headers, timeout=self.server.timeout)
+            response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, files=files, headers=headers, timeout=self.server.timeout)
         except requests.RequestException as error:
             raise Failed(f"Silo Error: {method} {path} failed: {error}") from error
         if response.status_code >= 400:
@@ -183,6 +221,12 @@ class SiloClient:
     def refresh_metadata(self, content_id):
         self.request("POST", f"/admin/items/{_path_id(content_id)}/refresh-metadata")
 
+    def apply_item_image(self, content_id, kind, source_url):
+        self.request("POST", f"/admin/items/{_path_id(content_id)}/images/apply", json_body={"type": kind, "original_url": source_url})
+
+    def set_collection_artwork(self, collection_id, kind, source_url):
+        self.request("PUT", f"/admin/collections/{_path_id(collection_id)}/{kind}", files={"source_url": (None, source_url)})
+
 
 class SiloCollection:
     def __init__(self, data, etag=None):
@@ -272,29 +316,85 @@ class Silo(Library):
     def notify_delete(self, message, playlist=False):
         self.config.notify_delete(message, server=self._silo().display_name, library=None if playlist else self.name)
 
+    def _artwork_kind(self, image_type, poster=True):
+        if image_type in ARTWORK_KINDS:
+            return ARTWORK_KINDS[image_type]
+        if poster and image_type in (None, "poster"):
+            return "poster"
+        status = self.require(Capability.UPLOAD_BANNER)
+        raise Failed(f"{self._silo().display_name} cannot upload image bytes ({status.detail or image_type or 'banner'})")
+
+    def _public_image_url(self, image, url=False, kind="poster"):
+        location = image.location if hasattr(image, "location") and hasattr(image, "is_url") else image
+        remote = image.is_url if hasattr(image, "is_url") and hasattr(image, "location") else url
+        if not remote and isinstance(location, str) and location.startswith(("http://", "https://")):
+            remote = True
+        if remote:
+            if not isinstance(location, str) or not location.startswith(("http://", "https://")):
+                raise Failed("Silo Error: Image URL is missing")
+            return location
+        return publish_image(location, filename=_transfer_filename(location, kind), timeout=self.timeout)
+
+    def _apply_artwork(self, item, kind, source_url):
+        if isinstance(item, SiloCollection):
+            if kind not in ("poster", "backdrop"):
+                raise Failed(f"Silo Error: {self._silo().display_name} collections have no {kind} URL")
+            self.client.set_collection_artwork(item.id, kind, source_url)
+            return
+        content_id = getattr(item, "content_id", None)
+        if not content_id:
+            raise Failed("Silo Error: Item has no content id for artwork")
+        self.client.apply_item_image(content_id, kind, source_url)
+
     def _upload_image(self, item, image):
         self.require(Capability.UPLOAD_OVERLAY)
+        kind = "poster" if image.is_poster else "backdrop" if image.is_background else "logo" if image.is_logo else None
+        if kind is None:
+            raise Failed(f"{self._silo().display_name} cannot upload this overlay image")
+        self._apply_artwork(item, kind, self._public_image_url(image, kind=kind))
+        return True
 
     def upload_poster(self, item, image, url=False):
         self.require(Capability.UPLOAD_POSTER)
+        self._apply_artwork(item, "poster", self._public_image_url(image, url=url, kind="poster"))
+        return True
 
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
-        if image_type == "logo":
-            capability = Capability.UPLOAD_LOGO
-        elif image_type in ("background", "backdrop"):
-            capability = Capability.UPLOAD_BACKDROP
-        elif poster:
-            capability = Capability.UPLOAD_POSTER
-        else:
-            capability = Capability.UPLOAD_BANNER
-        status = self.require(capability)
-        raise Failed(f"{self._silo().display_name} cannot upload image bytes ({status.detail or capability.label})")
+        image_type = image_type or ("poster" if poster else "background")
+        display_type = {"poster": "Poster", "background": "Background", "backdrop": "Background", "logo": "Logo"}.get(image_type, image_type.replace("_", " ").title())
+        text = f"{f'{title} ' if title else ''}{display_type}"
+        if image is None and isinstance(tmdb, tuple) and tmdb[0] in ("lock", "unlock"):
+            action = "Lock" if tmdb[0] == "lock" else "Unlock"
+            logger.warning(f"{text} | {action} Not Supported")
+            return action, "Silo", "Failed"
+        kind = self._artwork_kind(image_type, poster=poster)
+        capability = {"poster": Capability.UPLOAD_POSTER, "backdrop": Capability.UPLOAD_BACKDROP, "logo": Capability.UPLOAD_LOGO}[kind]
+        self.require(capability)
+        source = "URL"
+        candidate = tmdb
+        if image is not None:
+            source = "URL" if (getattr(image, "is_url", False) or (isinstance(image, str) and image.startswith(("http://", "https://")))) else "Assets"
+            candidate = image
+        elif isinstance(tmdb, tuple):
+            source = IMAGE_SOURCES.get(tmdb[0], str(tmdb[0] or "URL"))
+            candidate = tmdb[1]
+        if candidate is None or (isinstance(candidate, str) and not candidate):
+            logger.warning(f"{text} | No Image URL")
+            return "Reset", source, "Missing"
+        source_url = self._public_image_url(candidate, kind=kind)
+        self._apply_artwork(item, kind, source_url)
+        logger.info(f"{text} | Set from {source_url}")
+        return "Reset", source, "Updated"
 
     def upload_background(self, item, image, url=False):
         self.require(Capability.UPLOAD_BACKDROP)
+        self._apply_artwork(item, "backdrop", self._public_image_url(image, url=url, kind="backdrop"))
+        return True
 
     def upload_logo(self, item, image, url=False):
         self.require(Capability.UPLOAD_LOGO)
+        self._apply_artwork(item, "logo", self._public_image_url(image, url=url, kind="logo"))
+        return True
 
     def reload(self, item, force=False):
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
@@ -641,11 +741,11 @@ def _silo_capabilities():
         Capability.GET_ITEM_LABELS: ("none", "No labels"),
         Capability.LOCK_TAG: ("full", "locked_fields"),
         Capability.SET_USER_RATING: ("partial", "Profile stars, 1-5"),
-        Capability.UPLOAD_POSTER: ("none", "Apply an existing image; no byte upload"),
-        Capability.UPLOAD_BACKDROP: ("none", "Apply an existing image; no byte upload"),
-        Capability.UPLOAD_LOGO: ("none", "Apply an existing image; no byte upload"),
+        Capability.UPLOAD_POSTER: ("partial", "URL; local files go to transfer.kometa.wiki"),
+        Capability.UPLOAD_BACKDROP: ("partial", "URL; local files go to transfer.kometa.wiki"),
+        Capability.UPLOAD_LOGO: ("partial", "URL; local files go to transfer.kometa.wiki"),
         Capability.UPLOAD_BANNER: ("partial", "Apply an existing image"),
-        Capability.UPLOAD_OVERLAY: ("none", "No byte upload"),
+        Capability.UPLOAD_OVERLAY: ("partial", "Poster URL via transfer.kometa.wiki"),
         Capability.FIND_POSTER_ASSET: ("partial", "Container path"),
         Capability.FIND_BACKDROP_ASSET: ("partial", "Container path"),
         Capability.FIND_LOGO_ASSET: ("partial", "Container path"),

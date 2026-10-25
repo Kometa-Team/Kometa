@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
-- Add Silo as a media server. Define it under `media_servers` and select it on a library with `server`. Silo libraries can build manual and smart collections. Image uploads, labels, item deletion, and playlists are not available. (#3351)
+- Add Silo as a media server. Define it under `media_servers` and select it on a library with `server`. Silo libraries can build manual and smart collections. Posters, backdrops, logos, and overlays are applied from a URL; a local image is published to transfer.kometa.wiki first. Labels, item deletion, and playlists are not available. (#3351)
 - Add a media server object with a queryable capability matrix. Plex remains the default server, and existing `plex:` configuration is unchanged. (#3351)
 - Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
