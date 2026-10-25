@@ -476,6 +476,8 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "access_token": {"type": "string", "description": "TMDb v4 API Read Access Token, used only for TMDb list_export"},
+        "authorization": {"type": "object", "description": "TMDb user authorization saved after the first TMDb list export", "properties": {"access_token": {"type": "string"}, "account_id": {"type": "string"}}, "additionalProperties": false},
         "apikey": {
           "anyOf": [
             {

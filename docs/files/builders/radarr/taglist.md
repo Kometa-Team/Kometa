@@ -28,19 +28,21 @@ collections:
     radarr_taglist: 
 ```
 
-### Sync to MDBList
+### Export to MDBList
 
-When used with [`sync_to_mdb_list`](../../settings.md#mdblist-sync-example),
-`radarr_taglist` uses the matching movies in Radarr as the source of truth.
-The sync does not depend on the items being present in Plex or on a Plex
-collection being built. Removing a tag in Radarr also removes
-the movie from the MDBList static list. Only movies are removed, so this can
-safely share a list with [`sonarr_taglist`](../../sonarr/taglist.md) syncs.
+When used with [`list_export`](../../settings.md#list-export), `radarr_taglist`
+exports matching movies that Kometa can resolve in Plex. With `mode: sync`,
+movies absent from those results are removed from the MDBList list. Use a
+separate destination list for [`sonarr_taglist`](../../sonarr/taglist.md),
+because sync treats the builder's results as the complete list.
 
 ```yaml
 collections:
   Radarr Test:
     radarr_taglist: kometa_test
-    sync_to_mdb_list: My Kometa Test Tags
+    list_export:
+      source: mdblist
+      name: My Kometa Test Tags
+      mode: sync
     build_collection: false
 ```

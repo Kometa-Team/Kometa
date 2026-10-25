@@ -731,7 +731,7 @@ class Cache:
                         {"source": "tomatoesaudience", "value": row["tomatoesaudience_rating"] if row["tomatoesaudience_rating"] else None},
                         {"source": "tmdb", "value": row["tmdb_rating"] if row["tmdb_rating"] else None},
                         {"source": "letterboxd", "value": row["letterboxd_rating"] if row["letterboxd_rating"] else None},
-                        {"source": "myanimelist_rating", "value": row["myanimelist_rating"] if row["myanimelist_rating"] else None},
+                        {"source": "myanimelist", "value": row["myanimelist_rating"] if row["myanimelist_rating"] else None},
                     ]
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object

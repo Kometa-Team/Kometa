@@ -12,7 +12,7 @@ Finds every item in a FlickList list, or across a FlickList user's public lists.
 
 ## flicklist_list
 
-The expected input is a FlickList list URL (`https://flicklist.tv/list/4821`) or its bare numeric id (`4821`).
+The expected input is a FlickList list's numeric ID (`4821`).
 Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
 The `sync_mode: sync` and `collection_order: custom` settings are recommended since FlickList lists can be
@@ -29,7 +29,7 @@ updated externally and are returned in list order.
 ```yaml
 collections:
   FlickList List:
-    flicklist_list: https://flicklist.tv/list/4821
+    flicklist_list: 4821
     collection_order: custom
     sync_mode: sync
 ```

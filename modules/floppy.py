@@ -4,9 +4,10 @@ import re
 import xml.etree.ElementTree as ET
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from io import StringIO
-from urllib.parse import urlparse
+from urllib.parse import quote, urljoin, urlparse
 
 from modules import util
+from modules.request import DEFAULT_TIMEOUT
 from modules.util import Failed
 
 logger = util.logger
@@ -70,6 +71,78 @@ class Floppy:
     def test_connection(self):
         if self.token:
             self._request(f"{self.url}/api/v1/lists?limit=1")
+
+    def _export_write(self, method, path, json_data=None):
+        url = f"{self.url}/api/v1{path}"
+        headers = {"X-API-Key": self.token}
+        try:
+            if method == "POST":
+                response = self.requests.post(url, json=json_data, headers=headers)
+            else:
+                response = getattr(self.requests.session, method.lower())(url, json=json_data, headers=headers, timeout=DEFAULT_TIMEOUT)
+        except Exception as e:
+            raise Failed(f"Floppy Error: Failed to update {url}: {e}") from e
+        if response.status_code >= 400:
+            detail = ""
+            try:
+                detail = response.json().get("detail", "")
+            except (ValueError, AttributeError):
+                pass
+            raise Failed(f"Floppy Error: {response.status_code} updating {url}{f': {detail}' if detail else ''}")
+        if response.status_code == 204:
+            return None
+        try:
+            return response.json()
+        except ValueError as e:
+            raise Failed(f"Floppy Error: Invalid JSON returned by {url}") from e
+
+    def _export_results(self, path):
+        next_url = f"{self.url}/api/v1{path}"
+        while next_url:
+            payload = self._request(next_url)
+            if not isinstance(payload, dict) or not isinstance(payload.get("results"), list):
+                raise Failed(f"Floppy Error: Invalid list response from {next_url}")
+            yield from payload["results"]
+            next_page = payload.get("pagination", {}).get("next")
+            following = urljoin(next_url, next_page) if next_page else None
+            if following and (urlparse(following).netloc, urlparse(following).scheme) != (urlparse(self.url).netloc, urlparse(self.url).scheme):
+                raise Failed("Floppy Error: List pagination points to another server")
+            next_url = following
+
+    def sync_list(self, name, ids, mode="sync"):
+        if not self.token:
+            raise Failed("Floppy Error: list_export requires floppy.token in config.yml")
+        lists = list(self._export_results("/lists?limit=100"))
+        matches = [item for item in lists if str(item.get("id")) == str(name)] if str(name).isdigit() else [item for item in lists if item.get("name") == str(name)]
+        if len(matches) > 1:
+            raise Failed(f"Floppy Error: Multiple lists named {name}; use a numeric list ID")
+        if matches:
+            list_id = matches[0]["id"]
+            list_name = matches[0]["name"]
+        elif str(name).isdigit():
+            raise Failed(f"Floppy Error: List ID {name} is not accessible to this account")
+        else:
+            created = self._export_write("POST", "/lists", {"name": str(name)})
+            if not isinstance(created, dict) or "id" not in created:
+                raise Failed("Floppy Error: Invalid response when creating a list")
+            list_id = created["id"]
+            list_name = str(name)
+        current = set()
+        for entry in self._export_results(f"/lists/{list_id}/items?limit=100"):
+            data = entry.get("item") or entry
+            key = data.get("media_type"), data.get("source"), str(data.get("media_id"))
+            if None in key or key[2] == "None":
+                raise Failed(f"Floppy Error: Cannot identify an existing item in list {list_name}; sync was stopped")
+            current.add(key)
+        desired = {("movie" if kind == "tmdb" else "tv", "tmdb", str(item_id)) for item_id, kind in ids if kind in ("tmdb", "tmdb_show")}
+        added = sorted(desired - current)
+        removed = sorted(current - desired) if mode == "sync" else []
+        for media_type, source, media_id in added:
+            self._export_write("PUT", f"/media/{quote(media_type, safe='')}/{quote(source, safe='')}/{quote(media_id, safe='')}/lists/{list_id}")
+        for media_type, source, media_id in removed:
+            self._export_write("DELETE", f"/media/{quote(media_type, safe='')}/{quote(source, safe='')}/{quote(media_id, safe='')}/lists/{list_id}")
+        logger.info(f"Floppy list {list_name} {'updated' if added or removed else 'already up to date'} ({mode})")
+        logger.info(f"List: {self.url}/list/{list_id}")
 
     def validate_lists(self, err_type, floppy_lists):
         valid_lists = []

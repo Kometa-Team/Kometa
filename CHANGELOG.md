@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
 - Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
@@ -29,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Invalidate stale MDBList cache entries that could apply incorrectly scaled Letterboxd ratings to Plex. #3771
+- Fix cached MDBList entries never returning the MyAnimeList rating: `query_mdb()` rebuilt that rating with the source label `myanimelist_rating`, which `MDbObj` does not recognize, so `mdb_myanimelist` in `mass_*_rating_update` operations, `<<mdb_myanimelist_rating>>` overlay text and `value_filter` only worked on a fresh MDBList fetch. #3773
+- Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739
