@@ -6,7 +6,7 @@ hide:
 ---
 # Library Attributes
 
-Within the [Configuration File](overview.md), the `libraries` attribute specifies the libraries that the user wants Kometa to act on. A library uses the `plex` server unless it sets [`server`](silo.md) to a named `media_servers` entry.
+Within the [Configuration File](overview.md), the `libraries` attribute specifies the libraries that the user wants Kometa to act on. A library uses the `plex` server unless it sets [`server`](silo.md) to a named `media_servers` entry. Omit `plex` when every library selects another server.
 
 Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or "execute the following Collection Definition files".
 These attributes can be specified individually per library, or can be inherited from the global value if it has been set.

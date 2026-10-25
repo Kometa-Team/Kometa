@@ -2,9 +2,10 @@
 ## Do not remove the above line
 ## This file is a template remove the .template to use the file
 
-## Plex and TMDb are the two connections which are required for the script to run
+## TMDb is required. Plex is required for libraries that use Plex.
+## A Silo library can omit plex and set server to a media_servers entry.
 
-plex:                              # Can be individually specified per library as well; REQUIRED for the script to run
+plex:                              # Required for libraries that use Plex. Omit this block when every library selects another server
   url: http://192.168.1.12:32400   # Enter Plex URL (REQUIRED); this needs to point to your server, not app.plex.tv
   token:                           # Enter Plex Token (REQUIRED)
   timeout: 60

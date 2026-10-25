@@ -8,10 +8,13 @@ to verify the config parsing and validation logic in isolation.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from jsonschema import Draft7Validator, ValidationError
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 import modules.config as config_module
@@ -347,6 +350,62 @@ media_servers:
 """
     with pytest.raises(Failed, match="not supported"):
         make_config(tmp_path, config_yaml=config_yaml)
+
+
+def test_silo_library_connects_without_a_plex_block(tmp_path, monkeypatch):
+    silo_calls = []
+
+    def capture_silo(*args, **kwargs):
+        silo_calls.append(args[1])
+        return _library_double(args[1]["mapping_name"])
+
+    def reject_plex(*args, **kwargs):
+        raise AssertionError("Plex was opened for a Silo library")
+
+    monkeypatch.setattr(config_module, "Silo", capture_silo)
+    monkeypatch.setattr(config_module, "Plex", reject_plex)
+    config = make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+libraries:
+  Films:
+    server: Shelf
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+media_servers:
+  Shelf:
+    type: silo
+    url: http://localhost:8090
+    token: silo-token
+    profile_id: profile-1
+""",
+    )
+
+    assert len(silo_calls) == 1
+    server = silo_calls[0]["server"]
+    assert isinstance(server, config_module.SiloMediaServer)
+    assert server.url == "http://localhost:8090"
+    assert server.token == "silo-token"
+    assert "plex" not in silo_calls[0]
+    assert [library.original_mapping_name for library in config.libraries] == ["Films"]
+
+
+def test_config_schema_accepts_silo_without_a_plex_block():
+    schema = json.loads((Path(__file__).resolve().parents[1] / "json-schema" / "config-schema.json").read_text(encoding="utf-8"))
+    validator = Draft7Validator(schema)
+    validator.validate(
+        {
+            "tmdb": {"apikey": "key"},
+            "media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}},
+            "libraries": {"Films": {"server": "Shelf", "collection_files": []}},
+        }
+    )
+    validator.validate({"plex": {"url": "http://localhost:32400", "token": "token"}, "tmdb": {"apikey": "key"}})
+    with pytest.raises(ValidationError, match="'tmdb' is a required property"):
+        validator.validate({"media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}}})
 
 
 # ═══════════════════════════════════════════════════════════════════════

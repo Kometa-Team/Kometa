@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.
 - Add music-library `lidarr_all` and `lidarr_taglist` builders, which create Plex artist collections by matching Lidarr and Plex MusicBrainz artist IDs.
 
+### Changed
+
+- The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
+
 ### Fixed
 
 - Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.

@@ -6,16 +6,13 @@ hide:
 ---
 # Silo Attributes
 
-[Silo](https://silo.pzyzbyx.pw/api/v2/docs) is an optional media server. The `plex` connection stays required. A library uses Silo when its [`server`](libraries.md#server) attribute names a `media_servers` entry.
+[Silo](https://silo.pzyzbyx.pw/api/v2/docs) is a media server. A library uses Silo when its [`server`](libraries.md#server) attribute names a `media_servers` entry. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
 Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Image uploads, labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
 
 Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. When `profile_id` is set, catalog reads send it on the `X-Profile-Id` header.
 
 ```yaml title="config.yml Silo sample"
-plex:
-  url: http://192.168.1.12:32400
-  token: ####################
 tmdb:
   apikey: ################################
 media_servers:
@@ -27,16 +24,13 @@ media_servers:
     timeout: 60
     verify_ssl: true
 libraries:
-  Movies:
-    collection_files:
-      - default: basic
   Films:
     server: Shelf
     collection_files:
       - default: basic
 ```
 
-`Movies` uses the `plex` server. `Films` uses the Silo server named `Shelf`.
+`Films` uses the Silo server named `Shelf`. Add a `plex` block when another library in the same file uses Plex.
 
 <div class="annotate" markdown>
 

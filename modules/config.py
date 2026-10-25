@@ -1414,7 +1414,7 @@ class ConfigFile:
 
             logger.separator()
 
-            logger.info("Connecting to Plex Libraries...")
+            logger.info("Connecting to Libraries...")
 
             self.general["plex"] = {
                 "url": check_for_attribute(self.data, "url", parent="plex", var_type="url", default_is_none=True),
@@ -2286,13 +2286,19 @@ class ConfigFile:
                         library = Silo(self, params)
                     else:
                         logger.separator("Plex Configuration", space=False, border=False)
+                        plex_defaults = dict(self.general["plex"])
+                        if isinstance(named_server, PlexMediaServer):
+                            for attr in ("url", "token", "timeout", "verify_ssl", "db_cache"):
+                                value = getattr(named_server, attr)
+                                if value is not None:
+                                    plex_defaults[attr] = value
                         params["plex"] = {
                             "url": check_for_attribute(
                                 lib,
                                 "url",
                                 parent="plex",
                                 var_type="url",
-                                default=self.general["plex"]["url"],
+                                default=plex_defaults["url"],
                                 req_default=True,
                                 save=False,
                             ),
@@ -2300,7 +2306,7 @@ class ConfigFile:
                                 lib,
                                 "token",
                                 parent="plex",
-                                default=self.general["plex"]["token"],
+                                default=plex_defaults["token"],
                                 req_default=True,
                                 save=False,
                             ),
@@ -2309,7 +2315,7 @@ class ConfigFile:
                                 "timeout",
                                 parent="plex",
                                 var_type="int",
-                                default=self.general["plex"]["timeout"],
+                                default=plex_defaults["timeout"],
                                 save=False,
                             ),
                             "verify_ssl": check_for_attribute(
@@ -2317,7 +2323,7 @@ class ConfigFile:
                                 "verify_ssl",
                                 parent="plex",
                                 var_type="bool",
-                                default=self.general["plex"]["verify_ssl"],
+                                default=plex_defaults["verify_ssl"],
                                 default_is_none=True,
                                 save=False,
                             ),
@@ -2326,7 +2332,7 @@ class ConfigFile:
                                 "db_cache",
                                 parent="plex",
                                 var_type="int",
-                                default=self.general["plex"]["db_cache"],
+                                default=plex_defaults["db_cache"],
                                 default_is_none=True,
                                 save=False,
                             ),
