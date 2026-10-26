@@ -6,9 +6,9 @@ babel==2.18.0
     # via mkdocs-material
 backrefs==8.1
     # via mkdocs-material
-bracex==3.1
+bracex==3.2
     # via wcmatch
-certifi==2026.10.18
+certifi==2026.10.23
     # via
     #   httpcore
     #   httpx
@@ -131,7 +131,7 @@ requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
     # via neoteroi-mkdocs
-selectolax==1.0.1
+selectolax==1.0.2
     # via mkdocs-glightbox
 six==1.17.0
     # via python-dateutil
@@ -145,5 +145,5 @@ watchdog==6.0.0
     # via
     #   mkdocs
     #   properdocs
-wcmatch==11.1
+wcmatch==11.2
     # via mkdocs-include-markdown-plugin
