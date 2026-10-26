@@ -145,5 +145,5 @@ watchdog==6.0.0
     # via
     #   mkdocs
     #   properdocs
-wcmatch==11.1
+wcmatch==11.2
     # via mkdocs-include-markdown-plugin
