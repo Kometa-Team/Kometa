@@ -18,7 +18,7 @@ beautifulsoup4==4.15.0
     # via
     #   fastfingertips
     #   letterboxdpy
-certifi==2026.10.18
+certifi==2026.10.23
     # via
     #   apprise
     #   curl-cffi
@@ -33,7 +33,7 @@ click==8.5.0
     # via apprise
 cloudscraper==1.2.71
     # via kometa
-curl-cffi==0.16.3
+curl-cffi==0.17.0
     # via letterboxdpy
 docopt==0.6.2
     # via num2words
@@ -49,11 +49,11 @@ h11==0.16.0
     #   httpcore2
 httpcore==1.0.9
     # via httpx
-httpcore2==2.14.0 ; sys_platform != 'emscripten'
+httpcore2==2.16.0 ; sys_platform != 'emscripten'
     # via httpx2
 httpx==0.28.1
     # via serializd-py
-httpx2==2.14.0
+httpx2==2.16.0
     # via pylast
 httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
     # via httpx2
@@ -91,7 +91,7 @@ plexapi==4.18.3
     # via kometa
 psutil==7.2.2
     # via kometa
-pycparser==3.11 ; implementation_name != 'PyPy'
+pycparser==3.12 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.14.1
     # via serializd-py
@@ -149,7 +149,7 @@ six==1.17.0
     # via python-dateutil
 smmap==5.0.3
     # via gitdb
-soupsieve==3.0.3
+soupsieve==3.0.4
     # via beautifulsoup4
 tenacity==9.2.1
     # via kometa
