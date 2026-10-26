@@ -1,4 +1,4 @@
-## Poster Styles
+## Poster styles
 
 This Default can use the `style` Template Variable to easily change the posters styles.
 

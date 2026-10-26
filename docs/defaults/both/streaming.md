@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Streaming",
-        "CODE_NAME": "streaming",
-        "LIBRARY_TYPE": "Movie, Show",
-        "SECTION_NUMBER": "030",
-        "DESCRIPTION": "dynamically create collections based on the streaming Services that your media is available on"
-    }'
+    "COLLECTION": "Streaming",
+    "CODE_NAME": "streaming",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "030",
+    "DESCRIPTION": "dynamically create collections based on the streaming Services that your media is available on"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Streaming"}' %}
 | `Apple TV Movies/Shows`       | `appletv`     | Collection of Movies/Shows Streaming on Apple TV.       |
@@ -36,7 +36,7 @@ hide:
 | `Tubi Movies/Shows`           | `tubi`        | Collection of Movies/Shows Streaming on Tubi.           |
 | `YouTube Movies/Shows`        | `youtube`     | Collection of Movies/Shows Streaming on YouTube.        |
 
-## Regional Variants
+## Regional variants
 
 Some logic is applied for specific regions to prevent collections appearing which do not exist in said region.
 

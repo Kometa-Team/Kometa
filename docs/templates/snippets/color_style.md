@@ -1,4 +1,4 @@
-## Color Style
+## Color style
 
 Below is a screenshot of the alternative Color (`color`) style which can be set via the `style` Template Variable.
 

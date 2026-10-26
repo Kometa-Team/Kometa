@@ -47,7 +47,7 @@ libraries:
     collection_files:
       - default: CODE_NAME
 <!--show-->
-  
+
 <!--ratings-->
         template_variables:
           rating1: critic
@@ -85,13 +85,13 @@ libraries:
       mass_episode_critic_rating_update: imdb
       mass_episode_audience_rating_update: tmdb
 <!--ratings-->
-      
+
 <!--all-->
 ```
 
 <!--vars-->
 
-## Template Variables
+## Template variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 

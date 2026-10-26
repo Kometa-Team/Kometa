@@ -7,5 +7,5 @@
 
 === "File-Specific Template Variables"
 
-    | Variable | Description & Values |
-    |:---------|:---------------------|
+    | Variable | Description | Values |
+    |:---------|:------------|:-------|

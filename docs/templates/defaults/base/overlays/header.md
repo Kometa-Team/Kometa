@@ -8,13 +8,13 @@ The `CODE_NAME` Default Overlay File is used to DESCRIPTION.
 ![header image](../../../../assets/images/defaults/overlays/CODE_NAME.png)
 <!--image-->
 
-## Requirements & Recommendations
+## Requirements & recommendations
 
 Supported Overlay Level: OVERLAY_LEVEL
 
 <!--rec-sub--><!--rec-sub-->
 
-## Supported OVERLAY_NAMEs
+## Supported OVERLAY_LABELs
 
 <!--table-before--><!--table-before-->
 

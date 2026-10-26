@@ -5,12 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Ratings", 
-        "CODE_NAME": "ratings",
-        "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay based on ratings from various sources including IMDb, TMDb, Floppy, MDBList, OMDb, AniDB, MAL, Serializd, and Rotten Tomatoes on each item within your library"
-    }'
-    replace-tags='{"title-sub": "**Please read [Kometa Ratings Explained](../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with ratings.**"}'
+    "OVERLAY_NAME": "Ratings",
+    "CODE_NAME": "ratings",
+    "OVERLAY_LEVEL": "Movie, Show, Episode",
+    "DESCRIPTION": "an overlay based on ratings from various sources including IMDb, TMDb, Floppy, MDBList, OMDb, AniDB, MAL, Serializd, and Rotten Tomatoes on each item within your library",
+    "OVERLAY_LABEL": "ratings"
+}'
+    replace-tags='{"title-sub": "**Please read [Kometa Ratings Explained](../../../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with ratings.**"}'
     end='<!--rec-sub-->'
 %}
 
@@ -21,7 +22,7 @@ Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3:
 `serializd` fetches Serializd's community rating directly and is available only for show- and episode-level overlays. It requires [Serializd authentication](../../config/serializd.md).
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "ratings", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|ratings|movie|show|episode' 
 %}
@@ -107,7 +108,7 @@ Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3:
     {% include-markdown "./../../templates/variable_list.md"
        include-tags="sup1"
        rewrite-relative-urls=false
-    %}
+    replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "ratings"}'
     replace-tags='{
@@ -118,6 +119,5 @@ Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3:
 
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Ratings Overlays"
-    
-        The Ratings overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on ratings as set on items in Plex.
+
+    The Ratings overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on ratings as set on items in Plex.

@@ -27,9 +27,9 @@ Kometa does not publish a test notification while loading the ntfy configuration
 
 Users can either use the [public ntfy server](https://ntfy.sh), or [host their own ntfy server](https://docs.ntfy.sh/install/).
 
-### Retrieving Access Token and Topic
+### Retrieving access token and topic
 
-#### Using the Public Server
+#### Using the public server
 
 1. Visit https://ntfy.sh/login and login or sign up for an account (it's free).
 2. Select "[Account](https://ntfy.sh/account)" from the side menu and scroll to "Access Tokens" to generate an access token.
@@ -41,9 +41,9 @@ Users can either use the [public ntfy server](https://ntfy.sh), or [host their o
 5. Enter the topic name into the `topic` attribute in the config file.
 
 
-#### Using a Self-Hosted Server
+#### Using a self-hosted server
 
-If you are a standard (non-admin) user of a [ntfy server other than the official one](https://docs.ntfy.sh/integrations/#alternative-ntfy-servers), 
+If you are a standard (non-admin) user of a [ntfy server other than the official one](https://docs.ntfy.sh/integrations/#alternative-ntfy-servers),
 you can follow the same steps as above, but with the server URL and token provided by the server.
 
 If you are an admin of your own ntfy server, you can follow these steps:

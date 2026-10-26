@@ -5,18 +5,19 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Resolution/Edition",
-        "CODE_NAME": "resolution",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the resolutions and editions available on each item within your library"
-    }'
+    "OVERLAY_NAME": "Resolution/Edition",
+    "CODE_NAME": "resolution",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the resolutions and editions available on each item within your library",
+    "OVERLAY_LABEL": "resolution/edition"
+}'
     end='<!--rec-sub-->'
 %}
 
 Recommendations: Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the
 [TRaSH Guides](https://trash-guides.info/) filename naming scheme.
 
-## Supported Resolutions
+## Supported resolutions
 
 | Resolution      | Key               | Weight |
 |:----------------|:------------------|:-------|
@@ -60,7 +61,7 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | HLG             | `hlg`             | `2`    |
 | HDR             | `hdr`             | `1`    |
 
-## Supported Editions
+## Supported editions
 
 | Edition             | Key             | Weight |
 |:--------------------|:----------------|:-------|
@@ -166,11 +167,10 @@ This is not something you can enable or disable independently; it's an internal 
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "resolution"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Resolution/Edition Overlays"
 
-        The Resolution/Edition overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on resolutions and editions as set on items in Plex.
+    The Resolution/Edition overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on resolutions and editions as set on items in Plex.

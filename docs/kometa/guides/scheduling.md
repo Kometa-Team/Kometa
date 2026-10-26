@@ -1,4 +1,4 @@
-﻿---
+---
 search:
   boost: 3
 hide:
@@ -16,7 +16,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
     When running Kometa within docker, the session will resume after a system reboot (assuming Docker is set to start at system startup,
     which is the default) and Kometa will run in the background at all times.
 
-    There's a [Docker Walkthrough](../../install/walkthroughs/docker) with more detailed instructions on setting up Kometa within docker. The simplest command to facilitate a docker run is:
+    There's a [Docker Walkthrough](../install/index.md#path-docker) with more detailed instructions on setting up Kometa within docker. The simplest command to facilitate a docker run is:
 
     ```
     docker run -d \
@@ -42,7 +42,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
 === "Windows Task Scheduler"
 
-    Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) and/or do not want to run Kometa within docker.
+    Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](../install/index.md#path-local) and/or do not want to run Kometa within docker.
 
     Windows Task Scheduler allows the user to run commands and services at scheduled times and intervals.
 
@@ -52,11 +52,11 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
     These will be explained further down this page.
 
-    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) which includes setting up the
-    [virtual environment](../../install/walkthroughs/local#setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live
+    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../install/index.md#path-local) which includes setting up the
+    [virtual environment](../install/index.md#local-setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live
     environment (such as usernames, installation directories).
 
-    ### Background Run Scheduled Task
+    ### Background run scheduled task
 
     This method will start Kometa at system startup and will keep Kometa running in the background indefinitely.
     The user can then define set days and times for the Configuration File to be processed, and Kometa will handle processing as and when required.
@@ -114,7 +114,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
         Kometa will now launch at system startup, but will wait until the user-specified scheduled time before executing, and will then wait in the background for the next scheduled run.
 
-    ### Single Run Scheduled Task
+    ### Single run scheduled task
 
     This method will start Kometa at the desired time, immediately begin running the Configuration File and will then kill the process once it has completed.
 
@@ -306,7 +306,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
        Change `/path/to/kometa` to reflect where you've installed Kometa.
 
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
+       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/index.md#path-local)
 
        Save and close the file.
 
@@ -345,7 +345,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
        This is an example, which does nothing but run the script immediately. If you want to add additional flags you can do so.
 
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
+       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/index.md#path-local)
 
     2. Open the system crontab for editing:
 

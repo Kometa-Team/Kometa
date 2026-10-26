@@ -1,0 +1,10 @@
+Kometa documentation include extension
+
+The _include package is adapted from mkdocs-include-markdown-plugin 7.3.0,
+Kometa-Team fork commit cb72c4ebc2c2650f70132f74adf3b4f4849ce333:
+https://github.com/Kometa-Team/mkdocs-include-markdown-plugin
+Original project: https://github.com/mondeja/mkdocs-include-markdown-plugin
+Distributed under the Apache License, Version 2.0 (see LICENSE).
+
+Modifications: repository-local imports and exceptions, removal of MkDocs event
+and plugin dependencies, and integration with Zensical's Markdown context.

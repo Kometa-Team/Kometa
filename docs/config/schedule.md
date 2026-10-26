@@ -10,9 +10,9 @@ Kometa allows you to schedule libraries, files, overlays, operations, and more s
 
 This is particularly handy for users who have a lot of libraries or run a lot of Metadata/Operations on their libraries.
 
-### IMPORTANT:
+### Important:
 
-These schedules do not trigger Kometa to run; they control what Kometa will do if it happens to be running at the scheduled time. `weekly(sunday)`, 
+These schedules do not trigger Kometa to run; they control what Kometa will do if it happens to be running at the scheduled time. `weekly(sunday)`,
 for example, does not mean "run Kometa on Sunday to do this thing"; it means "If Kometa is running, and it's Sunday, do this thing".
 
 If you want to control when Kometa itself runs, like if you want Kometa to only run on Tuesdays and Thursdays, see [this page](../kometa/guides/scheduling.md).
@@ -38,7 +38,7 @@ The scheduling options are:
 * Use `all[...]` to require every enclosed scheduling option to match.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
-## Library Schedule Modes
+## Library schedule modes
 
 Library schedule modes limit the media items Kometa processes. Use an ordered list of `schedule` and `mode` mappings under a library's `schedule` attribute. Kometa uses the first matching entry; if none match, it skips the library.
 
@@ -101,7 +101,7 @@ When a mode is not `full`, Kometa limits metadata, overlays, item operations, an
     Use monthly(last) if you want to schedule for the last day of every month.
     ```
 
-### Multiple Schedule Values
+### Multiple schedule values
 
 Multiple schedule values in a YAML list use OR logic. This definition runs when the collection does not exist **or** when the date is within the range:
 
@@ -137,7 +137,7 @@ schedule: hourly(2|5-7|22)
 ## Examples
 
 ??? blank "Scheduling a Library<a class="headerlink" href="#schedule-library" title="Permanent link">¶</a>"
-    
+
     <div id="schedule-library" />Uses the `schedule` [Library Attribute](libraries.md#attributes) to set when a library will be run.
 
     Other schedule rules for files, overlays, collections, and any other attribute that can be scheduled must also be met.
@@ -157,17 +157,17 @@ schedule: hourly(2|5-7|22)
         operations:
           mass_critic_rating_update: tmdb
     ```
-    
+
     1. If you run Kometa on any day apart from Sunday, this library will not be processed at all
 
 ??? blank "Scheduling Collection, Playlist, and Metadata Files<a class="headerlink" href="#schedule-files" title="Permanent link">¶</a>"
-    
+
     <div id="schedule-files" />Uses the `schedule` [Block Attribute](files.md#other-block-attributes) to set when a file will be run.
 
     Other schedule rules for collections and any other attribute that can be scheduled must also be met.
 
     Collection Files, Playlist Files, and Metadata Files can all be individually scheduled.
-    
+
     ```yaml title="Files Scheduled for Different Days"
     libraries:
       Movies:
@@ -191,7 +191,7 @@ schedule: hourly(2|5-7|22)
     ```
 
 ??? blank "Scheduling Overlays<a class="headerlink" href="#schedule-overlays" title="Permanent link">¶</a>"
-    
+
     <div id="schedule-overlays" />Uses the `schedule_overlays` [Library Attribute](libraries.md#attributes) to set when overlays will run for a library.
 
     ???+ danger "Scheduling Overlay Warning"
@@ -213,11 +213,11 @@ schedule: hourly(2|5-7|22)
     1. You **MUST** use the `schedule_overlays` attribute. You cannot schedule individual Overlay Files.
 
 ??? blank "Scheduling Individual Collections<a class="headerlink" href="#schedule-collection" title="Permanent link">¶</a>"
-    
+
     <div id="schedule-collection" />Uses the `schedule` [Definition Setting](../files/settings.md) to set when each collection will run.
 
     Press the :fontawesome-solid-circle-plus: icon to learn more
- 
+
     ```yaml title="Collections Scheduled for Different Days"
     collections:
       TMDb Trending Weekly:
@@ -235,7 +235,7 @@ schedule: hourly(2|5-7|22)
     1. This Collection will run on the 1st and the 15th of each month only
 
 ??? blank "Scheduling Operation Blocks<a class="headerlink" href="#schedule-operations" title="Permanent link">¶</a>"
-    
+
     <div id="schedule-operations" />Each [Operation Block](operations.md#operation-blocks) can use the `schedule` [Definition Setting](../files/settings.md) to set when that block will run.
 
     Press the :fontawesome-solid-circle-plus: icon to learn more
@@ -250,7 +250,7 @@ schedule: hourly(2|5-7|22)
           mass_critic_rating_update: tmdb
           split_duplicates: true
     ```
-    
+
     1. All Operations will be processed on a Friday only
 
     ```yaml title="Operations Scheduled for Different Days"
@@ -268,8 +268,8 @@ schedule: hourly(2|5-7|22)
     1. This Operation will be processed on a Friday only
     2. This Operation will be processed on a Saturday only
 
-??? blank "Scheduling Pinning Collections<a class="headerlink" href="#schedule-pinning" title="Permanent link">¶</a>" 
-    
+??? blank "Scheduling Pinning Collections<a class="headerlink" href="#schedule-pinning" title="Permanent link">¶</a>"
+
     <div id="schedule-pinning" />Uses the `visible_library`, `visible_home`, or `visible_shared` [Collection Metadata Update](../files/updates.md) 
     to have collections be "pinned" toyour home screen while scheduled.
 

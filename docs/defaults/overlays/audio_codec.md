@@ -5,11 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Audio Codec", 
-        "CODE_NAME": "audio_codec",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the audio codec available on each item within your library"
-    }'
+    "OVERLAY_NAME": "Audio Codec",
+    "CODE_NAME": "audio_codec",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the audio codec available on each item within your library",
+    "OVERLAY_LABEL": "audio codec"
+}'
     replace-tags='{"rec-sub": "Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme."}'
 %}
 | Dolby TrueHD Atmos     | `truehd_atmos` | `160`  |
@@ -34,12 +35,12 @@ hide:
     These overlays are based on the file name, assuming TRaSH naming, and the **titles** of the audio tracks found in the file.  This YAML file looks for text patterns in those two strings and bases the decision on "does this file qualify for this overlay" on those tests.  **NOTABLY**, Kometa does not examine the **format** or **codec** of any audio track.  If, for example, you have an audio track in the Opus format which is named "Dolby TrueHD", Kometa sees that as a "Dolby TrueHD" track.
 
     Further, Kometa looks at **all** the audio tracks in the file, not just the one that might be "default" or "primary".
-    
+
     If you are seeing unexpected results, verify that the names of either or both the files and audio tracks accurately reflect their contents, and double-check the weights on the overlays.
 
 {% include-markdown "./../../templates/snippets/standard_style.md" replace='{"CODE_NAME": "audio_codec"}' %}
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "audio_codec", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -78,11 +79,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "audio_codec"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Audio Codec Overlays"
-    
-        The Audio Codec overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on both audio channel name and filepath.
+
+    The Audio Codec overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) with [filters](../../../files/filters) on both audio channel name and filepath.
