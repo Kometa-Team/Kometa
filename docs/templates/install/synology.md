@@ -109,7 +109,7 @@ This is where you need the `config.yml` that you created with the walkthrough ea
 
     ![Step 1](../../assets/images/kometa/install/synology/dsm72-20.png)
 
-2. At the top of hte window, click "Upload" and choose "Upload -> Overwrite".
+2. At the top of the window, click "Upload" and choose "Upload -> Overwrite".
 
     ![Step 1](../../assets/images/kometa/install/synology/dsm72-21.png)
 
