@@ -91,7 +91,7 @@ plexapi==4.18.3
     # via kometa
 psutil==7.2.2
     # via kometa
-pycparser==3.11 ; implementation_name != 'PyPy'
+pycparser==3.12 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.14.1
     # via serializd-py
