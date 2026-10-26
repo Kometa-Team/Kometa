@@ -55,9 +55,9 @@ class InstallationDocumentTests(unittest.TestCase):
 
     def test_unique_ids_and_all_platform_sections_are_rendered(self):
         self.assertEqual([key for key, count in Counter(self.ids).items() if count > 1], [])
-        for route in ("local", "docker", "compose", "unraid", "qnap", "synology", "truenas", "kubernetes"):
+        for route in ("local", "docker", "compose", "unraid", "qnap", "synology", "truenas", "kubernetes", "generic-docker"):
             self.assertIn("path-" + route, self.ids)
-        self.assertEqual(self.html.count('<section class="install-path"'), 8)
+        self.assertEqual(self.html.count('<section class="install-path"'), 9)
         self.assertEqual(sum(node["tag"] == "h1" for node in self.tree.nodes), 1)
         # Literal examples can contain this text; only live attributes are errors.
         self.assertFalse(any("markdown" in node["attrs"] for node in self.tree.nodes))

@@ -15,7 +15,7 @@ Start Kometa with its default schedule:
 === "Windows / Mac / Linux"
 
     ```shell
-    python kometa.py
+    uv run python kometa.py
     ```
 
 === "Docker"
@@ -29,7 +29,7 @@ To run immediately and exit:
 === "Windows / Mac / Linux"
 
     ```shell
-    python kometa.py --run
+    uv run python kometa.py --run
     ```
 
 === "Docker"
@@ -47,7 +47,7 @@ Each option lists its command-line flags and environment variable:
 - **Command-line flags** are added to the command that starts Kometa, such as `--run`.
 - **Environment variables** are values Kometa reads when it starts. Set them in your shell, a script, your Docker container, or a `.env` file.
 
-These examples assume familiarity with command-line tools and, for container installations, Docker.
+Local examples use `uv run` from your Kometa checkout, following the [local installation guide](install/index.md#path-local). These examples assume familiarity with command-line tools and, for container installations, Docker.
 
 ## Which value takes precedence?
 
@@ -55,7 +55,7 @@ These examples assume familiarity with command-line tools and, for container ins
 
 ```shell
 export KOMETA_CONFIG=/path/to/environment/config.yml
-python kometa.py --config /path/to/runtime-var/config.yml
+uv run python kometa.py --config /path/to/runtime-var/config.yml
 ```
 
 Kometa uses `/path/to/environment/config.yml` because `KOMETA_CONFIG` overrides `--config`.
@@ -87,7 +87,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --collections-only --run
+            uv run python kometa.py --collections-only --run
             ```
         === "Docker Environment"
             ```
@@ -114,7 +114,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --config /some/path/to/your-config-file.yml
+            uv run python kometa.py --config /some/path/to/your-config-file.yml
             ```
         === "Docker Environment"
             ```
@@ -136,7 +136,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --times '22:00|03:00'
+            uv run python kometa.py --times '22:00|03:00'
             ```
         === "Docker Environment"
             ```
@@ -156,7 +156,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run
+            uv run python kometa.py --run
             ```
         === "Docker Environment"
             ```
@@ -176,7 +176,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --resume "Star Wars"
+            uv run python kometa.py --resume "Star Wars"
             ```
         === "Docker Environment"
             ```
@@ -196,7 +196,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --ignore-schedules
+            uv run python kometa.py --ignore-schedules
             ```
         === "Docker Environment"
             ```
@@ -217,7 +217,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --read-only-config
+            uv run python kometa.py --read-only-config
             ```
         === "Docker Environment"
             ```
@@ -240,7 +240,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --kometa-mysecret 123456789
+            uv run python kometa.py --kometa-mysecret 123456789
             ```
         === "Docker Environment"
             ```
@@ -271,7 +271,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --collections-only
+            uv run python kometa.py --collections-only
             ```
         === "Docker Environment"
             ```
@@ -292,7 +292,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --metadata-only
+            uv run python kometa.py --metadata-only
             ```
         === "Docker Environment"
             ```
@@ -313,7 +313,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --playlists-only
+            uv run python kometa.py --playlists-only
             ```
         === "Docker Environment"
             ```
@@ -334,7 +334,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --operations-only
+            uv run python kometa.py --operations-only
             ```
         === "Docker Environment"
             ```
@@ -355,7 +355,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --overlays-only
+            uv run python kometa.py --overlays-only
             ```
         === "Docker Environment"
             ```
@@ -378,7 +378,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run-collections "Harry Potter|Star Wars"
+            uv run python kometa.py --run-collections "Harry Potter|Star Wars"
             ```
         === "Docker Environment"
             ```
@@ -400,7 +400,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run-libraries "Movies - 4K|TV Shows - 4K"
+            uv run python kometa.py --run-libraries "Movies - 4K|TV Shows - 4K"
             ```
         === "Docker Environment"
             ```
@@ -427,7 +427,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run-files "Movies.yml|MovieCharts"
+            uv run python kometa.py --run-files "Movies.yml|MovieCharts"
             ```
         === "Docker Environment"
             ```
@@ -450,14 +450,14 @@ Choose the variables you need from the reference below. Kometa loads the file at
 
     | Mode | What it does | Example command |
     |:--|:--|:--|
-    | `full` | Processes every top-level item in each library. | `python kometa.py --run --mode full` |
-    | `items(ids)` | Processes only the listed items. Separate IDs with a pipe character. Movies match TMDb IDs, shows match TVDb IDs, and TMDb show IDs are converted to TVDb IDs. IMDb IDs and top-level Plex rating keys work for either. | `python kometa.py --run --mode 'items(imdb:tt0133093)'` |
-    | `added(duration)` | Processes items added to Plex within the last duration. Use a positive integer with `m` (minutes), `h` (hours), or `d` (24-hour days); a bare integer means days. For shows, it also includes shows with recently added episodes. | `python kometa.py --run --mode 'added(30m)'` |
-    | `diff` | Processes items missing from Kometa's previous library cache snapshot. For shows, it compares each season's Plex update time. Requires a persistent Kometa cache. | `python kometa.py --run --mode diff` |
-    | `index(A-Z)` | Processes titles whose first letter is in the inclusive A through Z range. Uses the Plex Sort Title when available. | `python kometa.py --run --mode 'index(A-F)'` |
-    | `index(A-Z#)` | Processes the A through Z range plus titles beginning with a number or symbol. | `python kometa.py --run --mode 'index(A-F#)'` |
+    | `full` | Processes every top-level item in each library. | `uv run python kometa.py --run --mode full` |
+    | `items(ids)` | Processes only the listed items. Separate IDs with a pipe character. Movies match TMDb IDs, shows match TVDb IDs, and TMDb show IDs are converted to TVDb IDs. IMDb IDs and top-level Plex rating keys work for either. | `uv run python kometa.py --run --mode 'items(imdb:tt0133093)'` |
+    | `added(duration)` | Processes items added to Plex within the last duration. Use a positive integer with `m` (minutes), `h` (hours), or `d` (24-hour days); a bare integer means days. For shows, it also includes shows with recently added episodes. | `uv run python kometa.py --run --mode 'added(30m)'` |
+    | `diff` | Processes items missing from Kometa's previous library cache snapshot. For shows, it compares each season's Plex update time. Requires a persistent Kometa cache. | `uv run python kometa.py --run --mode diff` |
+    | `index(A-Z)` | Processes titles whose first letter is in the inclusive A through Z range. Uses the Plex Sort Title when available. | `uv run python kometa.py --run --mode 'index(A-F)'` |
+    | `index(A-Z#)` | Processes the A through Z range plus titles beginning with a number or symbol. | `uv run python kometa.py --run --mode 'index(A-F#)'` |
 
-    Replace the IDs with those of items in your library. To select multiple items, use a pipe between IDs, for example `python kometa.py --run --mode 'items(imdb:tt0133093|tmdb:550|tvdb:350396|plex:42)'`. Keep the single quotes around modes containing parentheses when using PowerShell. See [Library Schedule Modes](../config/schedule.md#library-schedule-modes) for identifier and matching details.
+    Replace the IDs with those of items in your library. To select multiple items, use a pipe between IDs, for example `uv run python kometa.py --run --mode 'items(imdb:tt0133093|tmdb:550|tvdb:350396|plex:42)'`. Keep the single quotes around modes containing parentheses when using PowerShell. See [Library Schedule Modes](../config/schedule.md#library-schedule-modes) for identifier and matching details.
 
 ??? info "Ignore Ghost &middot; `-ig`/`--ignore-ghost` &middot; `KOMETA_IGNORE_GHOST`<a class='operation-admonition-link' data-copy-permalink='true' href='#ignore-ghost' title='Copy link'>¶</a>"
 
@@ -473,7 +473,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --ignore-ghost
+            uv run python kometa.py --ignore-ghost
             ```
         === "Docker Environment"
             ```
@@ -495,7 +495,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --tests
+            uv run python kometa.py --tests
             ```
         === "Docker Environment"
             ```
@@ -528,7 +528,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --debug
+            uv run python kometa.py --debug
             ```
         === "Docker Environment"
             ```
@@ -550,7 +550,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --trace
+            uv run python kometa.py --trace
             ```
         === "Docker Environment"
             ```
@@ -574,7 +574,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --log-requests
+            uv run python kometa.py --log-requests
             ```
         === "Docker Environment"
             ```
@@ -596,7 +596,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run --timings
+            uv run python kometa.py --run --timings
             ```
         === "Docker Environment"
             ```
@@ -616,7 +616,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --run --no-source-integrity
+            uv run python kometa.py --run --no-source-integrity
             ```
         === "Docker Environment"
             ```
@@ -634,7 +634,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            KOMETA_PROFILE=pyinstrument python kometa.py --run
+            KOMETA_PROFILE=pyinstrument uv run python kometa.py --run
             ```
         === "Docker Environment"
             ```
@@ -655,7 +655,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --no-countdown
+            uv run python kometa.py --no-countdown
             ```
         === "Docker Environment"
             ```
@@ -678,7 +678,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
         === "Local Environment"
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --divider *
-            python kometa.py --divider *
+            uv run python kometa.py --divider *
             ```
         === "Docker Environment"
             ```
@@ -700,7 +700,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --width 150
+            uv run python kometa.py --width 150
             ```
         === "Docker Environment"
             ```
@@ -725,7 +725,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --timeout 360
+            uv run python kometa.py --timeout 360
             ```
         === "Docker Environment"
             ```
@@ -751,7 +751,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --no-verify-ssl
+            uv run python kometa.py --no-verify-ssl
             ```
         === "Docker Environment"
             ```
@@ -771,7 +771,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --low-priority
+            uv run python kometa.py --low-priority
             ```
         === "Docker Environment"
             ```
@@ -794,7 +794,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --no-missing
+            uv run python kometa.py --no-missing
             ```
         === "Docker Environment"
             ```
@@ -815,7 +815,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --no-report
+            uv run python kometa.py --no-report
             ```
         === "Docker Environment"
             ```
@@ -841,7 +841,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --delete-collections
+            uv run python kometa.py --delete-collections
             ```
         === "Docker Environment"
             ```
@@ -869,7 +869,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --delete-labels
+            uv run python kometa.py --delete-labels
             ```
         === "Docker Environment"
             ```
@@ -895,7 +895,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --delete-collections-labels
+            uv run python kometa.py --delete-collections-labels
             ```
         === "Docker Environment"
             ```
@@ -921,7 +921,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate
+            uv run python kometa.py --validate
             ```
         === "Docker Environment"
             ```
@@ -949,7 +949,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate --validate-level syntax
+            uv run python kometa.py --validate --validate-level syntax
             ```
         === "Docker Environment"
             ```
@@ -974,7 +974,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate --validate-schema
+            uv run python kometa.py --validate --validate-schema
             ```
         === "Docker Environment"
             ```
@@ -996,7 +996,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate --validate-schema --schema-path /some/path/to/json-schema
+            uv run python kometa.py --validate --validate-schema --schema-path /some/path/to/json-schema
             ```
         === "Docker Environment"
             ```
@@ -1020,7 +1020,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate-file /path/to/collections.yml
+            uv run python kometa.py --validate-file /path/to/collections.yml
             ```
         === "Docker Environment"
             ```
@@ -1046,7 +1046,7 @@ Choose the variables you need from the reference below. Kometa loads the file at
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --validate-dir /path/to/community-configs
+            uv run python kometa.py --validate-dir /path/to/community-configs
             ```
         === "Docker Environment"
             ```

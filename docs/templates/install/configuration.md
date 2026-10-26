@@ -71,7 +71,7 @@ Save `config.yml` inside the `config` directory in your Kometa checkout. Create 
 
 </div>
 
-<div data-env="windows macos linux unraid qnap synology truenas" data-method="docker nas" markdown="1">
+<div data-env="windows macos linux generic-docker unraid qnap synology truenas" data-method="docker nas" markdown="1">
 
 Save `config.yml` in the host directory mapped to `/config`; inside the container it must appear as `/config/config.yml`. Create an `assets` subdirectory in that host directory too.
 
@@ -117,10 +117,10 @@ Save your configuration, then run Kometa using the instructions below. Wait for 
 
 <div data-method="local" markdown="1">
 
-From your Kometa checkout with the virtual environment activated:
+From your Kometa checkout:
 
 ```shell
-python kometa.py --run
+uv run python kometa.py --run
 ```
 
 </div>
@@ -289,7 +289,7 @@ A normal Kometa process without `--run` waits for its scheduled run, by default 
 
 <div data-method="local" markdown="1">
 
-To update a local installation, activate the virtual environment, run `git pull`, and install the current requirements with `python -m pip install -r requirements.txt`.
+To update a local installation, stop Kometa, then run `git pull` followed by `uv sync` from your checkout. Start Kometa again with `uv run python kometa.py`, adding your usual flags.
 
 </div>
 

@@ -1,7 +1,7 @@
 // Filter server-rendered installation instructions; the complete guide works without JS.
 (function () {
   "use strict";
-  const environments = ["windows", "macos", "linux", "unraid", "qnap", "synology", "truenas", "kubernetes"];
+  const environments = ["windows", "macos", "linux", "unraid", "qnap", "synology", "truenas", "kubernetes", "generic-docker"];
   const desktops = environments.slice(0, 3);
   let dispose = function () {};
 
@@ -48,6 +48,10 @@
       if (!["run", "compose"].includes(state.launch)) state.launch = "";
       if (!["current", "legacy"].includes(state.version)) state.version = "";
       if (state.env && !desktops.includes(state.env)) state.method = state.launch = "";
+      if (state.env === "generic-docker") {
+        state.method = "docker";
+        state.launch = "run";
+      }
       if (state.method !== "docker") state.launch = "";
       if (!["qnap", "synology"].includes(state.env)) state.version = "";
     }
@@ -66,7 +70,7 @@
       instructions.hidden = !complete && !legacyRoute && !sharedAnchor;
       instructions.querySelectorAll("[data-env], [data-method], [data-launch], [data-os], [data-version], [data-release]").forEach(block => {
         const matches = (key, value) => !block.dataset[key] || !value || block.dataset[key].split(" ").includes(value);
-        const method = desktop ? state.method : "nas";
+        const method = desktop || state.env === "generic-docker" ? state.method : "nas";
         block.hidden = !matches("env", state.env || "desktop") || !matches("method", method) || !matches("launch", state.launch)
           || !matches("os", state.env) || !matches("version", state.version)
           || !matches("release", /\/develop\//.test(location.pathname) ? "develop" : "latest");
