@@ -138,7 +138,7 @@ kometa-venv/
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
+# Generated Zensical documentation
 /site
 
 # mypy
@@ -154,3 +154,8 @@ dmypy.json
 ._*
 .worktrees/
 dictionary.dic
+
+/.cache/
+/.venv-docs/
+/.zensical-rtd-*.toml
+*.egg-info/

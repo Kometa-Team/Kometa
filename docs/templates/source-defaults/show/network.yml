@@ -1,0 +1,534 @@
+##############################################################################
+#                            Network Collections                             #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#            https://wiki.kometa.team/defaults/show/network             #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "050"
+
+collections:
+  Network Collections:
+    template:
+      - name: separator
+        separator: network
+        key_name: Network
+        translation_key: separator
+
+dynamic_collections:
+  Network:
+    type: network
+    title_format: <<key_name>>
+    template:
+      - smart_filter
+      - shared
+    template_variables:
+      delete_collections_named:
+        Apple TV: Apple TV+
+        HBO Max: Max
+        "5": Channel 5
+        "U&Alibi": Alibi
+        U: UKTV
+        "U&Dave": Dave
+        "U&Eden": Eden
+      search_term:
+        default: network
+      image:
+        default: network/<<style>>/<<key_encoded>>
+      style:
+        default: color
+      translation_key:
+        default: network
+      dynamic:
+        default: true
+    include:
+      - "#0"
+      - 5
+      - 7mate
+      - ABC
+      - ABC Family
+      - ABC Kids
+      - ABC TV
+      - ABS-CBN
+      - Acorn TV
+      - Adult Swim
+      - AHC
+      - ALTBalaji
+      - Amazon Kids+
+      - AMC
+      - AMC+
+      - Animal Planet
+      - ANIMAX
+      - Angel Studios
+      - Antena 3
+      - Apple TV
+      - ARD
+      - Arte
+      - Atresplayer Premium
+      - Atres Player
+      - AT-X
+      - Audience
+      - AXN
+      - Azteca Uno
+      - A&E
+      - BBC America
+      - BBC Four
+      - BBC iPlayer
+      - BBC One
+      - BBC Scotland
+      - BBC Three
+      - BBC Two
+      - BET
+      - BET+
+      - bilibili
+      - Binge
+      - BluTV
+      - Boomerang
+      - Bravo
+      - BritBox
+      - C More
+      - Canale 5
+      - Canal+
+      - Cartoon Network
+      - Cartoonito
+      - CBC
+      - CBC Television
+      - Cbeebies
+      - CBS
+      - Channel 3
+      - Channel 4
+      - CHCH-DT
+      - Cinemax
+      - Citytv
+      - CNN
+      - Comedy Central
+      - Cooking Channel
+      - Crackle
+      - Crave
+      - Criterion Channel
+      - Crunchyroll
+      - CTV
+      - Cuatro
+      - Curiosity Stream
+      - DC Universe
+      - Discovery
+      - Discovery Kids
+      - discovery+
+      - Disney Channel
+      - Disney Junior
+      - Disney XD
+      - Disney+
+      - DR1
+      - Dropout
+      - Elisa Viihde
+      - Elisa Viihde Viaplay
+      - ENA
+      - Epix
+      - ESPN
+      - EXXEN
+      - E!
+      - E4
+      - Facebook Watch
+      - Family Channel
+      - Ficción Producciones
+      - Flooxer
+      - Food Network
+      - FOX
+      - Fox Kids
+      - France 2
+      - Freeform
+      - Freevee
+      - Fuji TV
+      - funnyordie.com
+      - FX
+      - FXX
+      - GAİN
+      - Game Show Network
+      - Global TV
+      - Globoplay
+      - GMA Network
+      - Hallmark
+      - HBO
+      - HBO Max
+      - HGTV
+      - History
+      - HOT3
+      - Hulu
+      - ICTV
+      - IFC
+      - IMDb TV
+      - Investigation Discovery
+      - ION Television
+      - iQiyi
+      - ITV
+      - ITV Encore
+      - ITV1
+      - ITV2
+      - ITV3
+      - ITV4
+      - ITVBe
+      - ITVX
+      - JioCinema
+      - joyn
+      - JTBC
+      - Kan 11
+      - Kanal 5
+      - KBS2
+      - Kids WB
+      - La 1
+      - La Une
+      - Las Estrellas
+      - Lifetime
+      - Lionsgate+
+      - Logo
+      - Magnolia Network
+      - MasterClass
+      - MBC
+      - MBN
+      - MGM+
+      - mitele
+      - Movistar Plus+
+      - MTV
+      - M-Net
+      - National Geographic
+      - NBC
+      - Netflix
+      - Network 10
+      - NFL Network
+      - NHK
+      - Nick
+      - Nick Jr
+      - Nickelodeon
+      - Nicktoons
+      - Nine Network
+      - Nippon TV
+      - NRK1
+      - OCS City
+      - OCS Max
+      - ORF
+      - Oxygen
+      - Pantaya
+      - Paramount Network
+      - Paramount+
+      - PBS
+      - PBS Kids
+      - Peacock
+      - Planète+ A&E
+      - Prime Video
+      - Quibi
+      - Rai 1
+      - Reelz
+      - RTÉ One
+      - RTL
+      - RTL Télé
+      - RTP1
+      - RÚV
+      - S4C
+      - SAT.1
+      - SBS
+      - Science
+      - Seeso
+      - Seven Network
+      - Shahid
+      - Showcase
+      - Showmax
+      - Showtime
+      - Shudder
+      - Sky
+      - Smithsonian
+      - Space
+      - Spectrum
+      - Spike
+      - Stöð 2
+      - Stan
+      - Starz
+      - STAR+
+      - Sundance TV
+      - SVT
+      - SVT Play
+      - SVT1
+      - Syfy
+      - Syndication
+      - TBS
+      - Telecinco
+      - Telefe
+      - Telemundo
+      - Televisión de Galicia
+      - Televisión Pública Argentina
+      - Tencent Video
+      - TF1
+      - The CW
+      - The Daily Wire
+      - The Roku Channel
+      - The WB
+      - TLC
+      - TNT
+      - Tokyo MX
+      - Travel Channel
+      - truTV
+      - tubi
+      - Turner Classic Movies
+      - TV 2
+      - tv asahi
+      - TV Globo
+      - TV Land
+      - TV Tokyo
+      - TV3
+      - TV4
+      - TV4 Play
+      - TVB Jade
+      - tving
+      - tvN
+      - TVNZ 1
+      - TVNZ 2
+      - TVP1
+      - U
+      - "U&Alibi"
+      - "U&Dave"
+      - "U&Drama"
+      - "U&Eden"
+      - "U&Gold"
+      - "U&W"
+      - "U&Yesterday"
+      - UniMás
+      - Universal Kids
+      - Universal TV
+      - Univision
+      - UPN
+      - USA Network
+      - U+ Mobile TV
+      - VH1
+      - Viaplay
+      - Vice
+      - Virgin Media One
+      - ViuTV
+      - ViX+
+      - VRT 1
+      - VRT Max
+      - VTM
+      - W
+      - WE tv
+      - Xbox Live
+      - YLE
+      - Youku
+      - YouTube
+      - ZDF
+      - ZEE5
+
+    addons:
+      ABC:
+        - ABC.com
+      ABC TV:
+        - ABC (AU)
+        - ABC Comedy
+        - ABC Me
+        - ABC News
+        - ABC iview
+      AMC:
+        - AMC.com
+      Animal Planet:
+        - Animal Planet Brasil
+        - Animal Planet Deutschland
+      Angel Studios:
+        - VidAngel
+      Apple TV:
+        - Apple TV+
+      BET:
+        - BET Her
+      Canal+:
+        - Canal+ Poland
+        - Canal+ Family
+        - Canal+ Discovery
+        - Canal+ Afrique
+      Cartoon Network:
+        - Cartoon Network Latin America
+        - Cartoon Network Anything
+      CBC:
+        - CBCDrama
+      CBC Television:
+        - CBC Gem
+        - CBC News Network
+        - CBC Comedy
+      CBS:
+        - CBS.com
+        - CBS All Access
+      CTV:
+        - CTV Two
+        - CTV News Channel
+        - CTV Sci-Fi Channel
+        - CTV Comedy Channel
+        - CTV Life Channel
+        - ctv.ca
+      Discovery:
+        - Discovery Health Channel
+        - Discovery Channel
+        - Discovery Home & Health Brasil
+        - Discovery Family
+        - Discovery Real Time
+        - Discovery Asia
+        - Discovery Home & Health
+        - Discovery Life
+        - Discovery World
+        - Discovery Science
+        - Discovery Channel (UK)
+      Disney Channel:
+        - Toon Disney
+        - Playhouse Disney
+        - Disney Channel Asia
+        - disney.com
+        - Disney Channel Middle East
+      Disney Junior:
+        - Disney Junior Latin America
+        - Disney Junior Brasil
+      Disney+:
+        - Disney+ Hotstar
+      ESPN:
+        - ESPN2
+        - ESPN+
+        - ESPN Classic
+        - ESPNU
+        - ESPNews
+        - ESPN Australia
+        - Sony ESPN
+        - ESPN.com
+        - ESPN Deportes
+      FOX:
+        - Fox
+        - Fox News Channel
+        - Fox Sports
+        - Fox Reality Channel
+        - Fox Sports Networks
+        - Fox Latin America
+        - Fox Brasil
+        - Fox Soccer
+        - Fox Sports 2
+        - Fox Nation
+        - Fox Sports 1
+        - fox.com
+        - Fox Sports Detroit
+      Freevee:
+        - Amazon Freevee
+      Hallmark:
+        - Hallmark+
+        - Hallmark Channel
+        - Hallmark Drama
+        - Hallmark Movie & Mysteries
+        - Hallmark Movies Now
+      HBO:
+        - HBO Brasil
+        - HBO Europe
+        - HBO Asia
+        - HBO Latin America
+        - HBO España
+        - HBO Nordic
+        - HBO Canada
+        - HBO Family
+        - HBO Mundi
+      HBO Max:
+        - HBO Go
+        - Max
+      HGTV:
+        - HGTV Canada
+      History:
+        - History Channel Italia
+        - H2
+      Lifetime:
+        - Lifetime Movies
+      MTV:
+        - MTV2
+        - MTV3
+        - MTV Lebanon
+        - MTV Latin America
+        - MTV Italia
+        - MTV Australia
+        - MTV Canada
+        - MTV Global
+        - MTV Nederland
+      National Geographic:
+        - National Geographic Channel
+        - National Geographic Brasil
+        - National Geographic Latinoamerica
+        - National Geographic India
+        - Nat Geo Wild
+      NBC:
+        - CNBC
+        - MSNBC
+        - NBCSN
+        - CNBC Europe
+        - CNBC Asia
+        - WNBC
+        - Nikkei CNBC
+        - KNBC
+        - CNBC World
+        - CNBC TV18
+        - NBC Weather Plus
+        - NBC Radio Network
+      Network Ten:
+        - Network 10
+      Nickelodeon:
+        - Nick at Nite
+      Paramount+:
+        - Paramount+ with Showtime
+      ReelzChannel:
+        - Reelz
+      Showtime:
+        - Paramount+ with Showtime
+      Sky:
+        - Sky One
+        - Sky Atlantic
+        - Sky Atlantic (IT)
+        - Sky Arts
+        - Sky History
+        - Sky Living
+        - Sky Crime
+        - Sky Uno
+        - Sky Max
+        - Sky Sports
+        - Sky Documentaries
+        - Sky Nature
+        - Sky News
+        - Sky Cinema
+        - Sky News Australia
+        - Sky Italia
+        - Sky Comedy
+        - Sky Sports F1
+        - Sky Two
+        - Sky Witness
+        - sky Travel
+        - Sky Vision
+        - Sky News Weather Channel
+      Smithsonian:
+        - Smithsonian Channel
+        - Smithsonian Earth
+      Spike:
+        - Spike TV
+      Starz:
+        - STARZ
+        - Starz Encore
+        - STARZ Encore
+      Sundance TV:
+        - SundanceTV
+      TBS:
+        - TBS.com
+        - TBS Brasil
+      The CW:
+        - CW seed
+      TNT:
+        - TNT Comedy
+        - TNT Latin America
+        - TNT España
+        - TNT Serie
+        - TNT Glitz
+      Travel Channel:
+        - Travel Channel United Kingdom
+      VH1:
+        - VH1 Classic
+      Vice:
+        - Viceland
+        - Vice TV
+        - Vice.com
+      YouTube:
+        - YouTube Premium

@@ -5,11 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Streaming Service", 
-        "CODE_NAME": "streaming",
-        "OVERLAY_LEVEL": "Movie, Show",
-        "DESCRIPTION": "an overlay based on the streaming service the file is found on for each item within your library"
-    }'
+    "OVERLAY_NAME": "Streaming Service",
+    "CODE_NAME": "streaming",
+    "OVERLAY_LEVEL": "Movie, Show",
+    "DESCRIPTION": "an overlay based on the streaming service the file is found on for each item within your library",
+    "OVERLAY_LABEL": "streaming service"
+}'
 %}
 | Netflix         | `netflix`     | `160` |
 | Prime Video     | `amazon`      | `150` |
@@ -34,7 +35,7 @@ hide:
 | tubi            | `tubi`        | `5`   |
 | filmin          | `filmin`      | `5`   |
 
-## Regional Variants
+## Regional variants
 
 Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
 
@@ -46,7 +47,7 @@ Some logic is applied to allow for regional streaming service lists to be availa
 | any besides `ES` | `movistar`, `atresplayer`, `filmin` | These collections will not be created if the region is not `es` as these streaming services are Spain-focused.                      |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "streaming", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
@@ -86,15 +87,14 @@ Some logic is applied to allow for regional streaming service lists to be availa
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Streaming Overlays"
-    
-        The Streaming Services overlays use two builders:
 
-        If you are not using `originals_only`, the overlays are applied using [`tmdb_discover`](../../../files/builders/tmdb#tmdb-discover).
-        
-        If you are using `originals_only`, the overlays are applied using Kometa-maintained [MDBLists](../../../files/builders/mdblist#mdblist-list).
+    The Streaming Services overlays use two builders:
+
+    If you are not using `originals_only`, the overlays are applied using [`tmdb_discover`](../../../files/builders/tmdb#tmdb-discover).
+
+    If you are using `originals_only`, the overlays are applied using Kometa-maintained [MDBLists](../../../files/builders/mdblist#mdblist-list).

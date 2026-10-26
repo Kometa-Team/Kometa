@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Aspect Ratio", 
-        "CODE_NAME": "aspect",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "125", 
-        "DESCRIPTION": "create collections with items that are based on their aspect ratio"
-    }'
+    "COLLECTION": "Aspect Ratio",
+    "CODE_NAME": "aspect",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "125",
+    "DESCRIPTION": "create collections with items that are based on their aspect ratio"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Aspect Ratio"}' %}
 | `1.33 - Academy Aperture`      | `1.33` | Collection of Movies/Shows with a 1.33 aspect ratio. |
@@ -41,7 +41,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="exclude|limit|sort_by|sync_mode|format"
         replace='{
-            "DYNAMIC_NAME": "Media Outlets", 
+            "DYNAMIC_NAME": "Media Outlets",
             "DYNAMIC_VALUE": "Media Outlet Keys",
             "NAME_FORMAT": "<<key_name>>",
             "SUMMARY_FORMAT": "A collection of <<library_translationU>>s with the aspect ratio of <<key_name>>."
@@ -55,5 +55,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Aspect Ratio Collections"
-        
+
         The Aspect Ratio collections use Plex searches and filters based on a fixed list of aspect ratios.

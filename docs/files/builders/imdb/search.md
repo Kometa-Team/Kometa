@@ -1,97 +1,161 @@
----
-hide:
-  - toc
----
-# IMDb Search
+# IMDb Advanced Search
 
-Finds every item using an [IMDb Advance Title Search](https://www.imdb.com/search/title/).
+Find movies, shows, or episodes with `imdb_search`, using [IMDb Advanced Title Search](https://www.imdb.com/search/title/). For IDs, charts, lists, watchlists, or awards, see [IMDb builders](builders.md).
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
+## Quick start
 
-???+ warning
+```yaml
+collections:
+  IMDb Popular Movies:
+    collection_order: custom
+    sync_mode: sync
+    imdb_search:
+      type: movie
+      sort_by: popularity.asc
+      limit: 50
+```
 
-     We strongly recommend you use the [IMDb Search website](https://www.imdb.com/search/) to manually verify that the options you have selected are valid.
+Use `collection_order: custom` to preserve search order and `sync_mode: sync`
+to keep collection membership synchronized as results change. Check your chosen
+filters on [IMDb Search](https://www.imdb.com/search/) when setting up a query.
 
-     You can also view the available keywords on the [IMDb Keyword Search page](https://www.imdb.com/search/keyword/).
+## Value types
 
-| Search Parameter        | Description                                                                                                                                                                                                                                                                                                                                                                                       |
-|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                 | Specify how items you want returned by the query.<br>**Options:** Any Integer `0` or greater where `0` get all items.<br>**Default:** `100`                                                                                                                                                                                                                                                       |
-| `sort_by`               | Choose from one of the many available sort options.<br>**Options:** `popularity.asc`, `popularity.desc`, `title.asc`, `title.desc`, `rating.asc`, `rating.desc`, `votes.asc`, `votes.desc`, `box_office.asc`, `box_office.desc`, `runtime.asc`, `runtime.desc`, `year.asc`, `year.desc`, `release.asc`, `release.desc`<br>**Default:** `popularity.asc`                                           |
-| `title`                 | Search by title name.<br>**Options:** Any String                                                                                                                                                                                                                                                                                                                                                  |
-| `type`                  | Item must match at least one given type. Can be a comma-separated list.<br>**Options:** `movie`, `tv_series`, `short`, `tv_episode`, `tv_mini_series`, `tv_movie`, `tv_special`, `tv_short`, `video_game`, `video`, `music_video`, `podcast_series`, `podcast_episode`                                                                                                                            |
-| `type.not`              | Item must not match any of the given types. Can be a comma-separated list.<br>**Options:** `movie`, `tv_series`, `short`, `tv_episode`, `tv_mini_series`, `tv_movie`, `tv_special`, `tv_short`, `video_game`, `video`, `music_video`, `podcast_series`, `podcast_episode`                                                                                                                         |
-| `release.after`         | Item must have been released after the given date.<br>**Options:** `today` or Date in the format `YYYY-MM-DD`                                                                                                                                                                                                                                                                                     |
-| `release.before`        | Item must have been released before the given date.<br>**Options:** `today` or Date in the format `YYYY-MM-DD`                                                                                                                                                                                                                                                                                    |
-| `rating.gte`            | Item must have an IMDb Rating greater than or equal to the given number.<br>**Options:** Any Number `0.1` - `10.0`<br>**Example:** `7.5`                                                                                                                                                                                                                                                          |                                                                                                                                                                                                                                                                                
-| `rating.lte`            | Item must have an IMDb Rating less than or equal to the given number.<br>**Options:** Any Number `0.1` - `10.0`<br>**Example:** `7.5`                                                                                                                                                                                                                                                             |                                                                                                                                                                                                                                                                                
-| `votes.gte`             | Item must have a Number of Votes greater than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                   |
-| `votes.lte`             | Item must have a Number of Votes less than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                      |
-| `genre`                 | Item must match all genres given. Can be a comma-separated list.<br>**Options:** `action`, `adventure`, `animation`, `biography`, `comedy`, `documentary`, `drama`, `crime`, `family`, `history`, `news`, `short`, `western`, `sport`, `reality-tv`, `horror`, `fantasy`, `film-noir`, `music`, `romance`, `talk-show`, `thriller`, `war`, `sci-fi`, `musical`, `mystery`, `game-show`            |
-| `genre.any`             | Item must match at least one given genre. Can be a comma-separated list.<br>**Options:** `action`, `adventure`, `animation`, `biography`, `comedy`, `documentary`, `drama`, `crime`, `family`, `history`, `news`, `short`, `western`, `sport`, `reality-tv`, `horror`, `fantasy`, `film-noir`, `music`, `romance`, `talk-show`, `thriller`, `war`, `sci-fi`, `musical`, `mystery`, `game-show`    |
-| `genre.not`             | Item must not match any of the given genres. Can be a comma-separated list.<br>**Options:** `action`, `adventure`, `animation`, `biography`, `comedy`, `documentary`, `drama`, `crime`, `family`, `history`, `news`, `short`, `western`, `sport`, `reality-tv`, `horror`, `fantasy`, `film-noir`, `music`, `romance`, `talk-show`, `thriller`, `war`, `sci-fi`, `musical`, `mystery`, `game-show` |
-| `interests`             | Item must match all interests given. Can be a comma-separated list.<br>**Options:** see below Interests Options table                                                                                                                                                                                                                                                                             |
-| `interests.any`         | Item must match at least one given interest. Can be a comma-separated list.<br>**Options:** see below Interests Options table                                                                                                                                                                                                                                                                     |
-| `interests.not`         | Item must not match any of the given interests. Can be a comma-separated list.<br>**Options:** see below Interests Options table                                                                                                                                                                                                                                                                  |
-| `event`                 | Item must have been nominated for a category at the event given. Can be a comma-separated list.<br>**Options:** `cannes`, `choice`, `spirit`, `sundance`, `bafta`, `oscar`, `emmy`, `golden`, `oscar_picture`, `oscar_director`, `national_film_board_preserved`, `razzie`, or any [IMDb Event ID](https://www.imdb.com/event/all/) (ex. `ev0050888`)                                             |
-| `event.winning`         | Item must have won a category at the event given. Can be a comma-separated list.<br>**Options:** `cannes`, `choice`, `spirit`, `sundance`, `bafta`, `oscar`, `emmy`, `golden`, `oscar_picture`, `oscar_director`, `national_film_board_preserved`, `razzie`, or any [IMDb Event ID](https://www.imdb.com/event/all/) (ex. `ev0050888`)                                                            |
-| `imdb_top`              | Item must be in the top number of given Movies.<br>**Options:** Any Integer greater than `0`                                                                                                                                                                                                                                                                                                      |
-| `imdb_bottom`           | Item must be in the bottom number of given Movies.<br>**Options:** Any Integer greater than `0`                                                                                                                                                                                                                                                                                                   |
-| `topic`                 | Item must match at least one given topic. Can be a comma-separated list.<br>**Options:** `alternate_version`, `award`, `business_info`, `crazy_credit`, `goof`, `location`, `plot`, `quote`, `soundtrack`, `technical`, `trivia`                                                                                                                                                                  |
-| `topic.not`             | Item must not match any of the given topic. Can be a comma-separated list.<br>**Options:** `alternate_version`, `award`, `business_info`, `crazy_credit`, `goof`, `location`, `plot`, `quote`, `soundtrack`, `technical`, `trivia`                                                                                                                                                                |
-| `alternate_version`     | Item's Alternate Version must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                            |
-| `alternate_version.any` | Item's Alternate Version must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                |
-| `alternate_version.not` | Item's Alternate Version must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                     |
-| `crazy_credit`          | Item's Crazy Credits must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                |
-| `crazy_credit.any`      | Item's Crazy Credits must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                    |
-| `crazy_credit.not`      | Item's Crazy Credits must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                         |
-| `location`              | Item's Location must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                     |
-| `location.any`          | Item's Location must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                         |
-| `location.not`          | Item's Location must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                              |
-| `goof`                  | Item's Goofs must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                        |
-| `goof.any`              | Item's Goofs must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                            |
-| `goof.not`              | Item's Goofs must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                 |
-| `plot`                  | Item's Plot must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                         |
-| `plot.any`              | Item's Plot must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                             |
-| `plot.not`              | Item's Plot must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                  |
-| `quote`                 | Item's Quote must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                        |
-| `quote.any`             | Item's Quote must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                            |
-| `quote.not`             | Item's Quote must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                 |
-| `soundtrack`            | Item's Soundtrack must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                   |
-| `soundtrack.any`        | Item's Soundtrack must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                       |
-| `soundtrack.not`        | Item's Soundtrack must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                            |
-| `trivia`                | Item's Trivia must contain all the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                       |
-| `trivia.any`            | Item's Trivia must contain at least one of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                           |
-| `trivia.not`            | Item's Trivia must not contain any of the given strings. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                                |
-| `company`               | Item must have been released by any company given. Can be a comma-separated list.<br>**Options:** `fox`, `dreamworks`, `mgm`, `paramount`, `sony`, `universal`, `disney`, `warner`, or any IMDb Company ID (ex. `co0023400`)                                                                                                                                                                      |
-| `content_rating`        | Item must have the given content rating. Can be a list.<br>**Options:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } with two attributes `rating` and `region`<br>`rating`: Any String to match the content rating<br>`region`: [2 Digit ISO 3166 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)              |
-| `country`               | Item must match with every given country. Can be a comma-separated list.<br>**Options:** [2 Digit ISO 3166 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)                                                                                                                                                                                                            |
-| `country.any`           | Item must match at least one given country. Can be a comma-separated list.<br>**Options:** [2 Digit ISO 3166 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)                                                                                                                                                                                                          |
-| `country.not`           | Item must not match any given country. Can be a comma-separated list.<br>**Options:** [2 Digit ISO 3166 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)                                                                                                                                                                                                               |
-| `country.origin`        | Item must match any given country as the origin country. Can be a comma-separated list.<br>**Options:** [2 Digit ISO 3166 Country Code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes)                                                                                                                                                                                             |
-| `keyword`               | Item must match with every given keyword. Can be a comma-separated list.<br>**Options:** Any Valid [IMDb Keyword](https://www.imdb.com/search/keyword/)                                                                                                                                                                                                                                           |
-| `keyword.any`           | Item must match at least one given keyword. Can be a comma-separated list.<br>**Options:** Any Valid [IMDb Keyword](https://www.imdb.com/search/keyword/)                                                                                                                                                                                                                                         |
-| `keyword.not`           | Item must not match any given keyword. Can be a comma-separated list.<br>**Options:** Any Valid [IMDb Keyword](https://www.imdb.com/search/keyword/)                                                                                                                                                                                                                                              |
-| `series`                | Item must match at least one given series. Can be a comma-separated list.<br>**Options:** Any IMDb ID (ex. `tt0096697`)                                                                                                                                                                                                                                                                           |
-| `series.not`            | Item must not match any given series. Can be a comma-separated list.<br>**Options:** Any IMDb ID (ex. `tt0096697`)                                                                                                                                                                                                                                                                                |
-| `list`                  | Item must be on every given list. Can be a comma-separated list.<br>**Options:** Any IMDb List ID (ex. `ls000024621`)                                                                                                                                                                                                                                                                             |
-| `list.any`              | Item must be on at least one given lists. Can be a comma-separated list.<br>**Options:** Any IMDb List ID (ex. `ls000024621`)                                                                                                                                                                                                                                                                     |
-| `list.not`              | Item must not be on any given lists. Can be a comma-separated list.<br>**Options:** Any IMDb List ID (ex. `ls000024621`)                                                                                                                                                                                                                                                                          |
-| `language`              | Item must match any given language. Can be a comma-separated list.<br>**Options:** [ISO 639-2 Language Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                                                                                                                                                                                                                              |
-| `language.any`          | Item must match at least one given language. Can be a comma-separated list.<br>**Options:** [ISO 639-2 Language Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                                                                                                                                                                                                                     |
-| `language.not`          | Item must not match any given language. Can be a comma-separated list.<br>**Options:** [ISO 639-2 Language Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                                                                                                                                                                                                                          |
-| `language.primary`      | Item must match any given language as the primary language. Can be a comma-separated list.<br>**Options:** [ISO 639-2 Language Codes](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)                                                                                                                                                                                                      |
-| `popularity.gte`        | Item must have a Popularity greater than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                        |
-| `popularity.lte`        | Item must have a Popularity less than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                           |
-| `cast`                  | Item must have all the given cast members. Can be a comma-separated list.<br>**Options:** Any IMDb Person ID (ex. `nm0000138`)                                                                                                                                                                                                                                                                    |  
-| `cast.any`              | Item must have any of the given cast members. Can be a comma-separated list.<br>**Options:** Any IMDb Person ID (ex. `nm0000138`)                                                                                                                                                                                                                                                                 |  
-| `cast.not`              | Item must not have any of the given cast members. Can be a comma-separated list.<br>**Options:** Any IMDb Person ID (ex. `nm0000138`)                                                                                                                                                                                                                                                             |  
-| `character`             | Item must have any of the given character listed in its credits. Can be a comma-separated list.<br>**Options:** Any String                                                                                                                                                                                                                                                                        |
-| `runtime.gte`           | Item must have a Runtime greater than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                           |
-| `runtime.lte`           | Item must have a Runtime less than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                              |
-| `adult`                 | Include adult titles in the search results.<br>**Options:** `true`/`false`                                                                                                                                                                                                                                                                                                                        |
+- **String:** text, an IMDb ID, or a code. Quote comma-separated values, such as `"action,comedy"`.
+- **Integer:** a whole number; most numeric filters require a value greater than zero. `limit` also accepts `0` for all results.
+- **Number:** a decimal or whole number; rating filters accept `0.1` through `10.0`.
+- **Boolean:** unquoted `true` or `false`.
+- **Date:** `YYYY-MM-DD`, such as `2020-01-01`, or `today`.
+- **Dictionary:** named fields, as used by `content_rating` for `rating` and `region`.
 
-??? tip "Interests Options (Click to Expand)"
+### Ranges and multiple values
+
+`.gte` sets an inclusive minimum; `.lte` sets an inclusive maximum. Use either
+on its own or both for a range. Release dates use `.after` and `.before` instead.
+
+Where a table row lists a base attribute alongside `.any` and `.not`, use:
+
+| Form | Match | Example |
+|:-----|:------|:--------|
+| Base attribute | All values (AND) | `genre: "action,comedy"` |
+| `.any` | At least one value (OR) | `genre.any: "action,comedy"` |
+| `.not` | None of the values | `genre.not: horror` |
+
+Supply multiple values as a comma-separated string. IMDb uses these attribute
+variants for AND/OR logic, rather than TMDb's pipe separator. Some attributes
+match **any** value even without `.any`; their table descriptions state this.
+Separate filters in the same query must all be satisfied.
+
+## Search attributes
+
+All attributes below belong under `imdb_search:`. Grouped rows list each supported
+variant explicitly; they share the same allowed values.
+
+### Results and titles
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `limit` | Integer | Maximum results; default `100`. Use `0` for all. |
+| `sort_by` | Sort option | Default `popularity.asc`; see [sort options](#sort-options). |
+| `title` | String | Title name. |
+| `type`, `type.not` | Title types | Include any listed type, or exclude all listed types with `.not`. See [allowed values](#allowed-values). |
+| `adult` | Boolean | Include adult titles in results. |
+
+### Dates, ratings, and runtime
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `release.after`, `release.before` | Date | Released after / before the given date. |
+| `rating.gte`, `rating.lte` | Number, 0.1-10.0 | Minimum / maximum IMDb rating. |
+| `votes.gte`, `votes.lte` | Positive integer | Minimum / maximum vote count. |
+| `runtime.gte`, `runtime.lte` | Positive integer | Minimum / maximum runtime. |
+| `popularity.gte`, `popularity.lte` | Positive integer | Minimum / maximum popularity value. |
+| `imdb_top`, `imdb_bottom` | Positive integer | Titles in the given top / bottom number of movies. |
+
+### Genres, interests, and keywords
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `genre`, `genre.any`, `genre.not` | Genre names | All / any / none of the genres in [allowed values](#allowed-values). |
+| `interests`, `interests.any`, `interests.not` | Interest values | All / any / none; see the [interests reference](#interests-reference). |
+| `keyword`, `keyword.any`, `keyword.not` | Keywords | All / any / none of the valid [IMDb keywords](https://www.imdb.com/search/keyword/). |
+
+### People, series, and lists
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `cast`, `cast.any`, `cast.not` | Person IDs | All / any / none of the cast members, such as `nm0000138`. |
+| `character` | Strings | Any character name listed in the credits. |
+| `series`, `series.not` | Title IDs | Any listed series, or exclude listed series with `.not`; for example `tt0096697`. |
+| `list`, `list.any`, `list.not` | List IDs | All / any / none of the lists, such as `ls000024621`. |
+| `company` | Company names or IDs | Any company; see [allowed values](#allowed-values). |
+
+### Countries, languages, and certification
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `country`, `country.any`, `country.not` | Country codes | All / any / none of the two-letter ISO 3166 country codes. |
+| `country.origin` | Country codes | Any listed country as the country of origin. |
+| `language`, `language.any`, `language.not` | Language codes | Base and `.any` match any listed ISO 639-2 language code; `.not` excludes them. |
+| `language.primary` | Language codes | Any listed ISO 639-2 code as the primary language. |
+| `content_rating` | Dictionary or list of dictionaries | Use `rating` for the certification and `region` for its two-letter ISO 3166 country code; see [examples](#example-imdb-search-builders). |
+
+### Awards and page content
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `event`, `event.winning` | Events | Nomination / win at a listed event; see [allowed values](#allowed-values). |
+| `topic`, `topic.not` | Topic names | Has any listed topic, or excludes those topics; see [allowed values](#allowed-values). |
+| `alternate_version`, `alternate_version.any`, `alternate_version.not` | Strings | All / any / none of the strings in alternate versions. |
+| `crazy_credit`, `crazy_credit.any`, `crazy_credit.not` | Strings | All / any / none of the strings in crazy credits. |
+| `location`, `location.any`, `location.not` | Strings | All / any / none of the strings in locations. |
+| `goof`, `goof.any`, `goof.not` | Strings | All / any / none of the strings in goofs. |
+| `plot`, `plot.any`, `plot.not` | Strings | All / any / none of the strings in plot text. |
+| `quote`, `quote.any`, `quote.not` | Strings | All / any / none of the strings in quotes. |
+| `soundtrack`, `soundtrack.any`, `soundtrack.not` | Strings | All / any / none of the strings in soundtrack information. |
+| `trivia`, `trivia.any`, `trivia.not` | Strings | All / any / none of the strings in trivia. |
+
+## Sort options
+
+Append `.asc` for ascending or `.desc` for descending order, such as `rating.desc`.
+The default is `popularity.asc`.
+
+| Field | Orders by |
+|:------|:----------|
+| `popularity` | Popularity |
+| `title` | Title |
+| `rating` | IMDb rating |
+| `votes` | Vote count |
+| `box_office` | Box office |
+| `runtime` | Runtime |
+| `year` | Year |
+| `release` | Release date |
+
+## Allowed values
+
+### Title types
+
+`movie`, `tv_series`, `short`, `tv_episode`, `tv_mini_series`, `tv_movie`, `tv_special`, `tv_short`, `video_game`, `video`, `music_video`, `podcast_series`, `podcast_episode`
+
+### Genres
+
+`action`, `adventure`, `animation`, `biography`, `comedy`, `documentary`, `drama`, `crime`, `family`, `history`, `news`, `short`, `western`, `sport`, `reality-tv`, `horror`, `fantasy`, `film-noir`, `music`, `romance`, `talk-show`, `thriller`, `war`, `sci-fi`, `musical`, `mystery`, `game-show`
+
+### Events
+
+`cannes`, `choice`, `spirit`, `sundance`, `bafta`, `oscar`, `emmy`, `golden`, `oscar_picture`, `oscar_director`, `national_film_board_preserved`, `razzie`, or any [IMDb Event ID](https://www.imdb.com/event/all/) (ex. `ev0050888`)
+
+### Companies
+
+`fox`, `dreamworks`, `mgm`, `paramount`, `sony`, `universal`, `disney`, `warner`, or any IMDb Company ID (ex. `co0023400`)
+
+### Page topics
+
+`alternate_version`, `award`, `business_info`, `crazy_credit`, `goof`, `location`, `plot`, `quote`, `soundtrack`, `technical`, `trivia`
+
+### Interests reference
+
+??? info "Full interests reference"
 
     You can use the Key or the ID for interests. This list is a snapshot; IMDb's interest catalog
     changes over time, and Kometa refreshes it automatically from
@@ -414,45 +478,96 @@ The `sync_mode: sync` and `collection_order: custom` Setting are recommended sin
     | Yu-Gi-Oh!                        | `yu_gi_oh!`                        | `in0000259` |
     | Zombie Horror                    | `zombie_horror`                    | `in0000122` |
 
+## Examples {#example-imdb-search-builders}
 
-### Example IMDb Search Builder(s)
+Each tab provides a complete collection definition and explains the filters it uses.
 
-```yaml
-collections:
-  IMDb Popular:
-    imdb_search:
-      type: movie
-      sort_by: popularity.asc
-      limit: 50
-    collection_order: custom
-    sync_mode: sync
-```
+=== "Strings and booleans"
 
-```yaml
-collections:
-  Top Action:
-    imdb_search:
-      type: movie
-      release.after: 1990-01-01
-      rating.gte: 5
-      votes.gte: 100000
-      genre: action
-      sort_by: rating.desc
-      limit: 100
-```
+    Finds movies with "Star Wars" in the title, excluding adult titles. `"Star Wars"` is a string and `false` is an unquoted boolean.
 
-You can also find episodes using `imdb_search` like so.
+    ```yaml
+    collections:
+      Star Wars Movies:
+        collection_order: custom
+        sync_mode: sync
+        imdb_search:
+          type: movie
+          title: "Star Wars"
+          adult: false
+    ```
 
-```yaml
-collections:
-  The Simpsons Top 100 Episodes:
-    collection_order: custom
-    builder_level: episode
-    sync_mode: sync
-    imdb_search:
-      type: tv_episode
-      series: tt0096697
-      sort_by: rating.desc
-      limit: 100
-    summary: The top 100 Simpsons episodes by IMDb user rating
-```
+=== "Dates and numbers"
+
+    Finds action movies released after January 1, 1990, rated at least 7.5 with at least 100,000 votes. Returns up to 100, highest rated first. The date uses `YYYY-MM-DD`; `7.5` is a number and the vote count and limit are integers.
+
+    ```yaml
+    collections:
+      Highly Rated Action Movies:
+        collection_order: custom
+        sync_mode: sync
+        imdb_search:
+          type: movie
+          release.after: 1990-01-01
+          rating.gte: 7.5
+          votes.gte: 100000
+          genre: action
+          sort_by: rating.desc
+          limit: 100
+    ```
+
+=== "AND / OR"
+
+    The first collection requires both action and comedy; the second accepts either genre. Both exclude horror. All multi-value strings use commas; `.any` changes the matching to OR.
+
+    ```yaml
+    collections:
+      Action Comedies:
+        collection_order: custom
+        sync_mode: sync
+        imdb_search:
+          type: movie
+          genre: "action,comedy"
+          genre.not: horror
+
+      Action or Comedy:
+        collection_order: custom
+        sync_mode: sync
+        imdb_search:
+          type: movie
+          genre.any: "action,comedy"
+          genre.not: horror
+    ```
+
+=== "Certification dictionary"
+
+    Finds movies with a US content rating of PG. `content_rating` is a dictionary containing a rating string and a region code.
+
+    ```yaml
+    collections:
+      US PG Movies:
+        collection_order: custom
+        sync_mode: sync
+        imdb_search:
+          type: movie
+          content_rating:
+            rating: "PG"
+            region: "US"
+    ```
+
+=== "Episodes"
+
+    Selects the 100 highest-rated episodes of The Simpsons. `series` is the show's IMDb ID; `builder_level: episode` makes the collection contain episodes.
+
+    ```yaml
+    collections:
+      The Simpsons Top 100 Episodes:
+        collection_order: custom
+        sync_mode: sync
+        builder_level: episode
+        imdb_search:
+          type: tv_episode
+          series: tt0096697
+          sort_by: rating.desc
+          limit: 100
+    ```

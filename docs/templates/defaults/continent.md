@@ -1,11 +1,11 @@
 {%
     include-markdown "./base/collection/header.md"
     replace='{
-        "COLLECTION": "Continent", 
-        "CODE_NAME": "continent",
-        "DESCRIPTION": "dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into continents",
-        "SECTION_NUMBER": "082"
-    }'
+    "COLLECTION": "Continent",
+    "CODE_NAME": "continent",
+    "DESCRIPTION": "dynamically create collections based on the countries within your library. The collection aims to be inclusive, with all 230 countries incorporated into continents",
+    "SECTION_NUMBER": "082"
+}'
 %}
 {% include-markdown "./../snippets/separator_line.md" replace='{"SEPARATOR": "Continent"}' %}
 | `Africa`           | `Africa`     | Collection of FULL_TYPE filmed in Africa.                      |

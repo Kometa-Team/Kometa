@@ -1,0 +1,433 @@
+[project]
+docs_dir = "docs"
+site_dir = "site"
+watch = ["docs/templates", "docs/docs-extension/src/kometa_docs", "CHANGELOG.md"]
+copyright = "Copyright &copy; 2026 meisnate12"
+exclude_docs = "/templates/\n/overrides/\n/requirements.txt\n/docs-extension/\n"
+site_name = "Kometa Wiki"
+site_author = "meisnate12"
+site_description = "Kometa is an open-source python project allowing you to unlock the potential of your media server."
+site_url = "https://kometa.wiki/en/latest/"
+repo_name = "Kometa"
+repo_url = "https://github.com/Kometa-Team/Kometa"
+extra_css = [
+    "assets/css/extra.css",
+    "assets/css/install-guide.css",
+    "https://unpkg.com/tippy.js@6/dist/tippy.css",
+]
+extra_javascript = [
+    "assets/js/extra.js",
+    "assets/js/install-guide.js",
+    "https://unpkg.com/@popperjs/core@2",
+    "https://unpkg.com/tippy.js@6",
+    "assets/js/external-links.js",
+]
+
+[project.theme]
+name = "zensical"
+logo = "assets/images/icons/icon.png"
+favicon = "assets/images/icons/favicon.png"
+custom_dir = "docs/overrides"
+features = [
+    "content.code.annotate",
+    "content.tabs.link",
+    "content.code.copy",
+    "announce.dismiss",
+    "navigation.path",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+]
+language = "en"
+variant = "modern"
+
+[project.theme.palette]
+scheme = "slate"
+primary = "custom"
+
+[project.plugins.search]
+
+[project.plugins.glightbox]
+
+[project.plugins.redirects.redirect_maps]
+"discord.md" = "https://discord.com/invite/kometa-822460010649878528"
+"redact.md" = "https://regex101.com/r/DMo1DQ/latest"
+"link.md" = "https://discord.com/invite/kometa-822460010649878528"
+
+[[project.extra.social]]
+icon = "fontawesome/solid/heart"
+class = "md-social__link heart"
+link = "https://github.com/sponsors/meisnate12"
+name = "Donate"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/discord"
+class = "md-social__link"
+link = "https://kometa.wiki/en/latest/discord/"
+name = "Discord"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+class = "md-social__link"
+link = "https://github.com/Kometa-Team/Kometa"
+name = "GitHub"
+
+[project.extra.analytics]
+provider = "plausible"
+domain = "kometa.wiki"
+src = "https://analytics.kometa.wiki/js/script.js"
+
+[project.markdown_extensions.abbr]
+
+[project.markdown_extensions.admonition]
+
+[project.markdown_extensions.attr_list]
+
+[project.markdown_extensions.md_in_html]
+
+[project.markdown_extensions."pymdownx.details"]
+
+[project.markdown_extensions."pymdownx.emoji"]
+emoji_generator = "zensical.extensions.emoji.to_svg"
+emoji_index = "zensical.extensions.emoji.twemoji"
+
+[project.markdown_extensions."pymdownx.highlight"]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+
+[project.markdown_extensions."pymdownx.inlinehilite"]
+
+[project.markdown_extensions."pymdownx.snippets"]
+base_path = [".", "docs"]
+check_paths = true
+
+[project.markdown_extensions.kometa_docs]
+
+[project.markdown_extensions."pymdownx.superfences"]
+
+[project.markdown_extensions."pymdownx.tabbed"]
+alternate_style = true
+
+[project.markdown_extensions."pymdownx.tabbed".slugify]
+object = "pymdownx.slugs.slugify"
+
+[project.markdown_extensions."pymdownx.tabbed".slugify.kwds]
+case = "lower"
+
+[project.markdown_extensions."pymdownx.tasklist"]
+custom_checkbox = true
+
+[project.markdown_extensions."pymdownx.tilde"]
+
+[project.markdown_extensions.tables]
+
+[project.markdown_extensions.toc]
+title = "Contents"
+permalink = true
+toc_depth = 3
+
+[[project.nav]]
+Home = "index.md"
+
+[[project.nav]]
+"Get Started" = [
+    { "Installation" =  "kometa/install/index.md" },
+    { "Commands and environment variables" = "kometa/environmental.md" },
+    { "Understanding your config and files" = "kometa/install/files.md" },
+    { "YAML basics" = "kometa/yaml.md" },
+    { "Docker images" = "kometa/install/images.md" },
+]
+
+[[project.nav]]
+Guides = [
+    { "Community guides and recipes" = "kometa/guides/community.md" },
+    { "Collections and Playlists" = [
+    { "Sorting collections and playlists" = "kometa/guides/order.md" },
+    { "Managing recommendations" = "kometa/guides/hub.md" },
+] },
+    { "Overlays and Artwork" = [
+    { "How overlays work" = "kometa/guides/overlays.md" },
+    { "Understanding Plex ratings" = "kometa/guides/ratings.md" },
+    { "Setting up image assets" = "kometa/guides/assets.md" },
+    { "Using MediUX assets" = "kometa/guides/mediux.md" },
+] },
+    { "Library Management" = [
+    { "Library operations" = "config/operations.md" },
+    { "Formula 1 metadata" = "kometa/guides/formula.md" },
+] },
+    { "Running and Scheduling" = [
+    { "Scheduling runs" = "kometa/guides/scheduling.md" },
+    { "Schedule syntax" = "config/schedule.md" },
+] },
+    { "Companion Tools" = [
+    { Quickstart = "kometa/scripts/quickstart.md" },
+    { ImageMaid = "kometa/scripts/imagemaid.md" },
+    { "Overlay Reset" = "kometa/scripts/overlay-reset.md" },
+] },
+]
+
+[[project.nav]]
+Defaults = [
+    { "Using defaults" = "defaults/guide.md" },
+    { "Collection Defaults" = [
+    { "Configuring collection defaults" = "defaults/collections/usage.md" },
+    { Awards = [
+    { Separator = "defaults/award/separator.md" },
+    { "Academy Awards (Oscars)" = "defaults/award/oscars.md" },
+    { "Berlin Film Festival Awards" = "defaults/award/berlinale.md" },
+    { "British Academy of Film Awards" = "defaults/award/bafta.md" },
+    { "Cannes Film Festival Awards" = "defaults/award/cannes.md" },
+    { "César Awards" = "defaults/award/cesar.md" },
+    { "Critics Choice Awards" = "defaults/award/choice.md" },
+    { "Emmy Awards" = "defaults/award/emmy.md" },
+    { "Golden Globe Awards" = "defaults/award/golden.md" },
+    { "Independent Spirit Awards" = "defaults/award/spirit.md" },
+    { "National Film Registry" = "defaults/award/nfr.md" },
+    { "People's Choice Awards" = "defaults/award/pca.md" },
+    { "Razzie Awards" = "defaults/award/razzie.md" },
+    { "Screen Actors Guild Awards" = "defaults/award/sag.md" },
+    { "Sundance Film Festival Awards" = "defaults/award/sundance.md" },
+    { "Toronto International Film Festival" = "defaults/award/tiff.md" },
+    { "Venice Film Festival Awards" = "defaults/award/venice.md" },
+] },
+    { Charts = [
+    { Separator = "defaults/chart/separator.md" },
+    { "Basic Charts" = "defaults/chart/basic.md" },
+    { "AniList Charts" = "defaults/chart/anilist.md" },
+    { "IMDb Charts" = "defaults/chart/imdb.md" },
+    { "Letterboxd Charts" = "defaults/chart/letterboxd.md" },
+    { "MyAnimeList Charts" = "defaults/chart/myanimelist.md" },
+    { "Simkl Charts" = "defaults/chart/simkl.md" },
+    { "Tautulli Charts" = "defaults/chart/tautulli.md" },
+    { "TMDb Charts" = "defaults/chart/tmdb.md" },
+    { "Tracearr Charts" = "defaults/chart/tracearr.md" },
+    { "Other Charts" = "defaults/chart/other.md" },
+] },
+    { "Content and Franchises" = [
+    { Genres = "defaults/both/genre.md" },
+    { "Franchises (Movie)" = "defaults/movie/franchise.md" },
+    { "Franchises (Show)" = "defaults/show/franchise.md" },
+    { Universes = "defaults/both/universe.md" },
+    { "Based On..." = "defaults/both/based.md" },
+    { Collectionless = "defaults/both/collectionless.md" },
+] },
+    { "Content Ratings" = [
+    { "US Content Ratings (Movie)" = "defaults/movie/content_rating_us.md" },
+    { "US Content Ratings (Show)" = "defaults/show/content_rating_us.md" },
+    { "UK Content Ratings" = "defaults/both/content_rating_uk.md" },
+    { "DE Content Ratings" = "defaults/both/content_rating_de.md" },
+    { "AU Content Ratings" = "defaults/both/content_rating_au.md" },
+    { "NZ Content Ratings" = "defaults/both/content_rating_nz.md" },
+    { "MyAnimeList Content Ratings" = "defaults/both/content_rating_mal.md" },
+    { "Common Sense Media Content Ratings" = "defaults/both/content_rating_cs.md" },
+] },
+    { Locations = [
+    { "Countries (Movie)" = "defaults/movie/country.md" },
+    { "Countries (Show)" = "defaults/show/country.md" },
+    { "Regions (Movie)" = "defaults/movie/region.md" },
+    { "Regions (Show)" = "defaults/show/region.md" },
+    { "Continents (Movie)" = "defaults/movie/continent.md" },
+    { "Continents (Show)" = "defaults/show/continent.md" },
+] },
+    { "Media Properties" = [
+    { "Aspect Ratio" = "defaults/both/aspect.md" },
+    { Resolutions = "defaults/both/resolution.md" },
+    { "Audio Languages" = "defaults/both/audio_language.md" },
+    { "Subtitle Languages" = "defaults/both/subtitle_language.md" },
+] },
+    { People = [
+    { Actors = "defaults/both/actor.md" },
+    { Directors = "defaults/movie/director.md" },
+    { Producers = "defaults/movie/producer.md" },
+    { Writers = "defaults/movie/writer.md" },
+] },
+    { "Networks, Studios and Streaming" = [
+    { Networks = "defaults/show/network.md" },
+    { Streaming = "defaults/both/streaming.md" },
+    { Studios = "defaults/both/studio.md" },
+] },
+    { "Years and Seasons" = [
+    { Seasonal = "defaults/movie/seasonal.md" },
+    { Years = "defaults/both/year.md" },
+    { "Decades (Movie)" = "defaults/movie/decade.md" },
+    { "Decades (Show)" = "defaults/show/decade.md" },
+] },
+    { Separators = "defaults/separators.md" },
+] },
+    { "Overlay Defaults" = [
+    { "Configuring overlay defaults" = "defaults/overlays/usage.md" },
+    { "Ratings and Content" = [
+    { Ratings = "defaults/overlays/ratings.md" },
+    { Ribbon = "defaults/overlays/ribbon.md" },
+    { "Episode info" = "defaults/overlays/episode_info.md" },
+    { MediaStinger = "defaults/overlays/mediastinger.md" },
+    { Status = "defaults/overlays/status.md" },
+    { "Content Ratings" = [
+    { "US Content Ratings (Movie)" = "defaults/overlays/content_rating_us_movie.md" },
+    { "US Content Ratings (Show)" = "defaults/overlays/content_rating_us_show.md" },
+    { "UK Content Ratings" = "defaults/overlays/content_rating_uk.md" },
+    { "DE Content Ratings" = "defaults/overlays/content_rating_de.md" },
+    { "AU Content Ratings" = "defaults/overlays/content_rating_au.md" },
+    { "NZ Content Ratings" = "defaults/overlays/content_rating_nz.md" },
+    { "Common Sense Age Ratings" = "defaults/overlays/commonsense.md" },
+] },
+] },
+    { "Media Properties" = [
+    { "Aspect Ratio" = "defaults/overlays/aspect.md" },
+    { "Audio Codec" = "defaults/overlays/audio_codec.md" },
+    { "Audio/Subtitle Language Count" = "defaults/overlays/language_count.md" },
+    { "Audio/Subtitle Language Flags" = "defaults/overlays/languages.md" },
+    { "Resolution/Edition" = "defaults/overlays/resolution.md" },
+    { Runtimes = "defaults/overlays/runtimes.md" },
+    { Versions = "defaults/overlays/versions.md" },
+    { "Video Format" = "defaults/overlays/video_format.md" },
+] },
+    { "Networks, Studios and Streaming" = [
+    { Networks = "defaults/overlays/network.md" },
+    { Streaming = "defaults/overlays/streaming.md" },
+    { Studios = "defaults/overlays/studio.md" },
+] },
+    { Utility = [
+    { "Direct Play Only" = "defaults/overlays/direct_play.md" },
+] },
+] },
+    { "Playlist defaults" = "defaults/playlist.md" },
+]
+
+[[project.nav]]
+Configuration = [
+    { "Config file overview" = "config/overview.md" },
+    { "Libraries and File Loading" = [
+    { "Library attributes" = "config/libraries.md" },
+    { "Loading files" = "config/files.md" },
+    { "Loading playlist files" = "config/playlists.md" },
+] },
+    { "Global settings" = "config/settings.md" },
+    { "Service Connections" = [
+    { "Required Services" = [
+    { Plex = "config/plex.md" },
+    { TMDb = "config/tmdb.md" },
+] },
+    { "Metadata and Tracking" = [
+    { FlickList = "config/flicklist.md" },
+    { Floppy = "config/floppy.md" },
+    { MDBList = "config/mdblist.md" },
+    { OMDb = "config/omdb.md" },
+    { Serializd = "config/serializd.md" },
+    { Simkl = "config/simkl.md" },
+    { WeTrakr = "config/wetrakr.md" },
+    { YamTrack = "config/yamtrack.md" },
+] },
+    { Anime = [
+    { AniDB = "config/anidb.md" },
+    { MyAnimeList = "config/myanimelist.md" },
+] },
+    { "Media Management" = [
+    { Lidarr = "config/lidarr.md" },
+    { Radarr = "config/radarr.md" },
+    { Seerr = "config/seerr.md" },
+    { Sonarr = "config/sonarr.md" },
+] },
+    { "Activity Monitoring" = [
+    { Tautulli = "config/tautulli.md" },
+    { Tracearr = "config/tracearr.md" },
+] },
+    { Music = [
+    { "Last.fm" = "config/lastfm.md" },
+    { "YouTube Music" = "config/ytmusic.md" },
+] },
+    { "Other Connections" = [
+    { GitHub = "config/github.md" },
+    { "Kometa Utilities Authentication" = "config/authentication.md" },
+] },
+] },
+    { Notifications = [
+    { Webhooks = "config/webhooks.md" },
+    { Apprise = "config/apprise.md" },
+    { Gotify = "config/gotify.md" },
+    { Notifiarr = "config/notifiarr.md" },
+    { ntfy = "config/ntfy.md" },
+] },
+]
+
+[[project.nav]]
+Reference = [
+    { "Definition components" = "files/definition-components.md" },
+    { "File Formats" = [
+    { "Collection files" = "files/collections.md" },
+    { "Overlay files" = "files/overlays.md" },
+    { "Playlist files" = "files/playlists.md" },
+    { "Metadata files" = "files/metadata.md" },
+] },
+    { "Templates and Dynamic Collections" = [
+    { "Definition templates" = "files/templates.md" },
+    { "Dynamic collections" = "files/dynamic.md" },
+    { "Dynamic collection types and data" = "files/dynamic_types.md" },
+] },
+    { Builders = [
+    { "Movie and TV Databases" = [
+    { TMDb = [
+    { Builders = "files/builders/tmdb/builders.md" },
+    { "Discover movies" = "files/builders/tmdb/discover/movie.md" },
+    { "Discover shows" = "files/builders/tmdb/discover/show.md" },
+] },
+    { IMDb = [
+    { Builders = "files/builders/imdb/builders.md" },
+    { "Advanced search" = "files/builders/imdb/search.md" },
+] },
+    { TVDb = "files/builders/tvdb/index.md" },
+    { BoxOfficeMojo = "files/builders/boxofficemojo/index.md" },
+    { StevenLu = "files/builders/stevenlu/index.md" },
+] },
+    { "Lists and Tracking" = [
+    { FlickList = "files/builders/flicklist/index.md" },
+    { Floppy = "files/builders/floppy/index.md" },
+    { ICheckMovies = "files/builders/icheckmovies/index.md" },
+    { Letterboxd = "files/builders/letterboxd/builders.md" },
+    { MDBList = "files/builders/mdblist/index.md" },
+    { Serializd = "files/builders/serializd/index.md" },
+    { Simkl = "files/builders/simkl/index.md" },
+    { WeTrakr = "files/builders/wetrakr/index.md" },
+    { YamTrack = "files/builders/yamtrack/index.md" },
+] },
+    { Anime = [
+    { AniDB = "files/builders/anidb/index.md" },
+    { AniList = [
+    { Builders = "files/builders/anilist/builders.md" },
+    { "Advanced search" = "files/builders/anilist/search.md" },
+] },
+    { MyAnimeList = "files/builders/myanimelist/builders.md" },
+] },
+    { Music = [
+    { "Apple Music and iTunes" = "files/builders/apple/index.md" },
+    { "Last.fm" = "files/builders/lastfm/index.md" },
+    { Spotify = "files/builders/spotify/index.md" },
+    { "YouTube Music" = "files/builders/ytmusic/index.md" },
+] },
+    { "Your Library and Activity" = [
+    { Plex = [
+    { Builders = "files/builders/plex/builders.md" },
+    { "Smart filters" = "files/builders/plex/smart-filter.md" },
+    { Search = "files/builders/plex/search.md" },
+] },
+    { Lidarr = "files/builders/lidarr/index.md" },
+    { Radarr = "files/builders/radarr/index.md" },
+    { Sonarr = "files/builders/sonarr/index.md" },
+    { Tautulli = "files/builders/tautulli/index.md" },
+    { "Text and File lists" = "files/builders/textfile/index.md" },
+    { Tracearr = "files/builders/tracearr/index.md" },
+] },
+] },
+    { Filters = "files/filters.md" },
+    { "Definition options" = "files/settings.md" },
+    { "Radarr, Sonarr, and Seerr options" = "files/arr.md" },
+    { "Metadata updates" = "files/updates.md" },
+]
+
+[[project.nav]]
+"Help and Community" = [
+    { "Help" = "kometa/help.md" },
+    { "Release notes" = "kometa/release-notes.md" },
+    { "Community & credits" = "kometa/acknowledgements.md" },
+]

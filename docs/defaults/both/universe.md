@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Universe", 
-        "CODE_NAME": "universe",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "040", 
-        "DESCRIPTION": "create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)"
-    }'
+    "COLLECTION": "Universe",
+    "CODE_NAME": "universe",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "040",
+    "DESCRIPTION": "create collections based on popular Movie universes (such as the Marvel Cinematic Universe or Wizarding World)"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Universe"}' %}
 | `Alien / Predator`           | `avp`       | Collection of Movies in the Alien / Predator Universe             |
@@ -57,7 +57,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="universe|data|exclude|collection_order|sync_mode"
         replace='{
-            "DYNAMIC_NAME": "Universes", 
+            "DYNAMIC_NAME": "Universes",
             "DYNAMIC_VALUE": "Universes",
             "COLLECTION_ORDER": "`custom`"
         }'
@@ -70,15 +70,15 @@ hide:
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Universe Collections"
-        
+
         The Universe collections are based on either IMDb or MDB lists.
 
     === "Default `data`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         data: 
     {%    
-      include-markdown "../../../defaults/both/universe.yml" 
+      include-markdown "../../templates/source-defaults/both/universe.yml"
       comments=false
       start="data:\n"
       end="template:"
@@ -86,11 +86,11 @@ hide:
         ```
 
     === "Default `imdb_url`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         imdb_url: 
   {%    
-    include-markdown "../../../defaults/both/universe.yml" 
+    include-markdown "../../templates/source-defaults/both/universe.yml"
     comments=false
     start="imdb_url:\n"
     end="mdblist_url:"
@@ -98,11 +98,11 @@ hide:
         ```
 
     === "Default `mdblist_url`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         mdblist_url: 
   {%    
-    include-markdown "../../../defaults/both/universe.yml" 
+    include-markdown "../../templates/source-defaults/both/universe.yml"
     comments=false
     start="mdblist_url:\n"
     end="image:"

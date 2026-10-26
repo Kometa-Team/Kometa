@@ -1,7 +1,6 @@
 ---
 hide:
   - tags
-  - toc
 tags:
   - actor
   - added
@@ -61,336 +60,373 @@ tags:
 
 # Filters
 
-Filters allow for you to filter every item added to the collection/overlay/playlist from every Builder using the `filters` attribute.
+Use `filters` to narrow the items selected by builders for a collection, overlay,
+or playlist. These are Kometa filters applied to builder results; they do not
+create a live Plex smart collection.
 
-## Using Filters
+!!! important "A builder is required"
 
-Filters cannot do anything alone they require the use of at least one [Builder](builders/overview.md) to function.
+    Filters do not select items on their own. Use at least one
+    [builder](definition-components.md#builders), such as `plex_all: true` to
+    start with your library, then apply filters to its results.
 
-You can have multiple filters in each set but an item must match at least one value from **each** filter to not be ignored. The values for each must match what Plex has including special characters in order to match.
+## Using filters
 
-```yaml
-filters:
-  genre: Action
-  country: Germany
-```
+| Structure | Matching rule |
+|:----------|:--------------|
+| Several attributes in one dictionary | Every filter must pass (AND) |
+| Multiple values for a filter that supports them | At least one value must match |
+| YAML list of filter dictionaries | At least one complete set must pass (OR) |
 
-Anything that doesn't have both the Genre `Action` and the Country `Germany` will be ignored.
+Values must match Plex metadata, including special characters. String filters
+accept multiple values **only as a YAML list**; tag filters also accept a
+comma-separated string. Date and number filters accept one value per attribute.
+Boolean filters take unquoted `true` or `false` with no modifier.
 
-Multiple Filter Sets can be given as a list. With multiple sets only one of the sets must pass for the item to not be ignored.
+A filter combines an attribute, an optional modifier, and a value. For example,
+`user_rating.gte: 7.5` requires a user rating greater than or equal to 7.5.
+`.gt` / `.lt` exclude the boundary; `.gte` / `.lte` include it.
 
-```yaml
-filters:
-  - genre: Action
-    country: Germany
-  - genre: Comedy
-    country: France
-```
+### Inspecting results
 
-Anything that doesn't have either both the Genre `Action` and the Country `Germany` or the Genre `Comedy` and the Country `France` will be ignored.
+Set `show_filtered: true` on the definition to display rejected items, or
+`show_unfiltered: true` to display items that pass. These are definition options,
+not entries under `filters`.
 
-All filter options are listed below.
+!!! warning "Narrow candidates before filtering"
 
-To display items filtered out add `show_filtered: true` to the definition. To display items that make it through the filters add `show_unfiltered: true` to the definition.
+    Filters can be slow, especially on large libraries. Where possible, narrow
+    the source with [Plex Search](builders/plex/search.md), a
+    [smart label collection](settings.md#smart-label-definitions), or another
+    [builder](definition-components.md#builders) before applying filters.
 
-You can use the `plex_all: true` Builder to filter from your entire library.
+## Examples
 
-???+ warning
+=== "AND within a set"
 
-    Filters can be very slow, particularly on larger libraries. Try to build or narrow your items using a [Smart Label Collection](../files/settings.md#smart-label-definitions), [Plex Search](../files/builders/plex/search.md) or another [Builder](overview.md) if possible.
-
-## Filter Options
-
-=== "Boolean Filters"
-
-    **Modifiers:** No Modifier
-
-    ### Boolean Filter Attributes
-
-    | Boolean Filters                                                                                          | Description                                                                                              | Allowed Media                                                                                                                                                                                                              |
-    |:---------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `has_collection`                                                                                         | Matches every item that has or does not have a collection                                                | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks`                                                                                                                                       |
-    | `has_dolby_vision` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-filters-boolean-1" } | Matches every item that has or does not have a dolby vision                                              | `Movies`<br>`Shows` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-filters-boolean-1" }<br>`Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-filters-boolean-1" }<br>`Episodes` |
-    | `has_edition`                                                                                            | Matches every item that has or does not have an edition                                                  | `Movies`<br>`Shows`                                                                                                                                                                                                        |
-    | `has_overlay`                                                                                            | Matches every item that has or does not have an overlay                                                  | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`                                                                                                                                                   |
-    | `has_stinger`                                                                                            | Matches every item that has a [media stinger](http://www.mediastinger.com/) (After/During Credits Scene) | `Movies`                                                                                                                                                                                                                   |
-
-    #### Examples
+    Includes only items with both Action and Germany in their Plex metadata.
+    `plex_all` supplies candidates; the two string-valued tag filters must both pass.
 
     ```yaml
     collections:
-     Movies with Mediastingers:
-       plex_all: true
-       filters:
-         has_stinger: true
-    ```
-    ```yaml
-    collections:
-     Movies with Editions:
-       plex_all: true
-       filters:
-         has_edition: true
-    ```
-
-
-=== "Date Filters"
-
-    **Modifiers:** No Modifier, `.not`, `.before`, `.after`, or `.regex`
-
-    Date filters can **NOT** take multiple values.
-
-    ### Date Filter Attributes
-
-    | Date Filters                                                                                                     | Description                                                                    | Allowed Media                                                                        |
-    |:-----------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------|
-    | `added`                                                                                                          | Uses the date added attribute to match                                         | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks` |
-    | `first_episode_aired` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-filters-date-1" }         | Uses the first episode aired date to match                                     | `Shows`                                                                              |
-    | `last_episode_aired_or_never` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-filters-date-1" } | Similar to `last_episode_aired` but also includes those that haven't aired yet | `Shows`                                                                              |
-    | `last_episode_aired` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-filters-date-1" }          | Uses the last episode aired date to match                                      | `Shows`                                                                              |
-    | `last_played`                                                                                                    | Uses the date last played attribute to match                                   | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks` |
-    | `release`                                                                                                        | Uses the release date attribute (originally available) to match                | `Movies`<br>`Shows`<br>`Episodes`<br>`Albums`                                        |
-
-    ???+ tip "Date Filter Modifiers"
-
-        | Date Modifier | Description                                                           | Format                                                                     |
-        |:--------------|:----------------------------------------------------------------------|:---------------------------------------------------------------------------|
-        | No Modifier   | Matches every item where the date attribute is in the last X days     | **Format:** number of days<br>e.g. `30`                                    |
-        | `.after`      | Matches every item where the date attribute is after the given date   | **Format:** MM/DD/YYYY or `today` for the current day<br>e.g. `01/01/2000` |
-        | `.before`     | Matches every item where the date attribute is before the given date  | **Format:** MM/DD/YYYY or `today` for the current day<br>e.g. `01/01/2000` |
-        | `.not`        | Matches every item where the date attribute is not in the last X days | **Format:** number of days<br>e.g. `30`                                    |
-        | `.regex`      | Matches every item where the attribute matches the regex given        | N/A                                                                        |
-
-    #### Examples
-
-    ```yaml
-    collections:
-     Summer 2020 Movies:
-       plex_all: true
-       filters:
-         release.after: 5/1/2020
-         release.before: 8/31/2020
-    ```
-    ```yaml
-    collections:
-     Movies Released in the Last 180 Days:
-       plex_all: true
-       filters:
-         release: 180
-    ```
-
-=== "Number Filters"
-
-    **Modifiers:** No Modifier, `.not`, `.gt`, `.gte`, `.lt`, or `.lte`
-
-    Number filters can **NOT** take multiple values.
-
-    ### Number Filter Attributes
-
-    | Number Filters                                                                                                                                                                      | Description                                                                                                                                                                 | Allowed Media                                                                                                                                                                                                                                                                                                                                                                                                              |
-    |:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | aspect :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }                                                                                         | Uses the aspect attribute to match<br>minimum: 0.0                                                                                                                          | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                                                                                                                                                                                           |
-    | audience_rating                                                                                                                                                                     | Uses the audience rating attribute to match<br>0.0 - 10.0                                                                                                                   | Movies<br>Shows<br>Episodes                                                                                                                                                                                                                                                                                                                                                                                                |
-    | channels :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }                                                                                       | Uses the audio channels attribute to match<br>minimum: 0                                                                                                                    | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                                                                                                                                                                                           |
-    | critic_rating                                                                                                                                                                       | Uses the critic rating attribute to match<br>0.0 - 10.0                                                                                                                     | Movies<br>Shows<br>Episodes<br>Albums                                                                                                                                                                                                                                                                                                                                                                                      |
-    | duration                                                                                                                                                                            | Uses the duration attribute to match using minutes<br>minimum: 0                                                                                                            | Movies<br>Shows<br>Episodes<br>Tracks                                                                                                                                                                                                                                                                                                                                                                                      |
-    | dovi_level :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" } | Matches the Dolby Vision level reported by a video stream. Values: 1–13.<br>Use `plex_search` with `dovi: true` to narrow candidates first. | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes |
-    | dovi_profile :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" } | Matches the Dolby Vision profile reported by a video stream. Values: 5, 7, 8, 9, 10, 20.<br>Use `plex_search` with `dovi: true` to narrow candidates first. | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes |
-    | height :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }                                                                                         | Uses the height attribute to match<br>minimum: 0                                                                                                                            | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                                                                                                                                                                                           |
-    | plays                                                                                                                                                                               | Uses the plays attribute to match<br>minimum: 1                                                                                                                             | Movies<br>Shows<br>Seasons,<br>Episodes<br>Artists<br>Albums<br>Tracks                                                                                                                                                                                                                                                                                                                                                     |
-    | stinger_rating :material-numeric-6-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-4" }                                                                                 | Uses the [Mediastinger](http://www.mediastinger.com/) rating to match.<br>The media stinger rating is if the after/during credits scene is worth staying for.<br>Accepts positive, zero, and negative integer ratings. | Movies                                                                                                                                                                                                                                                                                                                                                                                                                     |
-    | tmdb_vote_average :material-numeric-4-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-2" }                                                                              | Uses the tmdb vote average rating to match<br>minimum: 0.0                                                                                                                  | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                            |
-    | tmdb_vote_count :material-numeric-4-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-2" }                                                                                | Uses the tmdb vote count to match<br>minimum: 1                                                                                                                             | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                            |
-    | tmdb_year :material-numeric-4-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-2" } :material-numeric-3-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-1" } | Uses the year on TMDb to match<br>minimum: 1                                                                                                                                | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                            |
-    | user_rating                                                                                                                                                                         | Uses the user rating attribute to match<br>0.0 - 10.0                                                                                                                       | Movies<br>Shows<br>Seasons,<br>Episodes<br>Artists<br>Albums<br>Tracks                                                                                                                                                                                                                                                                                                                                                     |
-    | versions :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }                                                                                       | Uses the number of versions found to match<br>minimum: 0                                                                                                                    | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" },<br>Episodes<br>Artists :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Albums :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Tracks |
-    | width :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }                                                                                          | Uses the width attribute to match<br>minimum: 0                                                                                                                             | Movies<br>Shows :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Seasons :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-3" }<br>Episodes                                                                                                                                                                                                           |
-    | year :material-numeric-3-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-1" }                                                                                           | Uses the year attribute to match<br>minimum: 1                                                                                                                              | Movies<br>Shows<br>Seasons,<br>Episodes<br>Albums<br>Tracks                                                                                                                                                                                                                                                                                                                                                                |
-    
-    `stinger_rating.gt: 0` selects movies with a positive Mediastinger rating. Negative thresholds, such as `stinger_rating.gt: -1`, are also supported. Movies without a Mediastinger rating do not match any `stinger_rating` filter, including `.not`. The separate `has_stinger` filter checks whether a movie is listed, regardless of its rating.
-
-    ???+ tip "Number Filter Modifiers"
-
-        | Number Modifier | Description                                                                                | Format                                            |
-        |:----------------|:-------------------------------------------------------------------------------------------|:--------------------------------------------------|
-        | No Modifier     | Matches every item where the number attribute is equal to the given number                 | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-        | `.gt`           | Matches every item where the number attribute is greater than the given number             | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-        | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-        | `.lt`           | Matches every item where the number attribute is less than the given number                | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-        | `.lte`          | Matches every item where the number attribute is less than or equal to the given number    | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-        | `.not`          | Matches every item where the number attribute is not equal to the given number             | **Format:** number<br>e.g. `30`, `1995`, or `7.5` |
-
-    #### Examples
-
-    ```yaml
-    collections:
-     9.0 Movies:
-       plex_all: true
-       filters:
-         user_rating.gte: 9
-    ```
-    ```yaml
-    collections:
-     Good Adam Sandler Romantic Comedies:
-       plex_search:
-         all:
-           genre: Romance
-           actor: Adam Sandler
-       filters:
-         genre: Comedy
-         user_rating.gte: 7
-    ```
-
-=== "String Filters"
-
-    **Modifiers:** No Modifier, `.not`, `.is`, `.isnot`, `.begins`, `.ends`, or `.regex`
-
-    String filters can take multiple values **only as a list**.
-
-    ### String Filter Attributes
-
-    | String Filter                                                                                          | Description                              | Allowed Media                                                                                                                                                                                                                                                                                                                                                                                                             |
-    |:-------------------------------------------------------------------------------------------------------|:-----------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | audio_codec :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }       | Uses the audio codec tags to match       | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes<br>Artists :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Albums :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Tracks |
-    | audio_profile :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }     | Uses the audio profile tags to match     | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes                                                                                                                                                                                                          |
-    | audio_track_title :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" } | Uses the audio track titles to match     | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes<br>Artists :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Albums :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Tracks |
-    | edition                                                                                                | Uses the edition attribute to match      | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                           |
-    | filepath :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }          | Uses the item's filepath to match        | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes<br>Artists :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Albums :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Tracks |
-    | folder                                                                                                 | Uses the item's folder to match          | Shows<br>Artists                                                                                                                                                                                                                                                                                                                                                                                                          |
-    | record_label                                                                                           | Uses the record label attribute to match | Albums                                                                                                                                                                                                                                                                                                                                                                                                                    |
-    | studio                                                                                                 | Uses the studio attribute to match       | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                           |
-    | summary                                                                                                | Uses the summary attribute to match      | Movies<br>Shows<br>Seasons<br>Episodes<br>Artists<br>Albums<br>Tracks                                                                                                                                                                                                                                                                                                                                                     |
-    | title                                                                                                  | Uses the title attribute to match        | Movies<br>Shows<br>Seasons<br>Episodes<br>Artists<br>Albums<br>Tracks                                                                                                                                                                                                                                                                                                                                                     |
-    | show_title                                                                                             | Uses the show title attribute to match   | Seasons<br>Episodes                                                                                                                                                                                                                                                                                                                                                                                                       |
-    | season_title                                                                                           | Uses the season title attribute to match | Episodes                                                                                                                                                                                                                                                                                                                                                                                                                  |
-    | tmdb_title :material-numeric-7-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-1" }        | Uses the title from TMDb to match        | Movies<br>Shows                                                                                                                                                                                                                                                                                                                                                                                                           |
-    | tvdb_status :material-numeric-7-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-1" }       | Uses the status from TVDb to match       | Shows                                                                                                                                                                                                                                                                                                                                                                                                                     |
-    | tvdb_title :material-numeric-7-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-1" }        | Uses the title from TVDb to match        | Shows                                                                                                                                                                                                                                                                                                                                                                                                                     |
-    | video_codec :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }       | Uses the video codec tags to match       | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes                                                                                                                                                                                                          |
-    | video_profile :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }     | Uses the video profile tags to match     | Movies<br>Shows :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Seasons :material-numeric-8-circle:{ data-tooltip data-tooltip-id="tippy-filters-string-2" }<br>Episodes                                                                                                                                                                                                          |
-
-
-    ???+ tip "String Filter Modifiers"
-
-        | String Modifier | Description                                                                    |
-        |:----------------|:-------------------------------------------------------------------------------|
-        | No Modifier     | Matches every item where the attribute contains the given string               |
-        | `.begins`       | Matches every item where the attribute begins with the given string            |
-        | `.ends`         | Matches every item where the attribute ends with the given string              |
-        | `.is`           | Matches every item where the attribute exactly matches the given string        |
-        | `.isnot`        | Matches every item where the attribute does not exactly match the given string |
-        | `.not`          | Matches every item where the attribute does not contain the given string       |
-        | `.regex`        | Matches every item where the attribute matches the regex given                 |
-
-    #### Examples
-
-    ```yaml
-    collections:
-      Movies with Commentary:
+      German Action Movies:
         plex_all: true
         filters:
-          audio_track_title: Commentary
+          genre: Action
+          country: Germany
     ```
+
+=== "OR between sets"
+
+    Includes either German action movies or French comedies. Each YAML list
+    entry is a complete AND set; passing either set is enough.
+
     ```yaml
     collections:
-      Movies with Audio Codecs containing DTS:
+      European Action and Comedy:
         plex_all: true
         filters:
-          audio_codec: DTS
+          - genre: Action
+            country: Germany
+          - genre: Comedy
+            country: France
     ```
-=== "Tag Filters"
 
-    **Modifiers:** No Modifier, `.not`, `.regex`, `.count_lt`, `.count_lte`, `.count_gt`, or `.count_gte`
+=== "Multiple values"
 
-    Tag filters can take multiple values as a **list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string**.
-
-    ### Tag Filter Attributes
-
-    | Tag Filters                                                                                            | Description                                                                                                                                     | Allowed Media                                                                                                                                                                                                          |
-    |:-------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `actor`                                                                                                | Uses the actor tags to match                                                                                                                    | `Movies`<br>`Shows`<br>`Episodes`                                                                                                                                                                                      |
-    | `audio_language` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }    | Uses the audio language tags to match                                                                                                           | `Movies`<br>`Shows` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }<br>`Seasons` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }<br>`Episodes`   |
-    | `collection`                                                                                           | Uses the collection tags to match                                                                                                               | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks`                                                                                                                                   |
-    | `content_rating`                                                                                       | Uses the content rating tags to match                                                                                                           | `Movies`<br>`Shows`<br>`Episodes`                                                                                                                                                                                      |
-    | `country`                                                                                              | Uses the country tags to match                                                                                                                  | `Movies`<br>`Artists`                                                                                                                                                                                                  |
-    | `director`                                                                                             | Uses the director tags to match                                                                                                                 | `Movies`<br>`Episodes`                                                                                                                                                                                                 |
-    | `genre`                                                                                                | Uses the genre tags to match                                                                                                                    | `Movies`<br>`Shows`<br>`Artists`<br>`Albums`                                                                                                                                                                           |
-    | `imdb_keyword` :material-numeric-1-box:{ data-tooltip data-tooltip-id="tippy-filters-tag-3" }          | Uses the keywords from IMDb to match See [Special](#special-filters) for more attributes                                                        | `Movies`<br>`Shows`                                                                                                                                                                                                    |
-    | `label`                                                                                                | Uses the label tags to match                                                                                                                    | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Artists`<br>`Albums`<br>`Tracks`                                                                                                                                   |
-    | `network`                                                                                              | Uses the network tags to match                                                                                                                  | `Shows`                                                                                                                                                                                                                |
-    | `origin_country` :material-numeric-1-box:{ data-tooltip data-tooltip-id="tippy-filters-tag-3" }        | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) to match<br>Example: `origin_country: us` | `Shows`                                                                                                                                                                                                                |
-    | `producer`                                                                                             | Uses the actor tags to match                                                                                                                    | `Movies`<br>`Episodes`                                                                                                                                                                                                 |
-    | `resolution` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }        | Uses the resolution tag to match                                                                                                                | `Movies`<br>`Shows` :material-numeric-3-circle:{ data-tooltip data-tooltip-id="tippy-filters-number-1" }<br>`Seasons` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }<br>`Episodes` |
-    | `subtitle_language` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" } | Uses the subtitle language tags to match                                                                                                        | `Movies`<br>`Shows` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }<br>`Seasons` :material-numeric-10-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-2" }<br>`Episodes`   |
-    | `tmdb_genre` :material-numeric-1-box:{ data-tooltip data-tooltip-id="tippy-filters-tag-3" }            | Uses the genres from TMDb to match                                                                                                              | `Movies`<br>`Shows`                                                                                                                                                                                                    |
-    | `tmdb_keyword` :material-numeric-1-box:{ data-tooltip data-tooltip-id="tippy-filters-tag-3" }          | Uses the keywords from TMDb to match                                                                                                            | `Movies`<br>`Shows`                                                                                                                                                                                                    |
-    | `tvdb_genre` :material-numeric-1-box:{ data-tooltip data-tooltip-id="tippy-filters-tag-3" }            | Uses the genres from TVDb to match                                                                                                              | `Shows`                                                                                                                                                                                                                |
-    | `writer`                                                                                               | Uses the writer tags to match                                                                                                                   | `Movies`<br>`Episodes`                                                                                                                                                                                                 |
-    | `year` :material-numeric-9-circle:{ data-tooltip data-tooltip-id="tippy-filters-tag-1" }               | Uses the year tag to match                                                                                                                      | `Movies`<br>`Shows`<br>`Seasons`,<br>`Episodes`<br>`Albums`<br>`Tracks`                                                                                                                                                |
-
-    ???+ tip "Tag Filter Modifiers"
-
-        | Tag Modifier | Description                                                                               |
-        |:-------------|:------------------------------------------------------------------------------------------|
-        | No Modifier  | Matches every item where the attribute matches the given string                           |
-        | `.count_gt`  | Matches every item where the attribute count is greater than the given number             |
-        | `.count_gte` | Matches every item where the attribute count is greater than or equal to the given number |
-        | `.count_lt`  | Matches every item where the attribute count is less than the given number                |
-        | `.count_lte` | Matches every item where the attribute count is less than the given number                |
-        | `.not`       | Matches every item where the attribute does not match the given string                    |
-        | `.regex`     | Matches every item where one value of this attribute matches the regex.                   |
-
-    #### Examples
+    Includes movies matching Action or Comedy, and also requires a user rating
+    of at least 7.5. The genre values form a YAML list; the rating is a decimal
+    threshold. This differs from requiring both genres as separate conditions.
 
     ```yaml
     collections:
-     Daniel Craig only James Bonds:
-       imdb_list:
-         list_id: ls006405458
-       filters:
-         actor: Daniel Craig
-    ```
-    ```yaml
-    collections:
-     French Romance:
-       plex_search:
-         all:
-           genre: Romance
-       filters:
-         audio_language: Français
+      My Highly Rated Action or Comedy:
+        plex_all: true
+        filters:
+          genre:
+            - Action
+            - Comedy
+          user_rating.gte: 7.5
     ```
 
+=== "Boolean and dates"
 
-=== "Special Filters"
-
-    Special Filters each have their own set of rules for how they're used.
-
-    ### Attribute
-
-    | Special Filters                                                                                                                                                                                                    | Description                                                                                                                                                                                                                                                                                                                                                                                | Allowed Media                                 |
-    |:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------|
-    | `albums`                                                                                                                                                                                                           | Uses the item's albums attributes to match.<br> Also `percentage` or `count` can be applied to set a threshold, a default of 50% will be used if neither specified.<br>`percentage`: (0-100) Percentage of albums that must match.<br>`count`: (1+) Minimum number of albums that must match                                                                                                        | `Artists`                                     |
-    | `episodes`                                                                                                                                                                                                         | Uses the item's episodes attributes to match.<br> Also `percentage` or `count` can be applied to set a threshold, a default of 50% will be used if neither specified.<br>`percentage`: (0-100) Percentage of episodes that must match.<br>`count`: (1+) Minimum number of episodes that must match                                                                                                  | `Shows`<br>`Seasons`                          |
-    | `history`                                                                                                                                                                                                          | Uses the release date attribute (originally available) to match dates throughout history<br>`day`: Match the Day and Month to Today's Date<br>`month`: Match the Month to Today's Date<br>`1-30`: Match the Day and Month to Today's Date or `1-30` days before                                                                                                                            | `Movies`<br>`Shows`<br>`Episodes`<br>`Albums` |
-    | `imdb_keyword` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" } :material-numeric-4-box:{ data-tooltip data-tooltip-id="tippy-filter-special-3" }                                 | Uses the keywords from IMDb to match<br>`keywords`: list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keywords to match<br>`minimum_votes`: minimum number of votes keywords must have<br>`minimum_relevant`: minimum number of relevant votes keywords must have<br>`minimum_percentage`: minimum percentage of relevant votes keywords must have | `Movies`<br>`Shows`                           |
-    | `original_language` :material-numeric-2-box:{ data-tooltip data-tooltip-id="tippy-filter-special-1" }<br>`original_language.not` :material-numeric-2-box:{ data-tooltip data-tooltip-id="tippy-filter-special-1" } | Uses TMDb original language [ISO 639-1 codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) to match<br>Example: `original_language: en, ko`                                                                                                                                                                                                                                      | `Movies`<br>`Shows`                           |
-    | `seasons`                                                                                                                                                                                                          | Uses the item's seasons attributes to match.<br> `percentage` or `count` can set a threshold; the default is 50%.<br>`percentage`: (0-100) Percentage of seasons that must match.<br>`count`: (1+) Minimum number of seasons that must match.<br>`latest: true`: Match only the highest-numbered Plex season (excluding Specials/season 0). Cannot be combined with `percentage` or `count`. | `Shows`                                       |
-    | `tmdb_status` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }<br>`tmdb_status.not` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }             | Uses TMDb Status to match<br>**Values:** `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`                                                                                                                                                                                                                                                                                | `Shows`                                       |
-    | `tmdb_type` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }<br>`tmdb_type.not` :material-numeric-3-box:{ data-tooltip data-tooltip-id="tippy-filter-special-2" }                 | Uses TMDb Type to match<br>**Values:** `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`                                                                                                                                                                                                                                                      | `Shows`                                       |
-    | `tracks`                                                                                                                                                                                                           | Uses the item's tracks attributes to match.<br> Also `percentage` or `count` can be applied to set a threshold, a default of 50% will be used if neither specified.<br>`percentage`: (0-100) Percentage of tracks that must match.<br>`count`: (1+) Minimum number of tracks that must match                                                                                                                                              | `Artists`<br>`Albums`                         |
-
-    #### Examples
+    Includes movies with an edition, released after May 1 and before August 31,
+    2020. `true` is a boolean, and explicit dates use `MM/DD/YYYY`. A relative
+    filter such as `release: 180` instead selects releases in the last 180 days.
 
     ```yaml
     collections:
-     Shows That Finished Too Soon:
-       plex_all: true
-       filters:
-         tmdb_status: canceled
+      Summer 2020 Movies With Editions:
+        plex_all: true
+        filters:
+          has_edition: true
+          release.after: 05/01/2020
+          release.before: 08/31/2020
     ```
+
+=== "String list and diagnostics"
+
+    Includes movies whose audio-track titles contain Commentary or Director.
+    String filters use contains matching by default, and multiple values must
+    be a YAML list. `show_filtered` displays rejected items for inspection.
+
     ```yaml
     collections:
-     On This Day in Previous Years:
-       plex_all: true
-       filters:
-         history: day
+      Movies With Commentary:
+        plex_all: true
+        show_filtered: true
+        filters:
+          audio_track_title:
+            - Commentary
+            - Director
     ```
+
+=== "Narrow before filtering"
+
+    Starts with Romance movies featuring Adam Sandler, then keeps only those
+    also tagged Comedy and user-rated at least 7. Using Plex Search reduces the
+    candidate set before the Kometa filters run.
+
+    ```yaml
+    collections:
+      My Highly Rated Adam Sandler Romantic Comedies:
+        plex_search:
+          all:
+            genre: Romance
+            actor: Adam Sandler
+        filters:
+          genre: Comedy
+          user_rating.gte: 7
+    ```
+
+## Filter options
+
+The reference below preserves the supported media for each attribute. "Child
+items" notes identify filters evaluated through episodes or tracks for the
+listed parent levels; see [child-item filters](#child-item-filters).
+
+### Boolean filters {#boolean-filters}
+
+Use unquoted `true` or `false`; no modifiers are supported.
+
+<span id="boolean-filter-attributes"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `has_collection` | Has / does not have collection | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `has_dolby_vision` | Has / does not have Dolby Vision<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `has_edition` | Has / does not have edition | Movies, Shows |
+| `has_overlay` | Has / does not have overlay | Movies, Shows, Seasons, Episodes, Artists, Albums |
+| `has_stinger` | Listed by [MediaStinger](http://www.mediastinger.com/) for a during/after-credits scene | Movies |
+
+### Date filters {#date-filters}
+
+Use one value; multiple dates are not supported.
+
+| Modifier | Matches | Value |
+|:---------|:--------|:------|
+| No modifier | In the last X days | Number of days, such as `30` |
+| `.not` | Not in the last X days | Number of days |
+| `.before`, `.after` | Before / after a date | `MM/DD/YYYY` or `today` |
+| `.regex` | Matches the date against a regular expression | Regex string |
+
+<span id="date-filter-attributes"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `added` | Date added | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `first_episode_aired` | First episode aired date<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `last_episode_aired_or_never` | Similar to `last_episode_aired` but also includes those that haven't aired yet<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `last_episode_aired` | Last episode aired date<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `last_played` | Date last played | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `release` | Original release date | Movies, Shows, Episodes, Albums |
+
+### Number filters {#number-filters}
+
+Use one number per attribute; multiple values are not supported. Rating values, counts, dimensions, and durations retain the constraints shown below.
+
+| Modifier | Matches | Value |
+|:---------|:--------|:------|
+| No modifier, `.not` | Equal / not equal | One number |
+| `.gt`, `.gte` | Greater than / greater than or equal | One number |
+| `.lt`, `.lte` | Less than / less than or equal | One number |
+
+<span id="number-filter-attributes"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `aspect` | Aspect<br>minimum: 0.0<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `audience_rating` | Audience rating<br>0.0 - 10.0 | Movies, Shows, Episodes |
+| `channels` | Audio channels<br>minimum: 0<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `critic_rating` | Critic rating<br>0.0 - 10.0 | Movies, Shows, Episodes, Albums |
+| `duration` | Duration in minutes; minimum: `0` | Movies, Shows, Episodes, Tracks |
+| `dovi_level` | Matches the Dolby Vision level reported by a video stream. Values: 1–13.<br>Use `plex_search` with `dovi: true` to narrow candidates first.<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `dovi_profile` | Matches the Dolby Vision profile reported by a video stream. Values: 5, 7, 8, 9, 10, 20.<br>Use `plex_search` with `dovi: true` to narrow candidates first.<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `height` | Height<br>minimum: 0<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `plays` | Plays<br>minimum: 1 | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `stinger_rating` | Signed integer MediaStinger rating; see [unrated behaviour](#mediastinger-ratings) | Movies |
+| `tmdb_vote_average` | TMDb vote average rating<br>minimum: 0.0<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `tmdb_vote_count` | TMDb vote count<br>minimum: 1<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `tmdb_year` | Year on TMDb<br>minimum: 1<br>[Missing items](#external-metadata-and-missing-items); [Current year](#external-metadata-and-missing-items). | Movies, Shows |
+| `user_rating` | User rating<br>0.0 - 10.0 | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `versions` | Number of versions found<br>minimum: 0<br>[Child items](#child-item-filters): Shows, Seasons, Artists, Albums. | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `width` | Width<br>minimum: 0<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `year` | Year<br>minimum: 1<br>[Current year](#external-metadata-and-missing-items). | Movies, Shows, Seasons, Episodes, Albums, Tracks |
+
+### String filters {#string-filters}
+
+Contains matching is the default. Multiple values require a YAML list; a comma-separated string is not a replacement.
+
+| Modifier | Matches | Value |
+|:---------|:--------|:------|
+| No modifier, `.not` | Contains / does not contain | String or YAML list |
+| `.is`, `.isnot` | Exact match / not an exact match | String or YAML list |
+| `.begins`, `.ends` | Begins / ends with | String or YAML list |
+| `.regex` | Matches a regular expression | Regex string |
+
+<span id="string-filter-attributes"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `audio_codec` | Audio codec<br>[Child items](#child-item-filters): Shows, Seasons, Artists, Albums. | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `audio_profile` | Audio profile<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `audio_track_title` | Audio track titles<br>[Child items](#child-item-filters): Shows, Seasons, Artists, Albums. | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `edition` | Edition | Movies, Shows |
+| `filepath` | Item's filepath<br>[Child items](#child-item-filters): Shows, Seasons, Artists, Albums. | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `folder` | Item's folder | Shows, Artists |
+| `record_label` | Record label | Albums |
+| `studio` | Studio | Movies, Shows |
+| `summary` | Summary | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `title` | Title | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `show_title` | Show title | Seasons, Episodes |
+| `season_title` | Season title | Episodes |
+| `tmdb_title` | Title from TMDb<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `tvdb_status` | Status from TVDb<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `tvdb_title` | Title from TVDb<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `video_codec` | Video codec<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `video_profile` | Video profile<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+
+### Tag filters {#tag-filters}
+
+Multiple values can be a YAML list or comma-separated string. Count modifiers compare the number of tags, rather than the tags themselves.
+
+| Modifier | Matches | Value |
+|:---------|:--------|:------|
+| No modifier, `.not` | Matches / does not match a value | String, YAML list, or comma-separated string |
+| `.regex` | One tag value matches the regex | Regex string |
+| `.count_gt`, `.count_gte` | Tag count greater than / greater than or equal | Number |
+| `.count_lt`, `.count_lte` | Tag count less than / less than or equal | Number |
+
+<span id="tag-filter-attributes"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `actor` | Actor | Movies, Shows, Episodes |
+| `audio_language` | Audio language<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `collection` | Collection | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `content_rating` | Content rating | Movies, Shows, Episodes |
+| `country` | Country | Movies, Artists |
+| `director` | Director | Movies, Episodes |
+| `genre` | Genre | Movies, Shows, Artists, Albums |
+| `imdb_keyword` | Keywords from IMDb See [Special](#special-filters) for more attributes<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `label` | Label | Movies, Shows, Seasons, Episodes, Artists, Albums, Tracks |
+| `network` | Network | Shows |
+| `origin_country` | Uses TMDb origin country [ISO 3166-1 alpha-2 codes](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)<br>Example: `origin_country: us`<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `producer` | Producer tags | Movies, Episodes |
+| `resolution` | Resolution<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `subtitle_language` | Subtitle language<br>[Child items](#child-item-filters): Shows, Seasons. | Movies, Shows, Seasons, Episodes |
+| `tmdb_genre` | Genres from TMDb<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `tmdb_keyword` | Keywords from TMDb<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `tvdb_genre` | Genres from TVDb<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `writer` | Writer | Movies, Episodes |
+| `year` | Year<br>[Current year](#external-metadata-and-missing-items). | Movies, Shows, Seasons, Episodes, Albums, Tracks |
+
+### Special filters {#special-filters}
+
+These filters use their own input forms. Child thresholds and external-metadata rules are explained after the tables.
+
+<span id="attribute"></span>
+
+| Attribute | Matches / constraints | Supports |
+|:----------|:----------------------|:---------|
+| `albums` | Filter album attributes; optional `percentage` or `count` threshold. | Artists |
+| `episodes` | Filter episode attributes; optional `percentage` or `count` threshold. | Shows, Seasons |
+| `history` | Match release dates in previous years: `day` for today's month/day; `month` for this month; `1`-`30` for today or that many previous days. | Movies, Shows, Episodes, Albums |
+| `imdb_keyword` | Keyword list plus optional `minimum_votes`, `minimum_relevant`, and `minimum_percentage`; also supports tag modifiers.<br>[Missing items](#external-metadata-and-missing-items). | Movies, Shows |
+| `original_language`, `original_language.not` | TMDb ISO 639-1 original-language codes, such as `"en,ko"`; `.not` excludes. See [language codes](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).<br>[Child-item behaviour](#child-item-filters). | Movies, Shows |
+| `seasons` | Filter season attributes; optional `percentage`, `count`, or `latest: true` (latest cannot combine with the thresholds). | Shows |
+| `tmdb_status`, `tmdb_status.not` | TMDb status: `returning`, `planned`, `production`, `ended`, `canceled`, `pilot`; `.not` excludes.<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `tmdb_type`, `tmdb_type.not` | TMDb type: `documentary`, `news`, `production`, `miniseries`, `reality`, `scripted`, `talk_show`, `video`; `.not` excludes.<br>[Missing items](#external-metadata-and-missing-items). | Shows |
+| `tracks` | Filter track attributes; optional `percentage` or `count` threshold. | Artists, Albums |
+
+## Child-item filters
+
+The special `albums`, `episodes`, `seasons`, and `tracks` filters test child-item
+attributes rather than just the parent. Use `percentage` (0-100) or `count`
+(1 or greater) as a threshold. The default percentage is 50%, controlled by the
+[default_percent setting](settings.md#default-percent-example).
+
+For filters marked "Child items" in the tables, the indicated parent media use
+this special episodes/tracks behaviour with the default percentage. Direct
+movie, episode, or track checks remain at their listed level.
+
+`seasons` also accepts `latest: true` to test only the highest-numbered Plex season,
+excluding Specials / season 0. It **cannot** be combined with `percentage` or `count`.
+
+=== "Episode percentage"
+
+    Includes shows where at least 75% of episodes have a user rating of 7 or
+    higher. The percentage controls how many child episodes must pass the nested
+    rating filter; it is not an audience rating.
+
+    ```yaml
+    collections:
+      Consistently Highly Rated Shows:
+        plex_all: true
+        filters:
+          episodes:
+            percentage: 75
+            user_rating.gte: 7
+    ```
+
+=== "Latest season"
+
+    Includes shows whose latest non-special season has a user rating of at least
+    8. `latest: true` is a boolean and selects only the highest-numbered season.
+
+    ```yaml
+    collections:
+      Highly Rated Latest Seasons:
+        plex_all: true
+        filters:
+          seasons:
+            latest: true
+            user_rating.gte: 8
+    ```
+
+## External metadata and missing items
+
+Filters marked "Missing items" also prevent non-matching missing movies or shows
+from being added to Radarr/Sonarr. Those attributes cannot use the tag `.count_*`
+modifiers. Their source is external metadata, so the value can differ from Plex.
+
+Year filters marked "Current year" accept `current_year` and relative forms such
+as `current_year-2`.
+
+`imdb_keyword` supports the normal tag modifiers as well as its special dictionary
+options: `keywords`, `minimum_votes`, `minimum_relevant`, and `minimum_percentage`.
+These respectively select keywords and require minimum vote counts, relevant
+vote counts, and percentage of relevant votes.
+
+## MediaStinger ratings
+
+`has_stinger` checks whether a movie is listed by [MediaStinger](http://www.mediastinger.com/),
+regardless of its rating. `stinger_rating` measures whether its during/after-credits
+scene is worth staying for, using data from the
+[Kometa MediaStinger repository](https://github.com/Kometa-Team/Mediastingers).
+
+Positive, zero, and negative integer ratings are accepted. `stinger_rating.gt: 0`
+requires a positive rating; a negative threshold such as `stinger_rating.gt: -1`
+is also valid. Movies without a MediaStinger rating do **not** match any
+`stinger_rating` filter, including `.not`.

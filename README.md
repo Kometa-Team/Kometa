@@ -228,3 +228,9 @@ Maintenance of this project is made possible by all the <a href="https://github.
 
 Thank you so much for everyone's past and continued support!
 <!--sponsor-end-->
+
+## Documentation development
+
+The wiki uses Zensical and is hosted on Read the Docs, with separate stable,
+develop, and nightly versions. See the [documentation development guide](.github/CONTRIBUTING.md#documentation-development)
+for setup, validation, and Read the Docs build details.

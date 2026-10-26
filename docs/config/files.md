@@ -24,6 +24,7 @@ When using Kometa, the structure of each library is made using File Blocks.
 
 {%    
   include-markdown "./file_types.md"
+  start="<!--shared-content-start-->"
 %}
 
 ## Blocks
@@ -45,9 +46,9 @@ Every file block under the parent attribute begins with a `-`.
           - default: imdb       # Block 2
     ```
 
-### Location Types and Paths
+### Location types and paths
 
-There are multiple location types that can be used to call a file. They can either be on the local system, online at an url, part of the [Kometa Defaults](../defaults/guide.md), 
+There are multiple location types that can be used to call a file. They can either be on the local system, online at an url, part of the [Kometa Defaults](../defaults/guide.md),
 directly from the [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs) repository, or from another [`Custom Repository`](settings.md#custom-repo).
 
 The location types are outlined as follows:
@@ -57,9 +58,9 @@ The location types are outlined as follows:
     <div id="file" />Used to run a file which is located within the system that Kometa is being run from.
 
     File locations need to be accessible to Kometa at those paths; this is typically only something you need to consider when using Docker.
-    
+
     ???+ example "Example"
-        
+
         ```yaml
         libraries:
           Movies:
@@ -72,9 +73,9 @@ The location types are outlined as follows:
     <div id="folder" />Used to run all files located in a directory which is located within the system that Kometa is being run from.
 
     Folder locations need to be accessible to Kometa at those paths; this is typically only something you need to consider when using Docker.
-    
+
     ???+ example "Example"
-        
+
         ```yaml
         libraries:
           Movies:
@@ -88,9 +89,9 @@ The location types are outlined as follows:
 
     This needs to point directly to the YAML file. A common error is using a gitHub link that points to the *page 
     displaying the YAML*. In gitHub, for instance, click on the "Raw" button and use *that* link.
-    
+
     ???+ example "Example"
-        
+
         ```yaml
         libraries:
           Movies:
@@ -101,9 +102,9 @@ The location types are outlined as follows:
 ??? blank "`default` - Used to run one of the built-in [Kometa Defaults](../defaults/guide.md) file.<a class="headerlink" href="#default" title="Permanent link">¶</a>"
 
     <div id="default" />Used to run a built-in Kometa Defaults File. The values you'd enter here are listed in the [default usage guide](../defaults/guide.md).
-    
+
     ???+ example "Example"
-        
+
         ```yaml
         libraries:
           Movies:
@@ -116,9 +117,9 @@ The location types are outlined as follows:
     <div id="git" />Used to run a file hosted on the [Kometa User Configs](https://github.com/Kometa-Team/Community-Configs) repository.
 
     Note that you enter the bits of the items path relative to the top level of the repo [`meisnate12/People`] and you don't need the `.yml` extension.
-    
+
     ???+ example "Example"
-        
+
         ```yaml
         libraries:
           Movies:
@@ -135,7 +136,7 @@ The location types are outlined as follows:
     ???+ example "Example"
 
         This is assuming the `custom_repo` setting is `https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12`.
-        
+
         ```yaml
         libraries:
           Movies:
@@ -143,7 +144,7 @@ The location types are outlined as follows:
               - repo: People
         ```
 
-## Other Block Attributes
+## Other block attributes
 
 You can have some control of the files from inside your Configuration file by using these block attributes.
 
@@ -154,9 +155,9 @@ You can have some control of the files from inside your Configuration file by us
     **Note: the file has to be properly set up to use the variables.**
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `template_variables`
-    
+
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of values specified by each particular file.
 
     **Default Value:** `None`
@@ -178,9 +179,9 @@ You can have some control of the files from inside your Configuration file by us
         ```
 
         In this example there will be two Template Variables added to every template in the git file default: genre.
-        
+
         `schedule_separator` is set to `never` to not show a separator in this section and `collection_mode` is set to `hide`.
-        
+
         What these variables will do depends on how they're defined in the Collection File.
 
 ??? blank "`schedule` - Used to schedule when a file is run.<a class="headerlink" href="#schedule" title="Permanent link">¶</a>"
@@ -188,14 +189,14 @@ You can have some control of the files from inside your Configuration file by us
     <div id="schedule" />Used to schedule when this file is run using the [schedule options](schedule.md).
 
     ??? warning
-    
+
         This does not work with Overlays as they cannot be scheduled individually.
         Use the [`schedule_overlays` Library Attribute](libraries.md#schedule-overlays) to schedule Overlays.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `schedule`
-    
+
     **Accepted Values:** Any [schedule option](schedule.md).
 
     **Default Value:** `daily`
@@ -220,15 +221,15 @@ You can have some control of the files from inside your Configuration file by us
     <div id="asset-directory" />Specify the directory where assets (posters, backgrounds, etc) are located for this specific file.
 
     ???+ tip 
-    
+
         Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
     ??? warning
-    
+
         Kometa will not create asset directories. The directories that you specify have to exist already.
 
     <hr style="margin: 0px;">
-    
+
     On collection-file entries, a mapping can select item directories by library type (`movies`, `shows`, or `music`) and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. A nonempty string or list replaces both item and collection roots for that file. Missing paths warn and are skipped, matching legacy lists. Individual collections can override their own artwork roots again without changing item asset directories.
 
     ```yaml
@@ -241,7 +242,7 @@ You can have some control of the files from inside your Configuration file by us
     ```
 
     **Attribute:** `asset_directory`
-    
+
     **Accepted Values:** A directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`

@@ -6,7 +6,7 @@ hide:
 
 As playlists are not tied to one specific library and can combine media from multiple libraries, they require their own special [Playlist Files](../files/playlists.md) to work.
 
-Within the [Configuration File](overview.md), the `playlist_files` attribute specifies the [File Blocks](../config/files.md#blocks) 
+Within the [Configuration File](overview.md), the `playlist_files` attribute specifies the [File Blocks](files.md#blocks)
 of the [Playlist Files](../files/playlists.md) that the user wants Kometa to act on.
 
 If a playlist defines the `libraries` attribute, those libraries must be defined under the `libraries` attribute of the [Configuration File](overview.md).

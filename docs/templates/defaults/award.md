@@ -2,10 +2,10 @@
 {%
     include-markdown "./base/collection/header.md"
     replace='{
-        "SECTION_NUMBER": "130",
-        "COLLECTION": "FULL_NAME Awards",
-        "DESCRIPTION": "create collections based on the FULL_NAME Awards"
-    }'
+    "SECTION_NUMBER": "130",
+    "COLLECTION": "FULL_NAME Awards",
+    "DESCRIPTION": "create collections based on the FULL_NAME Awards"
+}'
 %}
 <!--all-->
 <!--bafta-->
@@ -88,21 +88,21 @@
         include-markdown "./../variable_list.md"
         include-tags="award|award-data|exclude|collection_mode|collection_order|sync_mode|format"
         replace='{
-            "DYNAMIC_NAME": "Years", 
+            "DYNAMIC_NAME": "Years",
             "DYNAMIC_VALUE": "Years",
             "NAME_FORMAT": "SHORT_NAME <<key_name>>",
             "SUMMARY_FORMAT": "<<key_name>> SHORT_NAME Award Winners."
         }'
         rewrite-relative-urls=false
     %}
-    
+
     {% include-markdown "./../variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./base/values.md" rewrite-relative-urls=false %}
 
     === "FULL_NAME Awards Collections"
-        
+
         All the FULL_NAME Awards Collections use the [IMDb Awards Builder](../../../files/builders/imdb) to create the collections.
 
 <!--all-->

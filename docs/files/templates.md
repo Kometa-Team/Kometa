@@ -41,10 +41,10 @@ templates can either be defined in the same file as the other definitions or fro
           person: 73457
     ```
 
-## Template Definition
+## Template definition
 
-Inside a template definition, you can use all the [Builders](builders/overview.md), [Filters](filters.md), 
-[Settings](settings.md), [Updates](updates.md), and [Item Updates](item_updates.md) attributes that you can give 
+Inside a template definition, you can use all the [Builders](definition-components.md#builders), [Filters](filters.md),
+[Definition options](settings.md) and [metadata updates](updates.md) that you can give
 collections/playlists [except `template`; templates cannot be nested].
 
 In addition, templates also have a few special attributes that they can use:
@@ -83,7 +83,7 @@ In addition, templates also have a few special attributes that they can use:
               name: Actor
               person: 73457
         ```
-        
+
         1. This sets the default value of the Template Variable `my_sync_mode` to `sync`.
         2. The value for Template Variable `my_sync_mode` will replace `<<my_sync_mode>>` here.
         3. This specifies that `my_sync_mode` for this definition will be `append`.
@@ -126,7 +126,7 @@ In addition, templates also have a few special attributes that they can use:
               name: Actor
               person: 73457
         ```
-        
+
         1. This sets the Template Variable `my_sync_mode` as an optional variable.
         2. The value for Template Variable `my_sync_mode` will replace `<<my_sync_mode>>` here or removed as optional.
         3. This specifies that `my_sync_mode` for this definition will be `append`.
@@ -142,8 +142,8 @@ In addition, templates also have a few special attributes that they can use:
     |:------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | `conditions` | A list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of condition blocks where if all conditions are met then the variable will be the `value` specified in that condition block. Once all conditions in a block are met, that `value` will be used and no other blocks will be run.<br>**This attribute is required** |
     |  `default`   | The default value for when no condition block is met. If default is not specified the variable becomes an optional variable.<br>**This attribute is optional**                                                                                                                                                                                             |
-    
-    #### Condition Blocks
+
+    #### Condition blocks
 
     A condition block consists of one or more key value pairs comparing given Template Variables to pre supplied static 
     values. 
@@ -250,7 +250,7 @@ Every template also has access to these Template Variables:
 * All Template Variables can append `_encoded` to the variable name to use a URL encode version of the variable. ex. 
 `<<collection_name_encoded>>`
 
-## Template Call
+## Template call
 
 To call a template from a definition you use the `template` attribute with the `name` attribute under it. Any attribute 
 besides `name` under `template` is considered a Template Variables which are used to define the data that going to be 
@@ -261,15 +261,15 @@ changing in the template.
     The name of the template and the Template Variable names that you define are arbitrary, but they must match exactly 
     between the template definition and the template call.
 
-### Template Name
+### Template name
 
 The `name` attribute is what tells the template call which template to use. Its value must correspond exactly to the 
 template mapping name you want to call. 
 
 ??? example "Template Name Example (Click to Expand)"
-    
+
     This is an example using the template name `Actor` showing the template being called in two different ways.
-    
+
     ```yaml
     templates:
       Actor: #(1)!
@@ -293,7 +293,7 @@ template mapping name you want to call.
     2. This calls the `Actor` template using inline YAML syntax.
     3. This calls the `Actor` template using a more readable YAML syntax.
 
-### Template Variables
+### Template variables
 
 Any other attribute aside from `name` under `template` is considered a Template Variable whose name must correspond 
 exactly with the Template Variable name surrounded by `<<` and `>>` in the template definition. These Template Variables
@@ -301,9 +301,9 @@ will replace any part of any value that contains the Template Variable name surr
 with the specified Template Variable's value.
 
 ??? example "Template Variables Example (Click to Expand)"
-    
+
     This is an example using the template name `Actor` showing the template being called in two different ways.
-    
+
     ```yaml
     templates:
       Actor:
@@ -327,7 +327,7 @@ with the specified Template Variable's value.
     2. This calls the `Actor` template with the Template Variable `person` set to `19429` using inline YAML syntax.
     3. This calls the `Actor` template with the Template Variable `person` set to `73457` using a more readable YAML syntax.
 
-### Multi-Template Variables
+### Multi-template variables
 
 When using multiple Templates in a single definition you can send the same variable to all templates by using the 
 `variables` attribute.
@@ -358,7 +358,7 @@ When using multiple Templates in a single definition you can send the same varia
          - name: Common
     ```
 
-## Template Example
+## Template example
 
 For this example were trying to create a template for all our various Actor/Actress Collections to save space in the 
 YAML file and allow easier changes to all the Collections at once.
@@ -393,7 +393,7 @@ requirement, not something specific to `sort_title`.
 specific to `sort_title`.
 
 You can continue adding definitions this way, but there's a lot of repetition there. Both of these collections have the 
-same `sync_mode`, `collection_order`, and `actor` settings; the other two details, `tmdb_person` and `sort_title`, 
+same `sync_mode`, `collection_order`, and `actor` settings; the other two details, `tmdb_person` and `sort_title`,
 depend on a value defined in the collection.
 
 Those repetitive aspects can be moved into a template and leveraged by multiple collections. For this example it might
@@ -458,7 +458,7 @@ collections:
       person: 73457
 ```
 
-## Advanced Example
+## Advanced example
 
 Here's an example IMDb Genre template and two different ways to call it.
 

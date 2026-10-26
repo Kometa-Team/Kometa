@@ -5,17 +5,18 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Audio/Subtitle Language Count", 
-        "CODE_NAME": "language_count",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the number of audio/subtitle languages available on each item within your library"
-    }'
+    "OVERLAY_NAME": "Audio/Subtitle Language Count",
+    "CODE_NAME": "language_count",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the number of audio/subtitle languages available on each item within your library",
+    "OVERLAY_LABEL": "audio/subtitle language count"
+}'
 %}
 | Dual  | `dual`  | `20` |
 | Multi | `multi` | `10` |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "language_count", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -51,11 +52,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "language_count"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Audio/Subtitle Language Count Overlays"
-    
-        The Audio/Subtitle Language Count overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for items with any number or <3 audio tracks.
+
+    The Audio/Subtitle Language Count overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for items with any number or <3 audio tracks.

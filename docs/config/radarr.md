@@ -9,7 +9,7 @@ hide:
 Configuring [Radarr](https://radarr.video/) is optional but will allow you to send movies to a Radarr instance when they're found missing while updating a library's collections.
 
 ???+ warning
-    
+
     Radarr V2 may work, but it is not supported. Please upgrade to V3 if you can.
 
 Items in your List Exclusions will be ignored by Kometa.
@@ -61,7 +61,7 @@ radarr:
 </div>
 
 1.  Lists in YAML are represented by using the hyphen (-) and space. They are ordered and can be embedded inside a map using indentation.
-  
+
     ```{ .yaml .no-copy }
     asset_directory:
       - config/movie assets
@@ -107,7 +107,7 @@ You are filling in the unique part of the paths for each app to enable Kometa to
 Note that if you replace `/my-movie-library/` in the Radarr path with `/data/movies/` you get the Plex path and vice versa.
 
 ???+ tip
-    
+
     The `token` can be found by going to `Radarr > Settings > General > Security > API Key`.
 
     The `quality_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
@@ -137,7 +137,7 @@ radarr:
   plex_path: #
 ```
 
-# Other examples:
+# Other Examples:
 
 Specifying different options for specific libraries:
 

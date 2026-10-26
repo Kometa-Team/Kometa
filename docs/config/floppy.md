@@ -16,5 +16,3 @@ floppy:
 | `token` | API token from **Settings → Integrations**. Required for private lists; optional for public lists. | :fontawesome-solid-circle-xmark:{ .red } |
 
 When no token is configured, Kometa can only read public lists. With a token, Kometa can read all lists available to the account.
-
-To export collection results to a Floppy list, set `list_export: {source: floppy, name: My List}` in the collection and configure `floppy.token`. The `name` can also be an accessible numeric list ID. `append` adds missing movies and shows; `sync` also removes items absent from the builder results.

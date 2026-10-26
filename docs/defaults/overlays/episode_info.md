@@ -5,15 +5,16 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Episode Info", 
-        "CODE_NAME": "episode_info",
-        "OVERLAY_LEVEL": "Episode",
-        "DESCRIPTION": "an overlay on the episode title card on the episode numbering within a given series in your library"
-    }'
+    "OVERLAY_NAME": "Episode Info",
+    "CODE_NAME": "episode_info",
+    "OVERLAY_LEVEL": "Episode",
+    "DESCRIPTION": "an overlay on the episode title card on the episode numbering within a given series in your library",
+    "OVERLAY_LABEL": "episode info"
+}'
     end='<!--rec-sub-->'
 %}
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "episode_info", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|episode' 
 %}
@@ -48,6 +49,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "episode_info"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Episode Info Overlays"
-    
-        The Episode Info overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) to apply to every episode in the library.
+
+    The Episode Info overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) to apply to every episode in the library.

@@ -9,7 +9,7 @@ hide:
 Configuring [Sonarr](https://sonarr.tv/) is optional but will allow you to send shows to a Sonarr instance when they're found missing while updating a library's collections.
 
 ???+ warning
-    
+
     Sonarr V2 may work, but it is not supported please upgrade to V3 if you can.
 
 Items in your List Exclusions will be ignored by Kometa.
@@ -71,7 +71,7 @@ sonarr:
 </div>
 
 1.  Lists in YAML are represented by using the hyphen (-) and space. They are ordered and can be embedded inside a map using indentation.
-  
+
     ```{ .yaml .no-copy }
     asset_directory:
       - config/movie assets
@@ -117,7 +117,7 @@ You are filling in the unique part of the paths for each app to enable Kometa to
 Note that if you replace `/my-show-library/` in the Sonarr path with `/data/shows/` you get the Plex path and vice versa.
 
 ???+ tip
-    
+
     The `token` can be found by going to `Sonarr > Settings > General > Security > API Key`.
 
     The `quality_profile` and `language_profile` must be the exact name of the desired quality profile, including all spaces and capitalization.
@@ -150,7 +150,7 @@ sonarr:
   plex_path: #
 ```
 
-# Other examples:
+# Other Examples:
 
 Specifying a second Sonarr instance for a specific library:
 
@@ -184,7 +184,7 @@ libraries:
       token: SOME_OTHER_TOKEN
       root_folder_path: /data/media/shows/geezer
       quality_profile: Bestest
-      
+
   Library05:      # shows get added by a custom script so they should get added to sonarr-4k
     collection_files:
       - file: config/TV.yml

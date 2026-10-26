@@ -1,162 +1,214 @@
----
-hide:
-  - toc
----
-# TMDb Discover (Shows)
+# TMDb Discover Shows
 
-Uses [TMDb's Discover Search](https://developer.themoviedb.org/docs/search-and-query-for-details) to find every show based on the [show search attributes](https://developers.themoviedb.org/3/discover/show-discover) provided.
+Find shows using filters in `tmdb_discover`. For direct IDs, charts, or people, see [TMDb builders](../builders.md).
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
-and in a specific order.
- 
-???+ important 
-
-    Note that a number of filters support being comma (,) or pipe (|) separated. Commas are treated like an AND query 
-    while pipes are treated like an OR. This allows for quite complex filtering depending on your desired results.
-
-## Value Types
-
-These are the types of values you can use in your TMDb Discover queries. The type and formatting of attributes such as date and year is important to know when building your queries.
-
-| Type               | Description                                       |
-|:-------------------|:--------------------------------------------------|
-| String             | Any number of alphanumeric characters             |
-| Integer            | Any whole number greater than zero i.e. 2, 10, 50 |
-| Number             | Any number greater than zero i.e. 2.5, 7.4, 9     |
-| Boolean            | Must be `true` or `false`                         |
-| Date: `MM/DD/YYYY` | Date that fits the specified format               |
-| Year: `YYYY`       | Year must be a 4 digit integer i.e. 1990          |
-
-## Discover Attributes
-
-| Attributes                      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-|:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`                         | Specify how many movies you want to be returned by the query.<br>**Type:** Integer<br>**Default:** 100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `sort_by`                       | Choose from one of the many available sort options.<br>**Type:** Any sort option below<br>**Default:** `popularity.desc`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `air_date.gte`                  | Filter and only include TV shows that have an air date (by looking at all episodes) that is greater or equal to the specified value.<br>**Type:** Date: `MM/DD/YYYY`                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `air_date.lte`                  | Filter and only include TV shows that have an air date (by looking at all episodes) that is less than or equal to the specified value.<br>**Type:** Date: `MM/DD/YYYY`                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `first_air_date.gte`            | Filter and only include TV shows that have a original air date that is greater or equal to the specified value. Can be used in conjunction with the `include_null_first_air_dates` filter if you want to include items with no air date.<br>**Type:** Date: `MM/DD/YYYY`                                                                                                                                                                                                                                                                                                                                   |
-| `first_air_date.lte`            | Filter and only include TV shows that have a original air date that is less than or equal to the specified value. Can be used in conjunction with the `include_null_first_air_dates` filter if you want to include items with no air date.<br>**Type:** Date: `MM/DD/YYYY`                                                                                                                                                                                                                                                                                                                                 |
-| `first_air_date_year`           | Filter and only include TV shows that have an original air date year that equal to the specified value. Can be used in conjunction with the `include_null_first_air_dates` filter if you want to include items with no air date.<br>**Type:** Year: `YYYY`                                                                                                                                                                                                                                                                                                                                                 |
-| `include_adult`                 | A filter and include or exclude adult movies.<br>**Type:** Boolean                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `include_null_first_air_dates`  | Use this filter to include TV shows that don't have an air date while using any of the `first_air_date` filters.<br>**Type:** Boolean                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `timezone`                      | Used in conjunction with the `air_date.gte/lte` filter to calculate the proper UTC offset.<br>**Type:** String<br>**Default:** `America/New_York`                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `vote_count.gte`                | Filter and only include TV that have a vote count that is greater or equal to the specified value.<br>**Type:** Integer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `vote_count.lte`                | Filter and only include TV that have a vote count that is less than or equal to the specified value.<br>**Type:** Integer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `vote_average.gte`              | Filter and only include TV that have a rating that is greater or equal to the specified value.<br>**Type:** Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `vote_average.lte`              | Filter and only include TV that have a rating that is less than or equal to the specified value.<br>**Type:** Number                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `with_networks`                 | Comma-separated value of network ids that you want to include in the results.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `with_companies`                | A comma-separated list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of production company ID's. Only include movies that have one of the ID's added as a production company.<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String                                                                                                                                                                                                                                                                        |
-| `without_companies`             | Filter the results to exclude the specific production companies you specify here. AND / OR filters are supported.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `with_genres`                   | Comma-separated value of genre ids that you want to include in the results.<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `without_genres`                | Comma-separated value of genre ids that you want to exclude from the results.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `with_keywords`                 | A comma-separated list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keyword ID's. Only includes TV shows that have one of the ID's added as a keyword.<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String                                                                                                                                                                                                                                                                                           |
-| `without_keywords`              | Exclude items with certain keywords. You can comma and pipe separate these values to create an 'AND' or 'OR' logic.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `with_runtime.gte`              | Filter and only include TV shows with an episode runtime that is greater than or equal to a value.<br>**Type:** Integer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `with_runtime.lte`              | Filter and only include TV shows with an episode runtime that is less than or equal to a value.<br>**Type:** Integer                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `with_original_language`        | Specify an ISO 639-1 string to filter results by their original language value.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `with_name_translation`         | Specify a language/country string to filter the results by if the item has a type of name translation.<br>**Type:** String<br>**Values:** `ar-AE`, `ar-SA`, `bg-BG`, `bn-BD`, `ca-ES`, `ch-GU`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-US`, `eo-EO`, `es-ES`, `es-MX`, `eu-ES`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ka-GE`, `kn-IN`, `ko-KR`, `lt-LT`, `ml-IN`, `nb-NO`, `nl-NL`, `no-NO`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sl-SI`, `sr-RS`, `sv-SE`, `ta-IN`, `te-IN`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-TW` |
-| `screened_theatrically`         | Filter results to include items that have been screened theatrically.<br>**Type:** Boolean                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `with_watch_providers`          | A comma or pipe separated list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of watch provider ID's.<br>use in conjunction with watch_region, can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String                                                                                                                                                                                                                                                                                                           |
-| `without_watch_providers`       | Filter the results to exclude certain watch providers.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `watch_region`                  | An [ISO 3166-1 code](https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes). Combine this filter with `with_watch_providers` in order to filter your results by a specific watch provider in a specific region.<br>**Type:** String                                                                                                                                                                                                                                                                                                                                                                 |
-| `with_watch_monetization_types` | In combination with `watch_region`, you can filter by monetization type.<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String<br>**Values:** `flatrate`, `free`, `ads`, `rent`, `buy`                                                                                                                                                                                                                                                                                                                                                         |
-| `with_status`                   | Filter TV shows by their status.<br>**Type:** String<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Values:** `0`: Returning Series, `1`: Planned, `2`: In Production, `3`: Ended, `4`: Cancelled, `5`: Pilot                                                                                                                                                                                                                                                                                                                                          | 
-| `with_type`                     | Filter TV shows by their type.<br>Can be a comma (`,`) for an AND, or a pipe (<code>&#124;</code>) for an OR separated query<br>**Type:** String<br>**Values:** `0`: Documentary, `1`: News, `2`: Miniseries, `3`: Reality, `4`: Scripted, `5`: Show, `6`: Video                                                                                                                                                                                                                                                                                                                                           |
-
-
-## Sort Options
-
-| Sort Option                 |                 Movie Sort                 |                 Show Sort                  |
-|:----------------------------|:------------------------------------------:|:------------------------------------------:|
-| `popularity.asc`            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| `popularity.desc`           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| `title.asc`                 | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `title.desc`                | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `original_title.asc`        | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `original_title.desc`       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `name.asc`                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `name.desc`                 |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `original_name.asc`         |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `original_name.desc`        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `revenue.asc`               | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `revenue.desc`              | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `release_date.asc`          | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `release_date.desc`         | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `primary_release_date.asc`  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `primary_release_date.desc` | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `first_air_date.asc`        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `first_air_date.desc`       |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-| `vote_average.asc`          | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| `vote_average.desc`         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| `vote_count.asc`            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-| `vote_count.desc`           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-
-### Example TMDb Discover Builder(s)
+## Quick start
 
 ```yaml
 collections:
-  Shows Released in October 2020:
-    tmdb_discover:
-      first_air_date.gte: 10/01/2020
-      first_air_date.lte: 10/31/2020
-```
-```yaml
-collections:
-  100 Most Popular Shows:
+  Popular Shows:
     collection_order: custom
     sync_mode: sync
     tmdb_discover:
       sort_by: popularity.desc
       limit: 100
 ```
-```yaml
-collections:
-  Highest Rated TV-MA Shows:
-    collection_order: custom
-    sync_mode: sync
-    tmdb_discover:
-      certification_country: US
-      certification: TV-MA
-      sort_by: vote_average.desc
-```
-```yaml
-collections:
-  Most Popular Kids Shows:
-    collection_order: custom
-    sync_mode: sync
-    tmdb_discover:
-      certification_country: US
-      certification.lte: TV-G
-      sort_by: popularity.desc
-```
-```yaml
-collections:
-  Highest Rated Science Fiction Movies with Tom Cruise:
-    collection_order: custom
-    sync_mode: sync
-    tmdb_discover:
-      with_genres: 878
-      with_cast: 500
-      sort_by: vote_average.desc
-```
-```yaml
-collections:
-  Streaming on Disney+ in UK:
-    collection_order: custom
-    sync_mode: sync
-    tmdb_discover:
-      with_watch_providers: 337
-      region: GB
-```
-```yaml
-collections:
-  Top Rated Dramas:
-    collection_order: custom
-    sync_mode: sync
-    tmdb_discover:
-      with_genres: 18
-      sort_by: vote_average.desc
-      vote_count.gte: 10
-```
 
+Use `collection_order: custom` to preserve the query's order and `sync_mode: sync`
+to keep collection membership synchronized as results change.
+
+## Value types
+
+- **String:** text, codes, or IDs. Quote values containing separators, such as `"18,35"`.
+- **Integer / Number:** a positive whole number / a positive whole or decimal number.
+- **Boolean:** `true` or `false`.
+- **Date / Year:** `MM/DD/YYYY` / a four-digit year, such as `2020`.
+
+### Ranges and multiple values
+
+`.gte` means **greater than or equal to** (minimum); `.lte` means **less than or equal to**
+(maximum). Use either bound on its own or both for an inclusive range.
+
+For filters marked **AND/OR**, join values with a comma for **all** or a pipe for **any**:
+
+`with_genres: "18,35"` requires both genres; `with_genres: "18|35"` accepts either.
+Filters marked **comma** accept comma-separated IDs. These are string values, not YAML lists.
+
+## Discover attributes
+
+All attributes below belong under `tmdb_discover:`. Only show attributes are listed here;
+see [Discover movies](movie.md) for the other media type.
+
+### Results and ordering
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `limit` | Integer | Maximum results; default `100`. |
+| `sort_by` | Sort option | Result order; default `popularity.desc`. See [sort options](#sort-options). |
+
+### Air dates
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `air_date.gte` | Date | Earliest episode air date. |
+| `air_date.lte` | Date | Latest episode air date. |
+| `first_air_date.gte` | Date | Earliest original air date. |
+| `first_air_date.lte` | Date | Latest original air date. |
+| `first_air_date_year` | Year | Original air year. |
+| `include_null_first_air_dates` | Boolean | Include shows without an air date when using first-air-date filters. |
+| `timezone` | String | Timezone for `air_date` filters; default `America/New_York`. |
+
+### Ratings and runtime
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `vote_count.gte` | Integer | Minimum vote count. |
+| `vote_count.lte` | Integer | Maximum vote count. |
+| `vote_average.gte` | Number | Minimum average rating. |
+| `vote_average.lte` | Number | Maximum average rating. |
+| `with_runtime.gte` | Integer | Minimum episode runtime in minutes. |
+| `with_runtime.lte` | Integer | Maximum episode runtime in minutes. |
+
+### Networks and companies
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `with_networks` | IDs, comma | Include networks. |
+| `with_companies` | IDs, AND/OR | Include production companies. |
+| `without_companies` | IDs, AND/OR | Exclude production companies. |
+
+### Genres, keywords, and language
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `with_genres` | IDs, AND/OR | Include genres. |
+| `without_genres` | IDs, comma | Exclude genres. |
+| `with_keywords` | IDs, AND/OR | Include keywords. |
+| `without_keywords` | IDs, AND/OR | Exclude keywords. |
+| `with_original_language` | String | Original language as an ISO 639-1 code, such as `en`. |
+| `with_name_translation` | String | Require a name translation; see [translation codes](#translation-codes). |
+
+### Status, type, and content
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `with_status` | String, AND/OR | `0`: Returning Series; `1`: Planned; `2`: In Production; `3`: Ended; `4`: Cancelled; `5`: Pilot. |
+| `with_type` | String, AND/OR | `0`: Documentary; `1`: News; `2`: Miniseries; `3`: Reality; `4`: Scripted; `5`: Show; `6`: Video. |
+| `include_adult` | Boolean | Include or exclude adult titles. |
+| `screened_theatrically` | Boolean | Include titles screened theatrically. |
+
+### Streaming availability
+
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `with_watch_providers` | IDs, AND/OR | Include streaming providers; use with `watch_region`. |
+| `without_watch_providers` | IDs | Exclude streaming providers. |
+| `watch_region` | String | Two-letter ISO 3166-1 country code, such as `GB`, for provider availability. |
+| `with_watch_monetization_types` | String, AND/OR | Availability type: `flatrate`, `free`, `ads`, `rent`, or `buy`; use with `watch_region`. |
+
+??? info "Translation codes"
+
+    <span id="translation-codes"></span>
+
+    `ar-AE`, `ar-SA`, `bg-BG`, `bn-BD`, `ca-ES`, `ch-GU`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-US`, `eo-EO`, `es-ES`, `es-MX`, `eu-ES`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ka-GE`, `kn-IN`, `ko-KR`, `lt-LT`, `ml-IN`, `nb-NO`, `nl-NL`, `no-NO`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sl-SI`, `sr-RS`, `sv-SE`, `ta-IN`, `te-IN`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-TW`
+
+## Sort options
+
+Append `.asc` for ascending or `.desc` for descending order, such as
+`vote_average.desc`. The default is `popularity.desc`.
+
+| Sort field | Orders by |
+|:-----------|:----------|
+| `popularity` | Popularity |
+| `name` | Name |
+| `original_name` | Original name |
+| `first_air_date` | First air date |
+| `vote_average` | Average rating |
+| `vote_count` | Vote count |
+
+## Examples {#example-tmdb-discover-builders}
+
+Each tab demonstrates a different value type or filter combination. All examples are complete collection definitions.
+
+=== "Dates"
+
+    Finds shows whose first air date falls within October 2020, including both boundary dates. This filters the show premiere, rather than individual episode air dates.
+
+    ```yaml
+    collections:
+      Shows First Aired in October 2020:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          first_air_date.gte: 10/01/2020
+          first_air_date.lte: 10/31/2020
+    ```
+
+=== "Strings and booleans"
+
+    Finds English-language shows, excluding adult titles, ordered by popularity. `"en"` is a string; `false` is an unquoted boolean.
+
+    ```yaml
+    collections:
+      Popular English-Language Shows:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          with_original_language: "en"
+          include_adult: false
+          sort_by: popularity.desc
+    ```
+
+=== "Years and numbers"
+
+    Finds dramas first aired in 2020 with an average rating of at least 7.5 and at least 100 votes, highest rated first. `2020` is a year, `7.5` is a decimal number, and `100` is an integer.
+
+    ```yaml
+    collections:
+      Top Rated Dramas From 2020:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          with_genres: 18
+          first_air_date_year: 2020
+          vote_average.gte: 7.5
+          vote_count.gte: 100
+          sort_by: vote_average.desc
+    ```
+
+=== "AND / OR"
+
+    Both collections use genre IDs for drama (`18`) and comedy (`35`). The comma requires **both** genres; the pipe accepts **either** genre. Results are ordered by popularity. Keep these multi-value strings quoted.
+
+    ```yaml
+    collections:
+      Drama Comedies:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          with_genres: "18,35"
+          sort_by: popularity.desc
+
+      Dramas or Comedies:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          with_genres: "18|35"
+          sort_by: popularity.desc
+    ```
+
+=== "Streaming region"
+
+    Finds shows available through Disney+ (provider ID `337`) in the United Kingdom. `watch_region: "GB"` selects the provider availability region; it does not filter the show's country of origin.
+
+    ```yaml
+    collections:
+      Streaming on Disney+ in the UK:
+        collection_order: custom
+        sync_mode: sync
+        tmdb_discover:
+          with_watch_providers: 337
+          watch_region: "GB"
+    ```
+
+For the upstream API reference, see [TMDb Discover shows](https://developer.themoviedb.org/reference/discover-tv).

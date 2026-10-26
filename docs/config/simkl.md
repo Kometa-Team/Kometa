@@ -31,5 +31,5 @@ each other's token.
 
 ???+ tip
 
-    Generate a refresh token using the [Kometa Utilities](./authentication.md). Existing OAuth V1
+    Generate a refresh token using the [Kometa Utilities](authentication.md). Existing OAuth V1
     `user_token` entries are not supported; create a new OAuth V2 token and replace the old `simkl` block.

@@ -5,16 +5,17 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Network", 
-        "CODE_NAME": "network",
-        "OVERLAY_LEVEL": "Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the show network on each item within your library"
-    }'
+    "OVERLAY_NAME": "Network",
+    "CODE_NAME": "network",
+    "OVERLAY_LEVEL": "Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the show network on each item within your library",
+    "OVERLAY_LABEL": "network"
+}'
     end='<!--rec-sub-->'
 %}
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"styles/CODE_NAME": "overlays/network"}' exclude-tags='logo' %}
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "network", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|show|episode|season' 
 %}
@@ -62,12 +63,11 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "network"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Network Overlays"
-    
-        The Network overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on network name.
-        The list of networks is not exposed for customization using Template Variables.
+
+    The Network overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on network name.
+    The list of networks is not exposed for customization using Template Variables.

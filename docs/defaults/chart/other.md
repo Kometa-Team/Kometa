@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Other Chart", 
-        "CODE_NAME": "other_chart",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create collections based on other charts",
-        "SECTION_NUMBER": "020"
-    }'
+    "COLLECTION": "Other Chart",
+    "CODE_NAME": "other_chart",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on other charts",
+    "SECTION_NUMBER": "020"
+}'
     replace-tags='{"rec-sub": "Recommendations: The `StevenLu\'s Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries."}'
 %}
 | `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
@@ -47,13 +47,13 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Other Chart Collections"
-        
+
         The collections created here use a variety of sources.
-        
+
         | Collection                          | Source                                                                                                                                                                                                                                                                        |
         |:------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
         | `Common Sense Selection`            | Sourced from mdblist:<br>[`https://mdblist.com/lists/k0meta/cssfamiliesmovies`](https://mdblist.com/lists/k0meta/cssfamiliesmovies) or<br>[`https://mdblist.com/lists/k0meta/cssfamiliesshows`](https://mdblist.com/lists/k0meta/cssfamiliesshows)                            |

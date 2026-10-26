@@ -5,22 +5,23 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Studio", 
-        "CODE_NAME": "studio",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the show studio on each item within your library"
-    }'
+    "OVERLAY_NAME": "Studio",
+    "CODE_NAME": "studio",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the show studio on each item within your library",
+    "OVERLAY_LABEL": "studio"
+}'
     end='<!--rec-sub-->'
 %}
 
-### Bigger Style
+### Bigger style
 
 Below is a screenshot of the alternative Bigger (`bigger`) style which can be set via the `style` Template Variable.
 
 ![studio_bigger](../../assets/images/defaults/overlays/studio_bigger.jpg)
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "studio", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
@@ -78,12 +79,11 @@ Below is a screenshot of the alternative Bigger (`bigger`) style which can be se
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "studio"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Studio Overlays"
-    
-        The Studio overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on studio names.
-        The list of studio is not exposed for customization using Template Variables.
+
+    The Studio overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on studio names.
+    The list of studio is not exposed for customization using Template Variables.

@@ -5,13 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Tracearr Chart",
-        "CODE_NAME": "tracearr",
-        "LIBRARY_TYPE": "Movie, Show",
-        "DESCRIPTION": "create collections based on Tracearr watch history",
-        "SECTION_NUMBER": "020"
-    }'
-    replace-tags='{"rec-sub": "Requirements: [Tracearr Authentication](../../config/tracearr.md)."}'
+    "COLLECTION": "Tracearr Chart",
+    "CODE_NAME": "tracearr",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on Tracearr watch history",
+    "SECTION_NUMBER": "020"
+}'
+    replace-tags='{"rec-sub": "Requirements: [Tracearr Authentication](../../../../config/tracearr.md)."}'
 %}
 | `Tracearr Popular`   | `popular`   | Collection of items watched by the most unique Tracearr users. |
 | `Tracearr Watched`   | `watched`   | Collection of items with the most completed Tracearr sessions. |
@@ -54,7 +54,7 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Tracearr Chart Collections"

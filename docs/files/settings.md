@@ -3,7 +3,6 @@ search:
   boost: 3
 hide:
   - tags
-  - toc
 tags:
   - addons
   - name
@@ -34,7 +33,11 @@ tags:
   - test
   - tmdb_birthday
   - changes_webhooks
-  - list_export
+  - sync_to_mdb_list
+  - sync_to_flicklist_list
+  - sync_missing_to_flicklist_list
+  - sync_to_wetrakr_list
+  - sync_missing_to_wetrakr_list
   - run_definition
   - default_percent
   - ignore_blank_results
@@ -42,11 +45,128 @@ tags:
   - delete_collections_named
 ---
 
-# Definition Settings
+# Definition Options
 
-All the following attributes serve various functions as how the definition functions inside of Kometa.
+Control how an individual collection, playlist, or overlay definition runs and
+handles its results. Place options beside the builder, not inside its dictionary.
+Availability varies by option; collection-only restrictions are noted below.
 
-<div id="asset-directory" />`asset_directory` overrides the artwork directories for an individual collection. Accepts an existing directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`. At collection level, all accepted forms override only the collection’s own artwork; media-type keys select artwork by the library type and do not change `item_assets` directories. Explicit overrides use the collection name or `name_mapping` for asset names. Empty values inherit the collection-file, library, or global setting; when none is configured, the existing `asset_directory` applies. See [collection asset settings](../config/settings.md#asset-directory) for layout and download behavior.
+## Quick start
+
+Selects Action movies, caps the definition at 50 items, and synchronizes membership
+on each run. `50` is an integer; `sync` is a mode string. The name shown in Plex
+is different from the YAML mapping key.
+
+```yaml
+collections:
+  Weekly Action:
+    name: Action Picks
+    plex_search:
+      all:
+        genre: Action
+    limit: 50
+    sync_mode: sync
+```
+
+## Option reference
+
+**Inherited** means the same-named setting from the
+[configuration settings](../config/settings.md) is used unless overridden here.
+A dash means this page does not specify a default. Booleans use unquoted `true`
+or `false`; names, IDs, and paths use the value forms indicated.
+
+### Names and templates
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `name` | String | - | Name displayed in Plex instead of the YAML mapping key. |
+| `name_mapping` | String | - | Filesystem asset name when the definition name contains invalid path characters. See [image assets](../kometa/guides/assets.md). |
+| `template` | Dictionary | - | Template and variables for this definition; see [templates](templates.md). |
+
+### Collection creation and membership
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `blank_collection` | Boolean | `false` | Create an empty collection without builders or added items. |
+| `build_collection` | Boolean | `true` | If false, do not create the collection; Radarr/Sonarr additions can still run. Not supported for playlists. |
+| <span id="builder-level"></span>`builder_level` | `season`, `episode`, `album`, `track` | - | Select the item level for compatible collections/overlays, builders, and filters; originally supported by `plex_all`, `plex_search`, and `imdb_list`. Check individual builders for other supported levels. |
+| `limit` | Positive number | - | Maximum items in the definition. |
+| `minimum_items` | Positive number | Inherited | Minimum items required before adding to the definition. |
+| `sync_mode` | `sync`, `append` | Inherited | Control builder membership syncing; see [sync mode](../config/settings.md#sync-mode). |
+| `default_percent` | Integer, 1-100 | `50` | Default threshold for child-item special filters; see [example](#default-percent-example). |
+| `smart_label` | Sort string or dictionary | - | Label builder results to create a [smart collection](#smart-label-definitions). |
+
+### Scheduling and execution
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `schedule` | [Schedule option](../config/schedule.md) | `daily` | When to run; defaults to daily. |
+| `run_definition` | Boolean, library type, or list | - | Run conditions; one false or mismatched type prevents a run. See [run conditions](#scheduling-and-run-conditions). |
+| `only_run_on_create` | Boolean | `false` | Run only if the collection does not already exist. |
+| `run_again` | Boolean | `false` | Try adding missing items again after the daily run. |
+| `cache_builders` | Number, 0 or greater | `0` | Cache builder results for this many days. `1` is useful across libraries/servers in the same run. |
+| `test` | Boolean | `false` | Select this definition for `--run-tests` test mode. |
+| `tmdb_birthday` | Date-condition dictionary | - | Run relative to the TMDb person birthday. |
+| `tmdb_deathday` | Date-condition dictionary | - | Run relative to the TMDb person deathday. |
+
+### Errors, exclusions, and missing items
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `ignore_blank_results` | Boolean | `false` | Suppress errors caused by blank builder results. |
+| `validate_builders` | Boolean | `true` | If false, a failed builder does not fail the definition. |
+| `ignore_ids` | YAML list or comma-separated TMDb/TVDb IDs | Inherited | Combine with library and global ignore IDs. |
+| `ignore_imdb_ids` | YAML list or comma-separated IMDb IDs | Inherited | Combine with library and global ignored IMDb IDs. |
+| `missing_only_released` | Boolean | Inherited | Exclude unreleased items from missing-item lists. |
+| `only_filter_missing` | Boolean | Inherited | Apply filters only to missing items. |
+| `delete_below_minimum` | Boolean | Inherited | Delete when results fall below the minimum. |
+| `delete_not_scheduled` | Boolean | Inherited | Delete when skipped because the definition is not scheduled. |
+| `delete_collections_named` | YAML list of names | - | Delete Plex collections with the given names. |
+
+### Reports, artwork, and server actions
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `show_filtered` | Boolean | Inherited | Display items rejected by filters. |
+| `show_unfiltered` | Boolean | Inherited | Display items that pass filters. |
+| `show_missing` | Boolean | Inherited | Display missing items. |
+| `save_report` | Boolean | Inherited | Save a report for this definition. |
+| `changes_webhooks` | YAML list of webhooks | - | Override definition-change webhooks for this definition. |
+| `hub_priority` | Positive integer | None | Order a promoted collection hub; see [requirements](#hub-priority). |
+| `tmdb_region` | Region value | - | Set the region for `tmdb_popular`, `tmdb_now_playing`, `tmdb_top_rated`, and `tmdb_upcoming`. |
+| `server_preroll` | String, list, or nested list | - | Set Plex Movie pre-roll video; see [examples](#server-preroll-example). |
+
+### External list destinations
+
+| Attribute | Value | Default | Purpose |
+|:----------|:------|:--------|:--------|
+| `sync_to_mdb_list` | Name or dictionary | - | Sync movie/show results to an MDBList static list; [example](#mdblist-sync-example). |
+| `sync_to_flicklist_list` | Numeric ID or exact name | - | Sync to one of your FlickList lists; [example](#flicklist-sync-example). |
+| `sync_missing_to_flicklist_list` | Boolean | `false` | Also sync missing items to the selected FlickList destination. |
+| `sync_to_wetrakr_list` | Numeric ID or exact name | - | Sync to one of your WeTrakr lists; [example](#wetrakr-sync-example). |
+| `sync_missing_to_wetrakr_list` | Boolean | `false` | Also sync missing items to the selected WeTrakr destination. |
+
+For asset filenames, `name_mapping` can replace characters that are invalid in a
+path while `name` keeps the desired Plex display title. Windows filenames cannot
+contain `<`, `>`, `:`, `"`, `/`, `\`, `?`, or `*`.
+
+## Artwork overrides {#asset-directory}
+
+`asset_directory` overrides artwork directories for one collection. It accepts
+an existing directory, a list of directories, or a mapping with `movies`, `shows`,
+`music`, and `collections` keys. All accepted forms affect **only the collection's
+own artwork**, not `item_assets` directories. Media-type keys choose artwork
+according to the library type.
+
+Explicit overrides use the collection name or `name_mapping` for asset names.
+Empty values inherit the collection-file, library, or global setting; when none
+is configured, the existing `asset_directory` applies. See
+[collection asset settings](../config/settings.md#asset-directory) for layout and
+download behaviour.
+
+This collection uses the specified directory for its own artwork. Replace it
+with an existing directory; the dictionary does not relocate artwork for the
+movies selected by `plex_all`.
 
 ```yaml
 collections:
@@ -56,241 +176,285 @@ collections:
     plex_all: true
 ```
 
-| Attribute                    | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-|:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `blank_collection`           | **Description:** When set to true the collection will be created with no builders and no items added.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `build_collection`           | **Description:** When set to false the collection won't be created but items can still be added to Radarr/Sonarr. Does not work for playlists.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search` or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                                                                                                                                                                                                |
-| `cache_builders`             | **Description:** Caches the items found by the builders for a number of days. This is useful if you run the same configuration on multiple libraries/servers in one run just set the value to `1`.<br>**Default:** `0` <br>**Values:** number 0 or greater                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `changes_webhooks`           | **Description:** Used to specify a definition changes webhook for just this definition.<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of webhooks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `default_percent`            | **Description:** Used to declare the default percent for `episodes`, `seasons`, `tracks`, and `albums` [special filters](filters.md#special-filters). See [Example](#default-percent-example) below.<br>**Default:** `50`.<br>**Values:** Integer between 1 and 100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `delete_below_minimum`       | **Description:** Deletes the definition if below the minimum.<br>**Default:** `delete_below_minimum` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `delete_collections_named`   | **Description:** Used to delete any collections in your plex named one of the given collections.<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Collection Names to delete                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `delete_not_scheduled`       | **Description:** Deletes the definition if its skipped because its not scheduled.<br>**Default:** `delete_not_scheduled` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `hub_priority`               | **Description:** Sets the position priority for this collection's Recommendation Hub row. Collections with `hub_priority` are sorted to the front of the hub list (lowest number first) before any `auto_sort_hubs` ordering is applied. Requires the collection to be promoted to a hub via `visible_library`, `visible_home`, or `visible_shared` (Plex Pass Required). Hub sorting (and therefore `hub_priority`) is skipped on a targeted `--run-collections` or `--run-files` run, since it only knows the priorities of the collections that run requested.<br>**Default:** None<br>**Values:** Integer greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `ignore_blank_results`       | **Description:** Used to not have Errors resulting from blank results from builders.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `ignore_ids`                 | **Description:** definition level `ignore_ids` which is combined with the library and global `ignore_ids`.<br>**Default:** `ignore_ids` [settings value](../config/settings.md) in the Configuration File<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated String of TMDb/TVDb IDs                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `ignore_imdb_ids`            | **Description:** definition level `ignore_imdb_ids` which is combined with the library and global `ignore_imdb_ids`.<br>**Default:** `ignore_imdb_ids` [settings value](../config/settings.md) in the Configuration File<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated String of IMDb IDs                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `limit`                      | **Description:** Used to specify the max number of items for the definition<br>**Values:** Number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `minimum_items`              | **Description:** Minimum items that must be found to add to a definition.<br>**Default:** `minimum_items` [settings value](../config/settings.md) in the Configuration File<br>**Values:** number greater than 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `list_export`                | **Description:** Exports builder results to a list. Set `source`, `name`, and optional `mode` (`sync` or `append`). See [List Export](#list-export).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `missing_only_released`      | **Description:** definition Level `missing_only_released` toggle.<br>**Default:** `missing_only_released` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `name_mapping`               | **Description:** Used to specify the folder name in the [Image Assets Directory](../kometa/guides/assets.md) i.e. if your definition name contains characters that are not allowed in file paths (i.e. for windows `<`, `>`, `:`, `"`, `/`, `\`, `?`, `*` cannot be in the file path), but you want them in your name you can this to specify the name in the file system.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `name`                       | **Description:** Used to specify the name of the definition in Plex as different than the mapping name.<br>**Values:** Any String                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `only_filter_missing`        | **Description:** definition Level `only_filter_missing` toggle.<br>**Default:** `only_filter_missing` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `only_run_on_create`         | **Description:** Used to only run the collection definition if the collection doesn't already exist.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `run_again`                  | **Description:** Used to try and add all the missing items to the definition again after the daily run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `run_definition`             | **Description:** Used to specify if this definition runs.<br>Multiple can be used for one definition as a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma separated string. One `false` or unmatched library type will cause it to fail.<br>**Values:** `movie`, `show`, `artist`, `true`, `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `save_report`                | **Description:** definition level `save_report` toggle.<br>**Default:** `save_report` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `schedule`                   | **Description:** Used to specify the schedule when this definition will run.<br>**Default:** `daily`<br>**Values:** [Any Schedule Option](../config/schedule.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `server_preroll`             | **Description:** Used to set the `Movie pre-roll video` Text box in Plex under Settings -> Extras.<br>See the [Movie pre-roll video section on the Plex Extras Page](https://support.plex.tv/articles/202920803-extras/) for what the semicolons `;` and commas `,` mean to Plex.<br>You can run this with a [schedule](../config/schedule.md) to change the pre-rolls automatically.<br>See [Example](#server-preroll-example) below.<br>**Values:** Any String or a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Strings/Nested List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Strings<br> \* When using a list the top level elements are separated by semicolons `;` and the nested lists are separated by commas `,`. |
-| `show_filtered`              | **Description:** definition level `show_filtered` toggle.<br>**Default:** `show_filtered` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `show_missing`               | **Description:** definition level `show_missing` toggle.<br>**Default:** `show_missing` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `show_unfiltered`            | **Description:** definition level `show_unfiltered` toggle.<br>**Default:** `show_unfiltered` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `smart_label`                | **Description:** Adds a label to all items found by the builder, which is then used to create a Smart Collection searching for the label<br>See [Smart Label Definitions](#smart-label-defintiions) for more information and use-cases                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `sync_mode`                  | **Description:** Used to change how builders sync with this definition.<br>**Default:** `sync_mode` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `sync` or `append`<br>See main [settings page](../config/settings.md#sync-mode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `template`                   | **Description:** Used to specify a template and Template Variables to use for this definition. See the [Templates Page](templates.md) for more information.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `test`                       | **Description:** When running in Test Mode (`--run-tests` [option](../kometa/environmental.md)) only definitions with `test: true` will be run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
-| `tmdb_deathday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Deathday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Deathday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Deathday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Deathday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
-| `tmdb_region`                | **Description:** Sets the region for `tmdb_popular`, `tmdb_now_playing`, `tmdb_top_rated`, and `tmdb_upcoming`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `validate_builders`          | **Description:** When set to false the definition will not fail if one Builder fails.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+## Scheduling and run conditions
 
-### List Export
+`run_definition` accepts `movie`, `show`, `artist`, `true`, or `false`, as a single
+value, YAML list, or comma-separated string. **One `false` or unmatched library
+type prevents the definition from running.**
 
-`list_export` is optional. Add it to a collection only when you want to send the current builder results to an external list. Set `source` to `mdblist`, `flicklist`, `wetrakr`, `tmdb`, or `floppy`; set `name` to an exact list name or numeric ID. Kometa creates a named list when it does not exist. `mode` defaults to `sync`, which adds missing items and removes entries absent from the builder results. A successful run with zero results empties the list where the service permits it. Use `append` to add items without removing existing entries. Builder errors do not trigger an export. Exporting runs independently of the Plex collection's `sync_mode` and `minimum_items`.
+`tmdb_birthday` and `tmdb_deathday` use the dates for `tmdb_person`. Each accepts
+`this_month` as a boolean and `before` / `after` as numbers of days, zero or greater.
+
+This example runs an actor collection during their birthday month. `this_month`
+is a nested boolean; `2157` identifies Robin Williams on TMDb. The definition
+also includes its builder, rather than relying on the date option to select items.
 
 ```yaml
 collections:
-  Recently Added:
+  Robin Williams Birthday Month:
+    tmdb_person: 2157
+    tmdb_birthday:
+      this_month: true
+    tmdb_actor: 2157
+```
+
+`test: true` selects a definition when running in
+[test mode](../kometa/environmental.md) (`--run-tests`); definitions without that
+flag are skipped in test mode.
+
+## Hub priority
+
+`hub_priority` requires the collection to be promoted through `visible_library`,
+`visible_home`, or `visible_shared`, and requires Plex Pass. Lower positive
+numbers appear first, before any `auto_sort_hubs` ordering.
+
+Hub sorting, including priority, is skipped for targeted `--run-collections` or
+`--run-files` runs because those runs do not know every collection's priority.
+
+## External list syncing
+
+These options sync movie/show results to external lists. They are separate from
+`sync_mode`, which controls membership in the Kometa definition.
+
+### MDBList sync example
+
+`sync_to_mdb_list` finds a static list by **exact name**, creating it if absent.
+Use a name string or a dictionary containing `name` and optional `mode`.
+`mode: sync` is the default: it adds missing items and removes entries no longer
+present. `append` adds without removing existing entries.
+
+=== "Synchronize by name"
+
+    Syncs movies added in the last 30 days to the named MDBList static list.
+    The name is a string; list membership is updated, rather than merely appended.
+
+    ```yaml
+    collections:
+      Recently Added:
+        plex_search:
+          all:
+            added: 30
+        sync_to_mdb_list: "Recently Added"
+    ```
+
+=== "Append dictionary"
+
+    Adds movies with a user rating of at least 8 to the Favourites list without
+    removing older entries. `mode: append` applies to MDBList, not the Plex collection.
+
+    ```yaml
+    collections:
+      Favourites:
+        plex_search:
+          all:
+            user_rating.gte: 8.0
+        sync_to_mdb_list:
+          name: "Favourites"
+          mode: append
+    ```
+
+### FlickList sync example
+
+`sync_to_flicklist_list` accepts a numeric list ID or exact name among your own
+FlickList lists. A matching list is reused; a list is created if no match exists.
+
+Selects recently added items and syncs them to the named list. The boolean
+`sync_missing_to_flicklist_list` also enables syncing missing items.
+
+```yaml
+collections:
+  Recent FlickList Picks:
     plex_search:
       all:
         added: 30
-    list_export:
-      source: mdblist
-      name: Recently Added
-      mode: sync
+    sync_to_flicklist_list: "Recently Added"
+    sync_missing_to_flicklist_list: true
+```
 
-  Favorites:
+### WeTrakr sync example
+
+`sync_to_wetrakr_list` also accepts a numeric list ID or exact name among your own
+lists, reusing a match or creating a list when no match exists. Free accounts are
+limited to **5 lists of 250 items each**. Exceeding either limit produces the
+account's upgrade message.
+
+This example uses a numeric ID instead of a list-name string. Replace `13255`
+with one of your own list IDs. Missing items are included when the boolean is enabled.
+
+```yaml
+collections:
+  Recent WeTrakr Picks:
     plex_search:
       all:
-        user_rating.gte: 8.0
-    list_export:
-      source: flicklist
-      name: Favorites
-      mode: append
+        added: 30
+    sync_to_wetrakr_list: 13255
+    sync_missing_to_wetrakr_list: true
 ```
 
-The same structure works for WeTrakr, TMDb, and Floppy by changing `source`. Movies and shows are supported. FlickList and WeTrakr lists do not preserve the collection's custom order; season and episode entries are skipped. An existing FlickList or WeTrakr item that Kometa cannot confidently identify is left in place during sync. Free WeTrakr accounts are limited to five lists of 250 items each.
+!!! note "FlickList and WeTrakr sync limits"
 
-TMDb exports require [user authorization](../config/tmdb.md#tmdb-list-export-authorization). Floppy exports require a [Floppy API token](../config/floppy.md). `list_export` uses builder results that Kometa resolved to Plex items. When sharing a destination list across multiple builders, `sync` can remove entries contributed by the other builder; use separate lists or `append` for that setup.
+    Both support movies and shows; season/episode collections are skipped with
+    one warning. Neither preserves the collection's custom order on the remote
+    side. Existing remote items that cannot be confidently matched are left
+    in place, rather than removed. Missing-item syncing defaults to `false`.
 
-## Smart Label Definitions
+## Smart label definitions
 
-Smart Labels are a process that Kometa uses to build [Smart Collections](builders/plex/overview.md#understanding-smart-vs-manual-collections) using non-Plex builders.
+Smart labels use non-Plex builder results to create a Plex smart collection.
+Kometa labels each selected item, then creates a smart filter for that label.
+Plex reevaluates the filter as labels change; **the external source is not fetched
+again until Kometa runs**. Users can also add or remove the label themselves.
 
-Instead of building a Manual (also known as Dumb or non-Smart) Collection with items from third-party builders, 
-Kometa applies a label to every item that is discovered by the builder.
+=== "Sort string"
 
-This label is then used as part of a [Smart Filter Builder](builders/plex/smart-filter.md) to create a Smart Collection showing any item that has that label.
+    Fetches the MCU list, applies a label matching the collection name to its
+    items, and creates a smart collection ordered by release date, newest first.
 
-The result is a Smart Collection which only updates when the specific label is added/removed from items within Plex (either by the user or Kometa adding or remove the label).
+    ```yaml
+    collections:
+      Marvel Cinematic Universe:
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
+        smart_label: release.desc
+    ```
 
-Here is an example of a Smart Label definition being used to create a Smart Collection.
+=== "Expanded dictionary"
+
+    Has the same effect as the short form. `<<smart_label>>` resolves to the
+    collection's label, here Marvel Cinematic Universe.
+
+    ```yaml
+    collections:
+      Marvel Cinematic Universe:
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
+        smart_label:
+          sort_by: release.desc
+          all:
+            label: <<smart_label>>
+    ```
+
+=== "Additional rules"
+
+    Labels items from the same source, then shows only unplayed items featuring
+    Robert Downey Jr. The label follows this collection's longer name. `true`
+    is a boolean; the actor name is a string filter.
+
+    ```yaml
+    collections:
+      Unplayed MCU With Robert Downey Jr:
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
+        smart_label:
+          sort_by: release.desc
+          all:
+            label: <<smart_label>>
+            unplayed: true
+            actor: "Robert Downey Jr."
+    ```
+
+### Smart labels & Plex collectionless
+
+Smart collections avoid the usual manual-collection show/hide rules and can
+resolve [collectionless display issues](builders/plex/builders.md#plex-collectionless).
+Use the method consistently: a useful rule is no more than one manual collection
+per library item, with broader groups implemented as smart labels.
+
+Smart collections cannot use `custom` sorting to preserve the external builder's
+order. If you need that order together with collection visibility handling, use
+[Plex Collectionless](builders/plex/builders.md#plex-collectionless) instead.
+
+## Default percent example
+
+`default_percent` sets the threshold for `episodes`, `seasons`, `tracks`, and
+`albums` [special filters](filters.md#special-filters) when they do not specify a
+threshold. It defaults to 50 and accepts integers from 1 through 100.
+
+This collection requires at least 35% of a show's episodes to have a user rating
+of 7 or higher. `35` is a percentage, while `7` is the nested rating threshold.
+The option belongs in the definition file, not `config.yml`.
 
 ```yaml
 collections:
-  Marvel Cinematic Universe:
-    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
-    smart_label: release.desc
-```
-
-The above can also be defined as:
-```yaml
-collections:
-  Marvel Cinematic Universe:
-    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
-    smart_label:
-      sort_by: release.desc
-      all:
-        label: <<smart_label>>
-```
-
-The processing for both of the above examples are identical: Kometa fetches all the items within that MDBList list and applies a 
-"Marvel Cinematic Universe" label to each of the items in Plex.
-
-It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` 
-(equating to a search of `label: Marvel Cinematic Universe`) and then sorts those results by `release.desc`.
-
-Smart Label definitions can be used with any other Smart Builder search criteria, allowing for additional filtering and views that otherwise would not be possible.
-
-Let's add some new criteria to our previous example:
-
-```yaml
-collections:
-  Unplayed Marvel Cinematic Universe with Robert Downey Jr:
-    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
-    smart_label:
-      sort_by: release.desc
-      all:
-        label: <<smart_label>>
-        unplayed: true
-        actor: "Robert Downey Jr."
-```
-
-The above workflow would still happen as described (note that the label applied to the items would now be "Unplayed Marvel Cinematic Universe with Robert Downey Jr."), 
-but the Smart Filter now includes two new criteria; that the item must be unplayed and must feature Robert Downey Jr.
-
-### Smart Labels & Plex Collectionless 
-
-Smart Label definitions are especially powerful because Smart Collections are not subject to the usual show/hide rules that affect Manual collections. 
-As such, it can help resolve issues like those described in [Plex Collectionless](builders/plex/collectionless). 
-
-For example, if Marvel Cinematic Universe is set up using the smart label method, and all other Marvel-related collections are Manual collections, 
-Plex will handle the visibility correctly across grouped collections.
-
-To fully take advantage of this method and eliminate the need for Plex Collectionless, it’s important to commit to using this system consistently. 
-A good rule of thumb is: each item in your library should belong to no more than one non-smart collection.
-
-The only downside of using smart collections is that they are unable to be sorted by `custom` (which uses the order of the original builder). 
-In order to have a custom ordered Marvel Cinematic Universe Collection  with the show/hide of the collection to work correctly you will have to use
-[Plex Collectionless](builders/plex/collectionless).
-
-## Default Percent Example
-
-An example of using `default_percent` which is used in an external yml file and not within config.yml:
-
-```yml
-  HDR10Plus:
-    default_percent: 35  #default default_percent is 50
-    template:
-      - name: Resolution
-        weight: 400
-        opt1: hdr10p
-    plex_search:
-      all:
-        hdr: true
+  Shows With Rated Episodes:
+    plex_all: true
+    default_percent: 35
     filters:
-      filepath.regex: 'HDR10\+|HDR10P'
+      episodes:
+        user_rating.gte: 7
 ```
 
-### Server Preroll Example
+## Server preroll example
 
-An example of using `server_preroll` with a schedule which is also used in an external yml file and not within config.yml:
+`server_preroll` sets Plex's **Movie pre-roll video** field under Settings > Extras.
+Use it with a schedule to change prerolls over the year. Place this in a definition
+file, not `config.yml`; `build_collection: false` avoids creating a Plex collection.
+Use file paths appropriate to your Plex server. See [Plex Extras](https://support.plex.tv/articles/202920803-extras/).
 
-```yml
-collections:
-  january:
-    build_collection: false
-    server_preroll: "\\path\\to\\file"
-    schedule: range(01/01-01/31)
-  base:
-    build_collection: false
-    server_preroll: "\\path\\to\\file2;\\path\\to\\file3"
-    schedule: range(02/01-11/31)
-  december:
-    build_collection: false
-    server_preroll: "\\path\\to\\file4"
-    schedule: range(12/01-12/31)
-```
+=== "Scheduled strings"
 
-An example of using `server_preroll` as a list with nested lists. The double dash (`- -`) denotes the start of a nested list 
+    Uses one January preroll, a different base selection from February through
+    November, and another for December. The schedules are strings; `false`
+    disables collection creation while leaving the preroll action available.
 
-```yml
-collections:
-  base:
-    build_collection: false
-    server_preroll: 
-      - "\\path\\to\\file1"
-      - - "\\path\\to\\file2"
-        - "\\path\\to\\file3"
-      - "\\path\\to\\file4"
-```
+    ```yaml
+    collections:
+      January Preroll:
+        build_collection: false
+        server_preroll: /media/prerolls/january.mp4
+        schedule: range(01/01-01/31)
+      Base Preroll:
+        build_collection: false
+        server_preroll: /media/prerolls/base1.mp4;/media/prerolls/base2.mp4
+        schedule: range(02/01-11/30)
+      December Preroll:
+        build_collection: false
+        server_preroll: /media/prerolls/december.mp4
+        schedule: range(12/01-12/31)
+    ```
 
-When Kometa adds this to Plex the translated string will be `\\path\\to\\file1;\\path\\to\\file2,\\path\\to\\file3;\\path\\to\\file4`. 
-(Notice that some separators are semicolons `;` and some are commas `,`)
+=== "Choose one"
 
-Plex preroll videos and this setting are covered at [Plex Extras](https://support.plex.tv/articles/202920803-extras/).
+    A flat YAML list becomes semicolon-separated choices. Plex plays one of
+    these files before the movie, rather than playing all of them.
 
-In a nutshell, this will play **one of** the files in the list before the movie starts:
-```yml
-collections:
-  base:
-    build_collection: false
-    server_preroll: 
-      - "\\path\\to\\file1"
-      - "\\path\\to\\file2"
-      - "\\path\\to\\file3"
-      - "\\path\\to\\file4"
-```
+    ```yaml
+    collections:
+      Random Preroll:
+        build_collection: false
+        server_preroll:
+          - /media/prerolls/file1.mp4
+          - /media/prerolls/file2.mp4
+          - /media/prerolls/file3.mp4
+    ```
 
-While this will play **all of** the files in the list before the movie starts:
-```yml
-collections:
-  base:
-    build_collection: false
-    server_preroll: 
-      - - "\\path\\to\\file1"
-        - "\\path\\to\\file2"
-        - "\\path\\to\\file3"
-        - "\\path\\to\\file4"
-```
+=== "Play all"
 
-And a mixed example like this:
+    One nested list becomes a comma-separated sequence. Plex plays all three
+    files in order. The double dash starts a list inside the outer list.
 
-```yml
-collections:
-  base:
-    build_collection: false
-    server_preroll: 
-      - "\\path\\to\\file1"
-      - - "\\path\\to\\file2"
-        - "\\path\\to\\file3"
-      - "\\path\\to\\file4"
-```
+    ```yaml
+    collections:
+      Preroll Sequence:
+        build_collection: false
+        server_preroll:
+          - - /media/prerolls/file1.mp4
+            - /media/prerolls/file2.mp4
+            - /media/prerolls/file3.mp4
+    ```
 
-would play one of these three options before the movie starts:
+=== "Mixed choices"
 
-- `file1`
-- both `file2` and `file3`
-- `file4`
+    Plex chooses file1, both file2 and file3, or file4. Top-level entries become
+    semicolon-separated choices; the nested list becomes a comma-separated sequence.
+
+    ```yaml
+    collections:
+      Mixed Prerolls:
+        build_collection: false
+        server_preroll:
+          - /media/prerolls/file1.mp4
+          - - /media/prerolls/file2.mp4
+            - /media/prerolls/file3.mp4
+          - /media/prerolls/file4.mp4
+    ```
+
+The mixed form produces
+`/media/prerolls/file1.mp4;/media/prerolls/file2.mp4,/media/prerolls/file3.mp4;/media/prerolls/file4.mp4`.

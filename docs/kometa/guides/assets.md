@@ -10,43 +10,43 @@ The Image Asset Directories can be used to update the posters and backgrounds of
 
 Please read thorough this entire guide.  Everything in it assumes understanding of what came before.
 
-## What is an Asset?
+## What is an asset?
 
 Kometa can apply a variety of images to a variety of items in Plex from a variety of sources.
 
 An "Asset" is one of those sources; it's a set of directories full of images with specific names that can be applied to items by Kometa.  Kometa can apply asset images to:
 
-    | Item Type    | poster | background | logo | square_art |
-    |:-------------|:----------------------------------------|
-    | Collection   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | Playlist     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | Movie        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | Show         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | Season       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
-    | Episode      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
+| Item Type    | poster | background | logo | square_art |
+|:-------------|:-------|:-----------|:-----|:-----------|
+| Collection   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| Playlist     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| Movie        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| Show         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| Season       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
+| Episode      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
 
 Without additional specific configuration, Kometa will apply assets **only** to collections/playlists which Kometa has created itself ("managed" collections/playlists).  This refers to the **collection itself**, not the items **in** the collection.
 
 Kometa **will not** apply assets to *items within collections*, and that functionality is not available in Kometa since a movie/show/episode has a single poster across the entire library.  Assets can already be applied to individual items, so a duplicate method to apply such assets is not needed.
 
-    | Item Type            | when assets are applied          |
-    |:---------------------|:---------------------------------|
-    | Managed Collection   | happens automatically            |
-    | Managed Playlist     | happens automatically            |
-    | Unmanaged Collection | assets_for_all_collections: true |
-    | Unmanaged Playlist   | NOT SUPPORTED                    |
-    | Movie                | assets_for_all: true             |
-    | Show                 | assets_for_all: true             |
-    | Season               | assets_for_all: true             |
-    | Episode              | assets_for_all: true             |
+| Item Type            | when assets are applied          |
+|:---------------------|:---------------------------------|
+| Managed Collection   | happens automatically            |
+| Managed Playlist     | happens automatically            |
+| Unmanaged Collection | assets_for_all_collections: true |
+| Unmanaged Playlist   | NOT SUPPORTED                    |
+| Movie                | assets_for_all: true             |
+| Show                 | assets_for_all: true             |
+| Season               | assets_for_all: true             |
+| Episode              | assets_for_all: true             |
 
 Relevant operations:
-[`assets_for_all`](../../config/operations/#assets-for-all)
-[`assets_for_all_collections`](../../config/operations/#assets-for-all-collections)
+[`assets_for_all`](../../config/operations.md#assets-for-all)
+[`assets_for_all_collections`](../../config/operations.md#assets-for-all-collections)
 
 Image **assets** are stored in and retrieved by Kometa from "asset directories".
 
-## What is an Asset Directory?
+## What is an asset directory?
 
 It is a folder containing artwork (posters and/or backgrounds) that is *typically* entirely separate to your media directories.
 
@@ -82,7 +82,7 @@ You **can** use your media directories as the asset directories (if for example 
 Kometa does not require direct access to your media directories in normal use, and it is typically run remote from the Plex server, which is why the asset directory is *typically* entirely separate.
 
 Relevant settings:
-[`asset-directory`](../../config/settings/#asset-directory)
+[`asset-directory`](../../config/settings.md#asset-directory)
 
 ## Requirements and configuration
 
@@ -115,7 +115,7 @@ You can specify your asset folders under the `settings` attribute `asset_directo
 
     For the sake of this document, we will assume that your assets folders are all based within the directory mapped to `config` within your Kometa environment.
 
-    Asset directories can be scoped to type/library/collection; those specifics are not discussed here.  See the [`asset-directory`](../../config/settings/#asset-directory) docs.
+    Asset directories can be scoped to type/library/collection; those specifics are not discussed here.  See the [`asset-directory`](../../config/settings.md#asset-directory) docs.
 
 ```yaml
 settings:
@@ -157,8 +157,8 @@ Movies:
 Applying an asset to a collection affects **ONLY** the collection.  The items within the collection are **not affected** unless you enable `assets_for_all` and even then you need to individually configure assets for those items.  There is no built-in functionality for "apply assets to this collection and all the things within it".  Also, if you apply assets to items within a collection, those assets show up everywhere in the Plex UI.  A movie, for example, has one poster.  If you set an asset on "Star Wars", then that poster shows up on the movie when you view your "Star Wars" collection along with everywhere else the movie appears [other collections, the library].
 
 Relevant operations:
-[`assets_for_all`](../../config/operations/#assets-for-all)
-[`assets_for_all_collections`](../../config/operations/#assets-for-all-collections)
+[`assets_for_all`](../../config/operations.md#assets-for-all)
+[`assets_for_all_collections`](../../config/operations.md#assets-for-all-collections)
 
 If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
 
@@ -166,7 +166,7 @@ If you want to silence the `Asset Warning: No poster or background found in an a
 settings:
   show_missing_assets: false
 ```
-[`asset-show_missing_assets`](../../config/settings/#show_missing_assets)
+[`asset-show_missing_assets`](../../config/settings.md#show-missing-assets)
 
 ## Asset interaction with overlays
 
@@ -174,11 +174,11 @@ If a media item has an asset associated with it, that asset image is taken as th
 and the overlay pipeline will no longer download and back up the base artwork from Plex. Using the Asset Directory to assign custom art is
 the simplest and safest way to ensure that the overlay pipeline doesn't unexpectedly overwrite your custom artwork in Plex.
 
-## Asset Naming
+## Asset naming
 
 The table below shows the asset folder path structures that will be searched for. There are two options for how Kometa looks at the files inside your Asset Directories. Choose an option with
 
-the [`asset_folders` Setting Attribute](../../config/settings/#asset_folders). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
+the [`asset_folders` Setting Attribute](../../config/settings.md#asset-folders). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
 Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
@@ -276,7 +276,7 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
     config/assets/Toy Story (1995)-backgroundSquare.png
     ```
 
-## Determining the "Asset Name"
+## Determining the "asset name"
 
 === "Collections"
 
@@ -357,7 +357,7 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
         config/assets/The Expanse (2015) {tvdb-280619}_background.ext
         ```
 
-## Season and Episode numbers
+## Season and episode numbers
 
 === "Seasons"
 
@@ -417,7 +417,7 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
 
 Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
 
-### Asset Folders vs Flat Assets
+### Asset folders vs flat assets
 
 === "ASSET_FOLDERS=True"
 
@@ -518,8 +518,8 @@ Here's an example config folder structure with an assets directory with `asset_f
 
 ### Other settings
 
-There are other asset-related settings described starting [here](../../config/settings/#asset-depth)
+There are other asset-related settings described starting [here](../../config/settings.md#asset-depth)
 
-### Step-by-Step
+### Step-by-step
 
 The Cookbook has a step-by-step [walkthrough](https://github.com/Kometa-Team/Cookbook/blob/main/cookbook/asset_pipeline_walkthrough.md).

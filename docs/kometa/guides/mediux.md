@@ -12,7 +12,7 @@ Using Kometa, you can automatically apply MediUX assets to the items in your lib
 
 This is done using a [Metadata File](../../files/metadata.md).
 
-## Setting up the Metadata File
+## Setting up the metadata file
 
 Let's start by creating a folder called "metadata" within the `config` directory of our system. I will then create a file called "mediux.yml" within that folder.
 
@@ -27,7 +27,7 @@ You should have something like this:
 ![initial](../../assets/images/kometa/guides/mediux/initial.png)
 
 
-## Adding your Set
+## Adding your set
 
 !!! danger "Important"
 
@@ -59,7 +59,7 @@ And now I will paste it directly into my `mediux.yml` file, and it now looks lik
 
 The file can now be saved and is ready for use.
 
-## Running the Metadata File
+## Running the metadata file
 
 Now that my Metadata File is ready, I can run it against my library.
 
