@@ -148,11 +148,13 @@ GUIDs
 gzip
 hayu
 HD
+headerlink
 HDR
 HK
 HLG
 HN
 HRA
+href
 https
 HU
 Hulu
@@ -163,6 +165,7 @@ IMDB
 IMDb
 imdb
 IMDb's
+img
 includer
 Init
 init
@@ -376,6 +379,7 @@ sonarr
 Spotify
 Spotify's
 Springland
+src
 SSL
 ssl
 Starz
