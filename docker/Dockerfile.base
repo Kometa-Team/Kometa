@@ -13,6 +13,9 @@ ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
 # uv is pip-installed from hash-pinned docker/uv-bootstrap.txt (the uv image has no linux/arm/v7) and removed in the same RUN, so it never ships.
+# CI validates uv.lock with `uv lock --check`. Use --frozen here: --locked
+# checks local docs-package metadata even with the docs group excluded, but
+# this runtime image intentionally has no documentation sources.
 COPY pyproject.toml uv.lock docker/uv-bootstrap.txt /
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/root/.cache/uv,sharing=locked \
@@ -28,7 +31,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
  && wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-"$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
  && chmod +x /tini \
  && /usr/local/bin/pip install --no-cache-dir --disable-pip-version-check --root-user-action=ignore --require-hashes -r /uv-bootstrap.txt \
- && uv sync --locked --no-dev --no-install-project \
+ && uv sync --frozen --no-dev --no-install-project \
  && /usr/local/bin/pip uninstall -y --root-user-action=ignore uv \
  && apt-get --purge autoremove gcc g++ libffi-dev libxml2-dev libxslt-dev libz-dev -y \
  && apt-get update \
