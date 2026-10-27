@@ -168,6 +168,64 @@ Guides = [
 ]
 
 [[project.nav]]
+Configuration = [
+    { "Config file overview" = "config/overview.md" },
+    { "Libraries and File Loading" = [
+    { "Library attributes" = "config/libraries.md" },
+    { "Loading files" = "config/files.md" },
+    { "Loading playlist files" = "config/playlists.md" },
+] },
+    { "Service Connections" = [
+    { "Required Services" = [
+    { Plex = "config/plex.md" },
+    { TMDb = "config/tmdb.md" },
+] },
+    { "Optional Services" = [
+    { "Metadata and Tracking" = [
+    { FlickList = "config/flicklist.md" },
+    { Floppy = "config/floppy.md" },
+    { MDBList = "config/mdblist.md" },
+    { OMDb = "config/omdb.md" },
+    { Serializd = "config/serializd.md" },
+    { Simkl = "config/simkl.md" },
+    { WeTrakr = "config/wetrakr.md" },
+    { YamTrack = "config/yamtrack.md" },
+] },
+    { Anime = [
+    { AniDB = "config/anidb.md" },
+    { MyAnimeList = "config/myanimelist.md" },
+] },
+    { "Media Management" = [
+    { Lidarr = "config/lidarr.md" },
+    { Radarr = "config/radarr.md" },
+    { Seerr = "config/seerr.md" },
+    { Sonarr = "config/sonarr.md" },
+] },
+    { "Activity Monitoring" = [
+    { Tautulli = "config/tautulli.md" },
+    { Tracearr = "config/tracearr.md" },
+] },
+    { Music = [
+    { "Last.fm" = "config/lastfm.md" },
+    { "YouTube Music" = "config/ytmusic.md" },
+] },
+    { "Other Connections" = [
+    { GitHub = "config/github.md" },
+    { "Kometa Utilities Authentication" = "config/authentication.md" },
+] },
+    { Notifications = [
+    { Webhooks = "config/webhooks.md" },
+    { Apprise = "config/apprise.md" },
+    { Gotify = "config/gotify.md" },
+    { Notifiarr = "config/notifiarr.md" },
+    { ntfy = "config/ntfy.md" },
+] },
+] },
+] },
+    { "Settings" = "config/settings.md" },
+]
+
+[[project.nav]]
 Defaults = [
     { "Using defaults" = "defaults/guide.md" },
     { "Collection Defaults" = [
@@ -293,62 +351,6 @@ Defaults = [
 ] },
 ] },
     { "Playlist defaults" = "defaults/playlist.md" },
-]
-
-[[project.nav]]
-Configuration = [
-    { "Config file overview" = "config/overview.md" },
-    { "Libraries and File Loading" = [
-    { "Library attributes" = "config/libraries.md" },
-    { "Loading files" = "config/files.md" },
-    { "Loading playlist files" = "config/playlists.md" },
-] },
-    { "Global settings" = "config/settings.md" },
-    { "Service Connections" = [
-    { "Required Services" = [
-    { Plex = "config/plex.md" },
-    { TMDb = "config/tmdb.md" },
-] },
-    { "Metadata and Tracking" = [
-    { FlickList = "config/flicklist.md" },
-    { Floppy = "config/floppy.md" },
-    { MDBList = "config/mdblist.md" },
-    { OMDb = "config/omdb.md" },
-    { Serializd = "config/serializd.md" },
-    { Simkl = "config/simkl.md" },
-    { WeTrakr = "config/wetrakr.md" },
-    { YamTrack = "config/yamtrack.md" },
-] },
-    { Anime = [
-    { AniDB = "config/anidb.md" },
-    { MyAnimeList = "config/myanimelist.md" },
-] },
-    { "Media Management" = [
-    { Lidarr = "config/lidarr.md" },
-    { Radarr = "config/radarr.md" },
-    { Seerr = "config/seerr.md" },
-    { Sonarr = "config/sonarr.md" },
-] },
-    { "Activity Monitoring" = [
-    { Tautulli = "config/tautulli.md" },
-    { Tracearr = "config/tracearr.md" },
-] },
-    { Music = [
-    { "Last.fm" = "config/lastfm.md" },
-    { "YouTube Music" = "config/ytmusic.md" },
-] },
-    { "Other Connections" = [
-    { GitHub = "config/github.md" },
-    { "Kometa Utilities Authentication" = "config/authentication.md" },
-] },
-] },
-    { Notifications = [
-    { Webhooks = "config/webhooks.md" },
-    { Apprise = "config/apprise.md" },
-    { Gotify = "config/gotify.md" },
-    { Notifiarr = "config/notifiarr.md" },
-    { ntfy = "config/ntfy.md" },
-] },
 ]
 
 [[project.nav]]
