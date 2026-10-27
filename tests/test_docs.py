@@ -1,5 +1,6 @@
 """Regression checks for the repository-owned Zensical include extension."""
 
+import re
 import tempfile
 import tomllib
 import unittest
@@ -125,6 +126,24 @@ DOCKER ONLY
                     check(item)
 
         check(config["project"]["nav"])
+
+    def test_defaults_key_tables_keep_their_included_rows(self):
+        adapter = IncludeRenderer(SOURCE)
+        checked = 0
+        for page in (SOURCE / "defaults").rglob("*.md"):
+            content = adapter.render(page)
+            if not re.search(r"^\|[^\n]*\bKey\b[^\n]*\|", content, re.MULTILINE):
+                continue
+            with self.subTest(page=str(page.relative_to(SOURCE))):
+                rendered = markdown.markdown(content, extensions=["tables", "md_in_html", "pymdownx.details", "pymdownx.superfences", "pymdownx.tabbed"])
+                tables = [table for table in re.findall(r"<table\b[^>]*>.*?</table>", rendered, re.DOTALL) if re.search(r"<th\b[^>]*>\s*Key\s*</th>", table)]
+                self.assertTrue(tables, "Expected a rendered key table")
+                for table in tables:
+                    cells = re.findall(r"<td\b[^>]*>(.*?)</td>", table, re.DOTALL)
+                    self.assertTrue(any(re.sub(r"<[^>]+>", "", cell).strip() for cell in cells), "Key table rows were separated from their header")
+                self.assertNotRegex(rendered, r"<p>\s*\|", "Table rows rendered as a paragraph")
+                checked += 1
+        self.assertGreater(checked, 50, "Expected coverage across collection and overlay Defaults")
 
     def test_authored_pages_have_self_contained_local_includes(self):
         adapter = IncludeRenderer(SOURCE)

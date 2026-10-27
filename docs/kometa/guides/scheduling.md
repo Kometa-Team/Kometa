@@ -53,8 +53,10 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
     These will be explained further down this page.
 
     These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../install/index.md#path-local) which includes setting up the
-    [virtual environment](../install/index.md#local-setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live
+    [uv setup](../install/index.md#local-sync-dependencies). Please also ensure to edit any commands to be reflective of the live
     environment (such as usernames, installation directories).
+
+    Find your uv executable with `where.exe uv` in PowerShell and use its full path in the batch files below. The examples show the default installer location; replace it with your actual path.
 
     ### Background run scheduled task
 
@@ -71,7 +73,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
             ```batch
             cd C:\Users\YOUR_USERNAME\Kometa
-            .\kometa-venv\Scripts\python .\kometa.py
+            "C:\Users\YOUR_USERNAME\.local\bin\uv.exe" run python .\kometa.py
             ```
             This will navigate to the Kometa directory, then run Kometa. At the scheduled time [as defined within Kometa],
             Kometa will process the Configuration File and will then wait until the next scheduled time.
@@ -123,7 +125,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
         1. Create a `runner.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
             ```batch
             cd C:\Users\YOUR_USERNAME\Kometa
-            .\kometa-venv\Scripts\python .\kometa.py --run
+            "C:\Users\YOUR_USERNAME\.local\bin\uv.exe" run python .\kometa.py --run
             ```
             This will navigate to the Kometa directory, then launch Kometa using the `-r`/`--run` flag which triggers an immediate run. Once complete, Kometa will exit.
 
@@ -183,6 +185,8 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
     Change `/path/to/kometa` to reflect where you've installed Kometa.
 
+    Run `uv sync` from your checkout first. Replace `/FULL/PATH/TO/uv` below with the output of `command -v uv`; launchd does not use your interactive shell's PATH. Quote that path inside the command string if it contains spaces.
+
     Keep Kometa running constantly, let it wait to do its thing at 5 AM:
 
        ```
@@ -196,7 +200,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
         <array>
             <string>sh</string>
             <string>-c</string>
-            <string>kometa-venv/bin/python kometa.py --config /path/to/kometa-config/config.yml</string>
+            <string>/FULL/PATH/TO/uv run python kometa.py --config /path/to/kometa-config/config.yml</string>
         </array>
         <key>UserName</key>
         <string>YOUR_USERNAME</string>
@@ -219,7 +223,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
         <array>
             <string>sh</string>
             <string>-c</string>
-            <string>kometa-venv/bin/python kometa.py --config /path/to/kometa-config/config.yml --run</string>
+            <string>/FULL/PATH/TO/uv run python kometa.py --config /path/to/kometa-config/config.yml --run</string>
         </array>
         <key>StartCalendarInterval</key>
         <array>
@@ -294,7 +298,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
        Environment=LC_ALL=C.UTF-8
        Environment=LANG=C.UTF-8
        WorkingDirectory=/path/to/kometa
-       ExecStart=/path/to/kometa/kometa-venv/bin/python /path/to/kometa/kometa.py
+       ExecStart=/FULL/PATH/TO/uv run python kometa.py
        Restart=always
        RestartSec=10
 
@@ -306,7 +310,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
 
        Change `/path/to/kometa` to reflect where you've installed Kometa.
 
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/index.md#path-local)
+       Run `uv sync` first as described in the [Local Walkthrough](../install/index.md#path-local). Replace `/FULL/PATH/TO/uv` with the output of `command -v uv`, using the same user account that will run the service or scheduled task.
 
        Save and close the file.
 
@@ -339,13 +343,13 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
        A command you could use for this:
 
        ```
-       cd /path/to/kometa && kometa-venv/bin/python kometa.py --config config/config.yml --run
+       cd /path/to/kometa && /FULL/PATH/TO/uv run python kometa.py --config config/config.yml --run
        ```
        Change `/path/to/kometa` to reflect where you've installed Kometa.
 
        This is an example, which does nothing but run the script immediately. If you want to add additional flags you can do so.
 
-       NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../install/index.md#path-local)
+       Run `uv sync` first as described in the [Local Walkthrough](../install/index.md#path-local). Replace `/FULL/PATH/TO/uv` with the output of `command -v uv`, using the same user account that will run the service or scheduled task.
 
     2. Open the system crontab for editing:
 
@@ -369,38 +373,38 @@ The easiest way to try a mode is to pass `--mode` for a one-time run. It applies
 For example, this processes all items across all libraries configured in the config file:
 
 ```bash
-python kometa.py --run --mode 'full'
+uv run python kometa.py --run --mode 'full'
 ```
 
 To only process items added in the last 24 hours, change the mode to `added` and specify the duration:
 
 ```bash
-python kometa.py --run --mode 'added(1)'
+uv run python kometa.py --run --mode 'added(1)'
 ```
 
 To further limit the run to one library, name it explicitly:
 
 ```bash
-python kometa.py --run-libraries 'Movies' --mode 'added(1)'
+uv run python kometa.py --run-libraries 'Movies' --mode 'added(1)'
 ```
 
 `--run-libraries` starts an immediate run and selects those libraries. The `--mode` override then selects the items in scope. Add a task-specific flag to narrow what Kometa does to those items. For example, run only overlays for media added in the last day:
 
 ```bash
-python kometa.py --run-libraries 'Movies' --mode 'added(1)' -ov
+uv run python kometa.py --run-libraries 'Movies' --mode 'added(1)' -ov
 ```
 
 Other useful combinations include:
 
 ```bash
 # Run only collections for recently added items in the Movies library
-python kometa.py --run-libraries 'Movies' --mode 'added(1)' -co
+uv run python kometa.py --run-libraries 'Movies' --mode 'added(1)' -co
 
 # Run only metadata updates for a hand-picked movie
-python kometa.py --run-libraries 'Movies' --mode 'items(tmdb:550)' -mo
+uv run python kometa.py --run-libraries 'Movies' --mode 'items(tmdb:550)' -mo
 
 # Run only overlays for titles in the A-F range
-python kometa.py --run-libraries 'Movies' --mode 'index(A-F)' -ov
+uv run python kometa.py --run-libraries 'Movies' --mode 'index(A-F)' -ov
 ```
 
 The `-ov`, `-co`, and `-mo` flags mean overlays only, collections only, and metadata only. Only one `--*-only` flag can be used at a time. See [Run Commands and Environment Variables](../environmental.md) for other options.

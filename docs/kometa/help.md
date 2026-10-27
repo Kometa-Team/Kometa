@@ -266,17 +266,16 @@ These notes describe historical changes. Follow them only when migrating an olde
     #### If you are using Git:
 
     1. cd into the directory where you installed Plex-Meta-Manager
-    2. retrieve the new code and reinstall requirements [see below for commands]. This is the same thing you'd do with any upgrade.
-    3. change `plex_meta_manager.py` in any run command you use to `kometa.py`. For example: `python kometa.py --run`.
+    2. retrieve the new code and sync dependencies [see below for commands]. This is the same thing you'd do with any upgrade.
+    3. change `plex_meta_manager.py` in any run command you use to `kometa.py`. For example: `uv run python kometa.py --run`.
     4. You're done.
 
-    Before updating, preserve any changes reported by `git status`; do not discard them. The commands for step 2 are:
+    Install uv as described in the [Local Walkthrough](install/index.md#local-installing-uv). Before updating, preserve any changes reported by `git status`; do not discard them. The commands for step 2 are:
 
     ```
         git status
         git pull
-        # activate your venv here if you use one and it is not already active
-        python -m pip install -r requirements.txt
+        uv sync
     ```
 
     #### If you are using Docker:
@@ -289,10 +288,9 @@ These notes describe historical changes. Follow them only when migrating an olde
     #### If you downloaded it as a zip file:
 
     1. uncompress the zip file
-    2. cd into that directory and do the same setup you did initially (create a virtual environment, maybe, then install requirements. 
-    There's no way for us to know what you did when you set it up, so we can't give more specific instructions than that)
+    2. cd into that directory, install uv as described in the [Local Walkthrough](install/index.md#local-installing-uv), and run `uv sync`.
     3. copy the config directory from your Plex-Meta-Manager dir into this directory.
-    4. change `plex_meta_manager.py` in any run command you use to `kometa.py`. For example: `python kometa.py --run`.
+    4. change `plex_meta_manager.py` in any run command you use to `kometa.py`. For example: `uv run python kometa.py --run`.
     5. You're done.
 
     #### Other things you can do if you wish:

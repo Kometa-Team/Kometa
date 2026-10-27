@@ -4,17 +4,24 @@ Choose where you will run Kometa to see a complete installation walkthrough. You
 
 Kometa uses YAML configuration and has no graphical interface. You can run it on a different machine from Plex. Docker is recommended when you do not already have a reason to use local Python, because its image supplies Python and dependencies.
 
-<form id="install-questionnaire" hidden aria-label="Choose your installation environment">
+<form id="install-questionnaire" hidden aria-label="Choose your installation environment" markdown="1">
   <label for="install-env">Where will Kometa run?</label>
   <select id="install-env" name="env">
     <option value="">Choose an environment</option>
     <option value="windows">Windows</option><option value="macos">macOS</option><option value="linux">Linux</option>
+    <option value="generic-docker">Unsure / Generic Docker</option>
     <option value="unraid">unRAID</option><option value="qnap">QNAP</option><option value="synology">Synology</option><option value="truenas">TrueNAS</option><option value="kubernetes">Kubernetes</option>
   </select>
   <div id="install-method-field" hidden><label for="install-method">How do you want to install Kometa?</label>
     <select id="install-method" name="method"><option value="">Choose an installation method</option><option value="docker">Docker (recommended)</option><option value="local">Local Python</option></select>
   </div>
-  <div id="install-launch-field" hidden><label for="install-launch">How will you manage Docker?</label>
+  <div id="install-launch-field" hidden markdown="1">
+
+!!! tip "Docker Run or Docker Compose?"
+
+    **Docker Compose is recommended for a regular installation.** It saves your container settings in a YAML file, making them easier to reuse and update. **Docker Run** puts those settings in a terminal command and is useful for a quick test or a one-off run. Both use the same Kometa image.
+
+  <label for="install-launch">How will you manage Docker?</label>
     <select id="install-launch" name="launch"><option value="">Choose a Docker method</option><option value="run">Docker Run</option><option value="compose">Docker Compose</option></select>
   </div>
   <div id="install-version-field" hidden><label for="install-version">Which platform version?</label>
@@ -33,6 +40,7 @@ JavaScript enables the questionnaire. You can also browse all paths below:
 - [Local Python](#path-local)
 - [Docker Run](#path-docker)
 - [Docker Compose](#path-compose)
+- [Unsure / Generic Docker](#path-generic-docker)
 - [unRAID](#path-unraid)
 - [QNAP](#path-qnap)
 - [Synology](#path-synology)
@@ -52,7 +60,15 @@ JavaScript enables the questionnaire. You can also browse all paths below:
 
 </section>
 
-<section class="install-path" data-method="docker" data-launch="run" markdown="1">
+<section class="install-path" data-env="generic-docker" markdown="1">
+
+## Unsure / Generic Docker {#path-generic-docker}
+
+{% include-markdown "../../templates/install/generic-docker.md" rewrite-relative-urls=false %}
+
+</section>
+
+<section class="install-path" data-env="windows macos linux desktop" data-method="docker" data-launch="run" markdown="1">
 
 ## Docker run {#path-docker}
 

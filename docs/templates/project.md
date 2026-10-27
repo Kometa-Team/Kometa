@@ -200,8 +200,8 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 
 ## Contributing
 
-Documentation uses Zensical with the repository-owned Kometa include extension. Install `docs/requirements.txt`,
-then run `python -m zensical serve` to preview or `python -m zensical build` to build.
+Documentation uses Zensical with the repository-owned Kometa include extension. Run `uv sync --group docs`,
+then use `uv run --group docs zensical serve` to preview or `uv run --group docs zensical build --clean` to build.
 See the [contributing guide](https://github.com/Kometa-Team/Kometa/blob/nightly/.github/CONTRIBUTING.md) for documentation development.
 
 Pull Requests are greatly encouraged. Please read [CONTRIBUTING.md](https://github.com/Kometa-Team/Kometa/blob/nightly/.github/CONTRIBUTING.md) before opening a PR — it covers branching, versioning, code style, and the changelog process.

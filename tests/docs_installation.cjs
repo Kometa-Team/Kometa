@@ -56,6 +56,25 @@ function setup(query = "") {
 }
 
 assert.equal(setup().ids["install-instructions"].hidden, true);
+const generic = setup();
+generic.change("env", "generic-docker");
+assert.deepEqual(generic.visiblePaths(), ["path-generic-docker"]);
+assert.equal(generic.ids["install-method-field"].hidden, true);
+assert.equal(generic.ids["install-launch-field"].hidden, true);
+assert.equal(generic.ids["configuration"].closest("[hidden]"), undefined);
+assert.equal(generic.ids["install-summary"].textContent.includes("Unsure / Generic Docker"), true);
+assert.deepEqual(setup(generic.location.search).visiblePaths(), ["path-generic-docker"]);
+assert.deepEqual(setup("#path-generic-docker").visiblePaths(), ["path-generic-docker"]);
+for (const node of generic.nodes.filter(node => node.dataset.os)) assert.ok(node.closest("[hidden]"));
+generic.change("env", "linux");
+assert.equal(generic.ids["install-instructions"].hidden, true);
+generic.change("method", "docker");
+assert.equal(generic.ids["install-launch-field"].hidden, false);
+assert.ok(generic.nodes.some(node => node.attrs.class === "admonition tip" && node.ancestors.includes(generic.ids["install-launch-field"])));
+generic.location.href = generic.history[1]; generic.listeners.popstate();
+assert.deepEqual(generic.visiblePaths(), ["path-generic-docker"]);
+generic.ids["install-reset"].events.click();
+assert.equal(generic.ids["install-instructions"].hidden, true);
 for (const env of ["windows", "macos", "linux"]) {
   for (const [method, launch, expected] of [["local", "", "local"], ["docker", "run", "docker"], ["docker", "compose", "compose"]]) {
     const app = setup(`?env=${env}&method=${method}&launch=${launch}`);

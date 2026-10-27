@@ -133,6 +133,7 @@ Entrypoint
 ENV
 env
 eventartworks
+ExecutionPolicy
 Favorited
 fbca
 FFFFFF
@@ -183,6 +184,7 @@ https
 HU
 Hulu
 ICheckMovies
+iex
 Im
 ImageMaid
 imagePullPolicy
@@ -197,6 +199,7 @@ Init
 init
 initContainers
 Integrations
+irm
 isort
 iteratively
 ITVX
@@ -247,6 +250,7 @@ lookback
 lookups
 Looper
 Lossy
+LsSf
 LSIO
 lucide
 Luxembourgish

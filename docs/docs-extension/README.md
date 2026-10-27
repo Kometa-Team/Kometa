@@ -2,8 +2,8 @@
 
 This Python Markdown extension expands shared content directly in Zensical.
 Its package directory, `docs/docs-extension/`, is excluded from the published site.
-Install it from the repository root with `python -m pip install -r docs/requirements.txt`,
-then run `python -m zensical serve` or `python -m zensical build --clean`.
+Install it from the repository root with `uv sync --group docs`,
+then run `uv run --group docs zensical serve` or `uv run --group docs zensical build --clean`.
 
 `src/kometa_docs/__init__.py` integrates with Zensical's page context. The
 `_include/` package provides include processing; its license and provenance are

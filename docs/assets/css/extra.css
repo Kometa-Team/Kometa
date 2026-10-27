@@ -461,6 +461,49 @@
   height: auto;
 }
 
+/* Match the master wiki's effective syntax palette, including its final comment
+   override: https://kometa.wiki/en/latest/assets/css/extra.css
+   Other token colors come from its Material main/palette stylesheets. */
+.md-typeset .highlight {
+  --md-code-fg-color: #36464e;
+  --md-code-hl-name-color: var(--md-code-fg-color);
+  --md-code-hl-comment-color: #565e67;
+  --md-code-hl-keyword-color: #7ee787;
+  --md-code-hl-string-color: #a5d6ff;
+  --md-code-hl-number-color: #d52a2a;
+  --md-code-hl-constant-color: #6e59d9;
+  --md-code-hl-function-color: #a846b9;
+  --md-code-hl-special-color: #db1457;
+  --md-code-hl-operator-color: #0000008a;
+  --md-code-hl-punctuation-color: #0000008a;
+  --md-code-hl-variable-color: #0000008a;
+  --md-code-hl-generic-color: #0000008a;
+  --kometa-code-gh-function-color: #8250df;
+  --kometa-code-gh-variable-color: #953800;
+  --kometa-code-gh-keyword-color: #cf222e;
+}
+
+[data-md-color-scheme="slate"] .md-typeset .highlight {
+  --md-code-fg-color: hsla(225, 18%, 86%, .82);
+  --md-code-hl-number-color: #e6695b;
+  --md-code-hl-constant-color: #9383e2;
+  --md-code-hl-function-color: #c973d9;
+  --md-code-hl-special-color: #f06090;
+  --md-code-hl-operator-color: hsla(225, 15%, 90%, .56);
+  --md-code-hl-punctuation-color: hsla(225, 15%, 90%, .56);
+  --md-code-hl-variable-color: hsla(225, 15%, 90%, .56);
+  --md-code-hl-generic-color: hsla(225, 15%, 90%, .56);
+  --kometa-code-gh-function-color: #d2a8ff;
+  --kometa-code-gh-variable-color: #ffa657;
+  --kometa-code-gh-keyword-color: #ff7b72;
+}
+
+/* GitHub fallbacks for Pygments tokens the master wiki doesn't style.
+   https://github.com/primer/github-vscode-theme */
+.md-typeset .highlight .fm { color: var(--kometa-code-gh-function-color); }
+.md-typeset .highlight .vm { color: var(--kometa-code-gh-variable-color); }
+.md-typeset .highlight .sa { color: var(--kometa-code-gh-keyword-color); }
+
 /* Code panels retain native highlighting, scrolling, annotations, and copying. */
 .md-typeset .kometa-code-panel {
   border: 1px solid var(--md-default-fg-color--lightest);

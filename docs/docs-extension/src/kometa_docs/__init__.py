@@ -30,7 +30,10 @@ class IncludeRenderer:
                     "encoding": "utf-8",
                     "preserve-includer-indent": True,
                     "dedent": False,
-                    "trailing-newlines": True,
+                    # The directive's own newline separates included content.
+                    # Keeping the file's trailing newline would split tables
+                    # assembled from a header include and subsequent rows.
+                    "trailing-newlines": False,
                     "comments": False,
                     "rewrite-relative-urls": True,
                     "heading-offset": 0,
