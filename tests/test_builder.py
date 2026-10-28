@@ -1326,6 +1326,43 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+class TestUnsupportedPoster:
+    @pytest.mark.parametrize("attribute", ["kometa_poster", "pmm_poster", "KOMETA_POSTER", "PMM_POSTER"])
+    @pytest.mark.parametrize("value", [None, {"background_color": "#0B1F3A", "components": [{"text": "WEEK 7"}]}])
+    def test_ignores_unsupported_poster_and_preserves_supported_poster(self, monkeypatch, attribute, value):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        renderer = MagicMock(side_effect=AssertionError("Unsupported poster renderer must not run"))
+        monkeypatch.setattr(builder_module, "KometaImage", renderer)
+        library = MagicMock()
+        library.is_movie = False
+        library.is_show = True
+        library.is_music = False
+        library.type = "Show"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.smart_label_check.return_value = True
+        library.get_collection.return_value = SimpleNamespace(title="Week 7", smart=True)
+        filter_url = "?type=2&sort=originallyAvailableAt:desc&label=123"
+        library.smart_filter.return_value = filter_url
+        library.fetchItems.return_value = []
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        monkeypatch.setattr(CollectionBuilder, "build_filter", lambda *args, **kwargs: (2, "Label filter", filter_url))
+        poster_url = "https://example.com/poster.png"
+
+        builder = CollectionBuilder(config, MagicMock(), "Week 7", {"smart_label": "release.desc", "plex_all": True, attribute: value, "url_poster": poster_url}, library=library)
+
+        assert logger.error_messages == [f"Collection Error: {attribute.lower()} is no longer supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
+        assert builder.posters == {"url_poster": poster_url}
+        assert builder.builders == [("plex_all", "show")]
+        renderer.assert_not_called()
+
+
 class TestUpdateSmartFilter:
     """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
 
