@@ -1275,7 +1275,7 @@ class CollectionBuilder:
         self.square_arts = {}
         for attribute in ("kometa_poster", "pmm_poster"):
             if attribute in methods:
-                logger.error(f"{self.Type} Error: {attribute} is no longer supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
+                logger.error(f"{self.Type} Error: {attribute} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
 
         if self.overlay:
             if "overlay" in methods:

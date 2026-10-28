@@ -1357,7 +1357,7 @@ class TestUnsupportedPoster:
 
         builder = CollectionBuilder(config, MagicMock(), "Week 7", {"smart_label": "release.desc", "plex_all": True, attribute: value, "url_poster": poster_url}, library=library)
 
-        assert logger.error_messages == [f"Collection Error: {attribute.lower()} is no longer supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
+        assert logger.error_messages == [f"Collection Error: {attribute.lower()} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
         assert builder.posters == {"url_poster": poster_url}
         assert builder.builders == [("plex_all", "show")]
         renderer.assert_not_called()
