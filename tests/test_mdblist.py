@@ -460,6 +460,66 @@ class TestMDBList:
         assert result.title == "Fallback"
         next_run._request.assert_not_called()
 
+    @pytest.mark.parametrize("digital_date", ["2020-08-12", None])
+    def test_digital_lookup_enriches_batch_and_caches_result_across_runs(self, adapter, tmp_path, monkeypatch, digital_date):
+        from datetime import datetime
+
+        from modules.cache import Cache
+
+        monkeypatch.setattr("modules.cache.logger", FakeLogger())
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter.cache = Cache(config_path=str(tmp_path / "config.yml"), expiration=60)
+        adapter._request = MagicMock(
+            side_effect=[
+                ([{"id": 524047, "title": "Greenland", "released": "2020-07-29"}], {}),
+                ({"id": 524047, "title": "Greenland", "released_digital": digital_date}, {}),
+            ]
+        )
+        adapter.get_items("tmdb", "movie", [524047])
+        assert adapter.get_movie(524047).released_digital is None
+        assert adapter._request.call_count == 1
+
+        result = adapter.get_movie(524047, require_digital=True)
+        expected = datetime(2020, 8, 12) if digital_date else None
+        assert result.released_digital == expected
+        assert result.digital_release_checked
+        adapter._request.assert_called_with("https://api.mdblist.com/tmdb/movie/524047/", params={})
+        assert adapter.get_movie(524047, require_digital=True) is result
+        adapter._run_cache.clear()
+        assert adapter.get_movie(524047, require_digital=True).released_digital == expected
+        assert adapter._request.call_count == 2
+
+    def test_digital_lookup_refreshes_legacy_cache_without_date(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter.cache.query_mdb.return_value = ({"title": "Legacy", "released_digital": None, "digital_release_checked": False}, False)
+        adapter._request = MagicMock(return_value=({"title": "Complete", "released_digital": "2020-08-12"}, {}))
+
+        assert adapter.get_movie(524047).title == "Legacy"
+        assert adapter.get_movie(524047, require_digital=True).title == "Complete"
+        adapter._request.assert_called_once()
+        adapter.cache.update_mdb.assert_called_once()
+
+    def test_digital_lookup_after_batch_without_persistent_cache(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter.cache = None
+        adapter._request = MagicMock(side_effect=[([{"id": 101}], {}), ({"id": 101, "released_digital": None}, {})])
+        adapter.get_items("tmdb", "movie", [101])
+        result = adapter.get_movie(101, require_digital=True)
+        assert result.digital_release_checked
+        assert adapter.get_movie(101, require_digital=True) is result
+        assert adapter._request.call_count == 2
+
+    def test_digital_lookup_propagates_limit_without_marking_batch_complete(self, adapter, monkeypatch):
+        from modules.mdblist import MDbObj
+
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter.cache = None
+        adapter._run_cache["tm101"] = MDbObj({"id": 101}, batch=True)
+        adapter._request = MagicMock(side_effect=LimitReached("quota"))
+        with pytest.raises(LimitReached, match="quota"):
+            adapter.get_movie(101, require_digital=True)
+        assert not adapter._run_cache["tm101"].digital_release_checked
+
     def test_ignore_cache_bypasses_and_does_not_replace_run_cache(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter.cache = None

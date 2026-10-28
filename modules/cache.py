@@ -169,6 +169,7 @@ class Cache:
                     year INTEGER,
                     released TEXT,
                     released_digital TEXT,
+                    digital_release_checked INTEGER NOT NULL DEFAULT 0,
                     type TEXT,
                     imdbid TEXT,
                     traktid INTEGER,
@@ -188,6 +189,9 @@ class Cache:
                     commonsense TEXT,
                     age_rating TEXT,
                     expiration_date TEXT)""")
+                cursor.execute("PRAGMA table_info(mdb_data6)")
+                if "digital_release_checked" not in [row["name"] for row in cursor.fetchall()]:
+                    cursor.execute("ALTER TABLE mdb_data6 ADD COLUMN digital_release_checked INTEGER NOT NULL DEFAULT 0")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS anidb_data4 (
                     key INTEGER PRIMARY KEY,
                     anidb_id INTEGER UNIQUE,
@@ -713,6 +717,7 @@ class Cache:
                     mdb_dict["year"] = row["year"] if row["year"] else None
                     mdb_dict["released"] = row["released"] if row["released"] else None
                     mdb_dict["released_digital"] = row["released_digital"] if row["released_digital"] else None
+                    mdb_dict["digital_release_checked"] = bool(row["digital_release_checked"] or row["released_digital"])
                     mdb_dict["type"] = row["type"] if row["type"] else None
                     mdb_dict["imdbid"] = row["imdbid"] if row["imdbid"] else None
                     mdb_dict["traktid"] = row["traktid"] if row["traktid"] else None
@@ -762,7 +767,7 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO mdb_data6(key_id) VALUES(?)", (key_id,))
                 update_sql = (
-                    "UPDATE mdb_data6 SET title = ?, year = ?, released = ?, released_digital = ?, type = ?, imdbid = ?, traktid = ?, "
+                    "UPDATE mdb_data6 SET title = ?, year = ?, released = ?, released_digital = ?, digital_release_checked = ?, type = ?, imdbid = ?, traktid = ?, "
                     "tmdbid = ?, score = ?, average = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, "
                     "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, "
                     "letterboxd_rating = ?, myanimelist_rating = ?, certification = ?, commonsense = ?, age_rating = ?, expiration_date = ? WHERE key_id = ?"
@@ -774,6 +779,7 @@ class Cache:
                         mdb.year,
                         mdb.released.strftime("%Y-%m-%d") if mdb.released else None,
                         mdb.released_digital.strftime("%Y-%m-%d") if mdb.released_digital else None,
+                        bool(getattr(mdb, "digital_release_checked", False)),
                         mdb.type,
                         mdb.imdbid,
                         mdb.traktid,
