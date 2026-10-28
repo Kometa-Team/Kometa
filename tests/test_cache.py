@@ -422,6 +422,24 @@ class TestMdbCache:
         assert result["year"] == 2023
         assert expired is False
 
+    def test_migrates_existing_mdb_cache_without_discarding_rows(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_mdb(False, "legacy", _make_mdb_obj(), expiration=30)
+        cache._connection.close()
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("ALTER TABLE mdb_data6 DROP COLUMN digital_release_checked")
+        migrated = make_cache(tmp_path)
+        data, expired = migrated.query_mdb("legacy", expiration=30)
+        assert expired is False
+        assert data["title"] == "Test Movie"
+        assert data["digital_release_checked"] is False
+
+    def test_existing_digital_date_is_complete_without_new_marker(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_mdb(False, "legacy", _make_mdb_obj(released_digital=datetime(2020, 8, 12)), expiration=30)
+        data, _ = cache.query_mdb("legacy", expiration=30)
+        assert data["digital_release_checked"] is True
+
     def test_missing(self, tmp_path):
         cache = make_cache(tmp_path)
         result, expired = cache.query_mdb("no-such-key", expiration=30)
