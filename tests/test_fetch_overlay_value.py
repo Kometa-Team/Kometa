@@ -356,3 +356,47 @@ def test_anidb_rating_variables_return_their_rating(variable_name, expected):
     assert variable_name in vars_by_type["show"]
     assert plx.fetch_overlay_value(_item(), variable_name) == expected
     plx.config.AniDB.get_anime.assert_called_once_with(17290)
+
+
+def test_missing_tmdb_lookup_is_reused_until_next_overlay_run():
+    plx = _make_plex(get_ids=MagicMock(return_value=(None, None, "tt0335318")))
+    plx.config.TMDb = MagicMock()
+    plx.config.TMDb.get_item.return_value = None
+    with pytest.raises(MappingConvertError):
+        plx.fetch_overlay_value(_item(), "tmdb_rating")
+    assert plx.fetch_overlay_value(_item(), "tmdb_rating") is None
+    plx.config.TMDb.get_item.assert_called_once()
+    plx._overlay_value_misses = set()
+    plx.config.TMDb.get_item.return_value = SimpleNamespace(vote_average=7.5)
+    assert plx.fetch_overlay_value(_item(), "tmdb_rating") == 7.5
+
+
+def test_mdblist_missing_item_logs_once_and_reuses_failure_across_ratings(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(plex_module, "logger", logger)
+    plx = _make_plex(get_ids=MagicMock(return_value=(123, None, "tt0335318")))
+    plx.config.MDBList = MagicMock(limit=False)
+    plx.config.MDBList.get_movie.side_effect = Failed("MDBList Error: 404 - Item not found")
+    plx.config.MDBList.get_imdb.side_effect = Failed("MDBList Error: 404 - Item not found")
+    with pytest.raises(MappingConvertError):
+        plx.fetch_overlay_value(_item(), "mdb_tomatoes_rating")
+    assert plx.fetch_overlay_value(_item(), "mdb_tomatoes_rating") is None
+    assert plx.fetch_overlay_value(_item(), "mdb_letterboxd_rating") is None
+    plx.config.MDBList.get_movie.assert_called_once()
+    plx.config.MDBList.get_imdb.assert_called_once()
+    logger.error.assert_called_once_with("MDBList lookup failed for Test Movie: MDBList Error: 404 - Item not found")
+    with pytest.raises(MappingConvertError):
+        plx.fetch_overlay_value(_item(999), "mdb_tomatoes_rating")
+    assert plx.config.MDBList.get_movie.call_count == 2
+
+
+def test_missing_rating_does_not_hide_other_sources():
+    plx = _make_plex()
+    plx.config.IMDb = MagicMock()
+    plx.config.IMDb.get_rating.return_value = None
+    assert plx.fetch_overlay_value(_item(), "imdb_rating") is None
+    assert plx.fetch_overlay_value(_item(), "imdb_rating") is None
+    plx.config.IMDb.get_rating.assert_called_once()
+    plx.config.TMDb = MagicMock()
+    plx.config.TMDb.get_item.return_value = SimpleNamespace(vote_average=8)
+    assert plx.fetch_overlay_value(_item(), "tmdb_rating") == 8

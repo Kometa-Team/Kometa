@@ -76,6 +76,7 @@ class Overlays:
             self.library.prefetch_mdblist(items)
 
     def run_overlays(self):
+        self.library._overlay_value_misses = set()
         overlay_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")

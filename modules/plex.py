@@ -2855,6 +2855,21 @@ class Plex(Library):
         return self.config.TMDb.get_episode(show_tmdb_id, item.seasonNumber, item.episodeNumber)
 
     def fetch_overlay_value(self, item, variable_name):
+        # Keep missing provider values local to this library's overlay run.
+        missing = self.__dict__.setdefault("_overlay_value_misses", set())
+        key = (item.ratingKey, variable_name)
+        if key in missing or (str(variable_name).startswith("mdb") and (item.ratingKey, "mdb") in missing):
+            return None
+        try:
+            value = Plex._fetch_overlay_value(self, item, variable_name)
+        except MappingConvertError:
+            missing.add(key)
+            raise
+        if value is None:
+            missing.add(key)
+        return value
+
+    def _fetch_overlay_value(self, item, variable_name):
         # Shared rating fetch for overlay text and value_filter. Returns a normalized 0-10 float or None.
         if str(variable_name).startswith("silo_"):
             raise OverlayError(f"Overlay Error: {variable_name} requires a Silo library")
@@ -2950,6 +2965,7 @@ class Plex(Library):
                 raise OverlayError("Overlay Error: Serializd ratings are only available for shows and episodes")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
+            lookup_errors = []
             if self.config.MDBList.limit is False:
                 if self.is_show and tvdb_id:
                     try:
@@ -2957,7 +2973,8 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"TVDb ID: {tvdb_id}")
                         raise
@@ -2967,7 +2984,8 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"TMDb ID: {tmdb_id}")
                         raise
@@ -2977,11 +2995,15 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"IMDb ID: {imdb_id}")
                         raise
                 if not mdb_item:
+                    self.__dict__.setdefault("_overlay_value_misses", set()).add((item.ratingKey, "mdb"))
+                    if lookup_errors:
+                        logger.error(f"MDBList lookup failed for {item.title}: {'; '.join(dict.fromkeys(lookup_errors))}")
                     raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
             if mdb_item:
                 cacheable = getattr(mdb_item, "ratings_valid", True)
