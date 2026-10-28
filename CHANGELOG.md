@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.
 - Allow FlickList and WeTrakr list builders (including list details and user lists), and `floppy_tracked`, in season and episode collections instead of rejecting them during collection validation.
 - Resolve FlickList user list URLs (`/u/<user>/lists/<slug>`) to numeric API IDs for list builders and list descriptions.
 - Invalidate stale MDBList cache entries that could apply incorrectly scaled Letterboxd ratings to Plex. #3771
