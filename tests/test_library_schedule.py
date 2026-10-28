@@ -9,8 +9,17 @@ from jsonschema import Draft7Validator
 import modules.builder  # noqa: F401 - pre-import breaks the plex/meta circular import
 from modules import util
 from modules.library import Library
-from modules.schedule_mode import parse_added_duration
+from modules.schedule_mode import cached_item_key, parse_added_duration
 from modules.util import Failed, NotScheduled
+
+
+@pytest.mark.parametrize("keys", [["101", "202"], ["movie-imdb-tt23849204", "movie-tmdb-550"], ["c6c7e380ad114f6496fb3fd40c6bad34"]])
+def test_diff_schedule_restores_cached_server_keys(keys):
+    cached_keys = {cached_item_key(key) for key in keys}
+    items = [SimpleNamespace(ratingKey=int(key) if key.isdecimal() else key) for key in keys]
+    items.append(SimpleNamespace(ratingKey="new-item"))
+    library = SimpleNamespace(schedule_mode="diff", is_show=False, scheduled_cached_keys=cached_keys)
+    assert Library._schedule_item_keys(library, items) == {"new-item"}
 
 
 @pytest.mark.parametrize(

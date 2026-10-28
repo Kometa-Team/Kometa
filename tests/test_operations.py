@@ -1245,6 +1245,33 @@ class TestModuleConstants:
         assert len(values) == len(set(values)), "tmdb_release_types has duplicate IDs"
 
 
+@pytest.mark.parametrize("missing", [True, False])
+def test_collection_operations_skip_only_missing_collections(monkeypatch, missing):
+    from modules.util import CollectionNotFound, Failed
+
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_mass_edit_library([], show_unmanaged=True, items_library_operation=False)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.supports.return_value = False
+    gone = SimpleNamespace(title="Gone", smart=False, childCount=1)
+    survivor = SimpleNamespace(title="Survivor", smart=False, childCount=1)
+    library.get_all_collections.return_value = [gone, survivor]
+    failure = CollectionNotFound("404 missing") if missing else Failed("403 forbidden")
+    library.reload.side_effect = [failure, survivor]
+    if missing:
+        Operations(config=MagicMock(), library=library).run_operations()
+        assert library.reload.call_count == 2
+        logger.warning.assert_called_once()
+        assert "Skipping Gone" in logger.warning.call_args.args[0]
+        logger.info.assert_any_call("Survivor")
+    else:
+        with pytest.raises(Failed, match="403 forbidden"):
+            Operations(config=MagicMock(), library=library).run_operations()
+    library.delete_collection.assert_not_called()
+
+
 @pytest.mark.parametrize("field", ["audienceRating", "rating", "userRating"])
 @pytest.mark.parametrize("episode", [False, True])
 @pytest.mark.parametrize("draw, expected", [(0, "0.0"), (57, "5.7"), (100, "10.0")])

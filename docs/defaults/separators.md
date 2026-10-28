@@ -19,6 +19,8 @@ Plex does not support creating these empty collections natively through its UI, 
 the main library view. As a workaround, you can use a `placeholder_` [Template Variable](#shared-separator-variables) to specify a single movie/show to add to these collections 
 so they have one thing in them and will then behave as expected. For example, `placeholder_imdb_id: tt0068646` will place The Godfather inside the separator in a movie library.
 
+Emby requires initial members when creating a collection. Set `placeholder_imdb_id`, `placeholder_tmdb_movie`, or `placeholder_tvdb_show` under `template_variables` to an item present in the selected library when using separators. Without a placeholder, creating a new separator reports an error naming these settings.
+
 ## Separator files
 
 These are all the files that contain a separator 

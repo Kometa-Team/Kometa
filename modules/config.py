@@ -38,7 +38,7 @@ from modules.silo import Silo, SiloMediaServer
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
-from modules.tautulli import Tautulli
+from modules.tautulli import Tautulli, supports_library as tautulli_supports_library
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
 from modules.tracearr import Tracearr
@@ -2765,7 +2765,9 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Lidarr Connection {'Failed' if library.Lidarr is None else 'Successful'}")
 
-                if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
+                if (self.general["tautulli"]["url"] or (lib and "tautulli" in lib)) and not tautulli_supports_library(library):
+                    logger.warning(f"Tautulli Warning: Skipping Tautulli for {display_name}; Tautulli only supports Plex libraries")
+                elif self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")
                     logger.separator("Tautulli Configuration", space=False, border=False)
                     logger.info("")

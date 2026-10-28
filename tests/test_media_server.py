@@ -9,6 +9,32 @@ from modules.util import Failed
 from tests.factories import make_plex, make_plex_item
 
 
+def test_connection_logging_reports_remote_metadata_and_missing_values():
+    from modules.media_server import log_server_connection
+    from tests.conftest import FakeLogger
+
+    server = PlexMediaServer("http://remote", "secret", name="Configured")
+    logger = FakeLogger()
+    log_server_connection(logger, server, lambda: {"name": "Remote", "version": "1.2", "os": "Linux", "os_version": "6.1"})
+    assert logger.info_messages == ["Connected to server Remote version 1.2", "Running on Linux version 6.1"]
+    logger = FakeLogger()
+    log_server_connection(logger, server, lambda: {})
+    assert logger.info_messages == ["Connected to server Configured version not reported", "Operating system: not reported"]
+
+
+def test_connection_info_failure_does_not_prevent_connection():
+    from modules.media_server import log_server_connection
+    from tests.conftest import FakeLogger
+
+    def load():
+        raise Failed("Access denied")
+
+    logger = FakeLogger()
+    log_server_connection(logger, PlexMediaServer("http://remote", "secret", name="Configured"), load)
+    assert logger.warning_messages
+    assert "Connected to server Configured version not reported" in logger.info_messages
+
+
 def test_capability_catalog_matches_the_feature_matrix():
     assert set(CAPABILITY_INFO) == set(Capability)
     assert len(Capability) == 71

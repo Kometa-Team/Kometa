@@ -20,6 +20,66 @@ from modules import tmdb
 from modules.meta import DataFile, MetadataFile
 from tests.conftest import FakeLogger, FakeRequests
 
+
+@pytest.mark.parametrize("role", ["director", "writer", "producer"])
+def test_people_discovery_ignores_other_servers_cached_credits(role, monkeypatch):
+    from modules.mediabrowser import JellyfinMediaServer
+    from modules.meta import _people_cache_key
+
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: {"dynamic_collections": {"People": {"type": role, "data": {"minimum": 1}}}})
+    native_person = SimpleNamespace(id="native-person", tag="Native Person")
+    item = SimpleNamespace(title="Movie", ratingKey="native-movie", **{f"{role}s": [native_person]})
+    library = SimpleNamespace(
+        server=JellyfinMediaServer("http://jellyfin", "secret", user_id="user"),
+        library_id="movies",
+        original_mapping_name="Movies",
+        type="Movie",
+        is_movie=True,
+        is_show=False,
+        is_music=False,
+        collections=[],
+        metadatas=[],
+        get_all=lambda: [item],
+        get_ids=lambda item: (154, None, None),
+        reload=MagicMock(return_value=item),
+    )
+    cache = MagicMock()
+    cache.query_plex_people.side_effect = lambda key, role: ([{"id": "silo-person", "name": "Wrong Server Person"}], False) if key == "tmdb:154" else (None, None)
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[], Cache=cache)
+
+    metadata_file = MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    assert logger.error_messages == []
+    assert "Native Person" in metadata_file.collections
+    assert "Wrong Server Person" not in metadata_file.collections
+    key = _people_cache_key(library, item, "tmdb:154")
+    cache.query_plex_people.assert_called_once_with(key, role)
+    cache.update_plex_people.assert_called_once_with(key, role, [{"id": "native-person", "name": "Native Person"}], False)
+
+
+def test_people_cache_scope_includes_server_library_profile_user_and_item():
+    from copy import copy
+
+    from modules.meta import _people_cache_key
+    from modules.silo import SiloMediaServer
+
+    library = SimpleNamespace(server=SiloMediaServer("http://server", "secret", profile_id="profile"), library_id="movies")
+    item = SimpleNamespace(ratingKey="movie")
+    key = _people_cache_key(library, item, "tmdb:154")
+    for owner, attribute, value in [(library.server, "url", "http://other"), (library.server, "type_name", "jellyfin"), (library, "library_id", "other"), (library.server, "profile_id", "other"), (item, "ratingKey", "other")]:
+        original = getattr(owner, attribute)
+        setattr(owner, attribute, value)
+        assert _people_cache_key(library, item, "tmdb:154") != key
+        setattr(owner, attribute, original)
+    another_profile = copy(library)
+    another_profile.server = copy(library.server)
+    another_profile.server.user_id = "user"
+    assert _people_cache_key(another_profile, item, "tmdb:154") != key
+    assert "secret" not in key
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
@@ -380,6 +440,99 @@ class TestApplyTemplateNestedVarResolution:
         result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
 
         assert result["summary"] == "8"
+
+
+@pytest.mark.parametrize("source", ["silo_tomatoesaudience", "silo_imdb", "plex_tomatoes", "mdb_tomatoesaudience"])
+def test_top_rating_badge_requires_available_rating(source):
+    with (Path(__file__).resolve().parents[1] / "defaults" / "overlays" / "ratings.yml").open(encoding="utf-8") as handle:
+        ratings = YAML(typ="safe").load(handle)
+    df = make_datafile(library=SimpleNamespace(type="Movie", name="Movies"), templates={"Rating": (ratings["templates"]["Rating"], {})})
+    variables = {**ratings["overlays"]["Rating3Top"]["template"], "rating3": source}
+    result = df.apply_template("Rating3Top", "Rating3Top", {}, [variables], {})
+    assert result["value_filter"] == {f"{source}_rating.gte": 0.0}
+
+
+@pytest.mark.parametrize("library_type", ["movie", "show"])
+def test_geographic_other_collections_use_distinct_translation_keys(library_type):
+    root = Path(__file__).resolve().parents[1] / "defaults"
+    with (root / "templates.yml").open(encoding="utf-8") as handle:
+        shared = YAML(typ="safe").load(handle)["templates"]["shared"]
+    df = make_datafile(library=SimpleNamespace(type=library_type.capitalize(), name="Library"), templates={"shared": (shared, {})})
+    keys = []
+    for category in ["country", "region", "continent"]:
+        with (root / library_type / f"{category}.yml").open(encoding="utf-8") as handle:
+            definition = next(iter(YAML(typ="safe").load(handle)["dynamic_collections"].values()))
+        variables = definition["template_variables"]
+        translation = variables["translation_key"]["other"]
+        result = df.apply_template(
+            definition["other_name"],
+            definition["other_name"],
+            {},
+            [{"name": "shared", "key": "other", "key_name": definition["other_name"], "translation_key": translation, "dynamic": True, "image": f"country/color/{definition['other_name'].replace(' ', '%20')}"}],
+            {},
+        )
+        assert result["translation_key"] == f"{category}_other"
+        assert definition["other_name"].replace(" ", "%20") in result["url_poster"]
+        keys.append(result["translation_key"])
+    assert len(set(keys)) == 3
+
+
+@pytest.mark.parametrize("server_type", ["silo", "jellyfin", "emby", "plex"])
+@pytest.mark.parametrize("limit", [None, 25])
+def test_seasonal_template_uses_list_driven_collections_on_silo(server_type, limit, monkeypatch):
+    from modules.builder import CollectionBuilder
+    from modules.silo import SiloMediaServer
+    from modules.media_server import PlexMediaServer
+    from modules.mediabrowser import JellyfinMediaServer, EmbyMediaServer
+
+    with (Path(__file__).resolve().parents[1] / "defaults" / "movie" / "seasonal.yml").open(encoding="utf-8") as handle:
+        seasonal = YAML(typ="safe").load(handle)
+    server = {"silo": SiloMediaServer, "plex": PlexMediaServer, "jellyfin": JellyfinMediaServer, "emby": EmbyMediaServer}[server_type](url="http://server", token="token")
+    df = make_datafile(library=SimpleNamespace(type="Movie", name="Movies", server=server), templates={"holiday": (seasonal["templates"]["holiday"], {})})
+    variables = {"name": "holiday", "key": "years", "schedule": "daily", "sort_by": "title.asc", "tmdb_movie": 152}
+    if limit is not None:
+        variables["limit"] = limit
+    result = df.apply_template("New Year's Day Movies", "years", {}, [variables], {})
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+    CollectionBuilder._adapt_list_smart_label(df.library, result, {key.lower(): key for key in result})
+    assert result["tmdb_movie"] == 152
+    assert result["schedule"] == "daily"
+    assert result["delete_not_scheduled"] is True
+    assert result["sync_mode"] == "sync"
+    if limit is not None:
+        assert result["limit"] == limit
+    if server_type != "plex":
+        assert "smart_label" not in result
+        assert result["collection_order"] == "title.asc"
+    else:
+        assert result["smart_label"]["all"] == {"label": "<<smart_label>>"}
+        assert result["smart_label"]["sort_by"] == "title.asc"
+        assert "collection_order" not in result
+
+
+def test_disabled_actor_separator_does_not_block_later_enabled_default(monkeypatch):
+    import copy
+    from modules.meta import get_dict
+
+    root = Path(__file__).resolve().parents[1] / "defaults"
+    with (root / "templates.yml").open(encoding="utf-8") as handle:
+        separator = YAML(typ="safe").load(handle)["templates"]["separator"]
+    data = {"templates": {"separator": separator}, "collections": {"Actors Collections": {"template": {"name": "separator", "separator": "actor", "key_name": "Actors"}}}}
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: copy.deepcopy(data))
+    library = SimpleNamespace(type="Movie", name="Movies", collections=[], is_music=False, is_movie=True, is_show=False)
+    config = SimpleNamespace(requested_files=[], GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]))
+    first = MetadataFile(config, library, "File", "actor.yml", {"use_separator": False}, None, "collection")
+    assert first.collections == {}
+    library.collections.extend(first.collections)
+    second = MetadataFile(config, library, "File", "actor.yml", {}, None, "collection")
+    assert list(second.collections) == ["Actors Collections"]
+    library.collections.extend(second.collections)
+    assert get_dict("collections", data, library.collections) == {}
+    assert any("Skipping duplicate" in message for message in logger.warning_messages)
+    configured = MetadataFile(config, SimpleNamespace(**{**vars(library), "collections": []}), "File", "actor.yml", {"use_separator": False}, None, "collection", configured_names_only=True)
+    assert "Actors Collections" in configured.collections
 
 
 class TestStreamingTemplate:

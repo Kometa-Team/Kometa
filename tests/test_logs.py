@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from unittest.mock import MagicMock
 
 import pytest
@@ -110,6 +111,21 @@ class TestMyLogger:
         monkeypatch.setattr("sys.stdout.isatty", lambda: False)
         logger.ghost("progress")
         assert capsys.readouterr().out == ""
+
+    def test_progress_clips_long_titles_and_clears_shorter_updates(self, logger, monkeypatch, capsys):
+        monkeypatch.setattr("sys.stdout.isatty", lambda: True)
+        monkeypatch.setattr("modules.logs.shutil.get_terminal_size", lambda fallback: os.terminal_size((40, 24)))
+        logger.ghost("Restoring: 186/275 Pirates of the Caribbean: The Curse of the Black Pearl")
+        first = capsys.readouterr().out
+        assert len(first.rstrip("\r")) == 39
+        assert first.endswith("...\r")
+        logger.ghost("Restoring: 187/275 Presence")
+        second = capsys.readouterr().out
+        assert len(second.rstrip("\r")) == 39
+        assert second.endswith(" \r")
+        logger.exorcise()
+        assert capsys.readouterr().out == " " * 39 + "\r"
+        assert logger.spacing == 0
 
     def test_exorcise_silent_when_stdout_is_not_a_tty(self, logger, monkeypatch, capsys):
         monkeypatch.setattr("sys.stdout.isatty", lambda: False)

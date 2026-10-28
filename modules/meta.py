@@ -1,3 +1,5 @@
+import copy
+import json
 import math
 import operator
 import os
@@ -8,10 +10,32 @@ from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from requests.exceptions import RequestException
 
 from modules import ergast, letterboxd, plex, timings, util, ytmusic
+from modules.media_server import MediaServer
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
 logger = util.logger
+
+
+def _people_cache_key(library, item, provider_id):
+    """Credits and person IDs belong to a specific library, not a shared provider ID."""
+    server = getattr(library, "server", None)
+    if not isinstance(server, MediaServer):
+        return provider_id
+    return json.dumps(
+        [
+            "native_people_v2",
+            server.type_name,
+            server.url.rstrip("/"),
+            getattr(library, "library_id", None) or getattr(library, "original_mapping_name", None),
+            getattr(server, "profile_id", None),
+            getattr(server, "user_id", None),
+            str(item.ratingKey),
+            provider_id,
+        ],
+        separators=(",", ":"),
+    )
+
 
 all_auto = ["genre", "number", "custom"]
 ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "studio", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
@@ -630,6 +654,39 @@ class DataFile:
 
 
 class MetadataFile(DataFile):
+    def _active_collection_definitions(self, data):
+        """Do not let explicitly disabled definitions reserve duplicate names."""
+        if getattr(self, "configured_names_only", False):
+            # Disabled definitions still protect configured names from cleanup.
+            return data
+        collections = data.get("collections") if isinstance(data, dict) else None
+        if not isinstance(collections, dict):
+            return data
+        active = {}
+        for name, attributes in collections.items():
+            enabled = True
+            if isinstance(attributes, dict):
+                methods = {key.lower(): key for key in attributes}
+                if "run_definition" in methods:
+                    enabled = attributes[methods["run_definition"]]
+                elif "template" in methods:
+                    calls = util.get_list(attributes[methods["template"]], split=False) or []
+                    if any(isinstance(call, dict) and call.get("name") == "separator" for call in calls):
+                        try:
+                            resolved = self.apply_template(attributes.get("name"), name, copy.deepcopy(attributes), copy.deepcopy(calls), copy.deepcopy(attributes.get("variables") or {}))
+                            enabled = resolved.get("run_definition", True)
+                        except Failed:
+                            # Keep invalid definitions for normal builder validation.
+                            enabled = True
+            if enabled is False or isinstance(enabled, str) and enabled.lower() == "false":
+                if not hasattr(self, "_disabled_collection_definitions"):
+                    self._disabled_collection_definitions = set()
+                self._disabled_collection_definitions.add(name)
+                logger.info(f"Config: Skipping disabled collection definition: {name}")
+            else:
+                active[name] = attributes
+        return {**data, "collections": active}
+
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
@@ -794,8 +851,8 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info("Images File Loaded Successfully")
         elif file_type == "Data":
-            self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
+            self.collections = get_dict("collections", self._active_collection_definitions(path), library.collections)
         else:
             data = self.load_file(self.type, self.path)
             if self.file_style == "metadata":
@@ -803,7 +860,7 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.external_templates(data)
             if self.file_style == "collection":
-                self.collections = get_dict("collections", data, library.collections)
+                self.collections = get_dict("collections", self._active_collection_definitions(data), library.collections)
                 self.music_playlists = get_dict("music_playlists", data)
                 if self.music_playlists and not library.is_music:
                     raise Failed("YAML Error: music_playlists can only be used in a Music library collection file")
@@ -1037,6 +1094,7 @@ class MetadataFile(DataFile):
                                         elif imdb_id:
                                             item_id = f"imdb:{imdb_id}"
                                         if item_id:
+                                            item_id = _people_cache_key(library, item, item_id)
                                             people_list, expired = self.config.Cache.query_plex_people(item_id, auto_type)
                                             if expired:
                                                 people_list = None
@@ -1492,7 +1550,7 @@ class MetadataFile(DataFile):
 
             if self.file_style == "metadata" and not self.metadata:
                 raise Failed("YAML Error: metadata attribute is required")
-            if self.file_style == "collection" and not self.collections and not self.music_playlists:
+            if self.file_style == "collection" and not self.collections and not self.music_playlists and not getattr(self, "_disabled_collection_definitions", None):
                 raise Failed("YAML Error: collections, dynamic_collections, or music_playlists attribute is required")
             logger.info("")
             logger.info(f"{self.type_str} Loaded Successfully")

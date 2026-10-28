@@ -342,6 +342,9 @@ class Library(ABC):
                 image_compare = None
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+                cache_validator = getattr(self, "poster_cache_is_valid", None)
+                if image_compare and callable(cache_validator) and not cache_validator(item):
+                    image_compare = None
                 if not image_compare or str(poster.compare) != str(image_compare):
                     if overlay:
                         self.reload(item, force=True)
@@ -501,6 +504,23 @@ class Library(ABC):
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
+
+    def fetch_overlay_value(self, item, variable_name):
+        """Reuse provider rating lookup and its cache for non-Plex adapters."""
+        from modules.plex import Plex
+
+        if str(variable_name).startswith("silo_"):
+            raise Failed(f"Overlay Error: {variable_name} requires a Silo library")
+        if getattr(item, "type", None) in ("season", "episode"):
+            raise Failed("Overlay Error: Provider rating lookup for non-Plex seasons and episodes is not implemented")
+        if str(variable_name).startswith("plex"):
+            raise Failed(f"Overlay Error: {variable_name} requires Plex provider rating metadata; use a provider rating variable such as imdb_rating")
+        return Plex.fetch_overlay_value(self, item, variable_name)
+
+    def prefetch_mdblist(self, items):
+        from modules.plex import Plex
+
+        return Plex.prefetch_mdblist(self, [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
 
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:

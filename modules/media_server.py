@@ -12,6 +12,19 @@ from enum import Enum
 from modules.util import Failed
 
 
+def log_server_connection(logger, server, load_info):
+    """Report remote server details without substituting the Kometa host's OS."""
+    try:
+        info = load_info() or {}
+    except Failed as error:
+        logger.warning(f"{server.type_label} Warning: Unable to read server information: {error}")
+        info = {}
+    logger.info(f"Connected to server {info.get('name') or server.display_name} version {info.get('version') or 'not reported'}")
+    os_name = info.get("os")
+    os_version = f" version {info['os_version']}" if info.get("os_version") else ""
+    logger.info(f"Running on {os_name}{os_version}" if os_name else "Operating system: not reported")
+
+
 class Support(Enum):
     FULL = "full"
     PARTIAL = "partial"

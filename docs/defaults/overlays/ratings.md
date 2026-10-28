@@ -17,7 +17,21 @@ hide:
 
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
+Top badges selected by chart or certification lists also require an available rating from the configured source. List membership alone does not supply the number printed on the badge; items missing that rating are skipped.
+
 Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3: user`, use the [Mass Metadata Update Library Operation](../../config/operations.md#mass-metadata-update) to populate Plex's rating slots from your preferred source. Fetched sources do not require this step.
+
+Silo libraries can use native stored ratings without external provider lookups:
+
+| Source option | Stored value |
+|:--------------|:-------------|
+| `silo_imdb` | IMDb |
+| `silo_tmdb` | TMDb |
+| `silo_tomatoes` | Rotten Tomatoes critics |
+| `silo_tomatoesaudience` | Rotten Tomatoes audience |
+| `silo_user` | Active Silo profile's personal rating |
+
+For example, replace `rating3: plex_imdb` with `rating3: silo_imdb`. Provider icons and percentage formatting follow the corresponding `plex_` options. Text overlays and value filters use the full names, such as `silo_imdb_rating`. Values are normalized to 0–10: Rotten Tomatoes percentages are divided by 10, and Silo's 1–5 user stars are multiplied by 2. Native values are read once per item per run; missing, hidden, or invalid ratings are skipped rather than fetched from another service.
 
 `serializd` fetches Serializd's community rating directly and is available only for show- and episode-level overlays. It requires [Serializd authentication](../../config/serializd.md).
 
