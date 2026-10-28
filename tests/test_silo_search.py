@@ -8,6 +8,32 @@ from modules.silo_search import compile_selector as compile_silo_selector
 from modules.util import Failed
 
 
+@pytest.mark.parametrize("rating,expected_overlay", [("G", "g"), ("PG", "pg"), ("PG-13", "pg-13"), ("R", "r"), ("NC-17", "nc-17"), ("NR", "nr"), ("gb/12A", "pg-13"), ("TV-MA", "r"), ("01", "g"), (None, "nr"), ("", "nr")])
+def test_shipped_us_rating_overlays_match_csv_alternatives(rating, expected_overlay):
+    from pathlib import Path
+
+    from ruamel.yaml import YAML
+
+    with Path("defaults/overlays/content_rating_us_movie.yml").open() as handle:
+        default = YAML(typ="safe").load(handle)
+    matched = []
+    for name, definition in default["overlays"].items():
+        call = next(call for call in definition["template"] if call["name"] == "cr_us")
+        if compile_silo_selector({"any": {"content_rating": call["rating"]}})(item(content_rating=rating)):
+            matched.append(name)
+    assert matched == [expected_overlay]
+
+
+@pytest.mark.parametrize("compile_filter", [compile_selector, compile_silo_selector])
+def test_csv_tags_preserve_regex_and_explicit_list_literals(compile_filter):
+    assert compile_filter({"content_rating": " G, PG, PG-13 "})(item(content_rating="PG"))
+    assert not compile_filter({"content_rating.not": "G, PG, PG-13"})(item(content_rating="PG"))
+    assert compile_filter({"studio": ["Example, Inc."]})(item(studios=["Example, Inc."]))
+    assert compile_filter({"content_rating.regex": r"^PG(?:-13){0,1}$"})(item(content_rating="PG-13"))
+    assert compile_filter({"title.is": "Example, Inc."})(item(title="Example, Inc."))
+    assert not compile_filter({"content_rating": "G, PG"})(item())
+
+
 @pytest.fixture
 def silo_detail():
     result = item(

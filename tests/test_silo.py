@@ -208,6 +208,22 @@ def test_silo_unavailable_filter_field_fails_before_plex_validation(monkeypatch)
     assert library.client.session.calls == []
 
 
+def test_silo_csv_content_ratings_flow_through_overlay_local_search():
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    library.get_all = lambda **kwargs: [SiloItem({"content_id": str(i), "title": str(i), "type": "movie", "content_rating": rating}, library) for i, rating in enumerate(("R", "PG-13", "PG"))]
+    search = library.build_local_search({"validate": False, "any": {"content_rating": "R, PG-13"}})
+    assert library.get_rating_keys("plex_search", search) == [("0", "ratingKey"), ("1", "ratingKey")]
+    assert library.client.session.calls == []
+
+
+def test_silo_native_csv_tag_values_are_separate_alternatives():
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    query = library.build_native_filter({"any": {"content_rating": " R, PG-13, "}})[2]
+    assert query["groups"][0] == {"match": "any", "rules": [{"field": "content_rating", "op": "is", "value": "R"}, {"field": "content_rating", "op": "is", "value": "PG-13"}]}
+    query = library.build_native_filter({"any": {"studio": ["Example, Inc."]}})[2]
+    assert query["groups"][0]["rules"][0]["value"] == "Example, Inc."
+
+
 def test_silo_episode_percentage_filter_uses_child_metadata():
     library = _library(SiloClient(_server(), session=FakeSession([])))
     library.is_show = True

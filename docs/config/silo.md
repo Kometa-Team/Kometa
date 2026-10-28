@@ -87,6 +87,8 @@ Silo smart collections accept native query documents under `smart_filter`. Komet
 
 Numeric fields accept `.gt`, `.gte`, `.lt`, `.lte`, equality, and `.not`. Text fields match contained text and accept `.is`, `.isnot`, `.not`, `.begins`, `.ends`, and `.regex`. Tags additionally support `.count_gt`, `.count_gte`, `.count_lt`, and `.count_lte`. Dates accept relative day counts, `.before`/`.after` calendar dates, and `.regex`. Nested `all`/`any` groups can be mappings or lists of mappings.
 
+Tag searches accept comma-separated alternatives, as used by the content-rating overlay defaults. Regular expressions and individual values in explicit lists keep literal commas. The explicit content-rating alternative `None` matches unrated items; other missing ratings do not match a known rating.
+
 Aspect ratios accept the reported ratio (`1.33:1`, `4:3`) or fall back to width divided by height, rounded to two decimal places. Aspect, dimensions, channel count, and file sizes and bit rates use the largest known value across versions, matching Kometa's media-filter behavior. File `bitrate` is in `kbps` (1,000 bits per second); track `audio_bitrate` and `video_bitrate` are in bits per second, as Silo reports them. Rating sources also use stored `ratings`/`rating_sources` when the direct field is absent. Missing numeric, date, and boolean metadata does not match, including negative filters; unknown values are not treated as zero or false.
 
 ```yaml

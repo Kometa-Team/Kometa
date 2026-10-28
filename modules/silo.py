@@ -1015,11 +1015,13 @@ class Silo(Library):
             if field in TAG_FIELDS or field in PERSON_FIELDS or field in ("audio_language", "subtitle_language", "content_rating", "resolution"):
                 if modifier not in ("", "is", "not", "isnot"):
                     raise Failed(f"Silo Error: smart_filter {name} is unsupported")
-                values = value if isinstance(value, list) else [value]
+                values = value if isinstance(value, list) else [entry.strip() for entry in value.split(",") if entry.strip()] if isinstance(value, str) else [value]
                 if field in ("content_rating", "resolution"):
                     values = [str(v) if isinstance(v, int) and not isinstance(v, bool) else v for v in values]
                 if not values or any(not isinstance(v, str) or not v.strip() for v in values):
                     raise Failed(f"Silo Error: smart_filter {name} requires nonempty tag names")
+                if field == "content_rating" and any(entry.casefold() == "none" for entry in values):
+                    raise Failed("Silo Error: Explicit unrated content filters require local matching")
                 if field in ("audio_language", "subtitle_language"):
                     values = [v.strip().lower() for v in values]
                 elif field == "resolution":

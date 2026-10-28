@@ -299,6 +299,8 @@ def compile_selector(definition, server_name="Silo", current_time=None, country_
         result = {}
         for key, value in group.items():
             field, _, modifier = key.partition(".")
+            if FIELD_TYPES.get(field) == "tags" and isinstance(value, str) and modifier != "regex" and not modifier.startswith("count_"):
+                value = [entry.strip() for entry in value.split(",") if entry.strip()]
             if key in ("all", "any"):
                 value = resolve(value)
             elif field in ("country", "origin_country") and modifier != "regex" and not modifier.startswith("count_"):

@@ -73,6 +73,9 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
         if (field not in FIELDS and field not in types) or modifier not in modifiers:
             raise Failed(f"{server_name} Error: Unsupported local search field or modifier: {key}")
         choices = expected if isinstance(expected, list) else [expected]
+        tag_field = kind == "tags" or field in ("genre", "studio", "country", "actor", "director", "writer", "producer", "content_rating", "resolution", "audio_language", "subtitle_language", "original_language")
+        if tag_field and isinstance(expected, str) and modifier != "regex" and not modifier.startswith("count_"):
+            choices = [value.strip() for value in expected.split(",") if value.strip()]
         if not choices or any(value is None for value in choices):
             raise Failed(f"{server_name} Error: Search value for {key} must not be empty")
         if field in ("audio_language", "subtitle_language", "original_language") and modifier != "regex":
@@ -150,6 +153,8 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
         def test(item, field=field, modifier=modifier, choices=choices, patterns=patterns, kind=kind):
             actual = read_values(item, field)
             if not actual:
+                if field == "content_rating" and modifier in ("", "is"):
+                    return any(str(choice).casefold() == "none" for choice in choices)
                 return False
             if modifier == "regex":
                 return any(pattern.search(str(value)) for pattern in patterns for value in actual)
