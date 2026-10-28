@@ -21,8 +21,9 @@ import requests
 
 from modules import util
 from modules.library import Library
-from modules.local_search import compile_selector
 from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
+from modules.silo_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_details
+from modules.silo_search import values as search_values
 from modules.util import BuilderValidationError, CollectionNotFound, Failed
 
 logger = util.logger
@@ -102,9 +103,12 @@ class SiloMediaServer(MediaServer):
     type_name = "silo"
     type_label = "Silo"
 
-    def __init__(self, url, token, timeout=60, verify_ssl=None, db_cache=None, name=None, profile_id=None):
+    def __init__(self, url, token, timeout=60, verify_ssl=None, db_cache=None, name=None, profile_id=None, pace_requests=False):
         super().__init__(url=url, token=token, timeout=timeout, verify_ssl=verify_ssl, db_cache=db_cache, name=name)
         self.profile_id = profile_id
+        if not isinstance(pace_requests, bool):
+            raise Failed("Config Error: Silo pace_requests must be a boolean")
+        self.pace_requests = pace_requests
 
     @property
     def capabilities(self) -> CapabilityMatrix:
@@ -120,6 +124,7 @@ class SiloMediaServer(MediaServer):
             verify_ssl=silo_config.get("verify_ssl"),
             name=name,
             profile_id=profile_id if profile_id is not None else silo_config.get("profile_id"),
+            pace_requests=silo_config.get("pace_requests", False),
         )
 
 
@@ -155,12 +160,15 @@ class SiloClient:
         self._listing_profiles = False
         parsed = urlsplit(self.base)
         server_key = parsed._replace(scheme=parsed.scheme.lower(), netloc=parsed.netloc.lower()).geturl()
-        with _REQUEST_PACERS_LOCK:
-            self._request_pacer = _REQUEST_PACERS.setdefault(server_key, _RequestPacer())
+        self._request_pacer = None
+        if server.pace_requests:
+            with _REQUEST_PACERS_LOCK:
+                self._request_pacer = _REQUEST_PACERS.setdefault(server_key, _RequestPacer())
 
     def request(self, method, path, params=None, json_body=None, headers=None, files=None):
         for attempt in range(6):
-            self._request_pacer.wait()
+            if self._request_pacer is not None:
+                self._request_pacer.wait()
             try:
                 response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, files=files, headers=headers, timeout=self.server.timeout)
             except requests.RequestException as error:
@@ -1032,6 +1040,35 @@ class Silo(Library):
                 negative = modifier in ("not", "isnot")
                 groups.append({"match": "all" if negative else "any", "rules": [{"field": field, "op": "is_not" if negative else "is", "value": v} for v in values]})
                 continue
+            native_numbers = {
+                "duration": ("runtime", 1),
+                "runtime": ("runtime", 1),
+                "bitrate": ("bitrate", 1),
+                "critic_rating": ("rating_rt_critic", 10),
+                "audience_rating": ("rating_rt_audience", 10),
+                **{key: (key, 1) for key in ("rating_imdb", "rating_tmdb", "rating_rt_critic", "rating_rt_audience")},
+            }
+            if field in native_numbers and modifier in ("", "is", "not", "isnot", "gt", "gte", "lt", "lte"):
+                compile_selector({name: value})
+                native, scale = native_numbers[field]
+                op = {"": "is", "not": "is_not", "isnot": "is_not", "is": "is"}.get(modifier, modifier)
+                entries = value if isinstance(value, list) else [value]
+                groups.append({"match": "all" if op == "is_not" else "any", "rules": [{"field": native, "op": op, "value": float(entry) * scale} for entry in entries]})
+                continue
+            if field in ("original_language", "type", "status", "show_title", "title") and modifier in ("", "is", "not", "isnot"):
+                if field in ("title", "show_title") and modifier in ("not", "isnot"):
+                    raise Failed(f"Silo Error: {name} requires local matching")
+                compile_selector({name: value})
+                entries = value if isinstance(value, list) else [value]
+                negative = modifier in ("not", "isnot")
+                op = "contains" if modifier == "" and field in ("title", "show_title") else "is_not" if negative else "is"
+                groups.append({"match": "all" if negative else "any", "rules": [{"field": field, "op": op, "value": entry} for entry in entries]})
+                continue
+            if field in ("hdr", "watched", "in_watchlist") and modifier in ("", "is", "not", "isnot"):
+                compile_selector({name: value})
+                negative = modifier in ("not", "isnot")
+                groups.append({"match": "all" if negative else "any", "rules": [{"field": field, "op": "is", "value": not entry if negative else entry} for entry in (value if isinstance(value, list) else [value])]})
+                continue
             if name not in fields or isinstance(value, bool) or not str(value).isdigit() or int(value) <= 0:
                 raise Failed(f"Silo Error: smart_filter {name} is unsupported; supported relative date filters are release and added with positive day counts")
             groups.append({"match": match, "rules": [{"field": fields[name], "op": "in_last", "value": f"{int(value)}d"}]})
@@ -1041,7 +1078,21 @@ class Silo(Library):
             raise Failed(f"Silo Error: smart_filter type {scope} is unsupported")
         sort = str(definition.get("sort_by") or "release.desc")
         field, _, order = sort.rpartition(".")
-        sorts = {"release": "release_date", "added": "added_at", "title": "title", "year": "year", "critic_rating": "rating_rt_critic"}
+        sorts = {
+            "release": "release_date",
+            "added": "added_at",
+            "title": "title",
+            "year": "year",
+            "critic_rating": "rating_rt_critic",
+            "audience_rating": "rating_rt_audience",
+            "duration": "runtime",
+            "runtime": "runtime",
+            "bitrate": "bitrate",
+            "content_rating": "content_rating",
+            "resolution": "resolution",
+            "rating_imdb": "rating_imdb",
+            "rating_tmdb": "rating_tmdb",
+        }
         if field not in sorts or order not in ("asc", "desc"):
             raise Failed(f"Silo Error: smart_filter sort_by {sort} is unsupported")
         query = {"media_scope": scope, "library_ids": [str(self.library_id)], "match": match, "groups": groups, "sort": {"field": sorts[field], "order": order}}
@@ -1080,27 +1131,94 @@ class Silo(Library):
         return False
 
     def fetchItems(self, uri_args):
+        if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
+            definition = uri_args["local_collection_search"]
+            predicate = self.validate_collection_search(definition)
+            items = [item for item in self._local_search_items(require_details=requires_details(definition)) if predicate(item)]
+            field, _, direction = definition.get("sort_by", "title.asc").rpartition(".")
+
+            def sort_value(item):
+                found = search_values(item, field)
+                return found[0] if found else None
+
+            known = [item for item in items if sort_value(item) is not None]
+            missing = [item for item in items if sort_value(item) is None]
+            known.sort(key=lambda item: float(sort_value(item)) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=direction == "desc")
+            return (known + missing)[: definition.get("limit")]
         if isinstance(uri_args, dict) and "silo_local_search" in uri_args:
-            predicate = compile_selector(uri_args["silo_local_search"])
-            return [item for item in self._local_search_items() if predicate(item)]
+            predicate = compile_selector(uri_args["silo_local_search"], country_names=self._country_names())
+            return [item for item in self._local_search_items(require_details=requires_details(uri_args["silo_local_search"])) if predicate(item)]
         status = self.require(Capability.PARSE_SMART_FILTER)
         if not isinstance(uri_args, (dict, list)):
             raise Failed(f"Silo Error: Plex smart filter URIs are not Silo query documents ({status.detail})")
         return [SiloItem(card, self) for card in self.client.query(self.library_id, uri_args)]
 
     def build_local_search(self, definition):
+        if isinstance(definition, dict) and "local_collection_search" in definition:
+            self.validate_collection_search(definition["local_collection_search"])
+            return None, "Silo locally rebuilt collection", definition
+        if isinstance(definition, dict) and any(key in definition for key in ("sort_by", "limit", "type", "validate")):
+            self.validate_collection_search(definition)
+            return None, "Silo local metadata search", {"local_collection_search": definition}
         compile_selector(definition)
         return None, "Silo local metadata search", {"silo_local_search": definition}
 
-    def _local_search_items(self, builder_level=None, ignore_schedule_scope=False):
+    def can_use_native_filter(self, definition):
+        try:
+            self.build_native_filter(definition)
+            return True
+        except Failed:
+            return False
+
+    def validate_collection_search(self, definition):
+        if not isinstance(definition, dict) or set(definition) - {"all", "any", "sort_by", "limit", "type", "validate"}:
+            raise BuilderValidationError("Silo Error: Unsupported local collection search options")
+        scope = definition.get("type")
+        if scope and scope not in (("movie", "movies") if self.is_movie else ("series", "show", "shows")):
+            raise BuilderValidationError(f"Silo Error: Search type {scope} does not match this library")
+        field, _, order = str(definition.get("sort_by", "title.asc")).rpartition(".")
+        if field not in SORT_FIELDS or order not in ("asc", "desc"):
+            raise BuilderValidationError("Silo Error: Unsupported local search sort_by")
+        if "limit" in definition and (isinstance(definition["limit"], bool) or not isinstance(definition["limit"], int) or definition["limit"] <= 0):
+            raise BuilderValidationError("Silo Error: Search limit must be a positive integer")
+        return compile_selector({key: value for key, value in definition.items() if key in ("all", "any")}, country_names=self._country_names())
+
+    local_filter_fields = FIELD_TYPES
+
+    @staticmethod
+    def validate_local_filter(name, value):
+        if name == "episodes" and isinstance(value, dict):
+            percentage = value.get("percentage", 50)
+            if isinstance(percentage, bool) or not isinstance(percentage, (int, float)) or not 0 <= percentage <= 100:
+                raise BuilderValidationError("Silo Error: Episode filter percentage must be between 0 and 100")
+            compile_selector({key: data for key, data in value.items() if key != "percentage"})
+            return value
+        compile_selector({name: value})
+        return value
+
+    def _local_search_items(self, builder_level=None, ignore_schedule_scope=False, require_details=True):
         if not hasattr(self, "_search_details"):
             self._search_details = {}
-        for item in self.get_all(builder_level=builder_level, ignore_schedule_scope=ignore_schedule_scope):
-            if item.content_id not in self._search_details:
-                if "versions" not in item.data:
+        if not hasattr(self, "_loaded_search_details"):
+            self._loaded_search_details = set()
+        logger.info("Loading Silo catalog for local search")
+        items = self.get_all(builder_level=builder_level, ignore_schedule_scope=ignore_schedule_scope)
+        total = len(items)
+        logger.info(f"Scanning {total} Silo items for local search{' (loading item details as needed)' if require_details else ' (catalog metadata)'}")
+        try:
+            for index, item in enumerate(items, 1):
+                item = self._search_details.get(item.content_id, item)
+                logger.ghost(f"Scanning: {index}/{total} {item.title}")
+                if require_details and item.content_id not in self._loaded_search_details and "versions" not in item.data:
                     item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
+                    self._loaded_search_details.add(item.content_id)
                 self._search_details[item.content_id] = item
-            yield self._search_details[item.content_id]
+                if index % 200 == 0:
+                    logger.info(f"Scanned: {index}/{total}")
+                yield item
+        finally:
+            logger.exorcise()
+        logger.info(f"Scanned: {total}/{total}")
 
     def get_rating_keys(self, method, data, is_playlist=False):
         if method == "plex_search":
@@ -1114,7 +1232,22 @@ class Silo(Library):
         return [(item.ratingKey, "ratingKey") for item in items]
 
     def check_filters(self, item, filters_in, current_time):
-        return all(compile_selector({key: value})(item) for key, value in filters_in)
+        for key, value in filters_in:
+            if key == "episodes" and isinstance(value, dict):
+                definition = {name: data for name, data in value.items() if name != "percentage"}
+                predicate = compile_selector(definition, current_time=current_time, country_names=self._country_names())
+                children = self.list_episodes(item) if item.type == "season" else [episode for season in self.list_seasons(item) for episode in self.list_episodes(season)]
+                matched = 0
+                for child in children:
+                    child = self.reload(child)
+                    if "versions" not in child.data:
+                        child.apply(self.client.get_item(child.content_id, library_id=self.library_id))
+                    matched += bool(predicate(child))
+                if not children or matched / len(children) * 100 < float(value.get("percentage", 50)):
+                    return False
+            elif not compile_selector({key: value}, current_time=current_time, country_names=self._country_names())(item):
+                return False
+        return True
 
     def query(self, method):
         return method()

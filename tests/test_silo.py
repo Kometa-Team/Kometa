@@ -58,9 +58,38 @@ class FakeSession:
 
 
 def _server(**overrides):
+    overrides.setdefault("pace_requests", True)
     values = {"url": "http://silo:8090", "token": "token", "name": "Shelf", "profile_id": "profile"}
     values.update(overrides)
     return SiloMediaServer(**values)
+
+
+@pytest.mark.parametrize("configured,expected", [({}, False), ({"pace_requests": False}, False), ({"pace_requests": True}, True)])
+def test_pacing_flag_is_opt_in_at_server_level(configured, expected):
+    server = build_media_server("Shelf", {"type": "silo", "url": "http://silo:8090", "token": "token", **configured})
+    assert server.pace_requests is expected
+    session = FakeSession([FakeResponse({}), FakeResponse({})])
+    client = SiloClient(server, session=session)
+    assert (client._request_pacer is not None) is expected
+    client.get_item("movie-1")
+    client.get_item("movie-2")
+
+
+@pytest.mark.parametrize("value", ["true", "false", 1, None])
+def test_pacing_flag_requires_boolean(value):
+    with pytest.raises(Failed, match="pace_requests must be a boolean"):
+        build_media_server("Shelf", {"type": "silo", "url": "http://silo", "token": "token", "pace_requests": value})
+
+
+def test_unpaced_requests_still_retry_429(monkeypatch):
+    waits = []
+    monkeypatch.setattr(silo_module.time, "sleep", waits.append)
+    session = FakeSession([FakeResponse({}), FakeResponse({}, status_code=429, headers={"Retry-After": "2"}), FakeResponse({})])
+    client = SiloClient(_server(pace_requests=False), session=session)
+    client.get_item("movie-1")
+    client.get_item("movie-2")
+    assert waits == [2]
+    assert len(session.calls) == 3
 
 
 def _library(client, **overrides):
@@ -88,6 +117,109 @@ def _library(client, **overrides):
     for name, value in overrides.items():
         setattr(library, name, value)
     return library
+
+
+def test_silo_aspect_overlay_filters_use_track_metadata(monkeypatch):
+    from modules import builder as builder_module
+    from tests.factories import make_builder
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    movie = SiloItem({"content_id": "movie-1", "title": "Academy", "type": "movie", "versions": [{"video_tracks": [{"aspect_ratio": "4:3"}]}]}, library)
+    library._search_details = {movie.content_id: movie}
+    builder = make_builder(library=library, overlay=True, Type="Overlay", filters=[], default_percent=50)
+    builder._filters("filters", {"aspect.gt": 1.32, "aspect.lt": 1.34, "video_codec.not": "h264"})
+    # Unknown codec fails even a negative filter; aspect itself matches.
+    assert library.check_filters(movie, builder.filters[0][:2], None)
+    assert not library.check_filters(movie, builder.filters[0], None)
+    assert library.client.session.calls == []
+
+
+def test_silo_technical_smart_filter_rebuilds_locally_and_preserves_sorted_order(monkeypatch):
+    from modules.builder import CollectionBuilder
+
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    data = {"smart_filter": {"all": {"aspect.gt": 1.3, "audio_codec.regex": "truehd"}, "sort_by": "rating_imdb.desc", "limit": 1}}
+    methods = {"smart_filter": "smart_filter"}
+    CollectionBuilder._adapt_local_smart_filter(library, data, methods)
+    assert "smart_filter" not in data
+    assert data["collection_order"] == "custom"
+    library.get_all = lambda **kwargs: [
+        SiloItem({"content_id": f"movie-{i}", "type": "movie", "title": str(i), "rating_imdb": rating, "versions": [{"codec_audio": "truehd", "video_tracks": [{"aspect_ratio": "4:3"}]}]}, library) for i, rating in enumerate((7, 9))
+    ]
+    search = library.build_local_search(data["plex_search"])
+    assert library.get_rating_keys("plex_search", search) == [("movie-1", "ratingKey")]
+
+
+@pytest.mark.parametrize(
+    "field,value,native,expected",
+    [("duration.gte", 90, "runtime", 90), ("critic_rating.gte", 7, "rating_rt_critic", 70), ("audience_rating.lt", 8, "rating_rt_audience", 80), ("rating_imdb.gt", 7.5, "rating_imdb", 7.5), ("bitrate.gt", 1000, "bitrate", 1000)],
+)
+def test_silo_native_numeric_fields_keep_correct_units(field, value, native, expected):
+    from modules.builder import CollectionBuilder
+
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    definition = {"all": {field: value}}
+    data = {"smart_filter": definition}
+    CollectionBuilder._adapt_local_smart_filter(library, data, {"smart_filter": "smart_filter"})
+    assert data == {"smart_filter": definition}
+    query = library.build_native_filter(definition)[2]
+    assert query["groups"][0]["rules"][0] == {"field": native, "op": field.split(".")[1], "value": expected}
+
+
+def test_silo_local_search_upgrades_catalog_cache_when_details_are_needed(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(silo_module, "logger", logger)
+    client = SiloClient(_server(), session=FakeSession([FakeResponse({"content_id": "movie-1", "versions": [{"video_tracks": [{"aspect_ratio": "4:3"}]}]})]))
+    library = _library(client)
+    library.get_all = lambda **kwargs: [SiloItem({"content_id": "movie-1", "title": "Movie", "type": "movie"}, library)]
+    assert len(list(library._local_search_items(require_details=False))) == 1
+    assert client.session.calls == []
+    search = library.build_local_search({"aspect.gt": 1.3})
+    assert library.get_rating_keys("plex_search", search) == [("movie-1", "ratingKey")]
+    assert library.get_rating_keys("plex_search", search) == [("movie-1", "ratingKey")]
+    assert len(client.session.calls) == 1
+    logger.ghost.assert_called_with("Scanning: 1/1 Movie")
+    logger.info.assert_any_call("Scanned: 1/1")
+
+
+def test_silo_nested_smart_filter_uses_local_fallback(monkeypatch):
+    from modules.builder import CollectionBuilder
+
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    data = {"smart_filter": {"all": [{"genre": "Drama"}, {"any": {"aspect.gt": 2, "hdr10plus": True}}]}}
+    CollectionBuilder._adapt_local_smart_filter(library, data, {"smart_filter": "smart_filter"})
+    assert "plex_search" in data
+    assert data["collection_order"] == "custom"
+
+
+def test_silo_unavailable_filter_field_fails_before_plex_validation(monkeypatch):
+    from tests.factories import make_builder
+
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    builder = make_builder(library=library, filters=[])
+    with pytest.raises(BuilderValidationError, match="Silo does not provide filter field label"):
+        builder._filters("filters", {"label": "Overlay"})
+    assert library.client.session.calls == []
+
+
+def test_silo_episode_percentage_filter_uses_child_metadata():
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    library.is_show = True
+    library.is_movie = False
+    show = SiloItem({"content_id": "show-1", "type": "series"}, library)
+    season = SiloItem({"content_id": "season-1", "type": "season", "season_number": 1}, library)
+    episodes = [SiloItem({"content_id": f"ep-{i}", "type": "episode", "versions": [{"video_tracks": [{"width": width, "height": 1080}]}]}, library) for i, width in enumerate((1920, 1440))]
+    library.list_seasons = lambda item: [season]
+    library.list_episodes = lambda item: episodes
+    library.reload = lambda item: item
+    assert library.check_filters(show, [("episodes", {"width.gte": 1900, "percentage": 50})], None)
+    assert not library.check_filters(show, [("episodes", {"width.gte": 1900, "percentage": 100})], None)
 
 
 def test_silo_skips_plex_maintenance_operations():

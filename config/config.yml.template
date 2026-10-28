@@ -20,6 +20,7 @@ plex:                              # Required for libraries that use Plex. Omit 
 #     url: http://192.168.1.12:8090 # Silo native API. Kometa appends /api/v2
 #     token:                        # Session token or API key
 #     profile_id:                   # Silo only. Sent as X-Profile-Id for catalog reads
+#     pace_requests: false          # Silo only. Enable 0.5-second request spacing to reduce 429 responses
 #     user:                         # Jellyfin or Emby user id. Omit to use the first administrator
 #     timeout: 60
 #     verify_ssl: true

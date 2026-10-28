@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add Silo metadata-backed search/filter readers for video/audio tracks, aspect ratios and numeric comparisons, ratings, dates, tag counts, and available user state; retain native smart queries where supported and rebuild other supported definitions locally.
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
 - Log remote server names, versions, and available OS details when connecting to Silo, Jellyfin, and Emby; explicitly identify unreported values without using Kometa's host information.
 - Match Jellyfin/Emby actor, director, writer, and producer filters using native People metadata, resolve TMDb person names in local selectors, and support audience/critic rating selection sorts.
@@ -48,10 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Make Silo request spacing opt-in with the server-level `pace_requests` flag (default false); keep automatic 429 retries enabled regardless of pacing.
 - The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
 
 ### Fixed
 
+- Apply Silo aspect-ratio overlays through native video-track aspect/dimension metadata, validate backend fields before scanning, and show progress while lazily loading reusable item details.
 - Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.
 - Allow FlickList and WeTrakr list builders (including list details and user lists), and `floppy_tracked`, in season and episode collections instead of rejecting them during collection validation.
 - Resolve FlickList user list URLs (`/u/<user>/lists/<slug>`) to numeric API IDs for list builders and list descriptions.

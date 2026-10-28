@@ -23,6 +23,7 @@ media_servers:
     url: http://192.168.1.12:8090
     token: ####################
     profile_id: PROFILE_ID
+    pace_requests: false
     timeout: 60
     verify_ssl: true
 libraries:
@@ -64,11 +65,38 @@ Silo overlay tracking uses Kometa's local original-poster backups and overlay ca
 
 After publishing a local image to transfer.kometa.wiki, Kometa waits 0.75 seconds before asking Silo to download it. Counting one upload and one download per image, sequential processing averages at most about 2.7 requests per second before network overhead, below the transfer host's sustained limit of 3 requests per second. This also applies when restoring original posters. Direct remote image URLs do not incur this delay. Other clients and burst limits can still cause rate limiting.
 
-Kometa spaces all Silo API requests at least 0.5 seconds apart (at most two requests per second per server), including catalog reads, queries, collection detail reads, additions, removals, sorting, and retries. Library clients targeting the same normalized API base URL share a thread-safe limiter within the Kometa process, even when using different tokens or profiles. Time spent on requests counts toward this interval. Separate Kometa processes and other applications do not share this limiter. Silo's 429 responses still use `Retry-After` or increasing retry delays; other clients and stricter server limits can still cause throttling.
+Set `pace_requests: true` on a Silo entry under `media_servers` to space all Silo API requests at least 0.5 seconds apart (at most two requests per second per server), including catalog reads, queries, collection detail reads, additions, removals, sorting, and retries. Library clients with pacing enabled targeting the same normalized API base URL share a thread-safe limiter within the Kometa process, even when using different tokens or profiles. Time spent on requests counts toward this interval. Separate Kometa processes and other applications do not share this limiter. Pacing defaults to `false`, so requests normally proceed without the additional spacing. Silo's 429 responses always use `Retry-After` or increasing retry delays; other clients and stricter server limits can still cause throttling.
 
 Silo evaluates a subset of `plex_search` overlay selectors locally using catalog item details. Nested `all`/`any` groups support `title`, `year`, `resolution`, `edition`, `filepath`, `hdr`, `has_dolby_vision`, `genre`, `studio`, and `country`. String fields accept `.regex`, `.is`, `.not`, `.isnot`, `.begins`, and `.ends`; HDR and Dolby Vision selectors require boolean values. Item details are reused within a run. Filepath matching requires Silo to expose `file_path` to the configured user; missing metadata does not match, including negative filters. Dolby Vision matching uses Silo's `overlay_summary.hdr` value. Unknown fields and modifiers report errors rather than selecting the entire library. Plex sorting/limit/type options are not yet supported in these local selectors. This selector support does not imply full compatibility with every Plex overlay definition or rendering feature.
 
-Silo smart collections accept native query documents under `smart_filter`. Kometa discovers genres, studios, networks, and countries from library metadata for dynamic collections, including `default: genre`. It translates their tag filters (including lists and `.is`/`.not` modifiers) and flat `all`/`any` groups containing `release` or `added` with positive day counts, including the **Newly Released** collection from `default: basic`. Supported `sort_by` fields are `release`, `added`, `title`, and `year`, with `.asc` or `.desc`; `limit` caps the complete result. Other Plex filter expressions, including the **New Episodes** default, are not currently translated and report an unsupported-filter error.
+Silo smart collections accept native query documents under `smart_filter`. Kometa translates supported metadata rules to native queries, including tags, people, production years, relative dates, runtime, stored ratings, and bitrate. For supported fields or modifiers that the native query engine cannot express, `smart_filter` becomes an ordinary collection rebuilt by Kometa on each run. The log identifies that fallback; matching and sorting happen before the result limit is applied. `plex_search`, collection `filters`, and overlays use the same metadata-backed field readers. Unsupported Plex-only fields, labels, and unavailable collection-membership state still report explicit errors.
+
+### Search and filter fields
+
+| Metadata | Supported fields |
+| --- | --- |
+| Titles and descriptions | `title`, `summary`/`overview`, `original_title`, `sort_title`, `tagline`, `show_title` |
+| Tags and identity | `genre`, `studio`, `network`, `country`/`origin_country`, `keyword`, `original_language`, `content_rating`, `actor`, `director`, `writer`, `producer`, `type`, `status`, `show_status` |
+| Dates | `release`, `added`, `first_episode_aired`, `last_episode_aired`, `last_played` when reported |
+| Years and counts | `year`, `decade`, `versions`, `seasons`, `episodes`, `season_number`, `episode_number`, `advisory_age` |
+| Video | `resolution`, `aspect`, `width`, `height`, `video_codec`, `video_profile`, `video_range`, `video_bit_depth`, `video_bitrate`, `frame_rate`, `reference_frames`, `dovi_profile`, `dovi_level` |
+| Audio and subtitles | `channels`, `audio_codec`, `audio_profile`, `audio_track_title`, `subtitle_track_title`, `audio_language`, `subtitle_language`, `audio_bit_depth`, `audio_sample_rate`, `audio_bitrate` |
+| Files | `filepath`, `folder`, `container`, `edition`, `release_type`, `file_size`, `bitrate` |
+| Duration and ratings | `duration`/`runtime` (minutes), `duration_seconds`, `critic_rating`, `audience_rating`, `user_rating` (0–10), `rating_imdb`, `rating_tmdb`, `rating_rt_critic`, `rating_rt_audience` (Rotten Tomatoes raw scores are 0–100) |
+| Flags and progress | `hdr`, `has_dolby_vision`, `hdr10plus`, `atmos` (reported track title/profile), `interlaced`, `has_edition`, `unmatched`, `watched`, `is_favorite`, `in_watchlist`, `not_interested`, `is_in_progress`, `position_seconds`, `plays`/`progress` when listing metrics report them |
+
+Numeric fields accept `.gt`, `.gte`, `.lt`, `.lte`, equality, and `.not`. Text fields match contained text and accept `.is`, `.isnot`, `.not`, `.begins`, `.ends`, and `.regex`. Tags additionally support `.count_gt`, `.count_gte`, `.count_lt`, and `.count_lte`. Dates accept relative day counts, `.before`/`.after` calendar dates, and `.regex`. Nested `all`/`any` groups can be mappings or lists of mappings.
+
+Aspect ratios accept the reported ratio (`1.33:1`, `4:3`) or fall back to width divided by height, rounded to two decimal places. Aspect, dimensions, channel count, and file sizes and bit rates use the largest known value across versions, matching Kometa's media-filter behavior. File `bitrate` is in `kbps` (1,000 bits per second); track `audio_bitrate` and `video_bitrate` are in bits per second, as Silo reports them. Rating sources also use stored `ratings`/`rating_sources` when the direct field is absent. Missing numeric, date, and boolean metadata does not match, including negative filters; unknown values are not treated as zero or false.
+
+```yaml
+filters:
+  aspect.gt: 1.32
+  aspect.lt: 1.34
+  channels.gte: 6
+```
+
+These capabilities use metadata Silo returns for the acting account/profile. They do not fetch missing provider data, infer file paths from names, or manufacture play counts. Some listing metrics are only present for the corresponding listing sort, and metadata visibility may hide paths or ratings.
 
 <div class="annotate" markdown>
 
@@ -78,6 +106,7 @@ Silo smart collections accept native query documents under `smart_filter`. Komet
 | `url`        | Server URL. Kometa adds `/api/v2` when a Silo URL does not already end with it.                     | Any valid URL<br><strong>Example:</strong> `http://192.168.1.12:8090` | :fontawesome-solid-circle-check:{ .green } |
 | `token`      | Session token or API key.                                                                            | Any valid token                                              | :fontawesome-solid-circle-check:{ .green } |
 | `profile_id` | Silo profile whose catalog Kometa reads. A profile Silo does not recognize is reported with the server's user and profile ids. | Any profile id                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `pace_requests` | Space API requests at least 0.5 seconds apart to reduce rate-limit responses. Automatic 429 retries work with either setting. | `true` or **`false`** | :fontawesome-solid-circle-xmark:{ .red } |
 | `timeout`    | Timeout for Silo communication, in seconds.                                                          | Integer, e.g. **`60`**                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `verify_ssl` | Enable or disable SSL verification for this server.                                                 | `true`, `false`, or leave **blank**                          |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `db_cache`   | Plex database cache size in MB. Used when `type` is `plex`.                                          | Integer, e.g. **`40`**                                       |  :fontawesome-solid-circle-xmark:{ .red }  |

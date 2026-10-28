@@ -357,6 +357,7 @@ def build_media_server(name, data):
     if server_type == "silo":
         from modules.silo import SiloMediaServer
 
+        payload["pace_requests"] = data.get("pace_requests", False)
         return SiloMediaServer.from_config(payload, name=str(name), profile_id=data.get("profile_id"))
     if server_type in ("jellyfin", "emby"):
         from modules.mediabrowser import EmbyMediaServer, JellyfinMediaServer

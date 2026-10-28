@@ -1282,8 +1282,8 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "all": { "type": "object", "additionalProperties": true },
-                "any": { "type": "object", "additionalProperties": true },
+                "all": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": true } }] },
+                "any": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": true } }] },
                 "sort_by": {
                     "oneOf": [
                         { "type": "string" },

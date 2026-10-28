@@ -459,6 +459,11 @@
           "type": "string",
           "minLength": 1
         },
+        "pace_requests": {
+          "description": "Silo only. Space requests at least 0.5 seconds apart to reduce rate-limit responses. Disabled by default; automatic 429 retries remain enabled.",
+          "type": "boolean",
+          "default": false
+        },
         "user": {
           "description": "Jellyfin or Emby user id. Catalog and playlist calls use this user. When omitted, Kometa uses the first administrator.",
           "type": "string",

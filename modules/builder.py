@@ -949,13 +949,15 @@ class CollectionBuilder:
         from modules.media_server import MediaServer
 
         server = getattr(library, "server", None)
-        if not isinstance(server, MediaServer) or server.type_name not in ("jellyfin", "emby") or "smart_filter" not in methods:
+        if not isinstance(server, MediaServer) or server.type_name not in ("silo", "jellyfin", "emby") or "smart_filter" not in methods:
             return
         if "run_definition" in methods:
             allowed = util.get_list(data[methods["run_definition"]], lower=True) or []
             if allowed and all(value in ("movie", "show") for value in allowed) and library.type.lower() not in allowed:
                 raise NotScheduled("Skipped because run_definition library_type doesn't match")
         definition = data[methods["smart_filter"]]
+        if server.type_name == "silo" and library.can_use_native_filter(definition):
+            return
         try:
             library.validate_collection_search(definition)
         except Failed as error:
@@ -965,7 +967,7 @@ class CollectionBuilder:
         data["plex_search"] = {"local_collection_search": definition}
         methods["plex_search"] = "plex_search"
         if "collection_order" not in methods:
-            data["collection_order"] = definition.get("sort_by", "title.asc")
+            data["collection_order"] = "custom" if server.type_name == "silo" else definition.get("sort_by", "title.asc")
             methods["collection_order"] = "collection_order"
         del data[methods.pop("smart_filter")]
         logger.info(f"{server.type_label}: Rebuilding smart_filter as an ordinary collection using local metadata")
@@ -4303,6 +4305,25 @@ class CollectionBuilder:
                 validate = dict_data.pop(dict_methods["validate"])
             for filter_method, filter_data in dict_data.items():
                 filter_attr, modifier, filter_final = self.library.split(filter_method)
+                if filter_attr in getattr(self.library, "local_filter_fields", {}):
+                    try:
+                        final_data = self.library.validate_local_filter(filter_final, filter_data)
+                    except Failed as error:
+                        if validate:
+                            raise
+                        logger.error(error)
+                        continue
+                    if self.builder_level in ("show", "season") and filter_attr in sub_filters:
+                        current_filters.append(("episodes", {filter_final: final_data, "percentage": self.default_percent}))
+                    else:
+                        current_filters.append((filter_final, final_data))
+                    continue
+                if isinstance(getattr(self.library, "local_filter_fields", None), dict) and filter_attr not in tmdb_filters + tvdb_filters + imdb_filters:
+                    message = f"{self.Type} Error: {self.library.server.type_label} does not provide filter field {filter_final}"
+                    if validate:
+                        raise BuilderValidationError(message)
+                    logger.error(message)
+                    continue
                 message = None
                 if filter_final not in all_filters:
                     message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
