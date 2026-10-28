@@ -699,6 +699,7 @@ def start(attrs):
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+        log_integrity_summary(integrity_report, logger)
         try:
             details = run_args["trace"] or run_args["log-requests"]
             log_summary = RunLogSummary(rating_sources, details=details)
@@ -745,8 +746,6 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
-
-        log_integrity_summary(integrity_report, logger)
 
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
