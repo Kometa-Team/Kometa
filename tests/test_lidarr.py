@@ -239,6 +239,12 @@ class TestGetMbidIds:
         lidarr, _ = make_lidarr(make_routes() | {("GET", "/artist"): self.ARTISTS})
         assert lidarr.get_mbid_ids("lidarr_taglist", []) == [(ARTIST_C, "mbid")]
 
+    @pytest.mark.parametrize("tags", [["favourites"], ["kometa", "favourites"]])
+    def test_taglist_with_a_tag_missing_from_lidarr_selects_nothing(self, logger, tags):
+        lidarr, _ = make_lidarr(make_routes() | {("GET", "/artist"): self.ARTISTS})
+        assert lidarr.get_mbid_ids("lidarr_taglist", tags) == []
+        assert logger.warning_messages == ["Lidarr Warning: Tags not found in Lidarr: favourites"]
+
     def test_artist_names_are_kept_for_reporting(self):
         lidarr, session = make_lidarr(make_routes() | {("GET", "/artist"): self.ARTISTS})
         lidarr.get_mbid_ids("lidarr_all", True)
@@ -315,6 +321,13 @@ class TestRemoveAllWithTags:
         lidarr, session = make_lidarr(routes)
         lidarr.remove_all_with_tags(["missing"])
         assert [call.method for call in session.calls if call.method != "GET"] == []
+
+    def test_one_tag_missing_from_lidarr_removes_nothing(self, logger):
+        routes = make_routes() | {("GET", "/artist"): [artist(ARTIST_A, 1, "Artist A", tags=[KOMETA])], ("DELETE", "/artist/1"): None}
+        lidarr, session = make_lidarr(routes)
+        lidarr.remove_all_with_tags(["kometa", "temp"])
+        assert [call.path for call in session.calls if call.method == "DELETE"] == []
+        assert logger.warning_messages == ["Lidarr Warning: Tags not found in Lidarr: temp"]
 
 
 class TestAddArtists:
