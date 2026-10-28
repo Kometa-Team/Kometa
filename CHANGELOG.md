@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Ignore the unsupported `kometa_poster` and `pmm_poster` attributes with a clear error directing users to supported poster options, instead of attempting legacy poster rendering. #3796
 - Fetch complete MDBList digital release dates for `mdb_digital` date operations when batch or older cached results omit them, and cache confirmed missing dates to avoid repeated lookups. #3798
 - Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.
 - Allow FlickList and WeTrakr list builders (including list details and user lists), and `floppy_tracked`, in season and episode collections instead of rejecting them during collection validation.

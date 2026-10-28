@@ -270,6 +270,7 @@ ignored_details = [
     "builder_level",
     "overlay",
     "kometa_poster",
+    "pmm_poster",
     "validate_builders",
     "libraries",
     "sync_to_users",
@@ -1272,16 +1273,9 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.logos = {}
         self.square_arts = {}
-        if not self.overlay and "kometa_poster" in methods:
-            logger.debug("")
-            logger.debug("Validating Method: kometa_poster")
-            if self.data[methods["kometa_poster"]] is None:
-                logger.error(f"{self.Type} Error: kometa_poster attribute is blank")
-            logger.debug(f"Value: {data[methods['kometa_poster']]}")
-            try:
-                self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist)
-            except Failed as e:
-                logger.error(e)
+        for attribute in ("kometa_poster", "pmm_poster"):
+            if attribute in methods:
+                logger.error(f"{self.Type} Error: {attribute} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
 
         if self.overlay:
             if "overlay" in methods:
