@@ -1,6 +1,6 @@
 # Floppy Builders
 
-Collect movies, shows, and listed episodes from your
+Collect movies, shows, seasons, and listed episodes from your
 [Floppy](https://github.com/dannyvfilms/Floppy) instance. All builders below support
 movies, shows, playlists, and custom sorting.
 
@@ -72,7 +72,8 @@ Replace the example URLs with URLs from your own instance.
 
     Creates an episode collection from the exact episodes listed in the source,
     rather than selecting whole shows. Episode entries are read from the list's
-    RSS feed; `builder_level: episode` is required.
+    RSS feed for public lists or the API for authenticated lists. Listed seasons expand
+    into their episodes too. Use `builder_level: episode` for an episode collection.
 
     ```yaml
     collections:
@@ -87,6 +88,9 @@ Replace the example URLs with URLs from your own instance.
 
 Use `floppy_tracked` to select items by tracking status and media type.
 A private Floppy API token is required.
+
+Tracked seasons remain specific seasons in playlists and with `builder_level: season` or
+`builder_level: episode`. Ordinary show collections select their parent shows.
 
 | Option | Allowed values | Purpose |
 |:-------|:---------------|:--------|

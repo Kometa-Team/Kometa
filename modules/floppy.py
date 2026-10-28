@@ -14,7 +14,7 @@ logger = util.logger
 
 builders = ["floppy_list", "floppy_list_details", "floppy_tracked"]
 list_pattern = re.compile(r"^/list/(?P<list_id>\d+)(?:/|$)")
-rss_episode_pattern = re.compile(r"^(?P<source>tmdb|tvdb):episode:(?P<media_id>\d+):s(?P<season_number>\d+):e(?P<episode_number>\d+)$")
+rss_item_pattern = re.compile(r"^(?P<source>tmdb|tvdb|imdb):(?P<media_type>movie|tv|season|episode):(?P<media_id>[^:]+)(?::s(?P<season_number>\d+))?(?::e(?P<episode_number>\d+))?$")
 tracked_statuses = {"no_status": None, "planning": 0, "in_progress": 1, "paused": 2, "completed": 3, "dropped": 4}
 tracked_types = ["movie", "show", "season", "anime"]
 tracked_media_types = {"movie": "movie", "show": "tv", "season": "season", "anime": "anime"}
@@ -199,38 +199,44 @@ class Floppy:
         return list(dict.fromkeys(values))
 
     @staticmethod
-    def _api_id(item, is_movie, is_episode=False):
+    def _api_id(item, is_movie, is_episode=False, builder_level=None):
         data = item.get("item") or item
         media_type = data.get("media_type")
         source = data.get("source")
         media_id = data.get("media_id")
         if media_id is None:
             return None
-        if media_type == "episode":
-            if not is_episode:
+        preserve_parts = is_movie is None or is_episode or builder_level in ("season", "episode")
+        if media_type in ("season", "episode"):
+            if not preserve_parts:
+                if media_type == "episode":
+                    return None
+                data = dict(data, media_type="tv")
+                return Floppy._api_id(data, is_movie)
+            if is_movie is True:
                 return None
             try:
                 season_number = int(data["season_number"])
-                episode_number = int(data["episode_number"])
+                episode_number = int(data["episode_number"]) if media_type == "episode" and builder_level != "season" else None
             except (KeyError, TypeError, ValueError):
+                return None
+            if season_number < 0 or episode_number is not None and episode_number < 1:
                 return None
         elif media_type not in ("movie", "tv"):
             return None
         if is_movie is True and media_type != "movie":
             return None
-        if is_movie is False and media_type not in ("tv", "episode"):
+        if is_movie is False and media_type not in ("tv", "season", "episode"):
             return None
-        if source == "imdb" and media_type != "episode":
+        if source == "imdb" and media_type not in ("season", "episode"):
             return str(media_id), "imdb"
         try:
             media_id = int(media_id)
         except (TypeError, ValueError):
             return None
-        if media_type == "episode":
-            if source == "tmdb":
-                return f"{media_id}_{season_number}_{episode_number}", "tmdb_episode"
-            if source == "tvdb":
-                return f"{media_id}_{season_number}_{episode_number}", "tvdb_episode"
+        if media_type in ("season", "episode"):
+            if source in ("tmdb", "tvdb"):
+                return (f"{media_id}_{season_number}", f"{source}_season") if episode_number is None else (f"{media_id}_{season_number}_{episode_number}", f"{source}_episode")
             return None
         if source == "tmdb":
             return media_id, "tmdb" if media_type == "movie" else "tmdb_show"
@@ -238,22 +244,36 @@ class Floppy:
             return media_id, "tvdb"
         return None
 
-    def _api_ids(self, list_id, is_movie, is_episode=False):
+    def _api_ids(self, list_id, is_movie, is_episode=False, builder_level=None):
         ids = []
         seen = set()
         next_url = f"{self.url}/api/v1/lists/{list_id}/items?limit=1000"
         while next_url:
             payload = self._request(next_url)
             for item in payload.get("results", []):
-                item_id = self._api_id(item, is_movie, is_episode=is_episode)
+                item_id = self._api_id(item, is_movie, is_episode=is_episode, builder_level=builder_level)
                 if item_id and item_id not in seen:
                     ids.append(item_id)
                     seen.add(item_id)
             next_url = payload.get("pagination", {}).get("next")
         return ids
 
-    def _public_ids(self, list_id, is_movie, is_episode=False):
+    def _public_ids(self, list_id, is_movie, is_episode=False, builder_level=None):
         ids = []
+        if is_movie is None or is_episode or builder_level in ("season", "episode"):
+            response = self._response(f"{self.url}/list/{list_id}/rss")
+            content = response.content.decode("utf-8-sig") if isinstance(response.content, bytes) else str(response.content)
+            try:
+                root = ET.fromstring(content)
+            except ET.ParseError as e:
+                raise Failed(f"Floppy Error: Invalid RSS returned by {self.url}/list/{list_id}/rss: {e}") from e
+            for guid in root.findall("./channel/item/guid"):
+                match = rss_item_pattern.fullmatch((guid.text or "").strip())
+                if match:
+                    item_id = self._api_id(match.groupdict(), is_movie, is_episode=is_episode, builder_level=builder_level)
+                    if item_id and item_id not in ids:
+                        ids.append(item_id)
+            return ids
         arr_types = ["radarr", "sonarr"] if is_movie is None else ["radarr" if is_movie else "sonarr"]
         for arr_type in arr_types:
             payload = self._request(f"{self.url}/list/{list_id}/json?arr={arr_type}")
@@ -263,23 +283,6 @@ class Floppy:
                     ids.append((int(item["id"]), id_type))
                 except (KeyError, TypeError, ValueError):
                     continue
-        if is_episode:
-            response = self._response(f"{self.url}/list/{list_id}/rss")
-            content = response.content.decode("utf-8-sig") if isinstance(response.content, bytes) else str(response.content)
-            try:
-                root = ET.fromstring(content)
-            except ET.ParseError as e:
-                raise Failed(f"Floppy Error: Invalid RSS returned by {self.url}/list/{list_id}/rss: {e}") from e
-            for guid in root.findall("./channel/item/guid"):
-                match = rss_episode_pattern.match((guid.text or "").strip())
-                if not match:
-                    continue
-                item_id = (
-                    f"{match['media_id']}_{match['season_number']}_{match['episode_number']}",
-                    f"{match['source']}_episode",
-                )
-                if item_id not in ids:
-                    ids.append(item_id)
         return ids
 
     def get_list_details(self, list_data):
@@ -328,7 +331,7 @@ class Floppy:
             )
             self._ratings[key] = rating
 
-    def get_tracked_ids(self, tracked, is_movie=None):
+    def get_tracked_ids(self, tracked, is_movie=None, builder_level=None):
         if not self.token:
             raise Failed("Floppy Error: An API token is required for floppy_tracked")
         selected_types = {tracked_media_types[media_type] for media_type in tracked["type"]}
@@ -367,7 +370,7 @@ class Floppy:
                         mal_ids.append(mal_id)
                         seen_mal.add(mal_id)
                 continue
-            item_id = self._tracked_api_id(row, is_movie)
+            item_id = self._tracked_api_id(row, is_movie, builder_level=builder_level)
             if item_id and item_id not in seen:
                 ids.append(item_id)
                 seen.add(item_id)
@@ -397,9 +400,14 @@ class Floppy:
         items, limit, offset = [], 100, 0
         while True:
             params = {"media_type": media_type, "limit": limit, "offset": offset}
+            # The untyped endpoint excludes seasons; the documented type route includes them.
+            path = "/api/v1/media/"
+            if media_type == "season":
+                path = "/api/v1/media/season"
+                params.pop("media_type")
             if status is not None:
                 params["status"] = status
-            payload = self._request(f"{self.url}/api/v1/media/", params=params)
+            payload = self._request(f"{self.url}{path}", params=params)
             batch = payload if isinstance(payload, list) else payload.get("results", payload.get("items", payload.get("data", [])))
             if not isinstance(batch, list):
                 raise Failed("Floppy Error: Invalid media response from /api/v1/media")
@@ -428,13 +436,12 @@ class Floppy:
         return tracked_statuses.get(str(status).strip().lower().replace(" ", "_"))
 
     @classmethod
-    def _tracked_api_id(cls, row, is_movie):
+    def _tracked_api_id(cls, row, is_movie, builder_level=None):
         data = row.get("item") or row
         media_type = data.get("media_type")
-        api_type = "movie" if media_type == "movie" else "tv" if media_type in ("tv", "season") else None
-        if api_type is None:
+        if media_type not in ("movie", "tv", "season"):
             return None
-        return cls._api_id({"media_type": api_type, "source": data.get("source"), "media_id": data.get("media_id")}, is_movie)
+        return cls._api_id(data, is_movie, builder_level=builder_level)
 
     def get_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         self._load_ratings()
@@ -465,11 +472,11 @@ class Floppy:
                     return ratings[key]
         raise Failed
 
-    def get_ids(self, list_data, is_movie=None, is_episode=False):
+    def get_ids(self, list_data, is_movie=None, is_episode=False, builder_level=None):
         list_url = list_data["url"] if isinstance(list_data, dict) else list_data
         list_id = self._list_id(list_url)
         logger.info(f"Processing Floppy List: {list_url}")
-        ids = self._api_ids(list_id, is_movie, is_episode=is_episode) if self.token else self._public_ids(list_id, is_movie, is_episode=is_episode)
+        ids = self._api_ids(list_id, is_movie, is_episode=is_episode, builder_level=builder_level) if self.token else self._public_ids(list_id, is_movie, is_episode=is_episode, builder_level=builder_level)
         if not ids:
             raise Failed(f"Floppy Error: No IDs found in {list_url}")
         return ids

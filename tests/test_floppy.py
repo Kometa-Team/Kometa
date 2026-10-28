@@ -34,6 +34,62 @@ def test_public_movie_list_uses_radarr_json_feed():
     assert floppy.get_ids("https://floppy.kometa.team/list/1", is_movie=True) == [(550, "tmdb"), (13, "tmdb")]
 
 
+@pytest.mark.parametrize("level", [None, "season", "episode"])
+@pytest.mark.parametrize("authenticated", [False, True])
+def test_season_episode_lists_preserve_order_and_parent_identity(level, authenticated):
+    root = "https://floppy.kometa.team"
+    rows = [
+        {"media_type": "season", "source": "tmdb", "media_id": "1396", "season_number": 1},
+        {"media_type": "movie", "source": "tmdb", "media_id": "550"},
+        {"media_type": "episode", "source": "tvdb", "media_id": "81189", "season_number": 2, "episode_number": 3},
+        {"media_type": "season", "source": "tmdb", "media_id": "1396", "season_number": 3},
+    ]
+    if authenticated:
+        payloads = {f"{root}/api/v1/lists/1/items?limit=1000": {"results": [{"item": row} for row in rows + rows[:1]], "pagination": {"next": None}}}
+    else:
+        rss = "<rss><channel>" + "".join(f"<item><guid>{guid}</guid></item>" for guid in ["tmdb:season:1396:s1", "tmdb:movie:550", "tvdb:episode:81189:s2:e3", "tmdb:season:1396:s3", "tmdb:season:1396:s1"]) + "</channel></rss>"
+        payloads = {f"{root}/list/1/rss": FakeResponse(content=rss.encode())}
+    floppy = Floppy(Requests(payloads), {"url": root, "token": "test" if authenticated else None})
+    expected = [("1396_1", "tmdb_season")]
+    if level is None:
+        expected.append((550, "tmdb"))
+    expected.extend([("81189_2", "tvdb_season") if level == "season" else ("81189_2_3", "tvdb_episode"), ("1396_3", "tmdb_season")])
+    assert floppy.get_ids(f"{root}/list/1", is_movie=None if level is None else False, builder_level=level) == expected
+
+
+@pytest.mark.parametrize("level, expected", [("show", [(1396, "tmdb_show")]), ("season", [("1396_1", "tmdb_season")]), ("episode", [("1396_1", "tmdb_season")]), (None, [("1396_1", "tmdb_season")])])
+def test_tracked_season_uses_documented_type_endpoint(level, expected):
+    root = "https://floppy.kometa.team"
+    row = {"item": {"media_type": "season", "source": "tmdb", "media_id": "1396", "season_number": 1}, "status": 3}
+    requests = Requests({f"{root}/api/v1/media/season?limit=100&offset=0": {"results": [row]}})
+    floppy = Floppy(requests, {"url": root, "token": "test"})
+    assert floppy.get_tracked_ids({"type": ["season"], "status": ["all"]}, is_movie=None if level is None else False, builder_level=level) == (expected, [])
+
+
+@pytest.mark.parametrize(
+    "row",
+    [
+        {"media_type": "season", "source": "tmdb", "media_id": "1396"},
+        {"media_type": "season", "source": "tmdb", "media_id": "1396", "season_number": -1},
+        {"media_type": "episode", "source": "tmdb", "media_id": "1396", "season_number": 1, "episode_number": "bad"},
+        {"media_type": "season", "source": "imdb", "media_id": "tt0903747", "season_number": 1},
+    ],
+)
+def test_unmatchable_parts_do_not_become_whole_shows(row):
+    assert Floppy._api_id(row, None) is None
+
+
+def test_api_part_lists_follow_pagination_without_collapsing_seasons():
+    root = "https://floppy.kometa.team"
+    first = f"{root}/api/v1/lists/1/items?limit=1000"
+    second = f"{root}/api/v1/lists/1/items?offset=1000"
+    row = {"media_type": "season", "source": "tmdb", "media_id": "1396", "season_number": 0}
+    requests = Requests({first: {"results": [row], "pagination": {"next": second}}, second: {"results": [dict(row, season_number=2)], "pagination": {"next": None}}})
+    floppy = Floppy(requests, {"url": root, "token": "test"})
+    assert floppy.get_ids(f"{root}/list/1", None) == [("1396_0", "tmdb_season"), ("1396_2", "tmdb_season")]
+    assert len(requests.calls) == 2
+
+
 def test_list_export_uses_media_list_route_without_tracking():
     root = "https://floppy.kometa.team"
     requests = Requests(
