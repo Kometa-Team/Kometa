@@ -592,18 +592,18 @@ class Overlays:
         logger.debug(f"Reset Overlays: {self.library.reset_overlays}")
         logger.debug("")
         logger.separator("Number of Items Per Overlay", space=False, border=False)
-        logger.debug("")
+        logger.info("")
 
         longest = 7
         for overlay_name in properties:
             if len(overlay_name) > longest:
                 longest = len(overlay_name)
 
-        logger.debug(f"{'Overlay':^{longest}} | Number |")
-        logger.debug(f"{logger.separating_character * longest} | {logger.separating_character * 6} |")
+        logger.info(f"{'Overlay':^{longest}} | Number |")
+        logger.info(f"{logger.separating_character * longest} | {logger.separating_character * 6} |")
         for overlay_name, over_obj in properties.items():
-            logger.debug(f"{overlay_name:<{longest}} | {len(over_obj.keys):^6} |")
-        logger.debug("")
+            logger.info(f"{overlay_name:<{longest}} | {len(over_obj.keys):^6} |")
+        logger.info("")
 
         for overlay_name, over_obj in properties.items():
             if over_obj.group:

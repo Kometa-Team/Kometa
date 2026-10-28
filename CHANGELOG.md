@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Show the number of items per overlay table at normal logging verbosity for every media server.
+
 - Handle validate as a Jellyfin/Emby search control option rather than an item field.
 
 - Reuse missing overlay rating lookups within each library run and consolidate failed MDBList identifier fallbacks into one error with the item title.
