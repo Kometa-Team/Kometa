@@ -8,11 +8,35 @@ from datetime import datetime, timedelta, timezone
 from modules.language_codes import normalize_language
 from modules.util import Failed
 
-FIELDS = {"title", "year", "decade", "audio_language", "subtitle_language", "content_rating", "resolution", "edition", "filepath", "hdr", "has_dolby_vision", "genre", "studio", "country", "release", "added", "actor", "director", "writer", "producer"}
+FIELDS = {
+    "duplicate",
+    "title",
+    "year",
+    "decade",
+    "audio_language",
+    "subtitle_language",
+    "content_rating",
+    "resolution",
+    "edition",
+    "filepath",
+    "hdr",
+    "has_dolby_vision",
+    "genre",
+    "studio",
+    "country",
+    "release",
+    "added",
+    "actor",
+    "director",
+    "writer",
+    "producer",
+}
 
 
 def values(item, field):
     data = item.data
+    if field == "duplicate":
+        return [data["duplicate"]] if isinstance(data.get("duplicate"), bool) else []
     if field == "decade":
         year = data.get("year")
         return [int(year) // 10 * 10] if not isinstance(year, bool) and str(year).isascii() and str(year).isdecimal() and 1 <= int(year) <= 9999 else []
@@ -143,7 +167,7 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
 
             tests.append(date_test)
             continue
-        if (field in ("hdr", "has_dolby_vision") or kind == "boolean") and (modifier not in ("", "is", "not", "isnot") or any(not isinstance(value, bool) for value in choices)):
+        if (field in ("duplicate", "hdr", "has_dolby_vision") or kind == "boolean") and (modifier not in ("", "is", "not", "isnot") or any(not isinstance(value, bool) for value in choices)):
             raise Failed(f"{server_name} Error: {key} requires boolean values")
         try:
             patterns = [re.compile(str(value)) for value in choices] if modifier == "regex" else []
@@ -168,7 +192,7 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
             exact = (
                 kind in ("tags", "boolean")
                 or modifier in ("is", "isnot")
-                or field in ("year", "decade", "audio_language", "subtitle_language", "content_rating", "hdr", "has_dolby_vision", "resolution", "genre", "studio", "country", "actor", "director", "writer", "producer")
+                or field in ("duplicate", "year", "decade", "audio_language", "subtitle_language", "content_rating", "hdr", "has_dolby_vision", "resolution", "genre", "studio", "country", "actor", "director", "writer", "producer")
             )
             matched = any((value == choice or field in ("audio_language", "subtitle_language", "original_language") and value.startswith(choice + "-")) if exact else choice in value for value, choice in pairs)
             return not matched if modifier in ("not", "isnot") else matched

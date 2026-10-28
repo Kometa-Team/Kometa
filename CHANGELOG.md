@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support Jellyfin and Emby duplicate selectors using media sources, loading source details when needed.
+
 - Support Silo duplicate search and filtering using the number of file versions grouped under each catalog item.
 
 - Add Silo metadata-backed search/filter readers for video/audio tracks, aspect ratios and numeric comparisons, ratings, dates, tag counts, and available user state; retain native smart queries where supported and rebuild other supported definitions locally.

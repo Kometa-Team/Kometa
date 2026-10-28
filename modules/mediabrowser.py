@@ -893,7 +893,7 @@ class MediaBrowser(Library):
         if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
             definition = uri_args["local_collection_search"]
             predicate = self.validate_collection_search(definition)
-            items = [item for item in self._local_search_items(require_media=self._search_requires_media(definition)) if predicate(self._search_metadata(item))]
+            items = [item for item in self._local_search_items(require_media=self._search_requires_media(definition), require_sources=self._search_requires_sources(definition)) if predicate(self._search_metadata(item))]
             field, _, order = definition.get("sort_by", "title.asc").rpartition(".")
             key = LOCAL_COLLECTION_SORTS[field]
             known = [item for item in items if item.data.get(key) is not None or field == "title"]
@@ -902,7 +902,11 @@ class MediaBrowser(Library):
             return (known + missing)[: definition.get("limit")]
         if isinstance(uri_args, dict) and "local_metadata_search" in uri_args:
             predicate = compile_selector(uri_args["local_metadata_search"], self.server.type_label)
-            return [item for item in self._local_search_items(require_media=self._search_requires_media(uri_args["local_metadata_search"])) if predicate(self._search_metadata(item))]
+            return [
+                item
+                for item in self._local_search_items(require_media=self._search_requires_media(uri_args["local_metadata_search"]), require_sources=self._search_requires_sources(uri_args["local_metadata_search"]))
+                if predicate(self._search_metadata(item))
+            ]
         self.require(Capability.PARSE_SMART_FILTER)
 
     def build_local_search(self, definition):
@@ -930,11 +934,20 @@ class MediaBrowser(Library):
             return any(MediaBrowser._search_requires_media(group) for group in definition)
         if isinstance(definition, dict):
             return any(
-                key.partition(".")[0] in {"resolution", "edition", "filepath", "hdr", "has_dolby_vision", "audio_language", "subtitle_language"} or (key in ("all", "any") and MediaBrowser._search_requires_media(value)) for key, value in definition.items()
+                key.partition(".")[0] in {"duplicate", "resolution", "edition", "filepath", "hdr", "has_dolby_vision", "audio_language", "subtitle_language"} or (key in ("all", "any") and MediaBrowser._search_requires_media(value))
+                for key, value in definition.items()
             )
         return False
 
-    def _local_search_items(self, builder_level=None, require_media=True):
+    @staticmethod
+    def _search_requires_sources(definition):
+        if isinstance(definition, list):
+            return any(MediaBrowser._search_requires_sources(group) for group in definition)
+        if isinstance(definition, dict):
+            return any(key.partition(".")[0] == "duplicate" or (key in ("all", "any") and MediaBrowser._search_requires_sources(value)) for key, value in definition.items())
+        return False
+
+    def _local_search_items(self, builder_level=None, require_media=True, require_sources=False):
         if not hasattr(self, "_search_details"):
             self._search_details = {}
         if not hasattr(self, "_media_details_loaded"):
@@ -948,7 +961,7 @@ class MediaBrowser(Library):
                 cache_key = (builder_level, item.ratingKey) if builder_level else item.ratingKey
                 item = self._search_details.get(cache_key, item)
                 logger.ghost(f"Scanning: {index}/{total} {item.title}")
-                if require_media and cache_key not in self._media_details_loaded and "MediaSources" not in item.data and "MediaStreams" not in item.data:
+                if require_media and cache_key not in self._media_details_loaded and "MediaSources" not in item.data and (require_sources or "MediaStreams" not in item.data):
                     item.apply(self.client.get_item(item.ratingKey))
                     self._media_details_loaded.add(cache_key)
                 self._search_details[cache_key] = item
@@ -997,6 +1010,7 @@ class MediaBrowser(Library):
         return SimpleNamespace(
             data={
                 "title": item.title,
+                "duplicate": len(item.data["MediaSources"]) > 1 if isinstance(item.data.get("MediaSources"), list) else None,
                 "year": item.year,
                 "content_rating": item.contentRating,
                 "genres": item.genres,

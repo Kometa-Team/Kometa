@@ -1255,3 +1255,27 @@ def test_get_all_collections_returns_boxsets_and_can_filter_a_tag():
     assert [collection.title for collection in collections] == ["Heat", "Other"]
     assert [collection.title for collection in library.get_all_collections(label="Kometa")] == ["Heat"]
     assert session.calls[0]["params"]["includeItemTypes"] == "BoxSet"
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("sources,expected", [([], False), ([{}], False), ([{}, {}], True), (None, None)])
+def test_duplicate_search_uses_known_media_sources(kind, sources, expected):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    record = MediaBrowserItem({"Id": "1", "Name": "Movie", "Type": "Movie", "MediaSources": sources}, library)
+    from modules.local_search import compile_selector
+
+    metadata = library._search_metadata(record)
+    for value in (True, False):
+        assert compile_selector({"duplicate": value})(metadata) == (expected is value)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_duplicate_search_loads_sources_even_when_streams_are_present(kind):
+    detail = {"Id": "1", "Name": "Movie", "Type": "Movie", "MediaSources": [{"Id": "a"}, {"Id": "b"}]}
+    session = FakeSession([FakeResponse(detail)])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    library.get_all = lambda: [MediaBrowserItem({"Id": "1", "Name": "Movie", "Type": "Movie", "MediaStreams": []}, library)]
+    search = library.build_local_search({"any": {"duplicate": True}})
+    assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
+    assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
+    assert len(session.calls) == 1
