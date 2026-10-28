@@ -1270,12 +1270,52 @@ def test_duplicate_search_uses_known_media_sources(kind, sources, expected):
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-def test_duplicate_search_loads_sources_even_when_streams_are_present(kind):
+@pytest.mark.parametrize("condition", [{"duplicate": True}, {"versions.gt": 1}])
+def test_duplicate_search_loads_sources_even_when_streams_are_present(kind, condition):
     detail = {"Id": "1", "Name": "Movie", "Type": "Movie", "MediaSources": [{"Id": "a"}, {"Id": "b"}]}
     session = FakeSession([FakeResponse(detail)])
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     library.get_all = lambda: [MediaBrowserItem({"Id": "1", "Name": "Movie", "Type": "Movie", "MediaStreams": []}, library)]
-    search = library.build_local_search({"any": {"duplicate": True}})
+    search = library.build_local_search({"any": condition})
     assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
     assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
     assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_typed_search_controls_sort_and_post_filters(kind):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    library.get_all = lambda: [
+        MediaBrowserItem(
+            {"Id": str(i), "Name": f"Movie {i}", "Type": "Movie", "OfficialRating": "PG-13", "MediaSources": [{"MediaStreams": [{"Type": "Video", "Width": width, "Height": height, "Codec": "h264"}, {"Type": "Audio", "Channels": channels}]}]}, library
+        )
+        for i, width, height, channels in [(1, 1920, 1080, 2), (2, 3840, 2160, 6)]
+    ]
+    search = library.build_local_search({"validate": False, "sort_by": "channels.desc", "limit": 1, "any": {"video_codec": "h264", "content_rating": "R, PG-13"}})
+    assert library.get_rating_keys("plex_search", search) == [("2", "ratingKey")]
+    candidate = library.get_all()[1]
+    assert library.validate_local_filter("channels.gte", 6) == 6
+    assert library.check_filters(candidate, [("channels.gte", 6), ("aspect.gt", 1.7)], datetime.now(timezone.utc))
+    assert not library.check_filters(candidate, [("channels.gt", 6)], datetime.now(timezone.utc))
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_validate_control_in_overlay_search(kind):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    library.get_all = lambda: [MediaBrowserItem({"Id": "1", "Name": "Movie", "Type": "Movie", "OfficialRating": "PG-13"}, library)]
+    search = library.build_local_search({"validate": False, "any": {"content_rating": "R, PG-13"}})
+    assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_selector_loads_membership_once(kind):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    movie = MediaBrowserItem({"Id": "1", "Name": "Movie", "Type": "Movie"}, library)
+    library.get_all = lambda: [movie]
+    library.get_all_collections = MagicMock(return_value=[SimpleNamespace(title="Favorites")])
+    library.get_collection_items = MagicMock(return_value=[movie])
+    search = library.build_local_search({"any": {"collection": "Favorites"}})
+    assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
+    assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
+    library.get_all_collections.assert_called_once()
+    library.get_collection_items.assert_called_once()

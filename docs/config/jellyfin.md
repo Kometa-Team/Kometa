@@ -36,6 +36,31 @@ Resolution dynamic collections discover video resolutions across reported media 
 
 Year and decade dynamic collections use native production years. Decades cover ten calendar years (for example, 1990–1999); missing or invalid years are omitted from discovery.
 
+### Search and filtering fields
+
+Jellyfin and Emby evaluate `plex_search`, supported `smart_filter` definitions, and ordinary `filters` against native metadata. Smart filters produce ordinary collections rebuilt on each Kometa run. The `validate` boolean is a control option, not a field to match. Unknown fields still produce an explicit error.
+
+| Metadata | Fields |
+| :--- | :--- |
+| Titles and descriptions | `title`, `summary`, `original_title`, `sort_title`, `tagline`, `show_title`, `album_title`, `type`, `status`/`show_status` |
+| Tags and people | `genre`, `studio`, `country`, `content_rating`, `label`, `collection`, `actor`, `director`, `producer`, `writer`, `artist`, `album_artist` |
+| Dates | `release`, `added`, `last_played`, `ended`, `updated` |
+| Years and counts | `year`, `decade`, `versions`, `seasons`, `episodes`, `season_number`, `episode_number` |
+| Video | `resolution`, `aspect`, `width`, `height`, `video_codec`, `video_profile`, `video_range`, `video_bit_depth`, `video_bitrate`, `frame_rate`, `reference_frames`, `dovi_profile`, `dovi_level` |
+| Audio and subtitles | `channels`, `audio_codec`, `audio_profile`, `audio_track_title`, `subtitle_track_title`, `audio_language`, `subtitle_language`, `original_language`, `audio_bit_depth`, `audio_sample_rate`, `audio_bitrate` |
+| Files | `filepath`, `folder`/`folder_location`, `container`, `edition`, `file_size`, `bitrate` |
+| Duration and ratings | `duration`/`runtime`, `duration_seconds`, `audience_rating`, `critic_rating`, `user_rating` |
+| Flags | `duplicate`, `hdr`, `has_dolby_vision`/`dovi`, `hdr10plus`, `interlaced`, `atmos`, `has_edition`, `has_subtitles`, `is_3d`, `watched`, `unwatched`/`unplayed`, `is_favorite`, `is_in_progress`/`progress`, `unmatched`, `is_missing`, `is_locked` |
+| Playback | `plays`, `position_seconds`, `progress_ratio` |
+
+Numeric fields support equality, `.not`, `.gt`, `.gte`, `.lt`, and `.lte`. Text supports contained text, `.is`, `.isnot`, `.not`, `.begins`, `.ends`, and `.regex`. Tags accept comma-separated alternatives, `.and`, and `.count_gt`/`.count_gte`/`.count_lt`/`.count_lte`. Dates support relative day counts, `.before`/`.after` dates, and `.regex`. Nested `all`/`any` groups accept mappings or lists. Boolean fields require YAML `true` or `false`.
+
+Duration is in minutes unless `duration_seconds` is selected. Total `bitrate` is in `kbps`; stream bit rates are in bits per second. Ratings use a 0–10 scale, including conversion of native critic scores from 0–100. `progress` is a boolean in-progress selector; `progress_ratio` is a fraction from the server's played percentage. Missing numeric, date, and boolean values do not match, including negative filters. An original audio language is available only when the server explicitly marks an audio stream as original. Episode and season counts use the corresponding reported counts, not unrelated recursive item totals.
+
+`sort_by` supports ascending or descending supported numeric, text, and date fields, with unknown values last, plus a positive `limit`. Media details are fetched only for fields that need them and reused during the run. Collection membership is loaded on demand and refreshed after Kometa changes membership. Labels match native `Tags`/`TagItems`. Fields that exist only in Plex are not inferred from unrelated metadata.
+
+These mappings follow the [Jellyfin item contract](https://kotlin-sdk.jellyfin.org/dokka/jellyfin-model/org.jellyfin.sdk.model.api/-base-item-dto/index.html), [Jellyfin stream contract](https://kotlin-sdk.jellyfin.org/dokka/jellyfin-model/org.jellyfin.sdk.model.api/-media-stream/index.html), and [Emby item contract](https://dev.emby.media/reference/pluginapi/MediaBrowser.Model.Dto.BaseItemDto.html). A field may remain unknown when the selected server, version, or user does not report it.
+
 Local searches display an item counter and write periodic scan checkpoints to the log. Metadata-only filters, such as people, years, and genres, use catalog metadata without fetching every item's media details. Technical filters fetch those details as needed and reuse them during the run.
 
 The shared Jellyfin/Emby client retries transient connection failures and timeouts up to twice, waiting 1 then 2 seconds, for reads, item metadata updates/deletions, and collection membership changes. Only the failed request or batch is retried. A deletion that returns 404 after a connection failure is treated as complete. After a failed collection-creation response, Kometa first searches for an exact name match and reuses its ID; creation is retried only if none is found. Ambiguous matches or failed recovery lookups stop processing instead of blindly creating another collection. Other write operations are not automatically replayed.

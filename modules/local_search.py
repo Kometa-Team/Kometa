@@ -91,7 +91,7 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
         if kind == "number":
             modifiers |= {"gt", "gte", "lt", "lte"}
         if kind == "tags":
-            modifiers |= {"count_gt", "count_gte", "count_lt", "count_lte"}
+            modifiers |= {"and", "and.not", "count_gt", "count_gte", "count_lt", "count_lte"}
         if kind == "date":
             modifiers |= {"before", "after", "last", "notlast"}
         if (field not in FIELDS and field not in types) or modifier not in modifiers:
@@ -185,6 +185,11 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
             pairs = [(str(value).casefold(), str(choice).casefold()) for value in actual for choice in choices]
             if field == "resolution":
                 pairs = [(_resolution(value), _resolution(choice)) for value, choice in pairs]
+            if modifier in ("and", "and.not"):
+                matched = all(
+                    any(value == choice or field in ("audio_language", "subtitle_language", "original_language") and value.startswith(choice + "-") for value, pair_choice in pairs if pair_choice == choice) for choice in {pair[1] for pair in pairs}
+                )
+                return not matched if modifier == "and.not" else matched
             if modifier == "begins":
                 return any(value.startswith(choice) for value, choice in pairs)
             if modifier == "ends":

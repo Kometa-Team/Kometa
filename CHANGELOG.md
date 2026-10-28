@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Expand Jellyfin/Emby local search and item filters to native item, stream, source, user-state, tag, and collection metadata, with typed comparisons and local collection sorting.
+
 - Support Jellyfin and Emby duplicate selectors using media sources, loading source details when needed.
 
 - Support Silo duplicate search and filtering using the number of file versions grouped under each catalog item.
@@ -57,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
 
 ### Fixed
+
+- Handle validate as a Jellyfin/Emby search control option rather than an item field.
 
 - Reuse missing overlay rating lookups within each library run and consolidate failed MDBList identifier fallbacks into one error with the item title.
 

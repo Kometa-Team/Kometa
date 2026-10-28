@@ -19,15 +19,16 @@ import requests
 
 from modules import util
 from modules.library import Library
-from modules.local_search import compile_selector
 from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
+from modules.mediabrowser_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_media
+from modules.mediabrowser_search import values as search_values
 from modules.util import Failed
 
 logger = util.logger
 
 LIBRARY_TYPES = {"movies": "Movie", "movie": "Movie", "tvshows": "Show", "tv": "Show"}
 ITEM_TYPES = {"Movie": "movie", "Series": "show", "Season": "season", "Episode": "episode", "BoxSet": "collection", "Playlist": "playlist"}
-ITEM_FIELDS = "ProviderIds,Genres,Studios,ProductionLocations,People,Overview,Tags,DateCreated,ProductionYear,PremiereDate,CommunityRating,CriticRating,OfficialRating,ChildCount,RecursiveItemCount,SortName,ImageTags,LockedFields,Path"
+ITEM_FIELDS = "ProviderIds,Genres,Studios,ProductionLocations,People,Overview,Tags,DateCreated,ProductionYear,PremiereDate,CommunityRating,CriticRating,OfficialRating,ChildCount,RecursiveItemCount,SortName,ImageTags,LockedFields,Path,OriginalTitle,Taglines,DateLastSaved,Settings"
 PAGE_SIZE = 200
 COLLECTION_BATCH_SIZE = 100
 LOCAL_COLLECTION_SORTS = {"title": "SortName", "release": "PremiereDate", "added": "DateCreated", "year": "ProductionYear", "audience_rating": "CommunityRating", "critic_rating": "CriticRating"}
@@ -198,7 +199,7 @@ class MediaBrowserClient:
 
     def items(self, params, limit=None, one_page=False):
         self.ensure_user()
-        query = {"userId": self.user_id, "fields": ITEM_FIELDS, "recursive": "true"}
+        query = {"userId": self.user_id, "fields": ITEM_FIELDS, "recursive": "true", "enableUserData": "true"}
         query.update({key: value for key, value in (params or {}).items() if value is not None})
         page_size = int(limit or query.get("limit") or 200)
         start = int(query.get("startIndex") or 0)
@@ -818,6 +819,7 @@ class MediaBrowser(Library):
         ids = [_item_id(item) for item in items]
         if not ids:
             return
+        self.__dict__.pop("_collection_search_memberships", None)
         if add and isinstance(collection, str) and self.server.type_name == "emby":
             try:
                 target = self.get_collection(collection, debug=False)
@@ -838,6 +840,7 @@ class MediaBrowser(Library):
         logger.exorcise()
 
     def delete(self, obj, notify=True, delete_message=None):
+        self.__dict__.pop("_collection_search_memberships", None)
         if isinstance(obj, MediaBrowserPlaylist):
             self.require(Capability.DELETE_PLAYLIST)
             label = "Playlist"
@@ -893,18 +896,32 @@ class MediaBrowser(Library):
         if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
             definition = uri_args["local_collection_search"]
             predicate = self.validate_collection_search(definition)
-            items = [item for item in self._local_search_items(require_media=self._search_requires_media(definition), require_sources=self._search_requires_sources(definition)) if predicate(self._search_metadata(item))]
+            items = [
+                item
+                for item in self._local_search_items(require_media=self._search_requires_media(definition), require_sources=self._search_requires_sources(definition), require_collections=self._search_requires_collections(definition))
+                if predicate(self._search_metadata(item))
+            ]
             field, _, order = definition.get("sort_by", "title.asc").rpartition(".")
-            key = LOCAL_COLLECTION_SORTS[field]
-            known = [item for item in items if item.data.get(key) is not None or field == "title"]
-            missing = [item for item in items if item.data.get(key) is None and field != "title"]
-            known.sort(key=lambda item: item.data[key] if item.data.get(key) is not None else item.title.casefold(), reverse=order == "desc")
+
+            def sort_value(item):
+                if field == "title":
+                    return item.data.get("ForcedSortName") or item.data.get("SortName") or item.title
+                found = search_values(self._search_metadata(item), field)
+                return found[0] if found else None
+
+            known = [item for item in items if sort_value(item) is not None]
+            missing = [item for item in items if sort_value(item) is None]
+            known.sort(key=lambda item: float(sort_value(item)) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=order == "desc")
             return (known + missing)[: definition.get("limit")]
         if isinstance(uri_args, dict) and "local_metadata_search" in uri_args:
             predicate = compile_selector(uri_args["local_metadata_search"], self.server.type_label)
             return [
                 item
-                for item in self._local_search_items(require_media=self._search_requires_media(uri_args["local_metadata_search"]), require_sources=self._search_requires_sources(uri_args["local_metadata_search"]))
+                for item in self._local_search_items(
+                    require_media=self._search_requires_media(uri_args["local_metadata_search"]),
+                    require_sources=self._search_requires_sources(uri_args["local_metadata_search"]),
+                    require_collections=self._search_requires_collections(uri_args["local_metadata_search"]),
+                )
                 if predicate(self._search_metadata(item))
             ]
         self.require(Capability.PARSE_SMART_FILTER)
@@ -913,16 +930,21 @@ class MediaBrowser(Library):
         if isinstance(definition, dict) and "local_collection_search" in definition:
             self.validate_collection_search(definition["local_collection_search"])
             return None, f"{self.server.type_label} locally rebuilt collection", definition
+        if isinstance(definition, dict) and any(key in definition for key in ("sort_by", "limit", "type")):
+            self.validate_collection_search(definition)
+            return None, f"{self.server.type_label} local metadata search", {"local_collection_search": definition}
         compile_selector(definition, self.server.type_label)
         return None, f"{self.server.type_label} local metadata search", {"local_metadata_search": definition}
 
     def validate_collection_search(self, definition):
         if not isinstance(definition, dict) or set(definition) - {"all", "any", "sort_by", "limit", "type", "validate"}:
             raise Failed(f"{self.server.type_label} Error: Unsupported smart_filter options")
+        if "validate" in definition and not isinstance(definition["validate"], bool):
+            raise Failed(f"{self.server.type_label} Error: validate must be a boolean")
         scope = definition.get("type")
         if scope and scope not in (("movie", "movies") if self.is_movie else ("show", "shows", "series")):
             raise Failed(f"{self.server.type_label} Error: smart_filter type {scope} is not supported for this library")
-        if definition.get("sort_by", "title.asc") not in [f"{field}.{order}" for field in LOCAL_COLLECTION_SORTS for order in ("asc", "desc")]:
+        if definition.get("sort_by", "title.asc") not in [f"{field}.{order}" for field in SORT_FIELDS for order in ("asc", "desc")]:
             raise Failed(f"{self.server.type_label} Error: Unsupported smart_filter sort_by")
         if "limit" in definition and (isinstance(definition["limit"], bool) or not isinstance(definition["limit"], int) or definition["limit"] <= 0):
             raise Failed(f"{self.server.type_label} Error: smart_filter limit must be a positive integer")
@@ -930,30 +952,45 @@ class MediaBrowser(Library):
 
     @staticmethod
     def _search_requires_media(definition):
-        if isinstance(definition, list):
-            return any(MediaBrowser._search_requires_media(group) for group in definition)
-        if isinstance(definition, dict):
-            return any(
-                key.partition(".")[0] in {"duplicate", "resolution", "edition", "filepath", "hdr", "has_dolby_vision", "audio_language", "subtitle_language"} or (key in ("all", "any") and MediaBrowser._search_requires_media(value))
-                for key, value in definition.items()
-            )
-        return False
+        return requires_media(definition)
 
     @staticmethod
     def _search_requires_sources(definition):
         if isinstance(definition, list):
             return any(MediaBrowser._search_requires_sources(group) for group in definition)
         if isinstance(definition, dict):
-            return any(key.partition(".")[0] == "duplicate" or (key in ("all", "any") and MediaBrowser._search_requires_sources(value)) for key, value in definition.items())
+            return any(key.partition(".")[0] in ("duplicate", "versions") or key == "sort_by" and str(value).partition(".")[0] == "versions" or (key in ("all", "any") and MediaBrowser._search_requires_sources(value)) for key, value in definition.items())
         return False
 
-    def _local_search_items(self, builder_level=None, require_media=True, require_sources=False):
+    @staticmethod
+    def _search_requires_collections(definition):
+        if isinstance(definition, list):
+            return any(MediaBrowser._search_requires_collections(group) for group in definition)
+        if isinstance(definition, dict):
+            return any(key.partition(".")[0] == "collection" or (key in ("all", "any") and MediaBrowser._search_requires_collections(value)) for key, value in definition.items())
+        return False
+
+    def _search_collection_names(self):
+        cached = self.__dict__.get("_collection_search_memberships")
+        if cached is None:
+            cached = {}
+            collections = self.get_all_collections()
+            for index, collection in enumerate(collections, 1):
+                logger.ghost(f"Loading collection membership: {index}/{len(collections)} {collection.title}")
+                for member in self.get_collection_items(collection, False):
+                    cached.setdefault(member.ratingKey, []).append(collection.title)
+            logger.exorcise()
+            self._collection_search_memberships = cached
+        return cached
+
+    def _local_search_items(self, builder_level=None, require_media=True, require_sources=False, require_collections=False):
         if not hasattr(self, "_search_details"):
             self._search_details = {}
         if not hasattr(self, "_media_details_loaded"):
             self._media_details_loaded = set()
         logger.info(f"Loading {self.server.type_label} catalog for local search")
         items = self.get_all(builder_level=builder_level) if builder_level else self.get_all()
+        memberships = self._search_collection_names() if require_collections else None
         total = len(items)
         logger.info(f"Scanning {total} {self.server.type_label} items for local search{' (loading media details as needed)' if require_media else ' (catalog metadata)'}")
         try:
@@ -964,6 +1001,8 @@ class MediaBrowser(Library):
                 if require_media and cache_key not in self._media_details_loaded and "MediaSources" not in item.data and (require_sources or "MediaStreams" not in item.data):
                     item.apply(self.client.get_item(item.ratingKey))
                     self._media_details_loaded.add(cache_key)
+                if memberships is not None:
+                    item.data["_kometa_collections"] = memberships.get(item.ratingKey, [])
                 self._search_details[cache_key] = item
                 if index % PAGE_SIZE == 0:
                     logger.info(f"Scanned: {index}/{total}")
@@ -1009,6 +1048,7 @@ class MediaBrowser(Library):
             versions.append(version)
         return SimpleNamespace(
             data={
+                "native": item.data,
                 "title": item.title,
                 "duplicate": len(item.data["MediaSources"]) > 1 if isinstance(item.data.get("MediaSources"), list) else None,
                 "year": item.year,
@@ -1067,19 +1107,36 @@ class MediaBrowser(Library):
                     names.add(name.strip())
         return [SimpleNamespace(key=name, title=name) for name in sorted(names, key=lambda name: (name.casefold(), name))]
 
+    local_filter_fields = FIELD_TYPES
+
+    @staticmethod
+    def validate_local_filter(name, value):
+        if name == "episodes" and isinstance(value, dict):
+            percentage = value.get("percentage", 50)
+            if isinstance(percentage, bool) or not isinstance(percentage, (int, float)) or not 0 <= percentage <= 100:
+                raise Failed("Media server Error: Episode filter percentage must be between 0 and 100")
+            compile_selector({key: data for key, data in value.items() if key != "percentage"})
+        else:
+            compile_selector({name: value})
+        return value
+
     def check_filters(self, item, filters_in, current_time):
-        normalized = self._search_metadata(item)
         for key, value in filters_in:
-            field, _, modifier = key.partition(".")
-            if field == "aspect":
-                aspects = [version["aspect"] for version in normalized.data["versions"] if "aspect" in version]
-                modifier = {"is": "", "isnot": ".not"}.get(modifier, f".{modifier}" if modifier else "")
-                if modifier not in ("", ".not", ".gt", ".gte", ".lt", ".lte"):
-                    raise Failed(f"{self.server.type_label} Error: Unsupported aspect filter modifier: {key}")
-                if util.is_number_filter(max(aspects) if aspects else None, modifier, value):
+            if key == "episodes" and isinstance(value, dict):
+                definition = {name: data for name, data in value.items() if name != "percentage"}
+                predicate = compile_selector(definition, self.server.type_label, current_time)
+                children = [self._wrap(row) for row in self.client.items({"parentId": item.ratingKey, "includeItemTypes": "Episode", "recursive": "true"})]
+                matched = sum(bool(predicate(self._search_metadata(self.reload(child)))) for child in children)
+                if not children or matched / len(children) * 100 < float(value.get("percentage", 50)):
                     return False
-            elif not compile_selector({key: value}, self.server.type_label)(normalized):
-                return False
+            else:
+                definition = {key: value}
+                if requires_media(definition) and "MediaSources" not in item.data and (self._search_requires_sources(definition) or "MediaStreams" not in item.data):
+                    item.apply(self.client.get_item(item.ratingKey))
+                if self._search_requires_collections(definition):
+                    item.data["_kometa_collections"] = self._search_collection_names().get(item.ratingKey, [])
+                if not compile_selector(definition, self.server.type_label, current_time)(self._search_metadata(item)):
+                    return False
         return True
 
     def set_user_rating(self, item, rating):
