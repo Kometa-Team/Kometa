@@ -577,7 +577,9 @@ def test_collection_lookup_and_removal_accept_title_strings(kind):
 @pytest.mark.parametrize("folders", [True, False])
 @pytest.mark.parametrize("present", [True, False])
 def test_collection_metadata_discovers_and_uploads_assets(tmp_path, monkeypatch, kind, folders, present):
-    from modules import builder as builder_module, library as library_module, plex as plex_module
+    from modules import builder as builder_module
+    from modules import library as library_module
+    from modules import plex as plex_module
     from tests.factories import make_builder
 
     for module in (builder_module, library_module, plex_module):
@@ -802,9 +804,10 @@ def test_item_display_titles_do_not_query_server(kind, data, display, sort_title
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
 def test_overlay_application_uses_native_tags_and_reuses_backup(tmp_path, monkeypatch, kind):
+    from PIL import Image
+
     from modules import overlays as overlays_module
     from modules.overlays import Overlays
-    from PIL import Image
 
     logger = FakeLogger()
     monkeypatch.setattr(overlays_module, "logger", logger)
@@ -863,9 +866,10 @@ def test_resolution_overlay_categories_include_cropped_video(width, height, badg
 
 
 def test_emby_removes_untagged_overlay_using_existing_backup(tmp_path, monkeypatch):
+    from PIL import Image
+
     from modules import overlays as overlays_module
     from modules.overlays import Overlays
-    from PIL import Image
 
     logger = FakeLogger()
     monkeypatch.setattr(overlays_module, "logger", logger)
@@ -1062,6 +1066,7 @@ def test_large_emby_collection_creation_batches_initial_members():
 @pytest.mark.parametrize("field,date_field", [("release", "PremiereDate"), ("added", "DateCreated")])
 def test_basic_released_smart_filter_becomes_local_collection(kind, field, date_field, monkeypatch):
     from datetime import timedelta
+
     from modules import builder as builder_module
     from modules.builder import CollectionBuilder
 

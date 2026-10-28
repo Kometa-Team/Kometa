@@ -18,7 +18,7 @@ Jellyfin collection sort titles use its custom sort-name field, including separa
 
 Emby sort-title updates write both `ForcedSortName` and `SortName`, matching its native metadata editor. This applies to people collections, separators, and other configured sort titles.
 
-Kometa also locks Emby's `SortName` field while preserving existing field locks, then reads back the saved sort title. A value that was not retained reports an error instead of a successful edit.
+Kometa also locks the Emby `SortName` field while preserving existing field locks, then reads back the saved sort title. A value that was not retained reports an error instead of a successful edit.
 
 Verification accepts differences in accents and letter case, such as `Toshirō Mifune` becoming `Toshiro Mifune`, while still checking the section prefix and name.
 
@@ -92,7 +92,7 @@ Libraries that omit `server` keep using `plex`.
 
 Jellyfin and Emby do not execute Plex smart-filter URIs. Supported `smart_filter` definitions are rebuilt as ordinary collections on each Kometa run using local metadata. Nested `all`/`any` expressions support the same fields as local overlay selectors, plus `release` and `added` with positive day counts. Missing dates and future dates do not match a recent-date window. Supported selection sorts are `title`, `release`, `added`, and `year` with `.asc`/`.desc`; sorting occurs before `limit` is applied. The server's supported collection display order is applied separately. `default: basic` Newly Released works this way; New Episodes skips movie libraries and still requires unsupported episode-level filtering on show libraries. Unknown fields/options and `smart_url` remain explicit errors.
 
-People defaults use native `People` metadata for actor, director, writer, and producer discovery and filtering. Person names resolved by `tmdb_person` are substituted for `tmdb` in selectors. Local collection selection also supports `audience_rating` (CommunityRating) and `critic_rating` (CriticRating) sorts, applied before any limit; unsupported collection display orders still warn and retain the server's display order.
+People defaults use native `People` metadata for actor, director, writer, and producer discovery and filtering. Person names resolved by `tmdb_person` are substituted for `tmdb` in selectors. Local collection selection also supports `audience_rating` (`CommunityRating`) and `critic_rating` (`CriticRating`) sorts, applied before any limit; unsupported collection display orders still warn and retain the server's display order.
 
 Simple `smart_label` definitions with an external list builder or a supported local `plex_all`/`plex_search` selector are converted to ordinary collections rebuilt each run, retaining filters, sorting, and limits. This includes sort-only smart labels and dictionaries whose only condition is `all: {label: <<smart_label>>}`, such as seasonal and aspect defaults. Aspect filters read native video aspect ratios, falling back to frame dimensions. Additional label conditions and definitions without a supported selector remain unsupported.
 

@@ -18,8 +18,8 @@ from urllib.parse import quote
 import requests
 
 from modules import util
-from modules.local_search import compile_selector
 from modules.library import Library
+from modules.local_search import compile_selector
 from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
 from modules.util import Failed
 

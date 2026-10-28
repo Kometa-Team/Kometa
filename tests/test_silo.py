@@ -605,7 +605,9 @@ def test_builder_updates_silo_collection_metadata(monkeypatch, summary, expected
 @pytest.mark.parametrize("folders", [True, False])
 @pytest.mark.parametrize("present", [True, False])
 def test_silo_metadata_resolves_local_collection_artwork(tmp_path, monkeypatch, folders, present):
-    from modules import builder as builder_module, library as library_module, plex as plex_module
+    from modules import builder as builder_module
+    from modules import library as library_module
+    from modules import plex as plex_module
     from tests.factories import make_builder
 
     for module in (builder_module, library_module, plex_module):
@@ -1318,9 +1320,10 @@ def test_item_logo_upload_remains_supported(monkeypatch):
 
 
 def test_silo_overlay_lifecycle_uses_backups_without_labels(tmp_path, monkeypatch):
+    from PIL import Image
+
     from modules import overlays as overlays_module
     from modules.overlays import Overlays
-    from PIL import Image
 
     logger = FakeLogger()
     monkeypatch.setattr(overlays_module, "logger", logger)
@@ -1377,9 +1380,10 @@ def test_silo_poster_selection_preserves_existing_backup():
 
 @pytest.mark.parametrize("missing_rating", [False, True])
 def test_silo_overlay_application_reuses_original_without_labels(tmp_path, monkeypatch, missing_rating):
+    from PIL import Image
+
     from modules import overlays as overlays_module
     from modules.overlays import Overlays
-    from PIL import Image
 
     logger = FakeLogger()
     monkeypatch.setattr(overlays_module, "logger", logger)

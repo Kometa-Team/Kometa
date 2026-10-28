@@ -481,9 +481,9 @@ def test_geographic_other_collections_use_distinct_translation_keys(library_type
 @pytest.mark.parametrize("limit", [None, 25])
 def test_seasonal_template_uses_list_driven_collections_on_silo(server_type, limit, monkeypatch):
     from modules.builder import CollectionBuilder
-    from modules.silo import SiloMediaServer
     from modules.media_server import PlexMediaServer
-    from modules.mediabrowser import JellyfinMediaServer, EmbyMediaServer
+    from modules.mediabrowser import EmbyMediaServer, JellyfinMediaServer
+    from modules.silo import SiloMediaServer
 
     with (Path(__file__).resolve().parents[1] / "defaults" / "movie" / "seasonal.yml").open(encoding="utf-8") as handle:
         seasonal = YAML(typ="safe").load(handle)
@@ -512,6 +512,7 @@ def test_seasonal_template_uses_list_driven_collections_on_silo(server_type, lim
 
 def test_disabled_actor_separator_does_not_block_later_enabled_default(monkeypatch):
     import copy
+
     from modules.meta import get_dict
 
     root = Path(__file__).resolve().parents[1] / "defaults"

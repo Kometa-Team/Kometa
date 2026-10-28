@@ -14710,9 +14710,13 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience"
           ]
         },
         "rating1_image": {
@@ -14791,9 +14795,13 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience"
           ]
         },
         "rating2_image": {
@@ -14872,9 +14880,13 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience"
           ]
         },
         "rating3_image": {

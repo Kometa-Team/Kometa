@@ -38,7 +38,8 @@ from modules.silo import Silo, SiloMediaServer
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
-from modules.tautulli import Tautulli, supports_library as tautulli_supports_library
+from modules.tautulli import Tautulli
+from modules.tautulli import supports_library as tautulli_supports_library
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
 from modules.tracearr import Tracearr
