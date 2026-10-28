@@ -83,7 +83,7 @@ Silo smart collections accept native query documents under `smart_filter`. Komet
 | Audio and subtitles | `channels`, `audio_codec`, `audio_profile`, `audio_track_title`, `subtitle_track_title`, `audio_language`, `subtitle_language`, `audio_bit_depth`, `audio_sample_rate`, `audio_bitrate` |
 | Files | `filepath`, `folder`, `container`, `edition`, `release_type`, `file_size`, `bitrate` |
 | Duration and ratings | `duration`/`runtime` (minutes), `duration_seconds`, `critic_rating`, `audience_rating`, `user_rating` (0–10), `rating_imdb`, `rating_tmdb`, `rating_rt_critic`, `rating_rt_audience` (Rotten Tomatoes raw scores are 0–100) |
-| Flags and progress | `hdr`, `has_dolby_vision`, `hdr10plus`, `atmos` (reported track title/profile), `interlaced`, `has_edition`, `unmatched`, `watched`, `is_favorite`, `in_watchlist`, `not_interested`, `is_in_progress`, `position_seconds`, `plays`/`progress` when listing metrics report them |
+| Flags and progress | `duplicate`, `hdr`, `has_dolby_vision`, `hdr10plus`, `atmos` (reported track title/profile), `interlaced`, `has_edition`, `unmatched`, `watched`, `is_favorite`, `in_watchlist`, `not_interested`, `is_in_progress`, `position_seconds`, `plays`/`progress` when listing metrics report them |
 
 Numeric fields accept `.gt`, `.gte`, `.lt`, `.lte`, equality, and `.not`. Text fields match contained text and accept `.is`, `.isnot`, `.not`, `.begins`, `.ends`, and `.regex`. Tags additionally support `.count_gt`, `.count_gte`, `.count_lt`, and `.count_lte`. Dates accept relative day counts, `.before`/`.after` calendar dates, and `.regex`. Nested `all`/`any` groups can be mappings or lists of mappings.
 
@@ -120,3 +120,5 @@ A `type: plex` entry is another Plex server. Its `url`, `token`, `timeout`, `ver
 Libraries that omit `server` keep using `plex`.
 
 If a collection disappears between listing and reloading during collection operations, Kometa warns and skips it rather than aborting the library run. Other reload errors still surface as failures.
+
+The `duplicate` flag matches items with more than one file version, including alternate resolutions or editions grouped under one Silo item. It does not detect separate catalog entries for the same movie. Unknown version metadata matches neither `duplicate: true` nor `duplicate: false`.

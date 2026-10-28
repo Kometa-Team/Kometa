@@ -72,7 +72,7 @@ TRACK_FIELDS = {
     "video_profile": ("video_tracks", "profile"),
     "video_range": ("video_tracks", "video_range_type"),
 }
-BOOLEAN_FIELDS = {"hdr", "has_dolby_vision", "hdr10plus", "atmos", "interlaced", "has_edition", "unmatched", "watched", "is_favorite", "in_watchlist", "not_interested", "is_in_progress"}
+BOOLEAN_FIELDS = {"duplicate", "hdr", "has_dolby_vision", "hdr10plus", "atmos", "interlaced", "has_edition", "unmatched", "watched", "is_favorite", "in_watchlist", "not_interested", "is_in_progress"}
 FIELD_TYPES = {
     **dict.fromkeys(TEXT_FIELDS, "text"),
     **dict.fromkeys(TAG_FIELDS, "tags"),
@@ -179,6 +179,8 @@ def values(item, field):
     overlay = data.get("overlay_summary") or {}
     video = [track for version in versions for track in version.get("video_tracks") or []]
     audio = [track for version in versions for track in version.get("audio_tracks") or []]
+    if field == "duplicate":
+        return [len(versions) > 1] if isinstance(data.get("versions"), list) else []
     if field in TEXT_FIELDS:
         return _list(data.get(TEXT_FIELDS[field]))
     if field in TAG_FIELDS:

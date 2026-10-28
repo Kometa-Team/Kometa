@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support Silo duplicate search and filtering using the number of file versions grouped under each catalog item.
+
 - Add Silo metadata-backed search/filter readers for video/audio tracks, aspect ratios and numeric comparisons, ratings, dates, tag counts, and available user state; retain native smart queries where supported and rebuild other supported definitions locally.
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
 - Log remote server names, versions, and available OS details when connecting to Silo, Jellyfin, and Emby; explicitly identify unreported values without using Kometa's host information.

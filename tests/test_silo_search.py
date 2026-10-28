@@ -249,6 +249,18 @@ def test_silo_contract_fields_and_modifiers(silo_detail, field, expected):
 def test_silo_aspect_uses_maximum_of_known_versions_and_rounds_dimensions():
     assert compile_silo_selector({"aspect.gt": 1.32, "aspect.lt": 1.34})(item(versions=[{"video_tracks": [{"width": 1440, "height": 1080}]}]))
     assert not compile_silo_selector({"aspect.lt": 1.34})(item(versions=[{"video_tracks": [{"aspect_ratio": "4:3"}, {"aspect_ratio": "16:9"}]}]))
+
+
+@pytest.mark.parametrize("versions,duplicate", [([], False), ([{}], False), ([{}, {}], True), ([{}, {}, {}], True)])
+def test_silo_duplicate_matches_multiple_file_versions(versions, duplicate):
+    assert compile_silo_selector({"duplicate": duplicate})(item(versions=versions))
+    assert not compile_silo_selector({"duplicate": not duplicate})(item(versions=versions))
+
+
+@pytest.mark.parametrize("data", [{}, {"versions": None}])
+@pytest.mark.parametrize("expected", [True, False])
+def test_silo_duplicate_does_not_guess_when_versions_are_unknown(data, expected):
+    assert not compile_silo_selector({"duplicate": expected})(item(**data))
     assert compile_silo_selector({"aspect": 1.78})(item(overlay_summary={"aspect_ratio": "16:9"}))
 
 
