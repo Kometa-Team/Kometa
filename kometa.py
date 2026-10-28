@@ -640,14 +640,6 @@ def start(attrs):
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
-        integrity_summary_logged = False
-
-        def log_run_integrity_summary():
-            nonlocal integrity_summary_logged
-            if not integrity_summary_logged:
-                log_integrity_summary(integrity_report, logger)
-                integrity_summary_logged = True
-
         config = None
         stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         try:
@@ -668,7 +660,7 @@ def start(attrs):
                     except ImportError:
                         logger.error("Timings Error: KOMETA_PROFILE=pyinstrument set but pyinstrument is not installed")
                 try:
-                    stats = run_config(config, stats, before_summary=log_run_integrity_summary)
+                    stats = run_config(config, stats)
                 except Exception as e:
                     config.notify(get_critical_error_message(e))
                     log_critical_exception(e)
@@ -707,7 +699,7 @@ def start(attrs):
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
-        log_run_integrity_summary()
+        log_integrity_summary(integrity_report, logger)
         try:
             details = run_args["trace"] or run_args["log-requests"]
             log_summary = RunLogSummary(rating_sources, details=details)
@@ -768,7 +760,7 @@ def start(attrs):
         log_critical_exception(e)
 
 
-def run_config(config, stats, before_summary=None):
+def run_config(config, stats):
     library_status, collections_ran = run_libraries(config)
 
     playlist_status = {}
@@ -861,8 +853,6 @@ def run_config(config, stats, before_summary=None):
                 longest = len(title)
 
     logger.info("")
-    if before_summary is not None:
-        before_summary()
     logger.separator("Summary")
     for library in config.libraries:
         logger.info("")

@@ -37,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolve FlickList user list URLs (`/u/<user>/lists/<slug>`) to numeric API IDs for list builders and list descriptions.
 - Invalidate stale MDBList cache entries that could apply incorrectly scaled Letterboxd ratings to Plex. #3771
 - Exclude documentation-only `zensical.toml` from Docker source integrity checks to avoid reporting unmodified images as modified.
-- Show the source integrity summary before the end-of-run collection, playlist, warning, and error summaries.
+- Show the source integrity summary after collection and playlist summaries, before the end-of-run errors and warnings introduction.
 - Fix cached MDBList entries never returning the MyAnimeList rating: `query_mdb()` rebuilt that rating with the source label `myanimelist_rating`, which `MDbObj` does not recognize, so `mdb_myanimelist` in `mass_*_rating_update` operations, `<<mdb_myanimelist_rating>>` overlay text and `value_filter` only worked on a fresh MDBList fetch. #3773
 - Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
