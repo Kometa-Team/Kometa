@@ -1,4 +1,4 @@
-from urllib.parse import quote
+from urllib.parse import quote, unquote, urlsplit
 
 from modules import tracker, util
 from modules.util import Failed
@@ -69,7 +69,35 @@ class FlickList(tracker.TrackerAPI):
             return "show"
         return None
 
-    def _parse_ids(self, items, is_movie=None):
+    def _parse_ids(self, items, is_movie=None, builder_level=None):
+        if is_movie is None or builder_level in ("season", "episode"):
+            ids = []
+            seen = set()
+            for item in items or []:
+                if is_movie is True and self._type_of(item) != "movie" or is_movie is False and self._type_of(item) != "show":
+                    continue
+                block = item.get("ids") or {}
+                season = item.get("season_number")
+                episode = item.get("episode_number")
+                if builder_level == "season":
+                    episode = None
+                if self._type_of(item) == "show" and season is not None:
+                    show_id = block.get("tmdb") or block.get("tvdb")
+                    if not show_id:
+                        if logger:
+                            logger.warning(f"FlickList Warning: No usable show ID found for season entry {item.get('title')}; skipping")
+                        continue
+                    provider = "tmdb" if block.get("tmdb") else "tvdb"
+                    key = (f"{int(show_id)}_{int(season)}", f"{provider}_season") if episode is None else (f"{int(show_id)}_{int(season)}_{int(episode)}", f"{provider}_episode")
+                else:
+                    parsed = tracker.parse_ids([item], None, service=self.service, type_of=self._type_of, native_id_of=lambda entry: (entry.get("ids") or {}).get("fldb"))
+                    if not parsed:
+                        continue
+                    key = parsed[0]
+                if key not in seen:
+                    seen.add(key)
+                    ids.append(key)
+            return ids
         return tracker.parse_ids(
             items,
             is_movie,
@@ -121,7 +149,17 @@ class FlickList(tracker.TrackerAPI):
         for value in util.get_list(method_data, split=False, return_none=False):
             if isinstance(value, dict):
                 raise Failed(f"{err_type} Error: FlickList List cannot be a dictionary")
-            valid_ids.append(self._parse_list_id(value))
+            parsed = urlsplit(str(value).strip())
+            parts = parsed.path.strip("/").split("/")
+            if parsed.scheme in ("http", "https") and parsed.hostname in ("flicklist.tv", "www.flicklist.tv") and len(parts) == 4 and parts[0] == "u" and parts[2] in ("list", "lists") and parts[1] and parts[3]:
+                username, slug = unquote(parts[1]), unquote(parts[3])
+                lists = self._request_paginated(f"/users/{quote(username, safe='')}/lists", anonymous=True, ignore_404=True) or []
+                entry = next((item for item in lists if item.get("slug") == slug and item.get("id") is not None), None)
+                if entry is None:
+                    raise Failed(f"FlickList Error: List {slug} not found for user {username}")
+                valid_ids.append(self._parse_list_id(entry["id"]))
+            else:
+                valid_ids.append(self._parse_list_id(value))
         if not valid_ids:
             raise Failed(f"{err_type} Error: No valid FlickList Lists")
         return valid_ids
@@ -159,7 +197,7 @@ class FlickList(tracker.TrackerAPI):
         data = self._request(f"/lists/{list_id}") or {}
         return data.get("description") or ""
 
-    def _user_lists_ids(self, username, is_movie):
+    def _user_lists_ids(self, username, is_movie, builder_level=None):
         lists = self._request_paginated(f"/users/{username}/lists", anonymous=True, ignore_404=True)
         if lists is None:
             raise Failed(f"FlickList Error: User {username} not found")
@@ -173,7 +211,7 @@ class FlickList(tracker.TrackerAPI):
             list_id = entry.get("id")
             if list_id is None:
                 continue
-            for item_id in self._parse_ids(self._list_items(list_id), is_movie=is_movie):
+            for item_id in self._parse_ids(self._list_items(list_id), is_movie=is_movie, builder_level=builder_level):
                 if item_id not in seen:
                     seen.add(item_id)
                     ids.append(item_id)
@@ -184,13 +222,13 @@ class FlickList(tracker.TrackerAPI):
         if logger:
             logger.info(message)
 
-    def get_flicklist_ids(self, method, value, is_movie):
+    def get_flicklist_ids(self, method, value, is_movie, builder_level=None):
         pretty = method.replace("_", " ").title()
         if method in ("flicklist_list", "flicklist_list_details"):
             self._log_info(f"Processing {pretty}: {value}")
-            return self._parse_ids(self._list_items(value), is_movie=is_movie)
+            return self._parse_ids(self._list_items(value), is_movie=is_movie, builder_level=builder_level)
         if method == "flicklist_user_lists":
-            return self._user_lists_ids(value, is_movie)
+            return self._user_lists_ids(value, is_movie, builder_level=builder_level)
         if method == "flicklist_watchlist":
             self._log_info(f"Processing {pretty}")
             return self._parse_ids(self._request_list("/sync/watchlist"), is_movie=is_movie)

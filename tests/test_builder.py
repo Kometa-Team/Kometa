@@ -645,13 +645,14 @@ class TestFilterAndSaveItems:
         builder.filter_and_save_items([("383275_2", "tvdb_season")])
         assert builder.found_items == episodes
 
-    def test_expands_tmdb_season_into_playlist_episodes(self, monkeypatch):
+    @pytest.mark.parametrize("playlist", [False, True])
+    def test_expands_tmdb_season_into_playlist_or_collection_episodes(self, monkeypatch, playlist):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
         monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
         monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
         episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
         builder = _episode_builder(FakeTVDbLibrary(FakeShow("Agent Carter", seasons={1: FakeSeason(episodes)})))
-        builder.playlist = True
+        builder.playlist = playlist
         builder.config = SimpleNamespace(Convert=SimpleNamespace(tmdb_to_tvdb=MagicMock(return_value=383275)))
 
         builder.filter_and_save_items([("61550_1", "tmdb_season")])
@@ -798,9 +799,27 @@ class TestTextfile:
     def test_mdblist_list_is_allowed_for_episode_collections(self):
         assert "mdblist_list" in parts_collection_valid
 
-    def test_floppy_list_builders_are_allowed_for_episode_collections(self):
-        assert "floppy_list" in parts_collection_valid
-        assert "floppy_list_details" in parts_collection_valid
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "flicklist_list",
+            "flicklist_list_details",
+            "flicklist_user_lists",
+            "wetrakr_list",
+            "wetrakr_list_details",
+            "wetrakr_user_lists",
+            "floppy_list",
+            "floppy_list_details",
+            "floppy_tracked",
+        ],
+    )
+    def test_tracker_part_builders_are_allowed_for_season_and_episode_collections(self, method):
+        # Both builder levels use this allowlist in CollectionBuilder's validation gate.
+        assert method in parts_collection_valid
+
+    @pytest.mark.parametrize("method", ["flicklist_watchlist", "wetrakr_tracking"])
+    def test_unrelated_tracker_builders_remain_disallowed_for_part_collections(self, method):
+        assert method not in parts_collection_valid
 
     def test_floppy_list_details_is_allowed_for_playlists(self):
         assert "floppy_list_details" in playlist_attributes

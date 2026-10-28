@@ -831,8 +831,15 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "flicklist_list",
+        "flicklist_list_details",
+        "flicklist_user_lists",
+        "wetrakr_list",
+        "wetrakr_list_details",
+        "wetrakr_user_lists",
         "floppy_list",
         "floppy_list_details",
+        "floppy_tracked",
         "cache_builders",
         "url_theme",
         "file_theme",
@@ -4340,19 +4347,19 @@ class CollectionBuilder:
                     ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "flicklist" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
-                ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
+                ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
             elif "wetrakr" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
-                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None)
+                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
             elif "serializd" in method:
                 ids = self.config.Serializd.get_builder_ids(method, value)
             elif "floppy" in method:
                 if method == "floppy_tracked":
-                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
                     if mal_ids:
                         ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
                 else:
-                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None, is_episode=self.builder_level == "episode")
+                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None, is_episode=self.builder_level == "episode", builder_level=self.builder_level)
             elif "radarr" in method:
                 ids = self.library.Radarr.get_tmdb_ids(method, value)
             elif "sonarr" in method:

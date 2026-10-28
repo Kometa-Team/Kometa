@@ -30,9 +30,11 @@ to keep collection membership synchronized as the source changes.
 
 ### Specific lists {#flicklist_list}
 
-`flicklist_list` accepts a full URL, such as `https://flicklist.tv/list/4821`,
+`flicklist_list` accepts a full URL, such as `https://flicklist.tv/u/Furglitch/lists/dc-universe-chronological`,
 or a numeric list ID, such as `4821`. For multiple sources, use a YAML list or
 comma-separated string. The sources are combined, rather than used as AND/OR filters.
+
+User list URLs are resolved to numeric IDs through the user's public lists. Legacy `/list/<id>` URLs remain accepted as numeric IDs even if the website no longer serves those pages.
 
 Use `flicklist_list_details` to also copy the list description to the collection
 summary. With multiple lists, **only the first list supplies the description**.
@@ -41,13 +43,13 @@ summary. With multiple lists, **only the first list supplies the description**.
 
 === "One URL"
 
-    Follows list 4821 in its source order. The URL is a string; collection
+    Follows the DC Universe list in its source order. The URL is a string; collection
     membership stays synchronized as the list changes.
 
     ```yaml
     collections:
       FlickList Picks:
-        flicklist_list: https://flicklist.tv/list/4821
+        flicklist_list: https://flicklist.tv/u/Furglitch/lists/dc-universe-chronological
         collection_order: custom
         sync_mode: sync
     ```
