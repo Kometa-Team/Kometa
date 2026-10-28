@@ -502,7 +502,6 @@ class Library(ABC):
                 f"tvdb_{image_type}",
                 "asset_directory",
                 f"pmm_{image_type}",
-                f"kometa_{image_type}",
                 "tmdb_person",
                 "tmdb_collection_details",
                 "tmdb_actor_details",
@@ -533,7 +532,7 @@ class Library(ABC):
                                 )
                             except Failed as e:
                                 logger.error(e)
-                    if attr in ["asset_directory", f"pmm_{image_type}", f"kometa_{image_type}"]:
+                    if attr in ["asset_directory", f"pmm_{image_type}"]:
                         return images[attr]
                     return ImageData(attr, images[attr], image_type=image_type, is_url=attr != f"file_{image_type}")
 

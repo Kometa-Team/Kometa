@@ -123,17 +123,14 @@ class TestGeneratedPosterUpload:
         import pytest
 
         from modules.builder import CollectionBuilder
-        from modules.library import Library
         from modules.poster import KometaImage
         from tests.factories import make_builder
 
         monkeypatch.setattr("modules.builder.logger", MagicMock())
-        monkeypatch.setattr("modules.library.logger", MagicMock())
         image = KometaImage(TestKometaPoster.config(), {"background_color": "#0B1F3A", "components": [{"image": {"repo": "image.png"}}]}, "kometa_poster", playlist=True)
         paths = [Path(image.components[0].image)]
         library = MagicMock()
         library.collection_images = {}
-        library.pick_image.side_effect = lambda *args, **kwargs: Library.pick_image(library, *args, **kwargs)
 
         def upload(obj, poster, **kwargs):
             paths.append(Path(poster.location))
@@ -152,7 +149,7 @@ class TestGeneratedPosterUpload:
             name="Week 7",
             mapping_name="Week 7",
             summaries={},
-            posters={"kometa_poster": image},
+            collection_poster=image,
             backgrounds={},
             logos={},
             square_arts={},
@@ -162,6 +159,7 @@ class TestGeneratedPosterUpload:
             file_theme=None,
         )
         monkeypatch.setattr(builder, "_load_collection_assets", lambda: (None, None))
+        monkeypatch.setattr(builder, "_pick_collection_artwork", lambda *args: None)
         if fail:
             with pytest.raises(RuntimeError, match="upload failed"):
                 CollectionBuilder.update_details(builder)
