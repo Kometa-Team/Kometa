@@ -75,9 +75,9 @@ templates:
     conditionals:
       rating<<rating_num>>_image:
         conditions:
-          - rating<<rating_num>>: [tmdb, mdb_tmdb, plex_tmdb]
+          - rating<<rating_num>>: [tmdb, mdb_tmdb, plex_tmdb, silo_tmdb]
             value: tmdb
-          - rating<<rating_num>>: [imdb, mdb_imdb, plex_imdb]
+          - rating<<rating_num>>: [imdb, mdb_imdb, plex_imdb, silo_imdb]
             value: imdb
           - rating<<rating_num>>: [omdb_tomatoes]
             value: rt_tomato
@@ -93,9 +93,9 @@ templates:
             value: letterboxd
           - rating<<rating_num>>: [mdb_metacritic, mdb_metacriticuser]
             value: metacritic
-          - rating<<rating_num>>: [mdb_tomatoesaudience, plex_tomatoesaudience]
+          - rating<<rating_num>>: [mdb_tomatoesaudience, plex_tomatoesaudience, silo_tomatoesaudience]
             value: rt_popcorn
-          - rating<<rating_num>>: [mdb_tomatoes, plex_tomatoes]
+          - rating<<rating_num>>: [mdb_tomatoes, plex_tomatoes, silo_tomatoes]
             value: rt_tomato
           - rating<<rating_num>>: [serializd]
             value: serializd
@@ -103,7 +103,7 @@ templates:
             value: mal
           - rating<<rating_num>>: [mdb, mdb_average]
             value: mdb
-          - rating<<rating_num>>: [user]
+          - rating<<rating_num>>: [user, silo_user]
             value: star
           - rating<<rating_num>>: [floppy]
             value: floppy
@@ -134,7 +134,7 @@ templates:
       plex_all:
         conditions:
           - image_level: [Rotten, Fresh]
-            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, plex_tmdb, plex_tomatoes, plex_tomatoesaudience]
+            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, silo_imdb, plex_tmdb, silo_tmdb, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience]
             value: true
       run_this:
         default: true
@@ -177,7 +177,7 @@ templates:
           - rating<<rating_num>>_image: [imdb, rt_tomato, metacritic]
             image_level: Top
             value: Top
-          - rating<<rating_num>>: [mdb_tomatoes, mdb_tomatoesaudience, plex_tomatoes, plex_tomatoesaudience]
+          - rating<<rating_num>>: [mdb_tomatoes, mdb_tomatoesaudience, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience]
             image_level: Fresh
             value: Direct
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]
@@ -509,6 +509,9 @@ templates:
             value: lt
       vf_gsuffix:
         conditions:
+          - rating<<rating_num>>.not: [audience, critic, user]
+            image_level: Top
+            value: gte
           - rating<<rating_num>>.not: [audience, critic, user]
             image_level: [Fresh, Rotten]
             value: gte

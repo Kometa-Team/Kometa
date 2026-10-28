@@ -8,6 +8,7 @@ from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
+from modules.media_server import Capability
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
@@ -19,6 +20,10 @@ logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
+        self.server = params.get("server") if isinstance(params, dict) else None
+        self.clean_bundles = False
+        self.empty_trash = False
+        self.optimize = False
         self.session = None
         self.Radarr = None
         self.Sonarr = None
@@ -229,6 +234,15 @@ class Library(ABC):
             logger.info("")
             logger.info(output)
 
+    def supports(self, capability: Capability) -> bool:
+        return self.server is not None and self.server.supports(capability)
+
+    def require(self, capability: Capability):
+        """Raise ``Failed`` when this library's server cannot perform ``capability``."""
+        if self.server is None:
+            raise Failed("Media server is not configured for this library")
+        return self.server.require(capability)
+
     def item_is_ignored(self, item, tmdb_id=None, tvdb_id=None, imdb_id=None):
         if not self.ignore_ids and not self.ignore_imdb_ids:
             return False
@@ -328,6 +342,9 @@ class Library(ABC):
                 image_compare = None
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+                cache_validator = getattr(self, "poster_cache_is_valid", None)
+                if image_compare and callable(cache_validator) and not cache_validator(item):
+                    image_compare = None
                 if not image_compare or str(poster.compare) != str(image_compare):
                     if overlay:
                         self.reload(item, force=True)
@@ -415,11 +432,18 @@ class Library(ABC):
         return poster_uploaded, background_uploaded, logo_uploaded, square_art_uploaded
 
     def get_id_from_maps(self, key):
-        key = int(key)
         if key in self.movie_rating_key_map:
             return self.movie_rating_key_map[key]
-        elif key in self.show_rating_key_map:
+        if key in self.show_rating_key_map:
             return self.show_rating_key_map[key]
+        try:
+            numeric = int(key)
+        except (TypeError, ValueError):
+            return None
+        if numeric in self.movie_rating_key_map:
+            return self.movie_rating_key_map[numeric]
+        if numeric in self.show_rating_key_map:
+            return self.show_rating_key_map[numeric]
 
     def _add_to_plex_map(self, key, values):
         key = int(key)
@@ -480,6 +504,23 @@ class Library(ABC):
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
+
+    def fetch_overlay_value(self, item, variable_name):
+        """Reuse provider rating lookup and its cache for non-Plex adapters."""
+        from modules.plex import Plex
+
+        if str(variable_name).startswith("silo_"):
+            raise Failed(f"Overlay Error: {variable_name} requires a Silo library")
+        if getattr(item, "type", None) in ("season", "episode"):
+            raise Failed("Overlay Error: Provider rating lookup for non-Plex seasons and episodes is not implemented")
+        if str(variable_name).startswith("plex"):
+            raise Failed(f"Overlay Error: {variable_name} requires Plex provider rating metadata; use a provider rating variable such as imdb_rating")
+        return Plex.fetch_overlay_value(self, item, variable_name)
+
+    def prefetch_mdblist(self, items):
+        from modules.plex import Plex
+
+        return Plex.prefetch_mdblist(self, [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
 
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:

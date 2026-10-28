@@ -329,6 +329,16 @@ class TestScanOverlayBackupExtensions:
 
 
 class TestMDBListPrefetch:
+    @pytest.mark.parametrize("source", ["silo_imdb_rating", "silo_tmdb_rating", "silo_tomatoes_rating", "silo_tomatoesaudience_rating", "silo_user_rating"])
+    @pytest.mark.parametrize("modifier", ["", "%", "#", "/"])
+    @pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+    def test_silo_rating_placeholders_are_recognized_by_text_renderer(self, source, modifier, level):
+        from modules.overlay import vars_by_type
+
+        text = f"<<{source}{modifier}>>"
+        assert get_text_variables(text, level) == {source}
+        assert f"{source}{modifier}" in vars_by_type[level]
+
     def test_text_variables_are_parsed_when_overlay_is_compiled(self):
         assert get_text_variables("IMDb: <<mdb_imdb_rating#>> / <<tmdb_rating>>", "movie") == {"mdb_imdb_rating", "tmdb_rating"}
 
@@ -428,14 +438,14 @@ class TestRemoveOverlay:
         overlay.remove_overlay(item, "Test Item", "Overlay", ["/tmp/poster.png"])
         overlay.library.edit_tags.assert_called_once_with("label", item, remove_tags=["Overlay"], do_print=False)
 
-    def test_failed_restore_keeps_overlay_label_and_backup(self, overlay, monkeypatch, tmp_path):
-        from modules.util import PlexImageUploadError
+    @pytest.mark.parametrize("server_error", ["Plex returned HTTP 502 after 3 upload attempts", "Silo Error: images/apply returned 500"])
+    def test_failed_restore_keeps_overlay_label_and_backup(self, overlay, monkeypatch, tmp_path, server_error):
 
         test_logger = MagicMock()
         monkeypatch.setattr("modules.overlays.logger", test_logger)
         backup = tmp_path / "poster.png"
         backup.write_bytes(b"original poster")
-        overlay.library.upload_poster.side_effect = PlexImageUploadError("Plex returned HTTP 502 after 3 upload attempts")
+        overlay.library.upload_poster.side_effect = Failed(server_error)
 
         overlay.remove_overlay(MagicMock(), "Test Item", "Overlay", [str(backup)])
 

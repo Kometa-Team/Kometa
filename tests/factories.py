@@ -9,6 +9,7 @@ from typing import cast
 from unittest.mock import MagicMock
 
 from modules.builder import CollectionBuilder
+from modules.media_server import PlexMediaServer
 from modules.plex import Plex
 from modules.request import Requests
 from tests.conftest import FakeLogger
@@ -103,6 +104,10 @@ def make_plex(**attrs) -> Plex:
     plex.session = attrs.pop("session", MagicMock())
     plex.timeout = attrs.pop("timeout", 30)
     plex._language_choice_cache = attrs.pop("_language_choice_cache", {})
+    if "server" in attrs:
+        plex.server = attrs.pop("server")
+    else:
+        plex.server = PlexMediaServer.from_config({"url": plex.url, "token": plex.token, "timeout": plex.timeout})
 
     # Apply any remaining overrides
     for key, value in attrs.items():

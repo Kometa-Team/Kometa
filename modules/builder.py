@@ -57,6 +57,19 @@ lastfm_track_builders = ("lastfm_user_top_tracks", "lastfm_user_loved_tracks", "
 ytmusic_track_builders = ("ytmusic_list", *spotify_chart.builders)
 
 
+def _is_media_item(item, types):
+    """Recognize native Plex objects and supported media server adapters."""
+    if isinstance(item, types):
+        return True
+    # Import lazily because the adapters depend on Library during startup.
+    from modules.mediabrowser import MediaBrowserItem
+    from modules.silo import SiloItem
+
+    classes = types if isinstance(types, tuple) else (types,)
+    levels = {cls.__name__.lower() for cls in classes}
+    return isinstance(item, (SiloItem, MediaBrowserItem)) and item.type in levels
+
+
 def _default_music_level(methods, data=None):
     data = data or {}
     for method in ("apple_chart", "itunes_chart"):
@@ -932,6 +945,69 @@ music_attributes = (
 
 class CollectionBuilder:
     @staticmethod
+    def _adapt_local_smart_filter(library, data, methods):
+        from modules.media_server import MediaServer
+
+        server = getattr(library, "server", None)
+        if not isinstance(server, MediaServer) or server.type_name not in ("jellyfin", "emby") or "smart_filter" not in methods:
+            return
+        if "run_definition" in methods:
+            allowed = util.get_list(data[methods["run_definition"]], lower=True) or []
+            if allowed and all(value in ("movie", "show") for value in allowed) and library.type.lower() not in allowed:
+                raise NotScheduled("Skipped because run_definition library_type doesn't match")
+        definition = data[methods["smart_filter"]]
+        try:
+            library.validate_collection_search(definition)
+        except Failed as error:
+            raise BuilderValidationError(f"Collection Error: smart_filter is not supported by {server.display_name} with these conditions; use a builder-based collection. {error}") from error
+        if "plex_search" in methods:
+            raise BuilderValidationError("Collection Error: Cannot combine smart_filter with plex_search")
+        data["plex_search"] = {"local_collection_search": definition}
+        methods["plex_search"] = "plex_search"
+        if "collection_order" not in methods:
+            data["collection_order"] = definition.get("sort_by", "title.asc")
+            methods["collection_order"] = "collection_order"
+        del data[methods.pop("smart_filter")]
+        logger.info(f"{server.type_label}: Rebuilding smart_filter as an ordinary collection using local metadata")
+
+    @staticmethod
+    def _adapt_list_smart_label(library, data, methods):
+        from modules.media_server import MediaServer
+
+        server = getattr(library, "server", None)
+        if not isinstance(server, MediaServer) or server.type_name not in ("silo", "jellyfin", "emby") or "smart_label" not in methods:
+            return
+        definition = data[methods["smart_label"]]
+        if isinstance(definition, str):
+            definition = {"sort_by": definition, "all": {"label": "<<smart_label>>"}}
+        if not isinstance(definition, dict) or set(definition) - {"all", "sort_by", "limit"} or definition.get("all") != {"label": "<<smart_label>>"}:
+            raise BuilderValidationError(f"{server.type_label} Error: smart_label is not supported with these conditions; use a builder-based collection instead")
+        if not any(method in all_builders and (method not in plex.builders or method in ("plex_all", "plex_search")) for method in methods):
+            raise BuilderValidationError(f"{server.type_label} Error: smart_label requires a list builder to create an ordinary collection without smart labels")
+        for source, target in (("sort_by", "collection_order"), ("limit", "limit")):
+            if source in definition and target not in methods:
+                data[target] = definition[source]
+                methods[target] = target
+        del data[methods.pop("smart_label")]
+        logger.info(f"{server.type_label}: Using an ordinary list-driven collection instead of smart labels")
+
+    @staticmethod
+    def _validate_smart_server(library, methods):
+        from modules.media_server import Capability, MediaServer
+
+        server = getattr(library, "server", None)
+        if not isinstance(server, MediaServer):
+            return
+        for method in ("smart_filter", "smart_url", "smart_label"):
+            if method not in methods:
+                continue
+            capability = Capability.PARSE_SMART_FILTER if method == "smart_label" else Capability.NATIVE_SMART_COLLECTIONS
+            try:
+                server.require(capability)
+            except Failed as error:
+                raise BuilderValidationError(f"Collection Error: {method} is not supported by {server.display_name}. Use a builder-based collection rebuilt on each Kometa run instead. {error}") from error
+
+    @staticmethod
     def _playlist_libraries(config, data, methods):
         if "libraries" in methods:
             if not data[methods["libraries"]]:
@@ -972,6 +1048,10 @@ class CollectionBuilder:
         else:
             self.type = "collection"
         self.Type = self.type.capitalize()
+        if library is not None and not self.overlay:
+            self._adapt_local_smart_filter(library, self.data, methods)
+            self._adapt_list_smart_label(library, self.data, methods)
+            self._validate_smart_server(library, methods)
 
         logger.separator(f"{self.mapping_name} {self.Type}{f' in {self.library.name}' if self.library else ''}")
         logger.info("")
@@ -996,6 +1076,11 @@ class CollectionBuilder:
                 elif not original_variables["name"]:
                     raise BuilderValidationError(f"{self.Type} Error: template sub-attribute 'name' cannot be blank")
                 named_templates.append(original_variables["name"])
+            if not self.playlist and not self.overlay and "separator" in named_templates:
+                from modules.silo import SiloMediaServer
+
+                if isinstance(getattr(self.library, "server", None), SiloMediaServer):
+                    raise NotScheduled("Skipped: Silo does not support collection separators because collections have no sort titles")
             logger.debug(f"Templates Called: {', '.join(named_templates)}")
             logger.debug("")
             new_variables = {}
@@ -1012,6 +1097,11 @@ class CollectionBuilder:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        if library is not None and not self.overlay:
+            self._adapt_local_smart_filter(library, self.data, methods)
+            self._adapt_list_smart_label(library, self.data, methods)
+            self._validate_smart_server(library, methods)
 
         logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
@@ -1196,6 +1286,8 @@ class CollectionBuilder:
                         raise BuilderValidationError(f"Playlist Error: Library '{pl_library}' not defined. Libraries must be defined within `libraries` section of Configuration File to be usable with playlists")
                     self.libraries.append(config.library_map[pl_library])
             self.library = self.libraries[0]
+            for playlist_library in self.libraries:
+                self._validate_smart_server(playlist_library, methods)
 
         try:
             self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
@@ -1859,6 +1951,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Last.fm to be configured")
                 elif not self.config.YouTubeMusic and method_name in ytmusic.builders:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires YouTube Music to be configured")
+                elif method_name in tautulli.builders and not tautulli.supports_library(self.library):
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' only supports Plex libraries; it cannot be used with {self.library.server.display_name}")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
@@ -3772,6 +3866,7 @@ class CollectionBuilder:
         self.builders.append((method_name, self.config.Simkl.validate_simkl_dict(self.Type, method_name, method_data)))
 
     def _tautulli(self, method_name, method_data):
+        tautulli.require_plex(self.library)
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
             final_dict = {
@@ -4458,7 +4553,8 @@ class CollectionBuilder:
                     logger.ghost(f"Parsing ID {i}/{total_ids}")
                     rating_keys = []
                     if id_type == "ratingKey":
-                        rating_keys = int(input_id)
+                        server = getattr(self.library, "server", None)
+                        rating_keys = input_id if getattr(server, "type_name", None) in ("silo", "jellyfin", "emby") else int(input_id)
                     elif id_type in ("lastfm_missing", "lastfm_album_missing", "music_missing") and self.library.is_music:
                         if self.do_missing:
                             missing_item = json.loads(input_id)
@@ -4667,11 +4763,11 @@ class CollectionBuilder:
                                     for rk in found_keys:
                                         try:
                                             item = self.library.fetch_item(rk)
-                                            if self.builder_level == "episode" and isinstance(item, Show):
+                                            if self.builder_level == "episode" and _is_media_item(item, Show):
                                                 if tvdb_season is not None:
                                                     item = item.season(season=tvdb_season)
                                                 rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "episodes")])
-                                            elif self.builder_level == "season" and isinstance(item, Show):
+                                            elif self.builder_level == "season" and _is_media_item(item, Show):
                                                 rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "seasons")])
                                         except Failed as e:
                                             logger.error(e)
@@ -4686,21 +4782,21 @@ class CollectionBuilder:
                             continue
                         try:
                             item = self.library.fetch_item(rk)
-                            if self.playlist and isinstance(item, (Show, Season)):
+                            if self.playlist and _is_media_item(item, (Show, Season)):
                                 items.extend(self.library.cached_item_subitems(item, "episodes"))
-                            elif self.builder_level == "movie" and not isinstance(item, Movie):
+                            elif self.builder_level == "movie" and not _is_media_item(item, Movie):
                                 logger.info(f"Item: {item} is not an Movie")
-                            elif self.builder_level == "show" and not isinstance(item, Show):
+                            elif self.builder_level == "show" and not _is_media_item(item, Show):
                                 logger.info(f"Item: {item} is not an Show")
-                            elif self.builder_level == "episode" and not isinstance(item, Episode):
+                            elif self.builder_level == "episode" and not _is_media_item(item, Episode):
                                 logger.info(f"Item: {item} is not an Episode")
-                            elif self.builder_level == "season" and not isinstance(item, Season):
+                            elif self.builder_level == "season" and not _is_media_item(item, Season):
                                 logger.info(f"Item: {item} is not a Season")
-                            elif self.builder_level == "artist" and not isinstance(item, Artist):
+                            elif self.builder_level == "artist" and not _is_media_item(item, Artist):
                                 logger.info(f"Item: {item} is not an Artist")
-                            elif self.builder_level == "album" and not isinstance(item, Album):
+                            elif self.builder_level == "album" and not _is_media_item(item, Album):
                                 logger.info(f"Item: {item} is not an Album")
-                            elif self.builder_level == "track" and not isinstance(item, Track):
+                            elif self.builder_level == "track" and not _is_media_item(item, Track):
                                 logger.info(f"Item: {item} is not a Track")
                             else:
                                 items.append(item)
@@ -4731,7 +4827,7 @@ class CollectionBuilder:
         if mdb_value_filters:
             value_filter_items = []
             for i, item in enumerate(items, 1):
-                if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.key in found_item_keys or item.ratingKey in self.filtered_keys:
+                if not _is_media_item(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.key in found_item_keys or item.ratingKey in self.filtered_keys:
                     continue
                 passed = self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                 standard_filter_results[item.ratingKey] = passed
@@ -4739,7 +4835,7 @@ class CollectionBuilder:
                     value_filter_items.append(item)
             self._prefetch_mdblist_value_filters(value_filter_items)
         for i, item in enumerate(items, 1):
-            if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
+            if not _is_media_item(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
             if not self.playlist and getattr(getattr(self, "library", None), "has_schedule_scope", False) is True and not self.library.is_scheduled_item(item):
@@ -4771,6 +4867,28 @@ class CollectionBuilder:
 
     @timings.timed("build_filter")
     def build_filter(self, method, plex_filter, display=False, default_sort=None):
+        local_search = getattr(getattr(self, "library", None), "build_local_search", None)
+        native_builder = getattr(getattr(self, "library", None), "build_native_filter", None)
+
+        def resolve_people(group):
+            if not isinstance(group, dict):
+                return group
+            resolved = {}
+            for key, value in group.items():
+                if key in ("all", "any", "local_collection_search"):
+                    value = [resolve_people(entry) for entry in value] if isinstance(value, list) else resolve_people(value)
+                elif key.partition(".")[0] in ("actor", "director", "writer", "producer"):
+                    names = getattr(self, "details", {}).get("tmdb_person", [])
+                    if names:
+                        values = value if isinstance(value, list) else [value]
+                        value = [name for entry in values for name in (names if isinstance(entry, str) and entry.casefold() == "tmdb" else [entry])]
+                resolved[key] = value
+            return resolved
+
+        if method == "plex_search" and callable(local_search):
+            return local_search(resolve_people(plex_filter))
+        if method == "smart_filter" and callable(native_builder):
+            return native_builder(resolve_people(plex_filter), default_sort=default_sort)
         if display:
             logger.info("")
             logger.info(f"Validating Method: {method}")
@@ -4778,6 +4896,9 @@ class CollectionBuilder:
             raise BuilderValidationError(f"{self.Type} Error: {method} attribute is blank")
         if not isinstance(plex_filter, dict):
             raise BuilderValidationError(f"{self.Type} Error: {method} must be a dictionary: {plex_filter}")
+        server = getattr(getattr(self, "library", None), "server", None)
+        if method == "plex_search" and getattr(server, "type_name", None) in ("silo", "jellyfin", "emby"):
+            raise BuilderValidationError(f"{self.Type} Error: plex_search expressions are not supported by {server.display_name}; this definition requires native search translation before it can run on this server")
         if display:
             logger.debug(f"Value: {plex_filter}")
 
@@ -5023,6 +5144,12 @@ class CollectionBuilder:
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if plex_search else list_to_pair
 
+        if not plex_search and getattr(getattr(getattr(self, "library", None), "server", None), "type_name", None) in ("silo", "jellyfin", "emby"):
+            from modules.local_search import FIELDS, compile_selector
+
+            if attribute in FIELDS:
+                compile_selector({f"{attribute}{modifier}": data}, self.library.server.type_name)
+                return util.validate_regex(data, self.Type, validate=validate) if modifier == ".regex" else data
         if attribute in tag_attributes and modifier in [".regex"]:
             _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True, libtype=plex_search_type)
             valid_list = []
@@ -6266,6 +6393,8 @@ class CollectionBuilder:
                     except NotFound:
                         logger.error("Metadata: Failed to Update Please delete the collection and run again")
                     logger.info("")
+        elif callable(getattr(self.library, "update_collection_details", None)):
+            updated_details.extend(self.library.update_collection_details(self.obj, summary[1], self.details))
         else:
             self.library.item_reload(self.obj)
             # self.obj.batchEdits()
@@ -6337,9 +6466,9 @@ class CollectionBuilder:
 
             if "collection_order" in self.details:
                 if int(self.obj.collectionSort) not in plex.collection_order_keys or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:  # type: ignore[union-attr]
-                    self.library.collection_order_query(self.obj, self.details["collection_order"])
-                    logger.info(f"Collection Order | {self.details['collection_order']}")
-                    advance_update = True
+                    if self.library.collection_order_query(self.obj, self.details["collection_order"]) is not False:
+                        logger.info(f"Collection Order | {self.details['collection_order']}")
+                        advance_update = True
 
             if "visible_library" in self.details or "visible_home" in self.details or "visible_shared" in self.details:
                 visibility = self.library.collection_visibility(self.obj)
@@ -6430,8 +6559,15 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
+        if not self.playlist and getattr(self.library, "supports_collection_item_order", True) is False:
+            logger.warning(f"Collection Warning: Custom item ordering is not supported by {self.library.server.display_name}; skipping sorting for {self.name}")
+            return
         if self.music_playlist_smart:
             logger.info("Plex manages the order of smart playlist results")
+            return
+        native_sort = getattr(self.library, "sort_collection_items", None)
+        if not self.playlist and callable(native_sort):
+            native_sort(self.obj, self.found_items, self.custom_sort)
             return
         if not isinstance(self.custom_sort, list):
             items = self.found_items

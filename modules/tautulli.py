@@ -14,8 +14,21 @@ builders = list(builder_types)
 music_builders = builders
 
 
+def supports_library(library):
+    from modules.media_server import MediaServer
+
+    server = getattr(library, "server", None)
+    return not isinstance(server, MediaServer) or server.type_name == "plex"
+
+
+def require_plex(library):
+    if not supports_library(library):
+        raise Failed(f"Tautulli Error: Tautulli only supports Plex libraries; it cannot be used with {library.server.display_name}")
+
+
 class Tautulli:
     def __init__(self, requests, library, params):
+        require_plex(library)
         self.requests = requests
         self.library = library
         self.url = params["url"]
@@ -34,6 +47,7 @@ class Tautulli:
         self.section_id = self.library.Plex.key
 
     def get_rating_keys(self, data, all_items):
+        require_plex(self.library)
         is_music = self.library.is_music
         list_type = data["list_type"]
         builder_level = data.get("builder_level", "artist") if is_music else None
