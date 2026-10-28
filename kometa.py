@@ -640,6 +640,14 @@ def start(attrs):
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
+        integrity_summary_logged = False
+
+        def log_run_integrity_summary():
+            nonlocal integrity_summary_logged
+            if not integrity_summary_logged:
+                log_integrity_summary(integrity_report, logger)
+                integrity_summary_logged = True
+
         config = None
         stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         try:
@@ -660,7 +668,7 @@ def start(attrs):
                     except ImportError:
                         logger.error("Timings Error: KOMETA_PROFILE=pyinstrument set but pyinstrument is not installed")
                 try:
-                    stats = run_config(config, stats)
+                    stats = run_config(config, stats, before_summary=log_run_integrity_summary)
                 except Exception as e:
                     config.notify(get_critical_error_message(e))
                     log_critical_exception(e)
@@ -699,6 +707,7 @@ def start(attrs):
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+        log_run_integrity_summary()
         try:
             details = run_args["trace"] or run_args["log-requests"]
             log_summary = RunLogSummary(rating_sources, details=details)
@@ -746,8 +755,6 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
-        log_integrity_summary(integrity_report, logger)
-
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
             timings.registry.export(logger.log_dir)
@@ -761,7 +768,7 @@ def start(attrs):
         log_critical_exception(e)
 
 
-def run_config(config, stats):
+def run_config(config, stats, before_summary=None):
     library_status, collections_ran = run_libraries(config)
 
     playlist_status = {}
@@ -854,6 +861,8 @@ def run_config(config, stats):
                 longest = len(title)
 
     logger.info("")
+    if before_summary is not None:
+        before_summary()
     logger.separator("Summary")
     for library in config.libraries:
         logger.info("")
