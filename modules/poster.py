@@ -1,4 +1,5 @@
 import os
+import tempfile
 import time
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
@@ -39,6 +40,17 @@ class ImageBase:
         self.methods = {str(m).lower(): m for m in self.data}
         self.code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.images_dir = os.path.join(self.code_base, "defaults", "images")
+        self._temp_directory = None
+
+    def temp_path(self, name):
+        if self._temp_directory is None:
+            self._temp_directory = tempfile.TemporaryDirectory(prefix="kometa-poster-")
+        return os.path.join(self._temp_directory.name, name)
+
+    def cleanup(self):
+        if self._temp_directory is not None:
+            self._temp_directory.cleanup()
+            self._temp_directory = None
 
     def check_data(self, attr):
         if attr not in self.methods or not self.data[self.methods[attr]]:
@@ -87,10 +99,10 @@ class ImageBase:
         else:
             ext = "png"
         num = ""
-        image_path = os.path.join(self.images_dir, f"temp{num}.{ext}")
+        image_path = self.temp_path(f"temp{num}.{ext}")
         while os.path.exists(image_path):
             num = 1 if not num else num + 1
-            image_path = os.path.join(self.images_dir, f"temp{num}.{ext}")
+            image_path = self.temp_path(f"temp{num}.{ext}")
         with open(image_path, "wb") as handler:
             handler.write(response.content)
         # Wait for file to be unlocked (up to 10 seconds)
@@ -137,7 +149,7 @@ class Component(ImageBase):
         self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "component", err_type="Posters", default=(0, "center", 0, "center"))
 
         old_images_dir = os.path.join(self.images_dir, "images")
-        self.pmm_images = {k[:-4]: os.path.join(old_images_dir, k) for k in os.listdir(old_images_dir)}
+        self.pmm_images = {k[:-4]: os.path.join(old_images_dir, k) for k in os.listdir(old_images_dir)} if os.path.isdir(old_images_dir) else {}
         self.image, self.image_compare = self.check_file("image", self.pmm_images)
         self.image_width = util.parse("Posters", "image_width", self.data, datatype="int", methods=self.methods, default=0, minimum=0, maximum=2000) if "image_width" in self.methods else 0
         self.image_color = self.check_color("image_color")
@@ -367,7 +379,7 @@ class KometaImage(ImageBase):
         self.image_attr = image_attr
         self.backgrounds_dir = os.path.join(self.images_dir, "backgrounds")
         self.playlist = playlist
-        self.pmm_backgrounds = {k[:-4]: os.path.join(self.backgrounds_dir, k) for k in os.listdir(self.backgrounds_dir)}
+        self.pmm_backgrounds = {k[:-4]: os.path.join(self.backgrounds_dir, k) for k in os.listdir(self.backgrounds_dir)} if os.path.isdir(self.backgrounds_dir) else {}
 
         self.background_image, self.background_compare = self.check_file("background_image", self.pmm_backgrounds)
         self.background_color = self.check_color("background_color")
@@ -376,6 +388,11 @@ class KometaImage(ImageBase):
         if "components" not in self.methods or not self.data[self.methods["components"]]:
             raise Failed("Posters Error: components attribute is required")
         self.components = [Component(self.config, d) for d in util.parse("Posters", "components", self.data, datatype="listdict", methods=self.methods)]
+
+    def cleanup(self):
+        super().cleanup()
+        for component in self.components:
+            component.cleanup()
 
     def get_compare_string(self):
         output = ""
@@ -387,7 +404,7 @@ class KometaImage(ImageBase):
         return output
 
     def save(self, item_vars):
-        image_path = os.path.join(self.images_dir, "temp_poster.png")
+        image_path = self.temp_path("temp_poster.png")
         if os.path.exists(image_path):
             os.remove(image_path)
         canvas_width = 1000
