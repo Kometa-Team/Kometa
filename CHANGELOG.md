@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Report unsupported Silo split_duplicates operations clearly and continue other library operations instead of calling a missing item method.
+
 - Restore the library operations settings summary to INFO logging for all media servers.
 
 - Retry transient Jellyfin/Emby poster, logo, banner, and thumb upload connection failures using the existing bounded backoff.

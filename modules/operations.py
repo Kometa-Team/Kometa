@@ -304,7 +304,9 @@ class Operations:
             return self._should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, configured_names=configured_names)
 
         refreshed_items = None
-        if self.library.split_duplicates:
+        if self.library.split_duplicates and getattr(getattr(self.library, "server", None), "type_name", None) == "silo":
+            logger.error("Silo Error: Operation split_duplicates is not supported by this adapter; Silo grouping repair requires explicit file and target selections. Skipping this operation")
+        elif self.library.split_duplicates:
             duplicate_items = self.library.search(**{"duplicate": True})
             for item in duplicate_items:
                 item.split()

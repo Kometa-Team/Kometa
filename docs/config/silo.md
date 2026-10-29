@@ -122,3 +122,5 @@ Libraries that omit `server` keep using `plex`.
 If a collection disappears between listing and reloading during collection operations, Kometa warns and skips it rather than aborting the library run. Other reload errors still surface as failures.
 
 The `duplicate` flag matches items with more than one file version, including alternate resolutions or editions grouped under one Silo item. It does not detect separate catalog entries for the same movie. Unknown version metadata matches neither `duplicate: true` nor `duplicate: false`.
+
+The `split_duplicates` operation is not supported by the Silo adapter. Silo grouping repair requires explicit file and target selections, which this automatic operation does not provide. When enabled, Kometa reports an error, skips that operation, and continues other library operations.

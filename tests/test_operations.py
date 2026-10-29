@@ -496,6 +496,20 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_silo_split_duplicates_reports_unsupported_and_continues(self, monkeypatch):
+        logger = MagicMock()
+        monkeypatch.setattr(ops_module, "logger", logger)
+        library = make_title_test_library([])
+        library.server = SimpleNamespace(type_name="silo")
+        library.split_duplicates = True
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        logger.error.assert_called_once_with("Silo Error: Operation split_duplicates is not supported by this adapter; Silo grouping repair requires explicit file and target selections. Skipping this operation")
+        library.search.assert_not_called()
+        library.refresh_item_cache_and_mappings.assert_not_called()
+        library.get_all.assert_called_once_with()
+
     def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
         stale_item = make_item(1, "Split Show")
         stale_item.split = MagicMock()
