@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Use public mass_metadata_update paths for unsupported added-date, parental-label, and square-art options.
+
 - Log Silo rate-limit retry notices at TRACE instead of WARNING.
 
 - Use readable Silo provider names in per-item rating update, unchanged, and warning messages.

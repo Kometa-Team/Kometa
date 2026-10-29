@@ -33,6 +33,8 @@ def configure_metadata_operations(params, server_type, logger):
         return
 
     def unsupported(option, reason):
+        for internal, public in (("mass_added_at_update", "mass_metadata_update.added_at"), ("mass_imdb_parental_labels", "mass_metadata_update.labels"), ("mass_square_art_update", "mass_metadata_update.square_art")):
+            option = option.replace(internal, public, 1)
         logger.error(f"Config Error: {option} is not supported by {server_type}: {reason}")
 
     if params.get("mass_collection_mode"):
