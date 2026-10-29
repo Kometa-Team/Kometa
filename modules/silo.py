@@ -22,6 +22,7 @@ import requests
 from modules import util
 from modules.library import Library
 from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
+from modules.native_metadata import NativeItemMetadata
 from modules.silo_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_details
 from modules.silo_search import values as search_values
 from modules.util import BuilderValidationError, CollectionNotFound, Failed
@@ -364,7 +365,7 @@ class SiloCollection:
         self.childCount = self.data.get("item_count") or 0
 
 
-class SiloItem:
+class SiloItem(NativeItemMetadata):
     def __init__(self, data, library):
         self.library = library
         self.data = {}
@@ -382,6 +383,10 @@ class SiloItem:
         self.type = {"series": "show"}.get(self.data.get("type"), self.data.get("type"))
         self.guid = f"silo://{self.content_id}"
         self.summary = self.data.get("overview") or self.data.get("description") or ""
+        self.contentRating = self.data.get("content_rating")
+        self.rating = None
+        self.audienceRating = None
+        self.userRating = self.data.get("user_rating")
         poster_url = self.data.get("poster_url")
         self.poster_url = urljoin(f"{self.library.client.server.url.rstrip('/')}/", poster_url) if poster_url else None
         self.posterUrl = self.poster_url
@@ -390,6 +395,8 @@ class SiloItem:
         self.tvdb_id = _numeric_id(self.data.get("tvdb_id"))
         self.imdb_id = self.data.get("imdb_id") or None
         self.locations = [version["file_path"] for version in self.data.get("versions") or [] if version.get("file_path")]
+        if self.type == "show":
+            self.locations = list(self.data.get("folder_paths") or [])
         self.genres = list(self.data.get("genres") or [])
         self.studios = list(self.data.get("studios") or [])
         self.networks = list(self.data.get("networks") or [])
@@ -402,6 +409,14 @@ class SiloItem:
             "producers": {"producer", "executive producer", "co-producer", "associate producer"},
         }.items():
             setattr(self, role, self._people([credit for credit in crew if isinstance(credit, dict) and str(credit.get("job") or "").strip().casefold() in jobs]))
+
+    def seasons(self):
+        return self.library.list_seasons(self)
+
+    def episodes(self):
+        if self.type == "season":
+            return self.library.list_episodes(self)
+        return [episode for season in self.seasons() for episode in season.episodes()]
 
     @staticmethod
     def _people(credits):
@@ -420,12 +435,6 @@ class SiloItem:
             seen.add(identity)
             people.append(SimpleNamespace(id=credit.get("person_id") or f"name:{identity}", tag=name))
         return people
-
-    def seasons(self):
-        return self.library.list_seasons(self)
-
-    def episodes(self):
-        return self.library.list_episodes(self)
 
 
 class Silo(Library):
@@ -575,7 +584,11 @@ class Silo(Library):
             item.apply(cached.data)
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
-        item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
+        if item.type == "season" and item.data.get("series_id"):
+            data, _headers = self.client.request("GET", f"/catalog/series/{_path_id(item.data['series_id'])}/seasons/{item.seasonNumber}")
+            item.apply(data)
+        else:
+            item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
         self._search_details[item.content_id] = item
         loaded.add(item.content_id)
         if force:
@@ -794,7 +807,7 @@ class Silo(Library):
     def asset_search_paths(self, item, item_dir=None, folder_name=None, asset_directory=None, folders_only=False):
         from modules.plex import Plex
 
-        name = item if isinstance(item, str) else item.title
+        name = item if isinstance(item, (str, SiloItem)) else item.title
         return Plex.asset_search_paths(self, name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
 
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
@@ -802,11 +815,7 @@ class Silo(Library):
         from modules.plex import Plex
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
-        name = item if isinstance(item, str) else item.title
-        if isinstance(item, SiloItem) and item.type == "movie" and item.locations:
-            path = str(item.locations[0]).replace("\\", "/")
-            folder = os.path.basename(os.path.dirname(path))
-            name = folder or name
+        name = item if isinstance(item, (str, SiloItem)) else item.title
         return Plex.find_item_assets(self, name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
 
     def item_posters(self, item, providers=None):
@@ -878,12 +887,12 @@ class Silo(Library):
             item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
         if self.is_movie:
             return item.tmdb_id, None, item.imdb_id
-        return None, item.tvdb_id, item.imdb_id
+        return item.tmdb_id, item.tvdb_id, item.imdb_id
 
     def list_seasons(self, item):
         data, _headers = self.client.request("GET", f"/catalog/series/{_path_id(item.content_id)}/seasons")
         rows = data.get("items") if isinstance(data, dict) else data
-        return [SiloItem(row, self) for row in rows or []]
+        return [SiloItem({**row, "type": "season", "series_id": item.content_id, "series_title": item.title}, self) for row in rows or []]
 
     def list_episodes(self, item):
         season = item.data.get("season_number")
@@ -892,7 +901,7 @@ class Silo(Library):
         series_id = item.data.get("series_id") or item.content_id
         data, _headers = self.client.request("GET", f"/catalog/series/{_path_id(series_id)}/seasons/{season}/episodes")
         rows = data.get("items") if isinstance(data, dict) else data
-        return [SiloItem(row, self) for row in rows or []]
+        return [SiloItem({**row, "type": "episode", "series_id": series_id, "season_number": season, "series_title": item.parentTitle}, self) for row in rows or []]
 
     def map_guids(self, items):
         for item in items:
@@ -1530,7 +1539,7 @@ def _silo_capabilities():
         Capability.REMOVE_TAG: ("none", "No tag field"),
         Capability.SYNC_TAGS: ("partial", "Genre, studio, network, and country"),
         Capability.GET_ITEM_LABELS: ("none", "No labels"),
-        Capability.LOCK_TAG: ("full", "locked_fields"),
+        Capability.LOCK_TAG: ("none", "Opaque lock identifiers are preserved but not modified by this adapter"),
         Capability.SET_USER_RATING: ("partial", "Profile stars, 1-5"),
         Capability.UPLOAD_POSTER: ("partial", "URL; local files go to transfer.kometa.wiki"),
         Capability.UPLOAD_BACKDROP: ("partial", "URL; local files go to transfer.kometa.wiki"),

@@ -79,10 +79,10 @@ def test_unsupported_silo_actions_are_reported_before_scanning(option):
     assert "unsupported" in logger.error.call_args.args[0]
 
 
-def test_silo_only_clear_source_is_reported_on_other_servers():
+def test_native_clear_source_is_reported_on_plex():
     params = {"mass_user_rating_update": ["clear"]}
     logger = MagicMock()
-    configure_rating_updates(params, "emby", logger)
+    configure_rating_updates(params, "plex", logger)
     assert params["mass_user_rating_update"] is None
     logger.error.assert_called_once()
 

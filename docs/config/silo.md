@@ -153,3 +153,5 @@ Targets accept a provider source, a fallback list, a constant score from 0–10,
 For example, a normalized score of 7 becomes 4 stars; zero becomes 1 star. Use `clear` to remove a profile rating or set a provider score to null. The common `user` target also selects profile stars on Silo. If both `user` and `silo_user` are configured, Kometa reports the conflict and uses `silo_user`.
 
 Generic `critic`, `audience`, and episode rating targets are reported as unsupported on Silo. Silo-specific targets and `silo_` rating sources are reported as unsupported on other servers. Sources beginning `plex_` require Plex. Native Silo operations do not implement `random`, `lock`, `unlock`, `remove`, or `reset`; those options are reported as unsupported, with `clear` suggested for deletion. These rating options are validated before item scanning. Named provider scores do not change the generic target semantics on Plex, Jellyfin, or Emby.
+
+See [Native mass metadata operations](native_metadata.md) for supported metadata changes, artwork, backups, and explicit unsupported-option behavior.

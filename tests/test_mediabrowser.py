@@ -1351,3 +1351,14 @@ def test_backdrop_upload_is_not_replayed_after_lost_response(monkeypatch):
     with pytest.raises(Failed):
         MediaBrowserClient(_server("emby"), session=session).upload_image("49012", "Backdrop", b"backdrop", "image/png")
     assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_user_rating_write_preserves_fresh_playback_state(kind):
+    state = {"Rating": 3, "IsFavorite": True, "Played": True, "PlayCount": 8, "PlaybackPositionTicks": 1234}
+    session = FakeSession([FakeResponse({"Id": "1", "UserData": state}), FakeResponse(None, status_code=204)])
+    client = MediaBrowserClient(_server(kind), session=session)
+    result = client.update_user_data("1", {"Rating": 7.5})
+    assert result == {**state, "Rating": 7.5}
+    assert session.calls[1]["json"] == result
+    assert session.calls[1]["url"].endswith("/Users/user-1/Items/1/UserData" if kind == "emby" else "/UserItems/1/UserData")

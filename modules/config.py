@@ -26,6 +26,7 @@ from modules.media_server import PlexMediaServer, build_media_server
 from modules.mediabrowser import Emby, EmbyMediaServer, Jellyfin, JellyfinMediaServer
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
+from modules.native_metadata import configure_metadata_operations
 from modules.notifiarr import Notifiarr
 from modules.ntfy import Ntfy
 from modules.omdb import OMDb
@@ -147,6 +148,7 @@ mass_studio_options = {
     "mal": "Use MyAnimeList Studio",
 }
 mass_original_title_options = {
+    "tmdb": "Use TMDb Original Title",
     "lock": "Lock Original Title",
     "unlock": "Unlock Original Title",
     "remove": "Remove and Lock Original Title",
@@ -727,6 +729,10 @@ class ConfigFile:
         def expand_mass_metadata_operation(config_op, input_dict):
             if not input_dict or not isinstance(input_dict, dict):
                 raise Failed("Config Error: mass_metadata_update must be a dictionary")
+            supported = {"original_title", "studio", "originally_available", "added_at", "backup", "collections", "genre", "content_rating", "labels", "ratings", "poster", "background", "logo", "square_art", "squart_art"}
+            unknown = set(input_dict) - supported
+            if unknown:
+                raise Failed(f"Config Error: mass_metadata_update options not supported: {sorted(unknown)}")
             base_op = dict(config_op)
             base_op.pop("mass_metadata_update", None)
             base_schedule = base_op.pop("schedule", None)
@@ -2298,6 +2304,7 @@ class ConfigFile:
                             raise Failed(f"Config Error: Library {display_name} server '{server_name}' is not defined in media_servers")
                         named_server = self.media_servers[server_name]
                     configure_rating_updates(params, named_server.type_name if named_server else "plex", logger)
+                    configure_metadata_operations(params, named_server.type_name if named_server else "plex", logger)
                     if isinstance(named_server, SiloMediaServer):
                         logger.separator("Silo Configuration", space=False, border=False)
                         params["server"] = named_server
@@ -2305,7 +2312,7 @@ class ConfigFile:
                     elif isinstance(named_server, (JellyfinMediaServer, EmbyMediaServer)):
                         logger.separator(f"{named_server.type_label} Configuration", space=False, border=False)
                         params["server"] = named_server
-                        library = Jellyfin(self, params) if isinstance(named_server, JellyfinMediaServer) else Emby(self, params)
+                        library = Emby(self, params) if isinstance(named_server, EmbyMediaServer) else Jellyfin(self, params)
                     else:
                         logger.separator("Plex Configuration", space=False, border=False)
                         plex_defaults = dict(self.general["plex"])

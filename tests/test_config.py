@@ -1201,3 +1201,59 @@ tmdb:
     assert captured[0]["mass_silo_user_rating_update"] == [7.0]
     assert captured[0]["mass_critic_rating_update"] is None
     assert any("ratings.critic is unsupported on Silo" in message for message in config_module.logger.error_messages)
+
+
+@pytest.mark.parametrize("kind,class_name", [("silo", "Silo"), ("jellyfin", "Jellyfin"), ("emby", "Emby")])
+def test_native_mass_metadata_options_are_supported_or_reported(tmp_path, monkeypatch, kind, class_name):
+    captured = []
+    monkeypatch.setattr(config_module, class_name, lambda config, params: captured.append(params) or _library_double(params["mapping_name"]))
+    make_config(
+        tmp_path,
+        config_yaml=f"""
+settings:
+  cache: false
+media_servers:
+  Native:
+    type: {kind}
+    url: http://native:8090
+    token: fake
+libraries:
+  Movies:
+    server: Native
+    collection_files: []
+    operations:
+      mass_metadata_update:
+        genre:
+          source: [[Comedy]]
+          mappings:
+            Drama: Dramatic
+        content_rating:
+          source: PG
+        original_title: tmdb
+        studio: Example
+        originally_available: '2020-01-02'
+        added_at: '2020-01-02'
+        labels:
+          severity: none
+        collections:
+          mode: hide
+        poster:
+          source: [plex, tmdb]
+        square_art:
+          source: tmdb
+        backup:
+          path: '{tmp_path}/metadata.yml'
+tmdb:
+  apikey: fake
+""",
+    )
+    assert captured
+    params = captured[0]
+    assert params["mass_genre_update"] == [["Comedy"]]
+    assert params["mass_original_title_update"] == ["tmdb"]
+    assert params["mass_collection_mode"] is None
+    assert params["mass_poster_update"]["sources"] == ["tmdb"]
+    assert bool(params["mass_added_at_update"]) is (kind != "silo")
+    assert bool(params["mass_imdb_parental_labels"]) is (kind != "silo")
+    assert bool(params["mass_square_art_update"]) is (kind != "silo")
+    assert any("not supported" in message for message in config_module.logger.error_messages)

@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support native Silo/Jellyfin/Emby mass metadata writes, mappings, field controls, episode ratings, artwork, and recursive native metadata snapshots, with preflight reports for unsupported options.
+
 - Add explicit Silo provider and profile rating targets to mass_metadata_update, with source fallbacks, score conversion, clearing, and cross-server validation of rating targets and sources.
 
 - Expand Jellyfin/Emby local search and item filters to native item, stream, source, user-state, tag, and collection metadata, with typed comparisons and local collection sorting.
@@ -61,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
 
 ### Fixed
+
+- Select the Emby adapter before its Jellyfin base class and preserve current user state during native rating writes.
 
 - Run native assets_for_all without requiring server labels or Plex item fields, reuse the filesystem artwork uploader, and protect posters with local overlay backups.
 - Resolve Silo movie assets by media folder names and reuse full item details during operations, with detail-loading progress.

@@ -22,6 +22,7 @@ from modules.library import Library
 from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
 from modules.mediabrowser_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_media
 from modules.mediabrowser_search import values as search_values
+from modules.native_metadata import NativeItemMetadata
 from modules.util import Failed
 
 logger = util.logger
@@ -235,7 +236,13 @@ class MediaBrowserClient:
 
     def update_user_data(self, item_id, fields):
         self.ensure_user()
-        self.request("POST", f"/UserItems/{_path_id(item_id)}/UserData", params={"userId": self.user_id}, json_body=fields)
+        current = dict((self.get_item(item_id).get("UserData") or {}))
+        current.update(fields)
+        if self.server.type_name == "emby":
+            self.request("POST", f"/Users/{_path_id(self.user_id)}/Items/{_path_id(item_id)}/UserData", json_body=current)
+        else:
+            self.request("POST", f"/UserItems/{_path_id(item_id)}/UserData", params={"userId": self.user_id}, json_body=current)
+        return current
 
     def refresh_item(self, item_id):
         self.request("POST", f"/Items/{_path_id(item_id)}/Refresh", params={"metadataRefreshMode": "FullRefresh", "imageRefreshMode": "FullRefresh"})
@@ -312,7 +319,7 @@ class _Tag:
         self.tag = tag
 
 
-class MediaBrowserItem:
+class MediaBrowserItem(NativeItemMetadata):
     def __init__(self, data, library):
         self.library = library
         self.data = {}
@@ -356,7 +363,7 @@ class MediaBrowserItem:
         self.smart = False
         self.collectionMode = -1
         self.collectionSort = {"PremiereDate": 0, "SortName": 1}.get(self.data.get("DisplayOrder"), -1)
-        self.locations = []
+        self.locations = [source["Path"] for source in self.data.get("MediaSources") or [] if source.get("Path")] or ([self.data["Path"]] if self.data.get("Path") else [])
         self.posterUrl = self.library.find_poster_url(self)
         self.thumb = self.posterUrl
 
@@ -690,10 +697,10 @@ class MediaBrowser(Library):
             item.apply(self.client.get_item(item.ratingKey))
         if self.is_movie:
             return item.tmdb_id, None, item.imdb_id
-        return None, item.tvdb_id, item.imdb_id
+        return item.tmdb_id, item.tvdb_id, item.imdb_id
 
     def list_children(self, item, include_type):
-        rows = self.client.items({"parentId": item.ratingKey, "includeItemTypes": include_type, "recursive": "false"})
+        rows = self.client.items({"parentId": item.ratingKey, "includeItemTypes": include_type, "recursive": "true" if include_type == "Episode" and item.type == "show" else "false"})
         return [self._wrap(row) for row in rows]
 
     def map_guids(self, items):
@@ -742,7 +749,7 @@ class MediaBrowser(Library):
     def asset_search_paths(self, item, item_dir=None, folder_name=None, asset_directory=None, folders_only=False):
         from modules.plex import Plex
 
-        name = item if isinstance(item, str) else item.title
+        name = item if isinstance(item, (str, MediaBrowserItem)) else item.title
         return Plex.asset_search_paths(self, name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
 
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
@@ -750,7 +757,7 @@ class MediaBrowser(Library):
         from modules.plex import Plex
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
-        name = item if isinstance(item, str) else item.title
+        name = item if isinstance(item, (str, MediaBrowserItem)) else item.title
         return Plex.find_item_assets(self, name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
 
     def get_collection(self, data, force_search=False, debug=True):

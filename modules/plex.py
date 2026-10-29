@@ -2522,7 +2522,7 @@ class Plex(Library):
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
-        if isinstance(item, Show) and ((self.asset_folders and item_dir) or not self.asset_folders):
+        if (isinstance(item, Show) or getattr(item, "type", None) == "show") and ((self.asset_folders and item_dir) or not self.asset_folders):
             missing_seasons = ""
             missing_episodes = ""
             found_season = False
@@ -2536,7 +2536,7 @@ class Plex(Library):
                         paths = self.asset_search_paths(season, item_dir, name, asset_directory)
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster [{paths}]"
                     if season_poster or season_background or season_logo or season_square_art:
-                        has_season_overlay = "Overlay" in [la.tag for la in self.item_labels(season)]
+                        has_season_overlay = self.item_has_overlay(season)
                         self.upload_images(season, poster=None if has_season_overlay else season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
@@ -2547,7 +2547,7 @@ class Plex(Library):
                             episode_poster, episode_background, episode_logo, episode_square_art, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background or episode_logo or episode_square_art:
                                 found_episode = True
-                                has_episode_overlay = "Overlay" in [la.tag for la in self.item_labels(episode)]
+                                has_episode_overlay = self.item_has_overlay(episode)
                                 self.upload_images(episode, poster=None if has_episode_overlay else episode_poster, background=episode_background, logo=episode_logo, square_art=episode_square_art)
                             elif self.show_missing_episode_assets:
                                 paths = self.asset_search_paths(episode, item_dir, name, asset_directory)
@@ -2591,9 +2591,9 @@ class Plex(Library):
         if folders_only:
             return ", ".join(directories)
 
-        if isinstance(item, Season):
+        if isinstance(item, Season) or getattr(item, "type", None) == "season":
             file_name = f"Season{item.seasonNumber or 0:02}"
-        elif isinstance(item, Episode):
+        elif isinstance(item, Episode) or getattr(item, "type", None) == "episode":
             file_name = item.seasonEpisode.upper()
         elif isinstance(item, Album):
             file_name = item.title
@@ -2613,14 +2613,14 @@ class Plex(Library):
         if asset_directory is None:
             asset_directory = self.asset_directories(item)
 
-        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
+        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str)) or getattr(item, "type", None) in ("movie", "show")
         if isinstance(item, Album):
             prefix = f"{item.parentTitle} Album {item.title}'s "
             file_name = item.title
-        elif isinstance(item, Season):
+        elif isinstance(item, Season) or getattr(item, "type", None) == "season":
             prefix = f"{item.parentTitle} Season {item.seasonNumber}'s "
             file_name = f"Season{'0' if not item.seasonNumber or item.seasonNumber < 10 else ''}{item.seasonNumber}"
-        elif isinstance(item, Episode):
+        elif isinstance(item, Episode) or getattr(item, "type", None) == "episode":
             prefix = f"{item.grandparentTitle} {item.seasonEpisode.upper()}'s "
             file_name = item.seasonEpisode.upper()
         else:
@@ -2628,19 +2628,22 @@ class Plex(Library):
             file_name = "poster"
 
         if not item_asset_directory:
-            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
-                if isinstance(item, (Episode, Season)):
+            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)) or getattr(item, "type", None) in ("movie", "show", "episode", "season"):
+                if isinstance(item, (Episode, Season)) or getattr(item, "type", None) in ("episode", "season"):
                     starting = getattr(item, "show")()
                 elif isinstance(item, Album):
                     starting = getattr(item, "artist")()
                 else:
                     starting = item
                 if not starting.locations:  # type: ignore[union-attr]
-                    raise Failed(f"Asset Warning: No video filepath found for {item.title}")
-                path_test = str(starting.locations[0])  # type: ignore[union-attr]
-                if not os.path.dirname(path_test):
-                    path_test = path_test.replace("\\", "/")
-                folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
+                    if isinstance(starting, (Movie, Artist, Show)):
+                        raise Failed(f"Asset Warning: No video filepath found for {item.title}")
+                    folder_name = starting.title
+                else:
+                    path_test = str(starting.locations[0])  # type: ignore[union-attr]
+                    if not os.path.dirname(path_test):
+                        path_test = path_test.replace("\\", "/")
+                    folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) or getattr(starting, "type", None) == "movie" else path_test)
             elif isinstance(item, (Collection, Playlist)):
                 folder_name = item.title
             else:
@@ -2710,7 +2713,7 @@ class Plex(Library):
                 background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
                 break
 
-        if not isinstance(item, (Episode, Season)):
+        if not (isinstance(item, (Episode, Season)) or getattr(item, "type", None) in ("episode", "season")):
             for logo_name in logo_names:
                 logo_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{logo_name}*.*"), logo_name)
                 if len(logo_matches) > 0:

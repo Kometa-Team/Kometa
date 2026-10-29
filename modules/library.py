@@ -492,21 +492,37 @@ class Library(ABC):
     def upload_poster(self, item, image, url=False):
         pass
 
+    def _image_operation_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
+        try:
+            return self.image_update(item, image, tmdb=tmdb, title=title, poster=poster, image_type=image_type)
+        except Failed as error:
+            if getattr(getattr(self, "server", None), "type_name", None) not in ("silo", "jellyfin", "emby"):
+                raise
+            source = tmdb[0] if isinstance(tmdb, tuple) else "Assets" if image is not None else "URL"
+            logger.error(f"{self.server.type_label} Image Error: {item.title}: {error}")
+            return "Reset", source, "Failed"
+
     def poster_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title)
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title)
 
     def background_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False)
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False)
 
     def logo_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
 
     def square_art_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
 
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
+
+    def item_has_overlay(self, item, current_labels=None):
+        if current_labels is None:
+            current_labels = [label.tag for label in self.item_labels(item)] if self.supports(Capability.GET_ITEM_LABELS) else []
+        backup = self.__dict__.get("overlay_backup")
+        return "Overlay" in current_labels or bool(backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")))
 
     def find_and_upload_assets(self, item, current_labels, asset_directory=None):
         """Use the shared filesystem uploader and native overlay backup markers."""

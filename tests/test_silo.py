@@ -291,6 +291,7 @@ def test_silo_is_a_registered_server_with_scored_capabilities():
         Capability.ADD_TAG,
         Capability.REMOVE_TAG,
         Capability.GET_ITEM_LABELS,
+        Capability.LOCK_TAG,
         Capability.UPLOAD_THEME_SONG,
         Capability.UPLOAD_THEME_VIDEO,
         Capability.BATCH_TAGS,
@@ -1763,3 +1764,24 @@ def test_silo_native_rating_writes_are_batched_and_profile_scoped():
     library.update_native_ratings(item, {"user_rating": None})
     assert session.calls[2]["method"] == "DELETE"
     assert item.data["user_rating"] is None
+
+
+def test_native_mass_image_failure_is_reported_without_aborting(monkeypatch):
+    from modules import library as library_module
+
+    logger = FakeLogger()
+    monkeypatch.setattr(library_module, "logger", logger)
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    library.client.apply_item_image = MagicMock(side_effect=Failed("server rejected image"))
+    item = SiloItem({"content_id": "movie-1", "title": "Example", "type": "movie"}, library)
+    assert library.poster_update(item, None, tmdb=("tmdb", "https://images.example/poster.jpg")) == ("Reset", "tmdb", "Failed")
+    assert any("Example" in message and "server rejected image" in message for message in logger.error_messages)
+
+
+def test_silo_show_episodes_are_gathered_from_its_seasons():
+    library = SimpleNamespace(list_seasons=MagicMock(), list_episodes=MagicMock(return_value=["episode"]))
+    show = SiloItem({"content_id": "series-1", "type": "series", "title": "Example"}, library)
+    season = SiloItem({"content_id": "season-1", "type": "season", "season_number": 1}, library)
+    library.list_seasons.return_value = [season]
+    assert show.episodes() == ["episode"]
+    library.list_episodes.assert_called_once_with(season)

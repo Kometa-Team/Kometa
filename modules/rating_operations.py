@@ -28,8 +28,8 @@ def configure_rating_updates(params, server_type, logger):
         accepted = []
         for source in sources if isinstance(sources, list) else [sources]:
             reason = None
-            if source == "clear" and server_type != "silo":
-                reason = "requires a native Silo rating target"
+            if source == "clear" and server_type == "plex":
+                reason = "requires a native media-server rating target"
             elif str(source).startswith("silo_") and server_type != "silo":
                 reason = "requires Silo"
             elif str(source).startswith("plex_") and server_type != "plex":
