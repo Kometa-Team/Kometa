@@ -32,6 +32,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.rating_operations import SILO_OPERATIONS, SILO_SOURCES, configure_rating_updates
 from modules.seerr import Seerr
 from modules.serializd import Serializd
 from modules.silo import Silo, SiloMediaServer
@@ -196,8 +197,11 @@ mass_episode_rating_options = {
     "serializd": "Use Serializd Rating",
     "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
+    **SILO_SOURCES,
+    "clear": "Clear Silo rating",
 }
 mass_rating_options = {
+    "clear": "Clear Silo rating",
     "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
@@ -230,6 +234,7 @@ mass_rating_options = {
     "anidb_average": "Use AniDB Average",
     "anidb_score": "Use AniDB Review Dcore",
     "mal": "Use MyAnimeList Rating",
+    **SILO_SOURCES,
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 library_operations = {
@@ -251,6 +256,7 @@ library_operations = {
     "mass_collection_content_rating_update": "dict",
     "mass_genre_update": mass_genre_options,
     "mass_studio_update": mass_studio_options,
+    **{operation: {**mass_rating_options, "clear": "Clear native rating"} for operation in SILO_OPERATIONS.values()},
     "mass_audience_rating_update": mass_rating_options,
     "mass_episode_audience_rating_update": mass_episode_rating_options,
     "mass_critic_rating_update": mass_rating_options,
@@ -840,6 +846,10 @@ class ConfigFile:
                     "episode_critic": "mass_episode_critic_rating_update",
                     "episode_user": "mass_episode_user_rating_update",
                 }
+                ratings_aliases.update(SILO_OPERATIONS)
+                unknown = set(ratings_config) - set(ratings_aliases) - {"schedule"}
+                if unknown:
+                    raise Failed(f"Config Error: Unsupported rating targets: {sorted(unknown)}")
                 for new_key, old_key in ratings_aliases.items():
                     if new_key in ratings_config:
                         input_value = ratings_config[new_key]
@@ -1899,13 +1909,15 @@ class ConfigFile:
                                 section_final[op] = check_for_attribute(config_op, op, test_list=data_type, default_is_none=True, save=False)
                             elif isinstance(data_type, dict):
                                 try:
-                                    if not config_op[op]:
+                                    if not config_op[op] and not (op.endswith("rating_update") and isinstance(config_op[op], (int, float)) and not isinstance(config_op[op], bool) and config_op[op] == 0):
                                         raise Failed("is blank")
                                     input_list = config_op[op] if isinstance(config_op[op], list) else [config_op[op]]
                                     final_list = []
                                     for list_attr in input_list:
-                                        if not list_attr:
+                                        if not list_attr and not (op.endswith("rating_update") and isinstance(list_attr, (int, float)) and not isinstance(list_attr, bool) and list_attr == 0):
                                             raise Failed("has a blank value")
+                                        if op.endswith("rating_update") and isinstance(list_attr, bool):
+                                            raise Failed("requires a rating source or number, not a boolean")
                                         if str(list_attr).lower() in data_type:
                                             final_list.append(str(list_attr).lower())
                                         elif op in [
@@ -1921,7 +1933,10 @@ class ConfigFile:
                                         elif op.endswith("rating_update"):
                                             if str(list_attr).lower() in util.RETIRED_TRAKT_RATING_VALUES:
                                                 raise Failed(util.TRAKT_REMOVAL_MESSAGE)
-                                            final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
+                                            rating = util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True)
+                                            if rating is None:
+                                                raise Failed("requires a finite rating between 0 and 10")
+                                            final_list.append(rating)
                                         else:
                                             raise Failed(f"has an invalid value: {list_attr}")
                                     section_final[op] = final_list
@@ -2282,6 +2297,7 @@ class ConfigFile:
                         if server_name not in self.media_servers:
                             raise Failed(f"Config Error: Library {display_name} server '{server_name}' is not defined in media_servers")
                         named_server = self.media_servers[server_name]
+                    configure_rating_updates(params, named_server.type_name if named_server else "plex", logger)
                     if isinstance(named_server, SiloMediaServer):
                         logger.separator("Silo Configuration", space=False, border=False)
                         params["server"] = named_server

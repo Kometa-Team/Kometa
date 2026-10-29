@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add explicit Silo provider and profile rating targets to mass_metadata_update, with source fallbacks, score conversion, clearing, and cross-server validation of rating targets and sources.
+
 - Expand Jellyfin/Emby local search and item filters to native item, stream, source, user-state, tag, and collection metadata, with typed comparisons and local collection sorting.
 
 - Support Jellyfin and Emby duplicate selectors using media sources, loading source details when needed.

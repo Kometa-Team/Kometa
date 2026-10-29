@@ -11,6 +11,7 @@ from plexapi.video import Movie, Show
 
 from modules import anidb, plex, timings, tvdb, util
 from modules.media_server import Capability
+from modules.rating_operations import SILO_OPERATIONS, update_silo_ratings
 from modules.request import urlparse
 from modules.util import CollectionNotFound, Failed, LimitReached
 
@@ -41,6 +42,8 @@ tmdb_release_types = {
     "tmdb_physical": 5,
     "tmdb_tv": 6,
 }
+
+meta_operations.extend(SILO_OPERATIONS.values())
 
 # Library operations do not inspect these potentially large show-level elements. Excluding
 # them keeps Plex from serializing an aggregated cast/crew/media payload before operations
@@ -200,6 +203,9 @@ class Operations:
             self.library.mass_originally_available_update,
             self.library.mass_added_at_update,
         ]
+        native = getattr(self.library, "silo_rating_updates", None)
+        if isinstance(native, dict):
+            sources.extend(native.values())
         return any(str(option).startswith("mdb") for source in sources if source for option in util.get_list(source, split=False, return_none=False))
 
     def _prefetch_mdblist(self, items):
@@ -265,6 +271,9 @@ class Operations:
         logger.info(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
         logger.info(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
         logger.info(f"Mass User Rating Update: {self.library.mass_user_rating_update}")
+        native_ratings = getattr(self.library, "silo_rating_updates", None)
+        if isinstance(native_ratings, dict) and native_ratings:
+            logger.info(f"Silo Rating Updates: {native_ratings}")
         logger.info(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
         logger.info(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
         logger.info(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
@@ -385,6 +394,12 @@ class Operations:
 
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
+
+                if isinstance(native_ratings, dict) and native_ratings:
+                    try:
+                        update_silo_ratings(self.library, item, native_ratings, logger)
+                    except Failed as error:
+                        logger.error(f"Silo Rating Error: {item.title}: {error}")
 
                 locked_fields = [f.name for f in getattr(item, "fields", []) if f.locked]
 

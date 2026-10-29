@@ -335,6 +335,9 @@ class SiloClient:
     def refresh_metadata(self, content_id):
         self.request("POST", f"/admin/items/{_path_id(content_id)}/refresh-metadata", json_body={"mode": "quick"})
 
+    def set_user_rating(self, content_id, value):
+        self.request("DELETE" if value is None else "PUT", f"/ratings/{_path_id(content_id)}", json_body=None if value is None else {"rating": value})
+
     def apply_item_image(self, content_id, kind, source_url):
         self.request("POST", f"/admin/items/{_path_id(content_id)}/images/apply", json_body={"type": kind, "original_url": source_url})
 
@@ -614,6 +617,21 @@ class Silo(Library):
             logger.warning(f"Silo Warning: Invalid {variable_name} value {value}; expected {minimum} to {maximum}")
             return None
         return float(value) * factor
+
+    def update_native_ratings(self, item, updates):
+        provider = {field: value for field, value in updates.items() if field != "user_rating"}
+        if provider:
+            data = self.client.update_metadata(item.content_id, provider)
+            if isinstance(data, dict):
+                item.apply(data)
+            item.data.update(provider)
+            self.__dict__.get("_native_rating_details", {}).pop(item.content_id, None)
+        if "user_rating" in updates:
+            self.client.set_user_rating(item.content_id, updates["user_rating"])
+            item.data["user_rating"] = updates["user_rating"]
+        self.__dict__.get("_native_rating_details", {}).pop(item.content_id, None)
+        if "_search_details" in self.__dict__:
+            self._search_details[item.content_id] = item
 
     def update_collection_details(self, collection, summary, details):
         """Apply native collection metadata without Plex's automatic label edits."""

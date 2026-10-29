@@ -1330,3 +1330,18 @@ def test_assets_for_all_without_native_labels_or_plex_fields(monkeypatch):
     Operations(config=MagicMock(), library=library).run_operations()
     library.find_and_upload_assets.assert_called_once_with(item, [])
     library.item_labels.assert_not_called()
+
+
+def test_native_silo_rating_operations_write_without_plex_batches(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    item = make_item("movie-1", "Example")
+    item.data = {}
+    library = make_title_test_library([item])
+    library.remove_title_parentheses = False
+    library.silo_rating_updates = {"silo_imdb": [8.2], "silo_user": [7]}
+    Operations(config=MagicMock(), library=library).run_operations()
+    assert library.update_native_ratings.call_count == 2
+    assert library.update_native_ratings.call_args_list[0].args == (item, {"rating_imdb": 8.2})
+    assert library.update_native_ratings.call_args_list[1].args == (item, {"user_rating": 4})
+    library.Plex.batchMultiEdits.assert_not_called()

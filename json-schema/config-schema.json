@@ -5393,6 +5393,26 @@
                     "audience": {
                       "$ref": "#/definitions/mass-metadata-scheduled-source"
                     },
+                    "silo_imdb": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tmdb": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tomatoes": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tomatoesaudience": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_user": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
                     "episode_user": {
                       "$ref": "#/definitions/mass-metadata-scheduled-source"
                     },
@@ -5785,6 +5805,26 @@
                   }
                 }
               ]
+            },
+            "mass_silo_imdb_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_imdb."
+            },
+            "mass_silo_tmdb_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tmdb."
+            },
+            "mass_silo_tomatoes_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tomatoes."
+            },
+            "mass_silo_tomatoesaudience_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tomatoesaudience."
+            },
+            "mass_silo_user_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_user."
             },
             "mass_audience_rating_update": {
               "anyOf": [

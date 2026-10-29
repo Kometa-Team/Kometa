@@ -1745,3 +1745,21 @@ def test_operations_reload_upgrades_catalog_and_reuses_full_details():
     library.reload(item)
     assert item.locations == ["/Movies/Example/movie.mkv"]
     assert len(session.calls) == 1
+
+
+def test_silo_native_rating_writes_are_batched_and_profile_scoped():
+    session = FakeSession([FakeResponse({"content_id": "movie-1", "title": "Example"}), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)])
+    library = _library(SiloClient(_server(), session=session))
+    item = SiloItem({"content_id": "movie-1", "title": "Example", "type": "movie"}, library)
+    library._native_rating_details = {"movie-1": {"rating_imdb": 1}}
+    library.update_native_ratings(item, {"rating_imdb": 8.2, "rating_rt_critic": 75, "user_rating": 4})
+    assert session.calls[0]["method"] == "PATCH"
+    assert session.calls[0]["json"] == {"rating_imdb": 8.2, "rating_rt_critic": 75}
+    assert session.calls[1]["method"] == "PUT"
+    assert session.calls[1]["json"] == {"rating": 4}
+    assert session.calls[1]["url"].endswith("/ratings/movie-1")
+    assert session.calls[1]["profile"] == "profile"
+    assert "movie-1" not in library._native_rating_details
+    library.update_native_ratings(item, {"user_rating": None})
+    assert session.calls[2]["method"] == "DELETE"
+    assert item.data["user_rating"] is None

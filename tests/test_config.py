@@ -1162,3 +1162,42 @@ mal:
         assert config.MyAnimeList is None
         assert calls == []
         assert any("mal sub-attribute client_secret is blank" in message for message in config_module.logger.warning_messages)
+
+
+def test_native_rating_targets_expand_and_validate_for_silo(tmp_path, monkeypatch):
+    captured = []
+    monkeypatch.setattr(config_module, "Silo", lambda config, params: captured.append(params) or _library_double(params["mapping_name"]))
+    make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+media_servers:
+  Shelf:
+    type: silo
+    url: http://silo:8090
+    token: fake
+libraries:
+  Movies:
+    server: Shelf
+    collection_files: []
+    operations:
+      mass_metadata_update:
+        ratings:
+          silo_imdb: 0
+          silo_tmdb: tmdb
+          silo_tomatoes:
+            source: [imdb, clear]
+          user: 7
+          critic: imdb
+tmdb:
+  apikey: fake
+""",
+    )
+    assert captured
+    assert captured[0]["mass_silo_imdb_rating_update"] == [0.0], config_module.logger.error_messages
+    assert captured[0]["mass_silo_tmdb_rating_update"] == ["tmdb"]
+    assert captured[0]["mass_silo_tomatoes_rating_update"] == ["imdb", "clear"]
+    assert captured[0]["mass_silo_user_rating_update"] == [7.0]
+    assert captured[0]["mass_critic_rating_update"] is None
+    assert any("ratings.critic is unsupported on Silo" in message for message in config_module.logger.error_messages)

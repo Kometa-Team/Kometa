@@ -12,6 +12,7 @@ from modules.media_server import Capability
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
+from modules.rating_operations import SILO_OPERATIONS
 from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled, PlexImageUploadError
 
@@ -127,6 +128,7 @@ class Library(ABC):
         self.assets_for_all_collections = params["assets_for_all_collections"]
         self.delete_collections = params["delete_collections"]
         self.mass_studio_update = params["mass_studio_update"]
+        self.silo_rating_updates = {target: params[operation] for target, operation in SILO_OPERATIONS.items() if params.get(operation)}
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -179,6 +181,7 @@ class Library(ABC):
         self.items_library_operation = (
             True
             if self.assets_for_all
+            or self.silo_rating_updates
             or self.mass_genre_update
             or self.remove_title_parentheses
             or self.mass_audience_rating_update

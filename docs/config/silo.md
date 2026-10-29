@@ -126,3 +126,30 @@ The `duplicate` flag matches items with more than one file version, including al
 The `split_duplicates` operation is not supported by the Silo adapter. Silo grouping repair requires explicit file and target selections, which this automatic operation does not provide. When enabled, Kometa reports an error, skips that operation, and continues other library operations.
 
 The `assets_for_all` operation uploads local artwork without requiring Silo labels. Movie assets use the media file directory name, matching Plex asset naming, and fall back to the title when no file path is available. Posters with local overlay backups are preserved for the overlay run; other supported artwork can still update. Full item details are loaded with progress and reused within the run.
+
+### Mass rating updates
+
+Silo stores named provider scores rather than generic critic and audience slots. Choose explicit targets:
+
+```yaml
+operations:
+  mass_metadata_update:
+    ratings:
+      silo_imdb: imdb
+      silo_tmdb: tmdb
+      silo_tomatoes: mdb_tomatoes
+      silo_tomatoesaudience: mdb_tomatoesaudience
+      silo_user: mdb_tomatoes
+```
+
+Targets accept a provider source, a fallback list, a constant score from 0–10, or `clear`. The usual `{source: ..., schedule: ...}` form and a shared ratings schedule are supported. Sources are tried in order; missing or invalid source values leave existing ratings unchanged. Provider updates for one item share a single metadata PATCH. Profile stars use the configured acting profile and a separate rating request.
+
+| Target | Stored value |
+| :--- | :--- |
+| `silo_imdb`, `silo_tmdb` | 0–10 decimal score |
+| `silo_tomatoes`, `silo_tomatoesaudience` | 0–100 integer percentage; half values round upward |
+| `silo_user` | Whole 1–5 stars; divide the source score by two, round halves upward, and clamp to this range |
+
+For example, a normalized score of 7 becomes 4 stars; zero becomes 1 star. Use `clear` to remove a profile rating or set a provider score to null. The common `user` target also selects profile stars on Silo. If both `user` and `silo_user` are configured, Kometa reports the conflict and uses `silo_user`.
+
+Generic `critic`, `audience`, and episode rating targets are reported as unsupported on Silo. Silo-specific targets and `silo_` rating sources are reported as unsupported on other servers. Sources beginning `plex_` require Plex. Native Silo operations do not implement `random`, `lock`, `unlock`, `remove`, or `reset`; those options are reported as unsupported, with `clear` suggested for deletion. These rating options are validated before item scanning. Named provider scores do not change the generic target semantics on Plex, Jellyfin, or Emby.
