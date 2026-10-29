@@ -1,11 +1,14 @@
 import base64
 import os
+import re
 import time
+import warnings
 from urllib import parse
 
 import cloudscraper
 import requests
 import ruamel.yaml
+import urllib3
 from lxml import html
 from requests.exceptions import ConnectionError, HTTPError, RequestException
 from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
@@ -111,10 +114,15 @@ class Requests:
         if not self.global_ssl:
             self.no_verify_ssl()
 
-    def create_session(self, verify_ssl=True):
+    def create_session(self, verify_ssl=True, url=None):
         session = requests.Session()
         if not verify_ssl:
             self.no_verify_ssl(session)
+            hostname = urlparse(url).hostname if url else None
+            if hostname:
+                # Register once for this host; per-request warning contexts reset
+                # warning registries and change process-wide filters across threads.
+                warnings.filterwarnings("ignore", message=rf"^Unverified HTTPS request is being made to host '{re.escape(hostname)}'\.", category=urllib3.exceptions.InsecureRequestWarning)
         # Every consumer (plexapi/tmdbapis/arrapi/this module's get/post) rides through session.request, so one hook here times all HTTP traffic.
         return timings.instrument_session(session)
 
@@ -125,9 +133,7 @@ class Requests:
         session.verify = False
         if global_opt_out:
             # Only a config-level opt-out silences the warning process-wide;
-            # a scoped session keeps it so other connections still surface it.
-            import urllib3
-
+            # scoped sessions can suppress warnings for their configured host.
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):

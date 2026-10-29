@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import warnings
 from datetime import datetime, timedelta, timezone
 from email.utils import format_datetime
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+import requests
+import urllib3
 from requests.exceptions import HTTPError
 from tenacity import wait_none
 
@@ -488,20 +491,73 @@ class TestHeadFollowsRedirects:
 
 
 class TestNoVerifySSL:
-    """Per-session SSL opt-outs must not silence InsecureRequestWarning process-wide."""
+    """SSL opt-outs suppress only the configured host unless globally disabled."""
 
-    def test_scoped_session_keeps_warnings_enabled(self, monkeypatch):
-        import urllib3
-
+    def test_scoped_session_does_not_disable_warnings_globally(self, monkeypatch):
         calls = []
         monkeypatch.setattr(urllib3, "disable_warnings", lambda *args, **kwargs: calls.append(args))
-        import requests as requests_lib
-
         req = make_requests()
-        req.session = requests_lib.Session()
+        req.session = requests.Session()
         scoped = req.create_session(verify_ssl=False)
         assert scoped.verify is False
         assert calls == []
+
+    @pytest.mark.parametrize("host", ["plex.example.com", "192.0.2.1", "[2001:db8::1]"])
+    def test_unverified_host_filter_preserves_other_warnings(self, monkeypatch, host):
+        from modules.request import urlparse
+
+        url = f"https://{host}:32400"
+        hostname = urlparse(url).hostname
+
+        def warning_request(self, method, request_url, **kwargs):
+            warnings.warn(f"Unverified HTTPS request is being made to host '{hostname}'. Adding certificate verification is strongly advised.", urllib3.exceptions.InsecureRequestWarning)
+            warnings.warn("unrelated request warning", UserWarning)
+            return SimpleNamespace(status_code=200)
+
+        monkeypatch.setattr(requests.Session, "request", warning_request)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            session = make_requests().create_session(verify_ssl=False, url=url)
+            filters = list(warnings.filters)
+            assert session.get(url).status_code == 200
+            assert warnings.filters == filters
+            # The persistent filter must match only the exact configured host,
+            # including regex metacharacters and the closing host delimiter.
+            other_hosts = [other for other in ("other.example.com", hostname + ".other", hostname.replace(".", "x")) if other != hostname]
+            for other_host in other_hosts:
+                warnings.warn(f"Unverified HTTPS request is being made to host '{other_host}'.", urllib3.exceptions.InsecureRequestWarning)
+            assert [str(item.message) for item in caught] == ["unrelated request warning"] + [f"Unverified HTTPS request is being made to host '{other}'." for other in other_hosts]
+
+    def test_repeated_requests_preserve_default_warning_registry(self, monkeypatch):
+        registry = {}
+
+        def warning_request(self, method, url, **kwargs):
+            warnings.warn_explicit("once per location", UserWarning, "ssl_warning_test.py", 1, registry=registry)
+            return SimpleNamespace(status_code=200)
+
+        monkeypatch.setattr(requests.Session, "request", warning_request)
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("default")
+            session = make_requests().create_session(verify_ssl=False, url="https://plex.example.com:32400")
+            for _ in range(5):
+                session.get("https://plex.example.com:32400")
+            assert [str(item.message) for item in caught] == ["once per location"]
+
+    @pytest.mark.parametrize("verify_ssl, url", [(True, "https://plex.example.com"), (False, None)])
+    def test_session_without_unverified_host_keeps_warning_filters(self, verify_ssl, url):
+        with warnings.catch_warnings():
+            filters = list(warnings.filters)
+            make_requests().create_session(verify_ssl=verify_ssl, url=url)
+            assert warnings.filters == filters
+
+    def test_global_opt_out_disables_warnings(self, monkeypatch):
+        calls = []
+        monkeypatch.setattr(urllib3, "disable_warnings", lambda *args, **kwargs: calls.append(args))
+        req = make_requests()
+        req.session = requests.Session()
+        req.no_verify_ssl()
+        assert req.session.verify is False
+        assert len(calls) == 1
 
 
 class _FakeYamlResponse:
@@ -546,16 +602,3 @@ class TestFileYamlReadOnlyPassthrough:
         path.write_text("a: 1\n")
         result = req.file_yaml(str(path))
         assert result.read_only is False
-
-    def test_global_opt_out_disables_warnings(self, monkeypatch):
-        import urllib3
-
-        calls = []
-        monkeypatch.setattr(urllib3, "disable_warnings", lambda *args, **kwargs: calls.append(args))
-        import requests as requests_lib
-
-        req = make_requests()
-        req.session = requests_lib.Session()
-        req.no_verify_ssl()
-        assert req.session.verify is False
-        assert len(calls) == 1
