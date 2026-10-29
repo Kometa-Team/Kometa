@@ -372,7 +372,7 @@ def restore_browser_metadata(library, item, metadata, logger):
         if name not in metadata:
             continue
         value = metadata[name]
-        if name.endswith("_rating"):
+        if name in ("critic_rating", "audience_rating", "user_rating"):
             try:
                 value = float(value)
                 if not 0 <= value <= 10:

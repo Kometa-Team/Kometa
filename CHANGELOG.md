@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Treat content ratings as classification text when restoring native metadata backups.
+
 - Restore regular metadata backup attributes on Jellyfin and Emby through native item updates, including empty tag sync lists, ratings, and nested seasons and episodes.
 
 - Only report deferred overlay poster updates when an asset poster was found, and report provider poster replacements skipped by ignore_overlays when replacement artwork exists.

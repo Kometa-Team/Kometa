@@ -378,10 +378,11 @@ def test_regular_metadata_reader_restores_browser_backup(kind, monkeypatch):
     metadata_file = MetadataFile.__new__(MetadataFile)
     metadata_file.library = library
     monkeypatch.setattr(meta_module, "logger", MagicMock())
-    entry = {"original_title": "Restored", "summary": "Saved summary", "critic_rating": 8.5, "user_rating": 0, "genre.sync": [], "label": "New", "director.sync": ["New Director"]}
+    entry = {"original_title": "Restored", "summary": "Saved summary", "content_rating": "PG-13", "critic_rating": 8.5, "user_rating": 0, "genre.sync": [], "label": "New", "director.sync": ["New Director"]}
     metadata_file.update_metadata_item(item, 123, entry, {key: key for key in entry})
     writes = [call.args[1] for call in library.client.update_item.call_args_list]
     assert writes[0]["OriginalTitle"] == "Restored"
+    assert writes[0]["OfficialRating"] == "PG-13"
     assert writes[0]["CriticRating"] == 85
     assert writes[1]["Genres"] == []
     assert writes[1]["Tags"] == ["Keep", "New"]
