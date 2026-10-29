@@ -79,6 +79,7 @@ def test_clear_and_native_field_locks(kind):
 def test_unsupported_operations_reported_before_item_processing(kind):
     logger = MagicMock()
     params = {
+        "split_duplicates": True,
         "mass_collection_mode": "hide",
         "mass_added_at_update": ["tmdb"],
         "mass_imdb_parental_labels": "none",
@@ -87,6 +88,7 @@ def test_unsupported_operations_reported_before_item_processing(kind):
         "mass_square_art_update": {"source": "tmdb"},
     }
     configure_metadata_operations(params, kind, logger)
+    assert params["split_duplicates"] is False
     assert params["mass_collection_mode"] is None
     assert params["mass_poster_update"]["sources"] == ["tmdb"]
     if kind == "silo":

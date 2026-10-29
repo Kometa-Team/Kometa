@@ -37,6 +37,10 @@ def configure_metadata_operations(params, server_type, logger):
             option = option.replace(internal, public, 1)
         logger.error(f"Config Error: {option} is not supported by {server_type}: {reason}")
 
+    if params.get("split_duplicates"):
+        reason = "Silo grouping repair requires explicit file and target selections" if server_type == "silo" else "this adapter does not implement native version splitting"
+        unsupported("split_duplicates", reason)
+        params["split_duplicates"] = False
     if params.get("mass_collection_mode"):
         unsupported("mass_metadata_update.collections.mode", "Plex collection visibility modes have no native equivalent")
         params["mass_collection_mode"] = None

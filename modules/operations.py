@@ -318,9 +318,7 @@ class Operations:
         native = is_native(self.library)
         operation_items = {}
         refreshed_items = None
-        if self.library.split_duplicates and getattr(getattr(self.library, "server", None), "type_name", None) == "silo":
-            logger.error("Silo Error: Operation split_duplicates is not supported by this adapter; Silo grouping repair requires explicit file and target selections. Skipping this operation")
-        elif self.library.split_duplicates:
+        if self.library.split_duplicates:
             duplicate_items = self.library.search(**{"duplicate": True})
             for item in duplicate_items:
                 item.split()
