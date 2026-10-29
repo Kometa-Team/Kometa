@@ -298,9 +298,9 @@ class Cache:
                 if "episode_id" not in [row[1] for row in cursor.fetchall()]:
                     cursor.execute("ALTER TABLE tmdb_episode_data2 ADD COLUMN episode_id INTEGER")
                 cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS tmdb_episode_data2_episode_id_language ON tmdb_episode_data2(episode_id, language) WHERE episode_id IS NOT NULL")
-                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_data5 (
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_data6 (
                     key INTEGER PRIMARY KEY,
-                    tvdb_id INTEGER UNIQUE,
+                    tvdb_id INTEGER,
                     type TEXT,
                     title TEXT,
                     status TEXT,
@@ -311,7 +311,15 @@ class Cache:
                     icon_url TEXT,
                     release_date TEXT,
                     genres TEXT,
-                    expiration_date TEXT)""")
+                    expiration_date TEXT,
+                    UNIQUE(tvdb_id, type))""")
+                cursor.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'tvdb_data5'")
+                if cursor.fetchone():
+                    cursor.execute(
+                        "INSERT OR IGNORE INTO tvdb_data6 (tvdb_id, type, title, status, summary, poster_url, background_url, logo_url, icon_url, release_date, genres, expiration_date) "
+                        "SELECT tvdb_id, type, title, status, summary, poster_url, background_url, logo_url, icon_url, release_date, genres, expiration_date FROM tvdb_data5"
+                    )
+                    cursor.execute("DROP TABLE tvdb_data5")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_map (
                     key INTEGER PRIMARY KEY,
                     tvdb_url TEXT UNIQUE,
@@ -1155,7 +1163,7 @@ class Cache:
         expired = None
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tvdb_data5 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                cursor.execute("SELECT * FROM tvdb_data6 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
                 row = cursor.fetchone()
                 if row:
                     tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
@@ -1178,8 +1186,8 @@ class Cache:
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tvdb_data5(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
-                update_sql = "UPDATE tvdb_data5 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, logo_url = ?, icon_url = ?, " "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
+                cursor.execute("INSERT OR IGNORE INTO tvdb_data6(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                update_sql = "UPDATE tvdb_data6 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, logo_url = ?, icon_url = ?, " "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
                 tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
                 cursor.execute(
                     update_sql, (obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, obj.logo_url, obj.icon_url, tvdb_date, "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show")
