@@ -245,6 +245,74 @@ class TestTMDbEpisodeCache:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+class TestTVDbCache:
+    @staticmethod
+    def entry(is_movie, title=None):
+        return SimpleNamespace(
+            tvdb_id=81189,
+            is_movie=is_movie,
+            title=title or ("Scoutman" if is_movie else "Breaking Bad"),
+            status="Ended",
+            summary="Summary",
+            poster_url="poster",
+            background_url="background",
+            logo_url="logo",
+            icon_url="icon",
+            release_date=datetime(2001, 10, 27),
+            genres=["Drama"],
+        )
+
+    @pytest.mark.parametrize("first_is_movie", [False, True])
+    def test_movie_and_show_with_same_id_are_cached_independently(self, tmp_path, first_is_movie):
+        cache = make_cache(tmp_path)
+        cache.update_tvdb(False, self.entry(first_is_movie), 30)
+        cache.update_tvdb(False, self.entry(not first_is_movie), 30)
+        cache.update_tvdb(False, self.entry(first_is_movie, title="Updated"), 30)
+
+        first, expired = cache.query_tvdb(81189, first_is_movie, 30)
+        other, other_expired = cache.query_tvdb(81189, not first_is_movie, 30)
+        assert first["title"] == "Updated"
+        assert other["title"] == self.entry(not first_is_movie).title
+        assert first["type"] != other["type"]
+        assert expired is False and other_expired is False
+
+    @pytest.mark.parametrize("age", [0, 31])
+    def test_migrates_legacy_rows_preserving_data_and_expiration(self, tmp_path, age):
+        insertion_date = (datetime.now() - timedelta(days=age)).strftime("%Y-%m-%d")
+        with sqlite3.connect(tmp_path / "config.cache") as connection:
+            connection.execute("""CREATE TABLE tvdb_data5 (
+                key INTEGER PRIMARY KEY, tvdb_id INTEGER UNIQUE, type TEXT, title TEXT,
+                status TEXT, summary TEXT, poster_url TEXT, background_url TEXT, logo_url TEXT,
+                icon_url TEXT, release_date TEXT, genres TEXT, expiration_date TEXT)""")
+            connection.execute(
+                "INSERT INTO tvdb_data5 (tvdb_id, type, title, status, summary, poster_url, background_url, logo_url, icon_url, release_date, genres, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (81189, "show", "Breaking Bad", "Ended", "Summary", "poster", "background", "logo", "icon", "2008-01-20", "Drama|Crime", insertion_date),
+            )
+
+        cache = make_cache(tmp_path)
+        data, expired = cache.query_tvdb(81189, False, 30)
+        assert data == {
+            "tvdb_id": 81189,
+            "type": "show",
+            "title": "Breaking Bad",
+            "status": "Ended",
+            "summary": "Summary",
+            "poster_url": "poster",
+            "background_url": "background",
+            "logo_url": "logo",
+            "icon_url": "icon",
+            "release_date": datetime(2008, 1, 20),
+            "genres": "Drama|Crime",
+        }
+        assert expired is (age > 30)
+        assert not table_exists(cache, "tvdb_data5")
+        cache.update_tvdb(False, self.entry(True), 30)
+
+        reopened = make_cache(tmp_path)
+        assert reopened.query_tvdb(81189, False, 30) == (data, expired)
+        assert reopened.query_tvdb(81189, True, 30)[0]["title"] == "Scoutman"
+
+
 class TestQueryMap:
     def test_update_then_query_round_trip(self, tmp_path):
         cache = make_cache(tmp_path)
