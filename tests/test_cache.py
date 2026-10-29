@@ -150,6 +150,53 @@ class TestSerializdWatchedSync:
 
 
 class TestTMDbEpisodeCache:
+    @pytest.mark.parametrize(("show_id", "season", "episode"), [(209867, 1, 29), (209867, 2, 1), (999, 1, 1)])
+    def test_episode_moves_to_current_position_without_affecting_other_entries(self, tmp_path, show_id, season, episode):
+        cache = make_cache(tmp_path)
+        original = make_tmdb_episode()
+        cache.update_tmdb_episode(False, original, "en", 30)
+        cache.update_tmdb_episode(False, original, "fr", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_id=999, episode_number=30), "en", 30)
+
+        moved = make_tmdb_episode(show_id=show_id, season_number=season, episode_number=episode)
+        cache.update_tmdb_episode(False, moved, "en", 30)
+
+        assert cache.query_tmdb_episode(209867, 1, 28, "en", 30) == ({}, None)
+        positional, _ = cache.query_tmdb_episode(show_id, season, episode, "en", 30)
+        direct, _ = cache.query_tmdb_episode_by_id(original.episode_id, "en", 30)
+        assert positional == direct
+        assert (direct["tmdb_id"], direct["season_number"], direct["episode_number"]) == (show_id, season, episode)
+        french, _ = cache.query_tmdb_episode_by_id(original.episode_id, "fr", 30)
+        assert (french["tmdb_id"], french["season_number"], french["episode_number"]) == (209867, 1, 28)
+        assert cache.query_tmdb_episode_by_id(999, "en", 30)[0]["episode_number"] == 30
+
+    def test_moved_episode_replaces_occupied_position_without_inheriting_external_ids(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(), "en", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_id=123, episode_number=29, imdb_id="tt123", tvdb_id=456), "en", 30)
+
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_number=29), "en", 30)
+
+        assert cache.query_tmdb_episode(209867, 1, 28, "en", 30) == ({}, None)
+        assert cache.query_tmdb_episode_by_id(123, "en", 30) == ({}, None)
+        current, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+        assert current["episode_number"] == 29
+        assert current["imdb_id"] == ""
+        assert current["tvdb_id"] is None
+
+    def test_failed_move_rolls_back_stale_entry_removal(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(), "en", 30)
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("CREATE TRIGGER fail_episode_update BEFORE UPDATE ON tmdb_episode_data2 BEGIN SELECT RAISE(ABORT, 'test write failure'); END")
+
+        with pytest.raises(sqlite3.IntegrityError, match="test write failure"):
+            cache.update_tmdb_episode(False, make_tmdb_episode(episode_number=29), "en", 30)
+
+        original, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+        assert original["episode_number"] == 28
+        assert cache.query_tmdb_episode(209867, 1, 29, "en", 30) == ({}, None)
+
     def test_episode_is_queryable_by_position_and_direct_id(self, tmp_path):
         cache = make_cache(tmp_path)
         episode = make_tmdb_episode()
