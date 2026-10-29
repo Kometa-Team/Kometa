@@ -50,8 +50,6 @@ def configure_metadata_operations(params, server_type, logger):
             if params.get(option):
                 unsupported(option, "the Silo metadata API has no writable added date" if option == "mass_added_at_update" else "Silo has no item labels")
                 params[option] = None
-    if params.get("metadata_backup") and params["metadata_backup"].get("sync_tags"):
-        unsupported("mass_metadata_update.backup.sync_tags", "native backups store complete tag values rather than Plex tag-sync instructions")
     for option in SCALAR_OPERATIONS:
         values = params.get(option)
         if not values:
@@ -246,52 +244,101 @@ class NativeItemMetadata:
 
 
 def backup_metadata(config, library, logger):
-    path = library.metadata_backup["path"]
+    options = library.metadata_backup
+    path = options["path"]
     document = config.Requests.file_yaml(path, create=True)
-    section = document.data.setdefault("native_metadata", {})
-    identity = f"{library.server.display_name}/{library.name}"
-    records = section.setdefault(identity, {"server_type": library.server.type_name, "items": {}})["items"]
-    exclude = set(library.metadata_backup.get("exclude") or [])
-    mapping = SILO_FIELDS if library.server.type_name == "silo" else BROWSER_FIELDS
-    metadata_fields = set(mapping.values()) | (
-        {"locked_fields", "air_date", "first_air_date", "last_air_date", "year", "countries", "networks", "imdb_id", "tmdb_id", "tvdb_id", "rating_imdb", "rating_tmdb", "rating_rt_critic", "rating_rt_audience", "user_rating"}
-        if library.server.type_name == "silo"
-        else {"LockedFields", "LockData", "ProductionYear", "ProductionLocations", "ProviderIds", "People"}
-    )
-    aliases = {
-        "original_title": "originalTitle",
-        "content_rating": "contentRating",
-        "originally_available": "originallyAvailableAt",
-        "added_at": "addedAt",
-        "critic_rating": "rating",
-        "audience_rating": "audienceRating",
-        "genres": "genre",
-        "labels": "label",
-        "studios": "studio",
-    }
-    exclude.update(aliases[name] for name in list(exclude) if name in aliases)
-    excluded_fields = {name.casefold() for name in exclude}
-    excluded_fields.update(value.casefold() for name, value in mapping.items() if name.casefold() in excluded_fields)
-    if "originallyavailableat" in excluded_fields:
-        excluded_fields.update(("air_date", "first_air_date", "release_date"))
-    items = list(library.get_all())
-    seen = set()
-    for index, item in enumerate(items, 1):
-        if item.ratingKey in seen:
-            continue
-        seen.add(item.ratingKey)
-        logger.ghost(f"Backing up native metadata: {index}/{len(items)} {item.title}")
+    records = document.data.setdefault("metadata", {})
+    exclude = set(options.get("exclude") or [])
+    sync_tags = options.get("sync_tags", False)
+    count = 0
+
+    def attributes(item):
+        values = {}
+        for name, attr in (
+            ("title", "title"),
+            ("original_title", "originalTitle"),
+            ("summary", "summary"),
+            ("content_rating", "contentRating"),
+            ("studio", "studio"),
+            ("originally_available", "originallyAvailableAt"),
+            ("critic_rating", "rating"),
+            ("audience_rating", "audienceRating"),
+            ("user_rating", "userRating"),
+        ):
+            value = getattr(item, attr, None)
+            if name not in exclude and value is not None and value != "":
+                values[name] = value.strftime("%Y-%m-%d") if isinstance(value, datetime) else value
+        tag_values = {"genre": item.genres}
+        if library.server.type_name != "silo":
+            tag_values["label"] = item.data.get("Tags") or []
+            tag_values["country"] = item.data.get("ProductionLocations") or []
+            for role in ("director", "writer", "producer"):
+                tag_values[role] = [person["Name"] for person in (item.data.get("People") or []) if person.get("Type", "").lower() == role and person.get("Name")]
+        else:
+            tag_values["country"] = item.data.get("countries") or []
+        for name, tags in tag_values.items():
+            if name not in exclude and (tags or sync_tags):
+                key = f"{name}.sync" if sync_tags else name
+                values[key] = tags[0] if len(tags) == 1 else list(tags)
+        return values
+
+    def export(item):
+        nonlocal count
         item = library.reload(item)
-        fields = {key: value for key, value in item.data.items() if key in metadata_fields and key.casefold() not in excluded_fields}
-        if library.server.type_name != "silo" and not ({"user_rating", "userrating"} & excluded_fields):
-            if "Rating" in (item.data.get("UserData") or {}):
-                fields["UserRating"] = item.data["UserData"]["Rating"]
-        if fields or library.metadata_backup.get("add_blank_entries", True):
-            records[str(item.ratingKey)] = {"title": item.title, "type": item.type, "fields": fields}
+        count += 1
+        logger.ghost(f"Backing up metadata: {item.title}")
+        values = attributes(item)
         if item.type == "show":
-            items.extend(item.seasons())
+            children = {}
+            for season in item.seasons():
+                season_values = export(season)
+                if season_values or options.get("add_blank_entries", True):
+                    children[season.seasonNumber] = season_values or None
+            if children:
+                values["seasons"] = children
         elif item.type == "season":
-            items.extend(item.episodes())
-    logger.exorcise()
+            children = {}
+            for episode in item.episodes():
+                episode_values = export(episode)
+                if episode_values or options.get("add_blank_entries", True):
+                    children[episode.episodeNumber] = episode_values or None
+            if children:
+                values["episodes"] = children
+        return values
+
+    used = set()
+    try:
+        for item in library.get_all():
+            values = export(item)
+            # Match the normal metadata reader: movie IDs are TMDb, show IDs are TVDb.
+            mapping_id = getattr(item, "tmdb_id" if item.type == "movie" else "tvdb_id", None) or getattr(item, "imdb_id", None)
+            key = mapping_id or (f"{item.title} ({item.year})" if item.year else item.title)
+            match = {"title": item.title}
+            if item.year:
+                match["year"] = item.year
+            if key in used:
+                key = f"{item.title} ({item.year}) [{item.ratingKey}]"
+                values["match"] = match
+            elif not mapping_id and item.year:
+                values["match"] = match
+            used.add(key)
+            if values or options.get("add_blank_entries", True):
+
+                def merge_attributes(existing, updated):
+                    for field, value in updated.items():
+                        if isinstance(field, str) and field.endswith(".sync"):
+                            existing.pop(field[:-5], None)
+                        else:
+                            existing.pop(f"{field}.sync", None)
+                        if isinstance(value, dict) and isinstance(existing.get(field), dict):
+                            merge_attributes(existing[field], value)
+                        else:
+                            existing[field] = value
+                    return existing
+
+                existing = records.get(key)
+                records[key] = merge_attributes(existing, values) if isinstance(existing, dict) else values or None
+    finally:
+        logger.exorcise()
     document.save()
-    logger.info(f"{len(items)} native metadata records backed up to {path}")
+    logger.info(f"{count} metadata records backed up to {path}")

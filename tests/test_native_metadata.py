@@ -103,7 +103,7 @@ def test_unsupported_operations_reported_before_item_processing(kind):
 
 
 @pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
-def test_native_backup_uses_ids_and_excludes_configured_fields(kind):
+def test_native_backup_uses_regular_metadata_and_excludes_configured_fields(kind):
     library, item = native_item(kind)
     library.name = "Movies"
     library.metadata_backup = {"path": "/tmp/backup.yml", "exclude": ["genre"]}
@@ -112,10 +112,10 @@ def test_native_backup_uses_ids_and_excludes_configured_fields(kind):
     document = SimpleNamespace(data={}, save=MagicMock())
     config = SimpleNamespace(Requests=SimpleNamespace(file_yaml=MagicMock(return_value=document)))
     backup_metadata(config, library, MagicMock())
-    record = document.data["native_metadata"]["Test/Movies"]["items"]["movie-1"]
+    record = document.data["metadata"]["Example"]
     assert record["title"] == "Example"
-    assert "genres" not in record["fields"]
-    assert "Genres" not in record["fields"]
+    assert "genre" not in record
+    assert "native_metadata" not in document.data
     document.save.assert_called_once()
 
 
@@ -179,8 +179,12 @@ def test_native_backup_includes_children_without_title_collisions(kind):
     library.reload = lambda item: item
     document = SimpleNamespace(data={}, save=MagicMock())
     backup_metadata(SimpleNamespace(Requests=SimpleNamespace(file_yaml=lambda *args, **kwargs: document)), library, MagicMock())
-    records = document.data["native_metadata"]["Test/TV"]["items"]
-    assert set(records) == {"show", "season", "episode"}
+    records = document.data["metadata"]
+    assert records["Example"]["seasons"][0]["episodes"][0]["title"] == "Example"
+    assert "native_metadata" not in document.data
+    records["Example"]["seasons"][0]["episodes"][0]["url_poster"] = "https://example.com/episode.jpg"
+    backup_metadata(SimpleNamespace(Requests=SimpleNamespace(file_yaml=lambda *args, **kwargs: document)), library, MagicMock())
+    assert records["Example"]["seasons"][0]["episodes"][0]["url_poster"] == "https://example.com/episode.jpg"
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
@@ -312,3 +316,53 @@ def test_missing_provider_ids_are_reported_with_operation_names(kind, monkeypatc
     config.AniDB.get_anime.assert_not_called()
     config.TVDb.get_tvdb_obj.assert_not_called()
     library.square_art_update.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_native_backup_sync_tags_provider_matching_and_schema(kind):
+    import json
+    from pathlib import Path
+
+    import jsonschema
+
+    data = {"tmdb_id": 123, "genres": [], "user_rating": 0} if kind == "silo" else {"ProviderIds": {"Tmdb": "123"}, "Genres": [], "Tags": ["Keep"], "CriticRating": 85, "UserData": {"Rating": 0}}
+    library, item = native_item(kind, **data)
+    library.metadata_backup = {"path": "/tmp/backup.yml", "sync_tags": True, "exclude": ["country"]}
+    library.get_all = lambda: [item]
+    library.reload = lambda item: item
+    document = SimpleNamespace(data={"metadata": {123: {"genre": "Stale", "summary": "Saved"}}}, save=MagicMock())
+    backup_metadata(SimpleNamespace(Requests=SimpleNamespace(file_yaml=lambda *args, **kwargs: document)), library, MagicMock())
+    record = document.data["metadata"][123]
+    assert record["genre.sync"] == []
+    assert "genre" not in record
+    assert "country.sync" not in record
+    assert record["user_rating"] == 0
+    if kind != "silo":
+        assert record["critic_rating"] == 8.5
+        assert record["label.sync"] == "Keep"
+    schema = json.loads(Path("json-schema/metadata-schema.json").read_text())
+    # JSON object keys are strings when validating the YAML document as JSON.
+    jsonschema.validate(json.loads(json.dumps(document.data)), schema)
+    logger = MagicMock()
+    params = {"metadata_backup": library.metadata_backup}
+    configure_metadata_operations(params, kind, logger)
+    logger.error.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_native_backup_preserves_same_title_items_and_existing_attributes(kind):
+    key_data = {"tmdb_id": 123, "year": 2000} if kind == "silo" else {"ProviderIds": {"Tmdb": "123"}, "ProductionYear": 2000}
+    library, first = native_item(kind, **key_data)
+    _, second = native_item(kind, **{**key_data, ("content_id" if kind == "silo" else "Id"): "second"})
+    library.metadata_backup = {"path": "/tmp/backup.yml", "sync_tags": False}
+    library.get_all = lambda: [first, second]
+    library.reload = lambda item: item
+    document = SimpleNamespace(data={"collections": {"Keep": {}}, "metadata": {123: {"url_poster": "https://example.com/poster.jpg", "genre.sync": ["Old"]}}}, save=MagicMock())
+    backup_metadata(SimpleNamespace(Requests=SimpleNamespace(file_yaml=lambda *args, **kwargs: document)), library, MagicMock())
+    records = document.data["metadata"]
+    assert len(records) == 2
+    assert records[123]["url_poster"] == "https://example.com/poster.jpg"
+    assert records[123]["genre"] == "Drama"
+    assert "genre.sync" not in records[123]
+    assert records["Example (2000) [second]"]["match"] == {"title": "Example", "year": 2000}
+    assert document.data["collections"] == {"Keep": {}}
