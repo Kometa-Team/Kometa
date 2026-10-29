@@ -1369,7 +1369,9 @@ class Operations:
                             # Skip processing if ignore_locked is True and thumb is locked
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         elif ignore_overlays and has_overlay_label:
-                            # Skip processing if ignore_overlays is True and Overlay label is found
+                            # Skip processing if ignore_overlays is True and Overlay label is found.
+                            if new_poster or poster_url:
+                                logger.info("Poster | Skipped because the item has an Overlay")
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         else:
                             result = self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
@@ -1441,6 +1443,8 @@ class Operations:
                             options = self.library.mass_poster_update if kind == "poster" else self.library.mass_background_update
                             if native:
                                 if kind == "poster" and options.get("ignore_overlays") and self.library.item_has_overlay(child):
+                                    if image or url:
+                                        logger.info(f"{title} Poster | Skipped because the item has an Overlay")
                                     return "Reset", source, "Skipped"
                                 if options.get("ignore_locked") and any(field.locked and field.name == ("thumb" if kind == "poster" else "art") for field in child.fields):
                                     return "Reset", source, "Skipped"

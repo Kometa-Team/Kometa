@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Only report deferred overlay poster updates when an asset poster was found.
+- Only report deferred overlay poster updates when an asset poster was found, and report provider poster replacements skipped by ignore_overlays when replacement artwork exists.
 
 - Retry Jellyfin/Emby reads after transient HTTP 502, 503, and 504 responses instead of aborting operations immediately.
 
