@@ -1403,6 +1403,42 @@ def _select_count(cache, fn):
 
 
 class TestQueryMapMemoization:
+    @pytest.mark.parametrize("query_id", [101, "101"])
+    def test_remapping_invalidates_previous_reverse_lookup(self, tmp_path, query_id):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 101)
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False, media_type="movie")[0] == "tt1"
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False)[0] == "tt1"
+
+        cache.update_imdb_to_tmdb_map("show", False, "tt1", 202)
+
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False, media_type="movie") == (None, None)
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False) == (None, None)
+        assert cache.query_imdb_to_tmdb_map(202, imdb=False, media_type="show")[0] == "tt1"
+        assert cache.query_imdb_to_tmdb_map("tt1", media_type="show")[0] == 202
+
+    @pytest.mark.parametrize(("cached_id", "written_id"), [(101, "101"), ("101", 101)])
+    def test_write_invalidates_reverse_miss_across_numeric_id_representations(self, tmp_path, cached_id, written_id):
+        cache = make_cache(tmp_path)
+        assert cache.query_imdb_to_tmdb_map(cached_id, imdb=False) == (None, None)
+
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", written_id)
+
+        assert cache.query_imdb_to_tmdb_map(cached_id, imdb=False)[0] == "tt1"
+
+    def test_remapping_preserves_unrelated_memoized_lookups(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 101)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt2", 202)
+        cache.query_imdb_to_tmdb_map(101, imdb=False)
+        cache.query_imdb_to_tmdb_map(202, imdb=False)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 303)
+
+        result, selects = _select_count(cache, lambda: cache.query_imdb_to_tmdb_map(202, imdb=False))
+
+        assert result[0] == "tt2"
+        assert selects == 0
+
     def test_repeat_lookup_does_not_hit_sqlite_again(self, tmp_path):
         cache = make_cache(tmp_path)
         cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "100", "tvdb_id", "200", False)
