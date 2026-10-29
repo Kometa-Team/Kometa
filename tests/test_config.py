@@ -871,3 +871,99 @@ mal:
         assert config.MyAnimeList is None
         assert calls == []
         assert any("mal sub-attribute client_secret is blank" in message for message in config_module.logger.warning_messages)
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        "mass_metadata_update: {collections: kometa}",
+        "mass_metadata_update: {collections: {source: kometa_poster}}",
+        'mass_collection_poster_update: {source: kometa, text: "Wow <<collection_name>>", style: dual, decoration: "bold, upper", ignore_locked: true}',
+        'mass_metadata_update: {collections: {source: kometa, text: "Wow <<collection_name>>", style: dual, decoration: "bold, upper", ignore_locked: true}}',
+    ],
+)
+def test_generated_poster_operation_config(tmp_path, monkeypatch, operation):
+    captured = {}
+    original_plex = config_module.Plex
+
+    def capture_plex(config, params):
+        captured.update(params)
+        return original_plex(config, params)
+
+    monkeypatch.setattr(config_module, "Plex", capture_plex)
+    make_config(
+        tmp_path,
+        config_yaml=f"""
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      {operation}
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+""",
+    )
+    options = captured["mass_collection_poster_update"]
+    assert captured["mass_poster_update"] is None
+    assert options["source"] in ("kometa", "kometa_poster")
+    if "text:" in operation:
+        assert options["ignore_locked"] is True
+        assert options["kometa_poster"] == {"text": "Wow <<collection_name>>", "style": "dual", "decoration": "bold, upper"}
+    else:
+        assert options["kometa_poster"] == {}
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        {"mass_metadata_update": {"collections": {"source": "kometa_poster"}}},
+        {"mass_metadata_update": {"collections": {"source": "kometa_poster", "style": "dual", "ignore_locked": True}}},
+        {"mass_metadata_update": {"collections": {"source": "kometa", "text": "Wow <<collection_name>>", "style": "dual", "ignore_locked": True}}},
+        {"mass_metadata_update": {"collections": {"source": "kometa", "font_size": 150, "mode": "hide"}}},
+    ],
+)
+def test_generated_poster_operation_schema(operation):
+    import json
+    from pathlib import Path
+
+    from jsonschema import Draft7Validator
+
+    schema = json.loads((Path(__file__).parents[1] / "json-schema" / "config-schema.json").read_text(encoding="utf-8"))
+    validator = Draft7Validator(schema)
+    validator.check_schema(schema)
+    validator.validate({"plex": {"url": "https://plex.example", "token": "token"}, "tmdb": {"apikey": "key"}, "libraries": {"Movies": {"operations": operation}}})
+
+
+@pytest.mark.parametrize(
+    "operation",
+    [
+        "mass_poster_update: kometa_poster",
+        "mass_metadata_update: {poster: {source: kometa}}",
+    ],
+)
+def test_generated_poster_rejected_for_individual_media(tmp_path, operation):
+    from modules.util import Failed
+
+    with pytest.raises(Failed, match="collections source"):
+        make_config(
+            tmp_path,
+            config_yaml=f"""
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      {operation}
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+""",
+        )

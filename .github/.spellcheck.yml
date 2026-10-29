@@ -11,6 +11,13 @@ matrix:
     - .github/.wordlist.txt
     encoding: utf-8
   pipeline:
+  # Exclude fenced examples, including titles, attributes, and indented fences.
+  - pyspelling.filters.context:
+      context_visible_first: true
+      delimiters:
+      - open: '^[ \t]*(?P<fence>`{3,}|~{3,})[^\n]*\n'
+        close: '^[ \t]*(?P=fence)[ \t]*$'
+        content: '(?s:.*?)'
   - pyspelling.filters.markdown:
   - pyspelling.filters.html:
       comments: false

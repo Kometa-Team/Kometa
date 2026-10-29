@@ -1329,10 +1329,10 @@ class TestDelete:
 class TestUnsupportedPoster:
     @pytest.mark.parametrize("attribute", ["kometa_poster", "pmm_poster", "KOMETA_POSTER", "PMM_POSTER"])
     @pytest.mark.parametrize("value", [None, {"background_color": "#0B1F3A", "components": [{"text": "WEEK 7"}]}])
-    def test_ignores_unsupported_poster_and_preserves_supported_poster(self, monkeypatch, attribute, value):
+    def test_generated_and_legacy_posters_preserve_supported_poster(self, monkeypatch, attribute, value):
         logger = FakeLogger()
         monkeypatch.setattr(builder_module, "logger", logger)
-        renderer = MagicMock(side_effect=AssertionError("Unsupported poster renderer must not run"))
+        renderer = MagicMock()
         monkeypatch.setattr(builder_module, "KometaImage", renderer)
         library = MagicMock()
         library.is_movie = False
@@ -1357,10 +1357,15 @@ class TestUnsupportedPoster:
 
         builder = CollectionBuilder(config, MagicMock(), "Week 7", {"smart_label": "release.desc", "plex_all": True, attribute: value, "url_poster": poster_url}, library=library)
 
-        assert logger.error_messages == [f"Collection Error: {attribute.lower()} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
-        assert builder.posters == {"url_poster": poster_url}
+        if attribute.lower() == "pmm_poster":
+            assert logger.error_messages == ["Collection Error: pmm_poster is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
+            assert builder.posters == {"url_poster": poster_url}
+            renderer.assert_not_called()
+        else:
+            assert logger.error_messages == (["Collection Error: kometa_poster attribute is blank"] if value is None else [])
+            assert builder.posters == {"url_poster": poster_url, "kometa_poster": renderer.return_value}
+            renderer.assert_called_once_with(config, value, "kometa_poster", playlist=False, builders={key.lower(): key for key in builder.data})
         assert builder.builders == [("plex_all", "show")]
-        renderer.assert_not_called()
 
 
 class TestUpdateSmartFilter:

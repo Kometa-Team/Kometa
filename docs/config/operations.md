@@ -470,6 +470,25 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `ignore_locked` | Skip updating if the poster field is locked. **Default:** `false` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
 
+        To generate **collection posters**, use `collections` with `source: kometa_poster` (`kometa` is an alias).
+        This leaves individual movie, show, season and episode posters untouched.
+        The [generated poster options](../files/updates.md#generated-posters), including `text`, `decoration`, fonts, images and layout, are accepted beside `source`.
+        `<<collection_name>>` resolves to each collection's title.
+        When `image` is omitted, a chart logo is inferred from the collection's configured builders (including templates) where its YAML definition can be identified.
+        Collections without a matching definition or mapped builder remain text-only. Use `image: null` to suppress automatic logos.
+        `ignore_locked: true` skips locked collection posters; `ignore_overlays` skips collection posters labelled Overlay.
+
+        ```yaml
+        operations:
+          mass_metadata_update:
+            collections:
+              source: kometa_poster
+              text: "Wow <<collection_name>>"
+              decoration: "bold, upper"
+              style: dual
+              ignore_locked: true
+        ```
+
         | Background Option | Description | Values |
         | --- | --- | --- |
         | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. `ytmusic` applies to top-level artists. | `tmdb`, `tvdb`, `plex`, `ytmusic`, `lock`, or `unlock` |

@@ -1273,9 +1273,18 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.logos = {}
         self.square_arts = {}
-        for attribute in ("kometa_poster", "pmm_poster"):
-            if attribute in methods:
-                logger.error(f"{self.Type} Error: {attribute} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
+        if not self.overlay and "kometa_poster" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: kometa_poster")
+            if self.data[methods["kometa_poster"]] is None:
+                logger.error(f"{self.Type} Error: kometa_poster attribute is blank")
+            logger.debug(f"Value: {data[methods['kometa_poster']]}")
+            try:
+                self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist, builders=methods)
+            except Failed as e:
+                logger.error(e)
+        if "pmm_poster" in methods:
+            logger.error(f"{self.Type} Error: pmm_poster is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
 
         if self.overlay:
             if "overlay" in methods:
@@ -6393,15 +6402,22 @@ class CollectionBuilder:
         self._pick_collection_artwork(asset_location, asset_name)
 
         clean_temp = False
+        generated_temp = None
         if isinstance(self.collection_poster, KometaImage):
-            clean_temp = True
+            generated_temp = self.collection_poster.generated
+            clean_temp = not generated_temp
             item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}  # type: ignore[union-attr]
             self.collection_poster = self.collection_poster.save(item_vars)
+            generated_temp = self.collection_poster.location if generated_temp else None
 
-        if self.collection_poster or self.collection_background or self.collection_logo or self.collection_square_art:
-            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, logo=self.collection_logo, square_art=self.collection_square_art)
-            if pu or bu or lu or sau:
-                updated_details.append("Image")
+        try:
+            if self.collection_poster or self.collection_background or self.collection_logo or self.collection_square_art:
+                pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, logo=self.collection_logo, square_art=self.collection_square_art)
+                if pu or bu or lu or sau:
+                    updated_details.append("Image")
+        finally:
+            if generated_temp:
+                os.remove(generated_temp)
 
         if clean_temp:
             code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

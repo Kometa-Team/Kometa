@@ -1308,3 +1308,89 @@ def test_random_rating_source(monkeypatch, field, episode, draw, expected, retry
     assert randint.call_count == (3 if retry else 1)
     assert all(call.args == (0, 100) for call in randint.call_args_list)
     library.Plex.editField.assert_any_call(field, expected)
+
+
+@pytest.mark.parametrize(
+    "locked,ignore_locked,overlay,ignore_overlays,expected",
+    [
+        (False, True, False, False, True),
+        (True, True, False, False, False),
+        (True, False, False, False, True),
+        (False, False, True, True, False),
+    ],
+)
+def test_generated_collection_poster_respects_skip_checks(locked, ignore_locked, overlay, ignore_overlays, expected):
+    from unittest.mock import patch
+
+    from modules.operations import update_generated_collection_poster
+
+    collection = SimpleNamespace(title="A Collection", fields=[SimpleNamespace(name="thumb", locked=locked)])
+    options = {"ignore_locked": ignore_locked, "ignore_overlays": ignore_overlays, "kometa_poster": {}}
+    library = MagicMock()
+    library.item_labels.return_value = [SimpleNamespace(tag="Overlay")] if overlay else []
+    with patch("modules.poster.KometaImage", side_effect=ops_module.Failed("Test rendering failure")) as renderer:
+        update_generated_collection_poster(None, library, collection, options)
+    assert renderer.called is expected
+    library.poster_update.assert_not_called()
+
+
+def test_generated_collection_poster_substitutes_title_and_cleans_up(tmp_path):
+    from unittest.mock import patch
+
+    from modules.operations import update_generated_collection_poster
+
+    path = tmp_path / "generated.png"
+    path.write_bytes(b"poster")
+    library = MagicMock()
+    library.upload_images.return_value = (True, False, False, False)
+    collection = SimpleNamespace(title="A Collection")
+    with patch("modules.poster.KometaImage") as renderer:
+        renderer.return_value.save.return_value = SimpleNamespace(location=str(path))
+        result = update_generated_collection_poster(None, library, collection, {"kometa_poster": {"text": "Wow <<collection_name>>"}})
+    assert result == "Updated"
+    assert renderer.return_value.save.call_args.args[0]["collection_name"] == "A Collection"
+    assert library.upload_images.call_args.args[0] is collection
+    library.poster_update.assert_not_called()
+    assert not path.exists()
+
+
+def test_generated_collection_operation_never_scans_media_items():
+    from unittest.mock import patch
+
+    library = make_mass_edit_library([], mass_collection_poster_update={"source": "kometa_poster", "kometa_poster": {}})
+    library.items_library_operation = False
+    library.collection_names = ["Test"]
+    library.get_all_collections.return_value = [make_col("Test")]
+    library.item_labels.return_value = []
+    with patch("modules.operations.update_generated_collection_poster", return_value="Updated") as update:
+        Operations(config=MagicMock(), library=library).run_operations()
+    update.assert_called_once()
+    assert update.call_args.args[2].title == "Test"
+    library.get_all.assert_not_called()
+    library.poster_update.assert_not_called()
+
+
+def test_collection_operation_resolves_builder_names_from_definitions():
+    from unittest.mock import patch
+
+    library = make_mass_edit_library([])
+    metadata = SimpleNamespace(collections={"IMDb Top": {"imdb_chart": "top_movies", "name": "Top Movies"}})
+    library.configured_collection_metadata_files = [metadata]
+    with patch("modules.operations._configured_collection_name_aliases", return_value={"IMDb Top", "Top Movies"}):
+        result = Operations(config=MagicMock(), library=library)._collection_poster_builder_map()
+    assert "imdb_chart" in result["Top Movies"]
+
+
+def test_collection_operation_passes_builders_to_poster_renderer(tmp_path):
+    from unittest.mock import patch
+
+    from modules.operations import update_generated_collection_poster
+
+    path = tmp_path / "poster.png"
+    path.write_bytes(b"poster")
+    library = MagicMock()
+    library.upload_images.return_value = (True, False, False, False)
+    with patch("modules.poster.KometaImage") as renderer:
+        renderer.return_value.save.return_value = SimpleNamespace(location=str(path))
+        update_generated_collection_poster(None, library, SimpleNamespace(title="IMDb Top"), {}, builders=["imdb_chart"])
+    assert renderer.call_args.kwargs["builders"] == ["imdb_chart"]
