@@ -232,8 +232,8 @@ Generated posters take priority over other poster sources, except assets when `p
 
 Decorations apply after placeholders are substituted. Capitalisation changes run in the listed order. For example, `decoration: "bold, italic, upper"` uses bold italic uppercase text. A matching font face is selected from the same family beside the font file; missing bold/italic faces are synthesised.
 
-`underline` and `strike` draw a line beneath or through each caption line. `sentence` lowercases
-the caption and capitalises the start of each sentence and explicit line. `small_caps` renders
+`underline` and `strike` draw a line beneath or through each caption line. `sentence` converts
+the caption to lowercase and capitalises the start of each sentence and explicit line. `small_caps` renders
 lowercase letters as smaller uppercase letters and keeps existing capitals full size. Combine
 it with `lower` first if you want every letter small, or leave the original capitalisation intact
 for a mix of sizes.
