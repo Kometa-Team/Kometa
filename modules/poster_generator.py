@@ -181,20 +181,27 @@ def parse_hex_colour(value: str, name: str) -> tuple[int, int, int]:
 
 def border_palette(value: str | list[str]) -> list[tuple[int, int, int]]:
     """Validate a solid colour, an ordered palette, or the rainbow keyword."""
+
+    def rgb_colour(colour: str) -> tuple[int, int, int]:
+        rgb = ImageColor.getcolor(colour, "RGB")
+        if not isinstance(rgb, tuple) or len(rgb) != 3:
+            raise ValueError(f"Expected an RGB colour: {colour}")
+        return rgb[0], rgb[1], rgb[2]
+
     if isinstance(value, str):
         value = value.strip()
         if value.lower() == "rainbow":
             return []
         # Preserve colour functions such as rgb(255, 0, 0).
         try:
-            return [ImageColor.getcolor(value, "RGB")]
+            return [rgb_colour(value)]
         except ValueError:
             values = [colour.strip() for colour in value.split(",")]
     else:
         values = value if isinstance(value, list) else [value]
     if not values or any(not isinstance(colour, str) for colour in values):
         raise ValueError("border_color must be a colour, a nonempty list of colours, or rainbow")
-    return [ImageColor.getcolor(colour, "RGB") for colour in values]
+    return [rgb_colour(colour) for colour in values]
 
 
 def draw_border(image: Image.Image, width: int, colour: str | list[str]) -> None:
@@ -203,6 +210,8 @@ def draw_border(image: Image.Image, width: int, colour: str | list[str]) -> None
         ImageDraw.Draw(image).rectangle((0, 0, image.width - 1, image.height - 1), outline=palette[0], width=width)
         return
     pixels = image.load()
+    if pixels is None:
+        raise ValueError("Cannot draw a border without image pixels")
     for inset in range(min(width, (min(image.size) + 1) // 2)):
         left, top = inset, inset
         right, bottom = image.width - 1 - inset, image.height - 1 - inset
