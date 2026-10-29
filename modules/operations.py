@@ -15,6 +15,33 @@ from modules.util import Failed, LimitReached
 
 logger = util.logger
 
+
+def update_generated_collection_poster(config, library, collection, image_config, builders=None):
+    """Update collection artwork only, respecting locks before rendering."""
+    from modules.poster import KometaImage
+
+    title = collection.title
+    if image_config.get("ignore_locked") and any(field.name == "thumb" and field.locked for field in collection.fields):
+        logger.info(f"{title} | Collection Poster | Skipped (locked)")
+        return "Skipped"
+    if image_config.get("ignore_overlays") and any(label.tag == "Overlay" for label in library.item_labels(collection)):
+        logger.info(f"{title} | Collection Poster | Skipped (overlay)")
+        return "Skipped"
+    image = None
+    try:
+        poster = KometaImage(config, image_config.get("kometa_poster", {}), "kometa_poster", builders=builders)
+        image = poster.save({"title": title, "titleU": title.upper(), "titleL": title.lower(), "collection_name": title})
+        updated, _, _, _ = library.upload_images(collection, poster=image)
+        logger.info(f"{title} | Collection Poster | {'Updated' if updated else 'Unchanged'}")
+        return "Updated" if updated else "Unchanged"
+    except Failed as error:
+        logger.error(f"{title} | {error}")
+        return "Failed"
+    finally:
+        if image is not None:
+            os.remove(image.location)
+
+
 meta_operations = [
     "mass_audience_rating_update",
     "mass_user_rating_update",
@@ -189,6 +216,28 @@ class Operations:
                 except Exception as e:
                     logger.debug(f"Configured name resolution failed for {mapping_name}: {e}")
         return configured_names
+
+    def _collection_poster_builder_map(self):
+        """Resolve configured collection names and their builders, including templates."""
+        output = {}
+        files = getattr(self.library, "configured_collection_metadata_files", [])
+        if not isinstance(files, (list, tuple)):
+            return output
+        for metadata_file in files:
+            for mapping_name, definition in (metadata_file.collections or {}).items():
+                if not isinstance(definition, dict):
+                    continue
+                try:
+                    data = dict(definition)
+                    if "template" in data:
+                        expanded = metadata_file.apply_template(data.get("name"), mapping_name, data, data["template"], data.get("variables") or {})
+                        data = {**expanded, **data}
+                    aliases = _configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, definition)
+                    for name in aliases:
+                        output[name] = tuple(data)
+                except Exception as error:
+                    logger.debug(f"Poster builder resolution failed for {mapping_name}: {error}")
+        return output
 
     def _uses_mdblist(self):
         sources = [
@@ -1726,7 +1775,8 @@ class Operations:
             logger.info("")
             self.library.Lidarr.remove_all_with_tags(self.library.lidarr_remove_by_tag)
 
-        if self.library.delete_collections or self.library.show_unmanaged or self.library.show_unconfigured or self.library.assets_for_all or self.library.mass_collection_mode:
+        collection_poster_update = getattr(self.library, "mass_collection_poster_update", None)
+        if self.library.delete_collections or self.library.show_unmanaged or self.library.show_unconfigured or self.library.assets_for_all or self.library.mass_collection_mode or isinstance(collection_poster_update, dict):
             logger.info("")
             logger.separator("Collection Operations", space=False, border=False)
             logger.info("")
@@ -1746,6 +1796,7 @@ class Operations:
 
             unmanaged_collections = []
             unconfigured_collections = []
+            poster_builders = self._collection_poster_builder_map() if isinstance(collection_poster_update, dict) else {}
             all_collections = self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
@@ -1759,6 +1810,8 @@ class Operations:
                     except Failed as e:
                         logger.error(e)
                 else:
+                    if isinstance(collection_poster_update, dict):
+                        update_generated_collection_poster(self.config, self.library, col, collection_poster_update, builders=poster_builders.get(col.title))
                     if "PMM" not in labels and "Kometa" not in labels:
                         unmanaged_collections.append(col)
                     if col.title not in configured_names:
