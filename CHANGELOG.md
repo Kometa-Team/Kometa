@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Report unchanged originally-available and added dates during mass metadata operations.
+
 - Include studio updates in the operations summary and report unchanged studios during item processing.
 
 - Disable unsupported native duplicate-splitting operations during configuration, consistently with other unsupported operations, instead of checking during library processing.

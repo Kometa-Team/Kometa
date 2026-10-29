@@ -1202,6 +1202,8 @@ class Operations:
                                         date_edits[item_attr][new_date].append(item.ratingKey)
                                         combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = new_date
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {new_date}"
+                                    else:
+                                        logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                     break
                                 except Failed:
                                     continue
