@@ -281,3 +281,34 @@ def test_movie_tvdb_lookup_uses_native_provider_id_without_plex_guids(kind, monk
     Operations(config, library).run_operations()
     config.TVDb.get_tvdb_obj.assert_called_once_with(34, is_movie=True)
     assert "Mystery" in library.client.update_item.call_args.args[1]["Genres"]
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_missing_provider_ids_are_reported_with_operation_names(kind, monkeypatch):
+    from modules import operations as operations_module
+    from modules.operations import Operations
+    from tests.test_operations import make_mass_edit_library
+
+    context, item = native_item(kind)
+    library = make_mass_edit_library(
+        [item],
+        mass_original_title_update=["anidb_official", "anidb", "Unknown"],
+        mass_square_art_update={"source": "tvdb", "ignore_locked": False},
+    )
+    library.server = context.server
+    library.client = context.client
+    library.find_item_assets.return_value = (None, None, None, None, None, None)
+    config = MagicMock()
+    config.Convert.ids_to_anidb.return_value = None
+    logger = MagicMock()
+    monkeypatch.setattr(operations_module, "logger", logger)
+
+    Operations(config, library).run_operations()
+
+    messages = [str(call.args[0]) for call in logger.info.call_args_list if call.args]
+    assert messages.count("Original Title | No AniDB ID found") == 1
+    assert messages.count("Square Art | No TVDb ID found") == 1
+    assert any("Original Title | Unknown" in message for message in messages)
+    config.AniDB.get_anime.assert_not_called()
+    config.TVDb.get_tvdb_obj.assert_not_called()
+    library.square_art_update.assert_not_called()

@@ -584,6 +584,15 @@ class Operations:
                         raise Failed
                     return _omdb_obj
 
+                missing_provider_ids = set()
+                reported_missing_ids = set()
+
+                def report_missing_id(operation, provider):
+                    key = (operation, provider)
+                    if provider in missing_provider_ids and key not in reported_missing_ids:
+                        logger.info(f"{operation} | No {provider} ID found")
+                        reported_missing_ids.add(key)
+
                 _tvdb_obj = None
 
                 def tvdb_obj():
@@ -612,7 +621,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.info(f"No TVDb ID for: {item.title}")
+                            missing_provider_ids.add("TVDb")
                     if not _tvdb_obj:
                         raise Failed
                     return _tvdb_obj
@@ -680,7 +689,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.warning(f"No AniDB ID for: {item.title}")
+                            missing_provider_ids.add("AniDB")
                     if not _anidb_obj:
                         raise Failed
                     return _anidb_obj
@@ -1095,6 +1104,8 @@ class Operations:
                                     item_edits += f"\nOriginal Title | {new_original_title}"
                                 break
                             except Failed:
+                                if option in ("anidb", "anidb_official"):
+                                    report_missing_id("Original Title", "AniDB")
                                 continue
 
                 if self.library.mass_studio_update:
@@ -1398,7 +1409,11 @@ class Operations:
                         square_art_locked = _field_locked("squareArt")
                         resolved_source, square_art_url = _get_external_image(self.library.mass_square_art_update, is_poster=False, image_type="square_art")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_square_art_update)) == 1) or not (ignore_locked and square_art_locked):
-                            result = self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
+                            if not new_square_art and not square_art_url and resolved_source == "tvdb" and "TVDb" in missing_provider_ids:
+                                report_missing_id("Square Art", "TVDb")
+                                result = ("Reset", resolved_source, "Missing")
+                            else:
+                                result = self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
                             record_image_operation(result, "Square Art", "Item")
                         else:
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Square Art", "Item")
