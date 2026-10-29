@@ -621,7 +621,12 @@ class Cache:
         # Invalidate any memoized _query_map reads this write could have made stale, in either lookup direction.
         table_cache = self._map_cache.get(map_name)
         if table_cache:
-            for key in [k for k in table_cache if k[2] in (val1, val2)]:
+            for key, row in list(table_cache.items()):
+                source_lookup = key[0] == val1_name and str(key[2]) == str(val1)
+                destination_lookup = key[0] == val2_name and str(key[2]) == str(val2)
+                overwritten_row = row is not None and str(row[val1_name]) == str(val1)
+                if not (source_lookup or destination_lookup or overwritten_row):
+                    continue
                 del table_cache[key]
 
     def query_omdb(self, imdb_id, expiration):
