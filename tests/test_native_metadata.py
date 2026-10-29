@@ -263,3 +263,21 @@ def test_native_stored_rating_sources_run_through_operations_without_provider_re
     assert library.client.update_item.call_args.args[1]["CriticRating"] == 72
     config.TMDb.get_item.assert_not_called()
     library.Plex.batchMultiEdits.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_movie_tvdb_lookup_uses_native_provider_id_without_plex_guids(kind, monkeypatch):
+    from modules import operations as operations_module
+    from modules.operations import Operations
+    from tests.test_operations import make_mass_edit_library
+
+    context, item = native_item(kind, ProviderIds={"Tvdb": "34"})
+    library = make_mass_edit_library([item], mass_genre_update=["tvdb"])
+    library.server = context.server
+    library.client = context.client
+    config = MagicMock()
+    config.TVDb.get_tvdb_obj.return_value = SimpleNamespace(genres=["Mystery"])
+    monkeypatch.setattr(operations_module, "logger", MagicMock())
+    Operations(config, library).run_operations()
+    config.TVDb.get_tvdb_obj.assert_called_once_with(34, is_movie=True)
+    assert "Mystery" in library.client.update_item.call_args.args[1]["Genres"]

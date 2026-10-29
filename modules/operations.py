@@ -589,7 +589,7 @@ class Operations:
                     nonlocal _tvdb_obj
                     if _tvdb_obj is None:
                         _tvdb_obj = False
-                        item_tvdb_id = tvdb_id
+                        item_tvdb_id = tvdb_id or (getattr(item, "tvdb_id", None) if native else None)
                         if not item_tvdb_id and self.library.is_movie:
                             try:
                                 for guid_tag in item.guids:

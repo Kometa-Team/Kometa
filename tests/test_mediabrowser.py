@@ -1430,3 +1430,12 @@ def test_item_critic_rating_facade_uses_kometa_scale_and_preserves_raw_api_value
     item = MediaBrowserItem({"Id": "movie", "Type": "Movie", "CriticRating": 75}, library)
     assert item.rating == 7.5
     assert item.data["CriticRating"] == 75
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_movie_provider_lookup_preserves_native_tvdb_id(kind):
+    session = FakeSession([])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "movie", "Type": "Movie", "ProviderIds": {"Tmdb": "12", "Tvdb": "34", "Imdb": "tt56"}}, library)
+    assert library.get_ids(item) == (12, 34, "tt56")
+    assert session.calls == []

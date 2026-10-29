@@ -727,8 +727,6 @@ class MediaBrowser(Library):
         self.require(Capability.GET_PROVIDER_IDS)
         if not item.tmdb_id and not item.tvdb_id and not item.imdb_id:
             item.apply(self.client.get_item(item.ratingKey))
-        if self.is_movie:
-            return item.tmdb_id, None, item.imdb_id
         return item.tmdb_id, item.tvdb_id, item.imdb_id
 
     def list_children(self, item, include_type):

@@ -693,3 +693,14 @@ def test_show_missing_lazy_season_is_handled_without_traceback_or_cache_write(mo
     t.cache.update_tmdb_show.assert_not_called()
     logger.stacktrace.assert_not_called()
     logger.warning.assert_not_called()
+
+
+def test_movie_tvdb_id_never_uses_series_conversion():
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.config.Convert.imdb_to_tmdb.return_value = (56, "movie")
+    t.get_movie = MagicMock()
+    item = SimpleNamespace(title="Example", guid="jellyfin://movie")
+    assert t.get_item(item, None, 34, "tt56", is_movie=True) is t.get_movie.return_value
+    t.config.Convert.tvdb_to_tmdb.assert_not_called()
+    t.get_movie.assert_called_once_with(56)
