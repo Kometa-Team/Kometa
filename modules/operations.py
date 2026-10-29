@@ -324,7 +324,8 @@ class Operations:
             split_count = 0
             for item in duplicate_items:
                 try:
-                    item.split()
+                    if item.split() is False:
+                        continue
                     split_count += 1
                     logger.info(f"{item.title[:25]:<25} | Splitting")
                 except Failed as error:

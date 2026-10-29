@@ -656,6 +656,11 @@ class MediaBrowser(Library):
     def split_item_versions(self, item):
         if item.type not in ("movie", "episode", "video"):
             raise Failed(f"{self.server.type_label} Error: Version splitting is not supported for {item.type}")
+        self.reload(item, force=True)
+        sources = item.data.get("MediaSources")
+        if not isinstance(sources, list) or len(sources) < 2:
+            logger.info(f"{item.title} | No alternate versions to split; skipping")
+            return False
         self.client.split_versions(item.ratingKey)
         self._all_items = []
         for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships"):
@@ -763,8 +768,26 @@ class MediaBrowser(Library):
             params["years"] = kwargs["year"]
         if kwargs.get("actor"):
             params["person"] = kwargs["actor"]
+        predicate = compile_selector({"duplicate": kwargs["duplicate"]}, self.server.type_label) if "duplicate" in kwargs else None
+        if predicate is not None:
+            params["fields"] = f"{ITEM_FIELDS},MediaSources"
         rows = self.client.items(params, limit=maxresults)
-        return [self._wrap(row) for row in rows]
+        items = [self._wrap(row) for row in rows]
+        if predicate is not None:
+            logger.info(f"Checking {len(items)} {self.server.type_label} items for duplicate versions")
+            matches = []
+            try:
+                for index, item in enumerate(items, 1):
+                    logger.ghost(f"Checking versions: {index}/{len(items)} {item.title}")
+                    if not isinstance(item.data.get("MediaSources"), list):
+                        self.reload(item, force=True)
+                    if predicate(self._search_metadata(item)):
+                        matches.append(item)
+            finally:
+                logger.exorcise()
+            logger.info(f"Version filter matched {len(matches)}/{len(items)} items")
+            return matches
+        return items
 
     def fetch_item(self, item):
         if isinstance(item, MediaBrowserItem):

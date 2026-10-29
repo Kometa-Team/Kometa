@@ -1376,7 +1376,7 @@ def test_user_rating_write_preserves_fresh_playback_state(kind):
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
 def test_split_versions_calls_native_endpoint_and_discards_stale_caches(kind):
-    session = FakeSession([FakeResponse(None, status_code=204)])
+    session = FakeSession([FakeResponse({"Id": "item-1", "Type": "Movie", "MediaSources": [{"Id": "a"}, {"Id": "b"}]}), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     library._all_items = ["stale"]
     library._search_details = {"item-1": "stale"}
@@ -1385,8 +1385,8 @@ def test_split_versions_calls_native_endpoint_and_discards_stale_caches(kind):
     library.filter_attr_cache["stale"] = ["stale"]
     item = MediaBrowserItem({"Id": "item-1", "Type": "Movie", "Name": "Example"}, library)
     item.split()
-    assert session.calls[0]["method"] == "DELETE"
-    assert session.calls[0]["url"].endswith("/Videos/item-1/AlternateSources")
+    assert session.calls[-1]["method"] == "DELETE"
+    assert session.calls[-1]["url"].endswith("/Videos/item-1/AlternateSources")
     assert library._all_items == []
     assert "_search_details" not in library.__dict__
     assert "_media_details_loaded" not in library.__dict__
@@ -1439,3 +1439,51 @@ def test_movie_provider_lookup_preserves_native_tvdb_id(kind):
     item = MediaBrowserItem({"Id": "movie", "Type": "Movie", "ProviderIds": {"Tmdb": "12", "Tvdb": "34", "Imdb": "tt56"}}, library)
     assert library.get_ids(item) == (12, 34, "tt56")
     assert session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("duplicate,expected", [(True, ["group"]), (False, ["single"])])
+def test_duplicate_search_filters_actual_media_versions_before_split(kind, duplicate, expected):
+    rows = [
+        {"Id": "single", "Type": "Movie", "Name": "Single", "MediaSources": [{"Id": "single"}]},
+        {"Id": "group", "Type": "Movie", "Name": "Grouped", "MediaSources": [{"Id": "group"}, {"Id": "alternate"}]},
+        {"Id": "unknown", "Type": "Movie", "Name": "Unknown"},
+    ]
+    session = FakeSession([FakeResponse({"Items": rows, "TotalRecordCount": 3}), FakeResponse({"Id": "unknown", "Type": "Movie"})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    assert [item.ratingKey for item in library.search(duplicate=duplicate)] == expected
+    assert all(call["method"] == "GET" for call in session.calls)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_split_rechecks_stale_group_and_never_deletes_single_version(kind):
+    session = FakeSession([FakeResponse({"Id": "item-1", "Type": "Movie", "MediaSources": [{"Id": "item-1"}]})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "item-1", "Type": "Movie", "MediaSources": [{"Id": "a"}, {"Id": "b"}]}, library)
+    assert item.split() is False
+    assert len(session.calls) == 1
+    assert session.calls[0]["method"] == "GET"
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_split_operation_only_sends_delete_for_a_verified_duplicate(kind, monkeypatch):
+    from modules import operations as operations_module
+    from modules.operations import Operations
+    from tests.test_operations import make_title_test_library
+
+    grouped = {"Id": "group", "Name": "Grouped", "Type": "Movie", "MediaSources": [{"Id": "group"}, {"Id": "alternate"}]}
+    single = {"Id": "single", "Name": "Single", "Type": "Movie", "MediaSources": [{"Id": "single"}]}
+    session = FakeSession([FakeResponse({"Items": [single, grouped], "TotalRecordCount": 2}), FakeResponse(grouped), FakeResponse(None, status_code=204)])
+    native = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    library = make_title_test_library([])
+    library.server = native.server
+    library.split_duplicates = True
+    library.search.side_effect = native.search
+    library.refresh_item_cache_and_mappings.return_value = []
+    monkeypatch.setattr(operations_module, "logger", MagicMock())
+    Operations(MagicMock(), library).run_operations()
+    writes = [call for call in session.calls if call["method"] != "GET"]
+    assert len(writes) == 1
+    assert writes[0]["url"].endswith("/Videos/group/AlternateSources")
+    assert "MediaSources" in session.calls[0]["params"]["fields"]
+    library.refresh_item_cache_and_mappings.assert_called_once()

@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Apply Jellyfin/Emby duplicate filters before version splitting and recheck each item so single-version or already-separated items do not receive split requests.
+
 - Preserve Jellyfin/Emby movie TVDb provider IDs for metadata and artwork lookups, without treating movie IDs as TVDb series IDs during TMDb conversion.
 
 - Respect Jellyfin/Emby differences in supported metadata locks and reject added-date clears and Jellyfin numeric personal-rating clears that the APIs cannot apply.
