@@ -275,7 +275,7 @@ def test_builder_validates_smart_options_added_by_templates(monkeypatch, kind, m
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-@pytest.mark.parametrize("error", [requests.ConnectionError("Connection reset by peer"), requests.Timeout("timed out")])
+@pytest.mark.parametrize("error", [requests.ConnectionError("Connection reset by peer"), requests.Timeout("timed out"), requests.exceptions.ChunkedEncodingError("Connection broken: Connection reset by peer")])
 def test_read_retries_transient_connection_errors(monkeypatch, kind, error):
     delays = []
     monkeypatch.setattr(browser_module.time, "sleep", delays.append)
@@ -286,10 +286,11 @@ def test_read_retries_transient_connection_errors(monkeypatch, kind, error):
     assert session.calls[0] == session.calls[1]
 
 
-def test_read_connection_retries_are_bounded(monkeypatch):
+@pytest.mark.parametrize("error", [requests.ConnectionError("reset"), requests.exceptions.ChunkedEncodingError("reset")])
+def test_read_connection_retries_are_bounded(monkeypatch, error):
     delays = []
     monkeypatch.setattr(browser_module.time, "sleep", delays.append)
-    session = FakeSession([requests.ConnectionError("reset") for _ in range(3)])
+    session = FakeSession([error for _ in range(3)])
     client = MediaBrowserClient(_server("emby"), session=session)
     with pytest.raises(Failed, match="GET /Items failed: reset"):
         client.items({})
@@ -417,7 +418,16 @@ def test_emby_creation_continues_after_membership_retry(monkeypatch):
     assert delays == [1]
 
 
-@pytest.mark.parametrize("method,error", [("POST", requests.ConnectionError("reset")), ("DELETE", requests.Timeout("timeout")), ("GET", requests.exceptions.SSLError("certificate")), ("GET", requests.RequestException("invalid request"))])
+@pytest.mark.parametrize(
+    "method,error",
+    [
+        ("POST", requests.ConnectionError("reset")),
+        ("POST", requests.exceptions.ChunkedEncodingError("reset")),
+        ("DELETE", requests.Timeout("timeout")),
+        ("GET", requests.exceptions.SSLError("certificate")),
+        ("GET", requests.RequestException("invalid request")),
+    ],
+)
 def test_unsafe_or_nontransient_requests_are_not_retried(monkeypatch, method, error):
     delays = []
     monkeypatch.setattr(browser_module.time, "sleep", delays.append)

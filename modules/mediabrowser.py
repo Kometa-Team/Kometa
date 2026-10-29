@@ -151,7 +151,7 @@ class MediaBrowserClient:
                 response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, data=data, headers=headers, timeout=self.server.timeout)
                 break
             except requests.RequestException as error:
-                transient = isinstance(error, (requests.ConnectionError, requests.Timeout)) and not isinstance(error, requests.exceptions.SSLError)
+                transient = isinstance(error, (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError)) and not isinstance(error, requests.exceptions.SSLError)
                 if not retry_safe or not transient or attempt == 2:
                     raise Failed(f"{self.server.type_label} Error: {method} {path} failed: {error}") from error
                 delay = 2**attempt

@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Retry Jellyfin/Emby response-body connection resets wrapped as chunked-encoding errors for retry-safe requests, including library item listing.
+
 - Report unchanged originally-available and added dates during mass metadata operations.
 
 - Include studio updates in the operations summary and report unchanged studios during item processing.
