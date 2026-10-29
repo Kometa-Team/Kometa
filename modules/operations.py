@@ -282,6 +282,7 @@ class Operations:
         logger.info(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
         logger.info(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
         logger.info(f"Mass Original Title Update: {self.library.mass_original_title_update}")
+        logger.info(f"Mass Studio Update: {self.library.mass_studio_update}")
         logger.info(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.info(f"Mass Added At Update: {self.library.mass_added_at_update}")
         logger.info(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
@@ -1135,6 +1136,8 @@ class Operations:
                                     if native:
                                         combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})["studio"] = new_studio
                                     item_edits += f"\nStudio (Batched) | {new_studio}"
+                                else:
+                                    logger.info(f"Studio Unchanged | {current_studio}")
                                 break
                             except Failed:
                                 continue
