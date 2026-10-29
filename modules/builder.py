@@ -270,6 +270,7 @@ ignored_details = [
     "builder_level",
     "overlay",
     "kometa_poster",
+    "pmm_poster",
     "validate_builders",
     "libraries",
     "sync_to_users",
@@ -1282,6 +1283,8 @@ class CollectionBuilder:
                 self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist, builders=methods)
             except Failed as e:
                 logger.error(e)
+        if "pmm_poster" in methods:
+            logger.error(f"{self.Type} Error: pmm_poster is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
 
         if self.overlay:
             if "overlay" in methods:

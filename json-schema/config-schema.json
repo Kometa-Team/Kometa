@@ -13969,6 +13969,798 @@
       "required": [],
       "dependentRequired": {}
     },
+    "seasonal-imdb-list-entry": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "list_id"
+          ],
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "pattern": "^ls\\d+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sort_by": {
+              "type": "string",
+              "enum": [
+                "custom.asc",
+                "custom.desc",
+                "title.asc",
+                "title.desc",
+                "rating.asc",
+                "rating.desc",
+                "popularity.asc",
+                "popularity.desc",
+                "votes.asc",
+                "votes.desc",
+                "release.asc",
+                "release.desc",
+                "runtime.asc",
+                "runtime.desc",
+                "added.asc",
+                "added.desc"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "url"
+          ]
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "seasonal-imdb-search": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sort_by": {
+          "type": "string",
+          "enum": [
+            "popularity.asc",
+            "popularity.desc",
+            "title.asc",
+            "title.desc",
+            "rating.asc",
+            "rating.desc",
+            "votes.asc",
+            "votes.desc",
+            "box_office.asc",
+            "box_office.desc",
+            "runtime.asc",
+            "runtime.desc",
+            "year.asc",
+            "year.desc",
+            "release.asc",
+            "release.desc"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "type.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "release.after": {
+          "type": "string"
+        },
+        "release.before": {
+          "type": "string"
+        },
+        "rating.gte": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "rating.lte": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 10
+        },
+        "votes.gte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "votes.lte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "genre": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "genre.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "genre.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "interests": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "interests.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "interests.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "event": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "event.winning": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "imdb_top": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "imdb_bottom": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "topic": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "topic.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "company": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "content_rating": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "rating"
+              ],
+              "properties": {
+                "rating": {
+                  "type": "string"
+                },
+                "region": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                }
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "rating"
+                    ],
+                    "properties": {
+                      "rating": {
+                        "type": "string"
+                      },
+                      "region": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "country": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "country.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "country.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "country.origin": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "keyword": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "keyword.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "keyword.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "series": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "series.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "list": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "list.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "list.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "language": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "language.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "language.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "language.primary": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "popularity.gte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "popularity.lte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cast": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "cast.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "cast.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "character": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "runtime.gte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runtime.lte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "adult": {
+          "type": "boolean"
+        },
+        "alternate_version": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "alternate_version.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "alternate_version.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "crazy_credit": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "crazy_credit.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "crazy_credit.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "goof": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "goof.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "goof.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "location": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "location.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "location.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "plot": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "plot.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "plot.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "quote": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "quote.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "quote.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "soundtrack": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "soundtrack.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "soundtrack.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "trivia": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "trivia.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "trivia.not": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "topic.any": {
+          "type": [
+            "string",
+            "array"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "minProperties": 1,
+      "not": {
+        "required": [
+          "limit"
+        ],
+        "maxProperties": 1
+      }
+    },
+    "seasonal-mdblist-list-entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sort_by": {
+          "type": "string"
+        }
+      }
+    },
+    "seasonal-letterboxd-list-entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "year": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 3000
+            },
+            {
+              "type": "string",
+              "pattern": "^(?:[12]\\d{3}|3000)(?:-(?:[12]\\d{3}|3000))?$"
+            }
+          ]
+        },
+        "rating": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            },
+            {
+              "type": "string",
+              "pattern": "^(?:[1-9]|10)(?:-(?:[1-9]|10))?$"
+            }
+          ]
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
     "seasonal-template-vars": {
       "description": "Seasonal default",
       "type": "object",
@@ -14275,7 +15067,17 @@
           "type": "string"
         },
         "sort_by": {
-          "type": "string"
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "collection_order": {
           "type": "string"
@@ -14292,10 +15094,498 @@
         "exclude": {
           "oneOf": [
             {
-              "type": "array"
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "emoji": {
+          "description": "Prefix an emoji to all seasonal collection titles.",
+          "type": "string"
+        },
+        "allowed_libraries": {
+          "description": "Limits which library types this default applies to.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "pre": {
+          "description": "Prefix before the collection order in the shared sort title.",
+          "type": "string"
+        },
+        "order": {
+          "description": "Override the sort order of a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "number"
             },
             {
               "type": "string"
+            }
+          ]
+        },
+        "sort": {
+          "description": "Sort-title value used by the shared template.",
+          "type": "string"
+        },
+        "radarr_monitor": {
+          "description": "Monitor movies added to Radarr. The collection builder parses this as a boolean.",
+          "type": "boolean"
+        },
+        "sonarr_monitor": {
+          "type": "string",
+          "enum": [
+            "all",
+            "future",
+            "missing",
+            "existing",
+            "pilot",
+            "first",
+            "latest",
+            "none"
+          ]
+        },
+        "data": {
+          "description": "Replace seasonal keys and display names for the custom dynamic collection.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "append_data": {
+          "description": "Add seasonal keys and display names to the default data.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "remove_data": {
+          "description": "Remove keys from the default seasonal data.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "title_format": {
+          "description": "Dynamic collection title format containing <<key_name>> or <<title>>.",
+          "type": "string"
+        },
+        "title_override": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "key_name_override": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "custom_keys": {
+          "type": "boolean"
+        },
+        "test": {
+          "type": "boolean"
+        },
+        "sync": {
+          "type": "boolean"
+        },
+        "remove_prefix": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "remove_suffix": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "other_name": {
+          "type": "string"
+        },
+        "append_exclude": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "remove_exclude": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "include": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "append_include": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "remove_include": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "addons": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "append_addons": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "remove_addons": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "url_logo": {
+          "type": "string",
+          "format": "uri"
+        },
+        "file_logo": {
+          "type": "string"
+        },
+        "url_square_art": {
+          "type": "string",
+          "format": "uri"
+        },
+        "file_square_art": {
+          "type": "string"
+        },
+        "tmdb_collection": {
+          "description": "TMDb Collection ID(s) or URL(s).",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "tmdb_movie": {
+          "description": "TMDb Movie ID(s) or URL(s).",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "imdb_list": {
+          "description": "IMDb list URLs, IDs, or structured list entries.",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/seasonal-imdb-list-entry"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/seasonal-imdb-list-entry"
+              }
+            }
+          ]
+        },
+        "imdb_search": {
+          "description": "One or more IMDb search dictionaries.",
+          "oneOf": [
+            {
+              "$ref": "#/definitions/seasonal-imdb-search"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/seasonal-imdb-search"
+              }
+            }
+          ]
+        },
+        "mdblist_list": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/seasonal-mdblist-list-entry"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/seasonal-mdblist-list-entry"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "letterboxd_list": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/seasonal-letterboxd-list-entry"
+            },
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/definitions/seasonal-letterboxd-list-entry"
+                  }
+                ]
+              }
             }
           ]
         }
@@ -14341,7 +15631,7 @@
           ]
         },
         "^schedule_.+$": {
-          "type": "string"
+          "$ref": "#/definitions/schedule"
         },
         "^seerr_add_missing_.+$": { "type": "boolean" },
         "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
@@ -14398,6 +15688,156 @@
               }
             }
           ]
+        },
+        "^name_.+$": {
+          "description": "Override the name of a specific collection by key.",
+          "type": "string"
+        },
+        "^summary_.+$": {
+          "description": "Override the summary of a specific collection by key.",
+          "type": "string"
+        },
+        "^order_.+$": {
+          "description": "Override the sort order of a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "^minimum_items_.+$": {
+          "description": "Override minimum_items for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "^url_poster_.+$": {
+          "description": "Override the poster URL for a specific collection by key.",
+          "type": "string",
+          "format": "uri"
+        },
+        "^file_poster_.+$": {
+          "description": "Override the poster filepath for a specific collection by key.",
+          "type": "string"
+        },
+        "^url_background_.+$": {
+          "description": "Override the background URL for a specific collection by key.",
+          "type": "string",
+          "format": "uri"
+        },
+        "^file_background_.+$": {
+          "description": "Override the background filepath for a specific collection by key.",
+          "type": "string"
+        },
+        "^sonarr_add_missing_.+$": {
+          "description": "Override Sonarr add_missing for a specific collection by key.",
+          "type": "boolean"
+        },
+        "^sonarr_folder_.+$": {
+          "description": "Override Sonarr root_folder_path for a specific collection by key.",
+          "type": "string"
+        },
+        "^sonarr_monitor_existing_.+$": {
+          "description": "Override Sonarr monitor_existing for a specific collection by key.",
+          "type": "boolean"
+        },
+        "^sonarr_search_.+$": {
+          "description": "Override Sonarr search for a specific collection by key.",
+          "type": "boolean"
+        },
+        "^sonarr_tag_.+$": {
+          "description": "Override Sonarr tag for a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "^sonarr_upgrade_existing_.+$": {
+          "description": "Override Sonarr upgrade_existing for a specific collection by key.",
+          "type": "boolean"
+        },
+        "^item_sonarr_tag_.+$": {
+          "description": "Override item_sonarr_tag for a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "^limit_.+$": {
+          "description": "Override limit for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "^sync_mode_.+$": {
+          "description": "Override the Sync Mode for a specific collection by key.",
+          "type": "string",
+          "enum": [
+            "sync",
+            "append"
+          ]
+        },
+        "^sort_by_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/sort_by"
+        },
+        "^emoji_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/emoji"
+        },
+        "^tmdb_collection_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/tmdb_collection"
+        },
+        "^tmdb_movie_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/tmdb_movie"
+        },
+        "^imdb_list_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/imdb_list"
+        },
+        "^imdb_search_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/imdb_search"
+        },
+        "^mdblist_list_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/mdblist_list"
+        },
+        "^letterboxd_list_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/letterboxd_list"
+        },
+        "^delete_collections_named_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/delete_collections_named"
+        },
+        "^url_logo_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/url_logo"
+        },
+        "^file_logo_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/file_logo"
+        },
+        "^url_square_art_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/url_square_art"
+        },
+        "^file_square_art_.+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/file_square_art"
+        },
+        "^sonarr_monitor_(?!existing(?:_|$)).+$": {
+          "$ref": "#/definitions/seasonal-template-vars/properties/sonarr_monitor"
         }
       }
     },

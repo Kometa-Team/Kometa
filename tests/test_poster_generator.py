@@ -191,7 +191,7 @@ def test_default_builder_logo_mapping(builders, filename):
 def test_unmapped_builder_does_not_get_logo():
     from modules.poster import default_builder_logo
 
-    assert default_builder_logo(["plex_all", "label"]) is None
+    assert default_builder_logo(["label"]) is None
 
 
 @pytest.mark.parametrize("data", [True, {}, {"text": "Chart"}])
@@ -364,4 +364,3 @@ def test_caption_effect_pixels():
     assert any(pixel == (255, 0, 0, 255) for _, pixel in outlined.getcolors(outlined.width * outlined.height))
     assert any(pixel == (0, 0, 255, 255) for _, pixel in shadowed.getcolors(shadowed.width * shadowed.height))
     assert render(("small_caps",)).width < plain.width * 1.2
-

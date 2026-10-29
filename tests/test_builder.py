@@ -1326,6 +1326,48 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+class TestUnsupportedPoster:
+    @pytest.mark.parametrize("attribute", ["kometa_poster", "pmm_poster", "KOMETA_POSTER", "PMM_POSTER"])
+    @pytest.mark.parametrize("value", [None, {"background_color": "#0B1F3A", "components": [{"text": "WEEK 7"}]}])
+    def test_generated_and_legacy_posters_preserve_supported_poster(self, monkeypatch, attribute, value):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        renderer = MagicMock()
+        monkeypatch.setattr(builder_module, "KometaImage", renderer)
+        library = MagicMock()
+        library.is_movie = False
+        library.is_show = True
+        library.is_music = False
+        library.type = "Show"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.smart_label_check.return_value = True
+        library.get_collection.return_value = SimpleNamespace(title="Week 7", smart=True)
+        filter_url = "?type=2&sort=originallyAvailableAt:desc&label=123"
+        library.smart_filter.return_value = filter_url
+        library.fetchItems.return_value = []
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        monkeypatch.setattr(CollectionBuilder, "build_filter", lambda *args, **kwargs: (2, "Label filter", filter_url))
+        poster_url = "https://example.com/poster.png"
+
+        builder = CollectionBuilder(config, MagicMock(), "Week 7", {"smart_label": "release.desc", "plex_all": True, attribute: value, "url_poster": poster_url}, library=library)
+
+        if attribute.lower() == "pmm_poster":
+            assert logger.error_messages == ["Collection Error: pmm_poster is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
+            assert builder.posters == {"url_poster": poster_url}
+            renderer.assert_not_called()
+        else:
+            assert logger.error_messages == (["Collection Error: kometa_poster attribute is blank"] if value is None else [])
+            assert builder.posters == {"url_poster": poster_url, "kometa_poster": renderer.return_value}
+            renderer.assert_called_once_with(config, value, "kometa_poster", playlist=False, builders={key.lower(): key for key in builder.data})
+        assert builder.builders == [("plex_all", "show")]
+
+
 class TestUpdateSmartFilter:
     """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
 
