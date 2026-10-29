@@ -1,5 +1,12 @@
+import hashlib
+import json
 import os
+import tempfile
 import time
+from functools import lru_cache
+from pathlib import Path
+from typing import Any
+from urllib.parse import quote
 
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 
@@ -361,9 +368,37 @@ class Component(ImageBase):
         return generated_layer, main_point, image
 
 
+@lru_cache(maxsize=1)
+def poster_builder_logos():
+    """Ordered builder-to-logo mapping, stored separately for easy maintenance."""
+    path = Path(__file__).resolve().parents[1] / "defaults" / "poster_builder_logos.json"
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def default_builder_logo(builders):
+    methods = {str(builder).lower() for builder in builders}
+    for builder, image in poster_builder_logos().items():
+        if builder in methods and image:
+            return "https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/" + quote(image, safe="/")
+    return None
+
+
 class KometaImage(ImageBase):
-    def __init__(self, config, data, image_attr, playlist=False):
+    def __init__(self, config, data, image_attr, playlist=False, builders=None):
+        if data is True:
+            data = {}
+        if not isinstance(data, dict):
+            raise Failed("Posters Error: kometa_poster must be true or a dictionary")
         super().__init__(config, data)
+        self.generated = "components" not in self.methods
+        if self.generated:
+            self.default_image = default_builder_logo(builders) if builders and "image" not in self.methods else None
+            self.generator_options = self._generator_options(playlist)
+            if self.default_image:
+                self.generator_options["image_path"] = self.default_image
+            self.image_attr = image_attr
+            return
         self.image_attr = image_attr
         self.backgrounds_dir = os.path.join(self.images_dir, "backgrounds")
         self.playlist = playlist
@@ -377,6 +412,139 @@ class KometaImage(ImageBase):
             raise Failed("Posters Error: components attribute is required")
         self.components = [Component(self.config, d) for d in util.parse("Posters", "components", self.data, datatype="listdict", methods=self.methods)]
 
+    def _generator_options(self, playlist):
+        from modules import poster_generator as generator
+
+        defaults = dict(
+            text="<<collection_name>>",
+            decoration="",
+            style="single",
+            image=None,
+            font="Comfortaa-Medium.ttf",
+            font_size=120,
+            outline_color="#000000",
+            outline_width=2,
+            shadow_color="#000000",
+            shadow_offset=4,
+            border_width=0,
+            border_color="#FFFFFF",
+            text_color="#FFFFFF",
+            text_width=0.75,
+            image_text_gap=0.05,
+            image_width=0.85,
+            image_height=0.45,
+            top_margin=0.05,
+            bottom_margin=0.05,
+            width=1000,
+            height=1000 if playlist else 1500,
+            seed=None,
+            fade=None,
+            color=None,
+        )
+        try:
+            unknown = set(self.methods) - set(defaults)
+            if unknown:
+                raise ValueError(f"Unknown attributes: {', '.join(sorted(unknown))}")
+            options: dict[str, Any] = {key: self.data[self.methods[key]] if key in self.methods else value for key, value in defaults.items()}
+            for key in ("text", "image", "font", "style", "text_color", "fade", "color", "decoration"):
+                if options[key] is not None and not isinstance(options[key], str):
+                    raise ValueError(f"{key} must be a string")
+            for key in ("width", "height", "seed", "font_size", "border_width"):
+                value = options[key]
+                if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+                    raise ValueError(f"{key} must be an integer")
+            if options["border_width"] is None or options["border_width"] < 0:
+                raise ValueError("border_width must be a nonnegative integer in pixels")
+            generator.border_palette(options["border_color"])
+            for key in ("outline_color", "shadow_color"):
+                if not isinstance(options[key], str):
+                    raise ValueError(f"{key} must be a colour string")
+                ImageColor.getcolor(options[key], "RGB")
+            for key in ("outline_width", "shadow_offset"):
+                value = options[key]
+                if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 100:
+                    raise ValueError(f"{key} must be an integer from 0 to 100 pixels")
+            if options["font_size"] is None or options["font_size"] < 1:
+                raise ValueError("font_size must be a positive integer in pixels")
+            if options["width"] < 1 or options["height"] < 1 or options["width"] * options["height"] > 40_000_000:
+                raise ValueError("Invalid canvas dimensions (maximum 40 million pixels)")
+            for key in ("text_width", "image_width", "image_height", "image_text_gap", "top_margin", "bottom_margin"):
+                value = options[key]
+                allow_zero = key in ("image_text_gap", "top_margin", "bottom_margin")
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not (0 <= value < 1 if allow_zero else 0 < value <= 1):
+                    raise ValueError(f"{key} must be a decimal fraction {'from 0 to less than 1' if allow_zero else 'greater than 0 and at most 1'}")
+            if options["top_margin"] + options["bottom_margin"] >= 1:
+                raise ValueError("Top and bottom margins must total less than 1")
+            _, tones = generator.parse_style(options["style"])
+            for tone in tones:
+                generator.resolve_tone(generator.random.Random(0), tone)
+            if options["fade"] is not None and options["fade"] not in generator.FADES:
+                raise ValueError("fade must be top, bottom or middle")
+            for key in ("color", "text_color"):
+                if options[key] is not None:
+                    generator.parse_hex_colour(options[key], key)
+            decoration = options.pop("decoration")
+            if not isinstance(decoration, str):
+                raise ValueError("decoration must be a comma-separated string")
+            self.decorations = [value.strip().lower() for value in decoration.split(",") if value.strip()]
+            invalid = set(self.decorations) - {"bold", "italic", "upper", "lower", "title", "underline", "strike", "sentence", "small_caps", "outline", "shadow"}
+            if invalid:
+                raise ValueError(f"Unknown decoration: {', '.join(sorted(invalid))}")
+            options["decorations"] = tuple(self.decorations)
+            font = Path(options.pop("font"))
+            if not font.is_file():
+                font = Path(self.code_base) / "fonts" / font
+            ImageFont.truetype(str(font), 12)
+            if "bold" in self.decorations or "italic" in self.decorations:
+                font, options["synthetic_bold"], options["synthetic_italic"] = generator.decorated_font(font, bold="bold" in self.decorations, italic="italic" in self.decorations)
+            options["font_path"] = font
+            options["image_path"] = options.pop("image")
+            options["base_color"] = options.pop("color")
+            options["fade_name"] = options.pop("fade")
+            options["canvas_size"] = (options.pop("width"), options.pop("height"))
+            return options
+        except (ValueError, TypeError, OSError) as error:
+            raise Failed(f"Posters Error: {error}") from error
+
+    def _save_generated(self, item_vars):
+        from modules.poster_generator import generate
+
+        options = self.generator_options.copy()
+        text = options["text"] or ""
+        for key, value in {**item_vars, "collection_name": item_vars.get("collection_name", item_vars.get("title", ""))}.items():
+            text = text.replace(f"<<{key}>>", str(value))
+        for decoration in self.decorations:
+            if decoration in ("upper", "lower", "title"):
+                text = getattr(text, decoration)()
+            elif decoration == "sentence":
+                from modules.poster_generator import sentence_case
+
+                text = sentence_case(text)
+        options["text"] = text
+        if self.default_image:
+            from modules.poster_generator import load_overlay_source
+
+            try:
+                load_overlay_source(self.default_image)
+            except Exception as error:
+                if logger:
+                    logger.warning(f"Posters Warning: Default builder logo unavailable ({error}); generating without an image")
+                options["image_path"] = None
+        # Stable defaults prevent random artwork changes on every run.
+        signature = json.dumps(options, sort_keys=True, default=str)
+        if options["seed"] is None:
+            options["seed"] = int(hashlib.sha256(signature.encode()).hexdigest()[:16], 16)
+        descriptor, path = tempfile.mkstemp(prefix="kometa_poster_", suffix=".png")
+        os.close(descriptor)
+        try:
+            generate(output=Path(path), **options)
+            # Compare rendered bytes so changes to local or remote assets are detected.
+            compare = hashlib.sha256(Path(path).read_bytes()).hexdigest()
+            return ImageData(self.image_attr, path, is_url=False, compare=compare)
+        except Exception as error:
+            os.remove(path)
+            raise Failed(f"Posters Error: {error}") from error
+
     def get_compare_string(self):
         output = ""
         for value in [self.background_compare, self.background_color, self.border_width, self.border_color]:
@@ -387,6 +555,8 @@ class KometaImage(ImageBase):
         return output
 
     def save(self, item_vars):
+        if self.generated:
+            return self._save_generated(item_vars)
         image_path = os.path.join(self.images_dir, "temp_poster.png")
         if os.path.exists(image_path):
             os.remove(image_path)

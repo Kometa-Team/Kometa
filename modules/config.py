@@ -258,6 +258,7 @@ library_operations = {
     "mass_originally_available_update": mass_available_options,
     "mass_added_at_update": mass_available_options,
     "mass_collection_mode": "mass_collection_mode",
+    "mass_collection_poster_update": "dict",
     "mass_poster_update": "dict",
     "mass_background_update": "dict",
     "mass_image_update": "dict",
@@ -681,12 +682,27 @@ class ConfigFile:
                     logger.warning(options)
             return default
 
+        def generated_poster_options(image_config, image_type, sources):
+            if not any(source in ("kometa", "kometa_poster") for source in sources):
+                return {}
+            if image_type != "poster":
+                raise Failed("Config Error: kometa is only supported for poster updates")
+            from modules.poster import KometaImage
+
+            controls = {"source", "sources", "language", "seasons", "episodes", "ignore_locked", "ignore_overlays", "schedule"}
+            options = {key: value for key, value in image_config.items() if key not in controls}
+            KometaImage(self, options, "kometa_poster")
+            return {"kometa_poster": options}
+
         def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False, allow_ytmusic=False):
             image_config = input_dict.get(image_type)
             if not image_config:
                 return None
             if not isinstance(image_config, dict):
                 image_config = {"source": image_config}
+            requested_sources = image_config.get("source", [])
+            if any(source in ("kometa", "kometa_poster") for source in (requested_sources if isinstance(requested_sources, list) else [requested_sources])):
+                raise Failed("Config Error: kometa_poster is a collections source; use mass_metadata_update.collections")
             base_options = mass_poster_options if allow_ytmusic else mass_image_options
             options = {k: v for k, v in base_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
             _language = check_for_attribute(image_config, "language", default_is_none=True, do_print=False, save=False)
@@ -775,6 +791,11 @@ class ConfigFile:
                 if isinstance(collections_config, dict):
                     if "mode" in collections_config:
                         add_operation("collections.mode", {"mass_collection_mode": collections_config["mode"]}, schedule=collections_schedule)
+                    if "source" in collections_config:
+                        poster_config = {k: v for k, v in collections_config.items() if k not in ("mode", "schedule")}
+                        add_operation("collections.poster", {"mass_collection_poster_update": poster_config}, schedule=collections_schedule)
+                elif str(collections_config).lower() in ("kometa", "kometa_poster"):
+                    add_operation("collections.poster", {"mass_collection_poster_update": {"source": str(collections_config).lower()}}, schedule=collections_schedule)
                 else:
                     add_operation("collections", {"mass_collection_mode": collections_config}, schedule=collections_schedule)
 
@@ -1917,6 +1938,19 @@ class ConfigFile:
                                     logger.error(f"Config Error: {op} {e}")
                             elif op == "mass_collection_mode":
                                 section_final[op] = util.check_collection_mode(config_op[op])
+                            elif op == "mass_collection_poster_update":
+                                image_config = config_op[op]
+                                if not isinstance(image_config, dict):
+                                    image_config = {"source": image_config}
+                                source = str(image_config.get("source", "")).lower()
+                                if source not in ("kometa", "kometa_poster"):
+                                    raise Failed("Config Error: collections poster source must be kometa_poster (or kometa)")
+                                section_final[op] = {
+                                    "source": "kometa_poster",
+                                    "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, save=False),
+                                    "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, save=False),
+                                    **generated_poster_options(image_config, "poster", [source]),
+                                }
                             elif data_type == "dict":
                                 input_dict = config_op[op]
                                 if (
@@ -1934,6 +1968,9 @@ class ConfigFile:
                                 if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
                                 elif op in ["mass_poster_update", "mass_background_update"]:
+                                    requested_sources = input_dict.get("source", [])
+                                    if any(source in ("kometa", "kometa_poster") for source in (requested_sources if isinstance(requested_sources, list) else [requested_sources])):
+                                        raise Failed("Config Error: kometa_poster is a collections source; use mass_metadata_update.collections")
                                     source_options = mass_poster_options if op in ("mass_poster_update", "mass_background_update") else mass_image_options
                                     _language = check_for_attribute(input_dict, "language", default_is_none=True, save=False)
                                     if _language is not None:

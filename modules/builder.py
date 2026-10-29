@@ -1279,7 +1279,7 @@ class CollectionBuilder:
                 logger.error(f"{self.Type} Error: kometa_poster attribute is blank")
             logger.debug(f"Value: {data[methods['kometa_poster']]}")
             try:
-                self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist)
+                self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist, builders=methods)
             except Failed as e:
                 logger.error(e)
 
@@ -6399,15 +6399,22 @@ class CollectionBuilder:
         self._pick_collection_artwork(asset_location, asset_name)
 
         clean_temp = False
+        generated_temp = None
         if isinstance(self.collection_poster, KometaImage):
-            clean_temp = True
+            generated_temp = self.collection_poster.generated
+            clean_temp = not generated_temp
             item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}  # type: ignore[union-attr]
             self.collection_poster = self.collection_poster.save(item_vars)
+            generated_temp = self.collection_poster.location if generated_temp else None
 
-        if self.collection_poster or self.collection_background or self.collection_logo or self.collection_square_art:
-            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, logo=self.collection_logo, square_art=self.collection_square_art)
-            if pu or bu or lu or sau:
-                updated_details.append("Image")
+        try:
+            if self.collection_poster or self.collection_background or self.collection_logo or self.collection_square_art:
+                pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, logo=self.collection_logo, square_art=self.collection_square_art)
+                if pu or bu or lu or sau:
+                    updated_details.append("Image")
+        finally:
+            if generated_temp:
+                os.remove(generated_temp)
 
         if clean_temp:
             code_base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
