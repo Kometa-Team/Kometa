@@ -64,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Display native personal-rating updates as User Rating instead of the internal silo_user target name, including the operations summary.
+- Display native personal-rating updates as User Rating instead of the internal silo_user target name, including the operations summary, and list native provider-rating operations individually.
 
 - Identify the MDBList prefetch and Silo detail-loading stages in logs, and include titles and provider IDs in invalid MDBList rating warnings.
 

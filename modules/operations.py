@@ -274,9 +274,9 @@ class Operations:
         native_ratings = getattr(self.library, "silo_rating_updates", None)
         user_rating = native_ratings.get("silo_user", self.library.mass_user_rating_update) if isinstance(native_ratings, dict) else self.library.mass_user_rating_update
         logger.info(f"Mass User Rating Update: {user_rating}")
-        provider_ratings = {target: sources for target, sources in native_ratings.items() if target != "silo_user"} if isinstance(native_ratings, dict) else {}
-        if provider_ratings:
-            logger.info(f"Silo Rating Updates: {provider_ratings}")
+        if isinstance(native_ratings, dict) and native_ratings:
+            for target, name in (("silo_imdb", "IMDb"), ("silo_tmdb", "TMDb"), ("silo_tomatoes", "Rotten Tomatoes Critic"), ("silo_tomatoesaudience", "Rotten Tomatoes Audience")):
+                logger.info(f"Mass {name} Rating Update: {native_ratings.get(target)}")
         logger.info(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
         logger.info(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
         logger.info(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
