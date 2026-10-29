@@ -2514,7 +2514,7 @@ class Plex(Library):
             upload_poster = None if has_overlay else poster
             if upload_poster or background or logo or square_art:
                 self.upload_images(item, poster=upload_poster, background=background, logo=logo, square_art=square_art)
-            if has_overlay:
+            if has_overlay and poster:
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
             elif not poster and not background and not logo and not square_art and self.show_missing_assets:
                 searched_directory = item_dir or "', '".join(os.path.abspath(ad) for ad in configured_asset_directories)
