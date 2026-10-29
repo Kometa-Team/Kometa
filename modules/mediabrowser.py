@@ -301,7 +301,7 @@ class MediaBrowserClient:
 
     def upload_image(self, item_id, image_type, content, content_type):
         # Both servers decode the request body from base64 before reading the image.
-        self.request("POST", f"/Items/{_path_id(item_id)}/Images/{image_type}", data=base64.b64encode(content), headers={"Content-Type": content_type})
+        self.request("POST", f"/Items/{_path_id(item_id)}/Images/{image_type}", data=base64.b64encode(content), headers={"Content-Type": content_type}, retry_safe=image_type in ("Primary", "Logo", "Banner", "Thumb"))
 
     def download_remote_image(self, item_id, image_type, image_url):
         self.request("POST", f"/Items/{_path_id(item_id)}/RemoteImages/Download", params={"type": image_type, "imageUrl": image_url})

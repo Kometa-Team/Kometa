@@ -1319,3 +1319,35 @@ def test_collection_selector_loads_membership_once(kind):
     assert library.get_rating_keys("plex_search", search) == [("1", "ratingKey")]
     library.get_all_collections.assert_called_once()
     library.get_collection_items.assert_called_once()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("image_type", ["Primary", "Logo", "Banner", "Thumb"])
+@pytest.mark.parametrize("error", [requests.ConnectionError("reset"), requests.Timeout("timeout")])
+def test_fixed_image_upload_retries_identical_body(monkeypatch, kind, image_type, error):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([error, FakeResponse(None, status_code=204)])
+    MediaBrowserClient(_server(kind), session=session).upload_image("49012", image_type, b"poster bytes", "image/png")
+    assert session.calls[0] == session.calls[1]
+    assert base64.b64decode(session.calls[1]["data"]) == b"poster bytes"
+    assert delays == [1]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_poster_upload_retry_limit(monkeypatch, kind):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([requests.ConnectionError("reset") for _ in range(3)])
+    with pytest.raises(Failed, match="POST /Items/49012/Images/Primary failed: reset"):
+        MediaBrowserClient(_server(kind), session=session).upload_image("49012", "Primary", b"poster", "image/png")
+    assert len(session.calls) == 3
+    assert delays == [1, 2]
+
+
+def test_backdrop_upload_is_not_replayed_after_lost_response(monkeypatch):
+    monkeypatch.setattr(browser_module.time, "sleep", MagicMock())
+    session = FakeSession([requests.ConnectionError("reset")])
+    with pytest.raises(Failed):
+        MediaBrowserClient(_server("emby"), session=session).upload_image("49012", "Backdrop", b"backdrop", "image/png")
+    assert len(session.calls) == 1

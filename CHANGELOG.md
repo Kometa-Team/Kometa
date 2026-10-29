@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Retry transient Jellyfin/Emby poster, logo, banner, and thumb upload connection failures using the existing bounded backoff.
+
 - Show the number of items per overlay table at normal logging verbosity for every media server.
 
 - Handle validate as a Jellyfin/Emby search control option rather than an item field.
