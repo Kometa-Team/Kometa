@@ -205,24 +205,41 @@ class WeTrakr(tracker.TrackerAPI):
     def _type_of(item):
         return {"movie": "movie", "show": "show"}.get(item.get("type"))
 
-    def _parse_media(self, items, is_movie):
-        # Season/episode/person rows are skipped cleanly (D12) rather than falling through to parse_ids' generic imdb match.
-        filtered = []
-        skipped = 0
+    def _parse_media(self, items, is_movie, builder_level=None):
+        ids, seen = [], set()
         for item in items:
-            if item.get("type") in ("movie", "show"):
-                filtered.append(item)
+            kind = item.get("type")
+            if kind in ("season", "episode"):
+                if is_movie is True:
+                    continue
+                # A part's own ids identify the season/episode, never the parent show.
+                show_ids = (item.get("show") or {}).get("ids") or item.get("show_ids") or {}
+                season = item.get("number") if kind == "season" else item.get("season_number")
+                if kind == "season" and season is None:
+                    season = item.get("season_number")
+                episode = item.get("number") if kind == "episode" and builder_level != "season" else None
+                if is_movie is None or builder_level in ("season", "episode"):
+                    show_id = util.check_num(show_ids.get("tmdb") or show_ids.get("tvdb"))
+                    season = util.check_num(season)
+                    episode = util.check_num(episode)
+                    if not show_id or season is None or season < 0 or kind == "episode" and builder_level != "season" and (episode is None or episode < 1):
+                        if logger:
+                            logger.warning(f"WeTrakr Warning: Missing parent show ID or part numbers for {item.get('title') or item.get('id')}; skipping")
+                        continue
+                    provider = "tmdb" if show_ids.get("tmdb") else "tvdb"
+                    key = (f"{int(show_id)}_{int(season)}", f"{provider}_season") if episode is None else (f"{int(show_id)}_{int(season)}_{int(episode)}", f"{provider}_episode")
+                    parsed = [key]
+                else:
+                    parsed = tracker.parse_ids([{"type": "show", "ids": show_ids}], False, service=self.service, type_of=self._type_of, native_id_of=lambda row: None)
+            elif kind in ("movie", "show"):
+                parsed = tracker.parse_ids([item], is_movie, service=self.service, type_of=self._type_of, native_id_of=lambda row: None)
             else:
-                skipped += 1
-        if skipped and logger:
-            logger.debug(f"WeTrakr Debug: skipped {skipped} season/episode/person row(s)")
-        return tracker.parse_ids(
-            filtered,
-            is_movie,
-            service=self.service,
-            type_of=self._type_of,
-            native_id_of=lambda item: ("wetrakr", item.get("type"), item.get("id")),
-        )
+                continue
+            for key in parsed:
+                if key not in seen:
+                    ids.append(key)
+                    seen.add(key)
+        return ids
 
     @staticmethod
     def _target_for(is_movie):
@@ -314,13 +331,13 @@ class WeTrakr(tracker.TrackerAPI):
         link = f"https://wetrakr.com/lists/{list_id}" if data.get("privacy") == "public" else "https://wetrakr.com"
         return f"{description}\n\nList from WeTrakr: {link}"
 
-    def _list_ids(self, list_id_or_url, is_movie):
+    def _list_ids(self, list_id_or_url, is_movie, builder_level=None):
         list_id = self._parse_list_id(list_id_or_url)
-        target = self._target_for(is_movie)
+        target = "movies" if is_movie is True else "all"
         items = self._memo(("list_items", list_id, target), lambda: self._request_paginated(f"/lists/{list_id}/items/{target}") or [])
-        return self._parse_media(items, is_movie)
+        return self._parse_media(items, is_movie, builder_level=builder_level)
 
-    def _user_lists_ids(self, value, is_movie):
+    def _user_lists_ids(self, value, is_movie, builder_level=None):
         user_id = self._parse_user_id(value)
         lists = self._memo(("user_lists", user_id), lambda: self._request_paginated(f"/users/{user_id}/lists", ignore_404=True))
         if lists is None:
@@ -328,7 +345,7 @@ class WeTrakr(tracker.TrackerAPI):
         if not lists:
             raise Failed(f"WeTrakr Error: user {user_id} has no public lists (or their lists section is private)")
         self._log_info(f"Processing WeTrakr User Lists: {len(lists)} lists from user {user_id}")
-        target = self._target_for(is_movie)
+        target = "movies" if is_movie is True else "all"
         ids = []
         seen = set()
         for entry in lists:
@@ -340,7 +357,7 @@ class WeTrakr(tracker.TrackerAPI):
                     logger.debug(f"WeTrakr Debug: skipping list {list_id} ({'locked' if entry.get('locked') else 'not public'})")
                 continue
             items = self._memo(("list_items", list_id, target), lambda list_id=list_id: self._request_paginated(f"/lists/{list_id}/items/{target}") or [])
-            for item_id in self._parse_media(items, is_movie):
+            for item_id in self._parse_media(items, is_movie, builder_level=builder_level):
                 if item_id not in seen:
                     seen.add(item_id)
                     ids.append(item_id)
@@ -381,13 +398,13 @@ class WeTrakr(tracker.TrackerAPI):
             filtered.append(item)
         return self._parse_media(filtered, is_movie)
 
-    def get_wetrakr_ids(self, method, value, is_movie):
+    def get_wetrakr_ids(self, method, value, is_movie, builder_level=None):
         pretty = method.replace("_", " ").title()
         if method in ("wetrakr_list", "wetrakr_list_details"):
             self._log_info(f"Processing {pretty}: {value}")
-            return self._list_ids(value, is_movie)
+            return self._list_ids(value, is_movie, builder_level=builder_level)
         if method == "wetrakr_user_lists":
-            return self._user_lists_ids(value, is_movie)
+            return self._user_lists_ids(value, is_movie, builder_level=builder_level)
         if method == "wetrakr_tracking":
             return self._tracking_ids(value, is_movie)
         if method == "wetrakr_favorites":

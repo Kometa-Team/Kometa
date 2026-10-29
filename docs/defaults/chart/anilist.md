@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Anilist Chart", 
-        "CODE_NAME": "anilist",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "020", 
-        "DESCRIPTION": "create collections based on Anilist charts"
-    }'
+    "COLLECTION": "AniList Chart",
+    "CODE_NAME": "anilist",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "020",
+    "DESCRIPTION": "create collections based on Anilist charts"
+}'
 %}
 | `AniList Popular`   | `popular`  | Collection of the most Popular Anime on AniList.     |
 | `AniList Season`    | `season`   | Collection of the Current Season's Anime on AniList. |
@@ -47,14 +47,14 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="white-style|limit|sync_mode|collection_order"
         rewrite-relative-urls=false
-        replace='{"<!--limit-extra-->": "<br>**Default:** `100`", "COLLECTION_ORDER": "`custom`"}'
+        replace='{"<!--limit-extra-->": "**Default:** `100`<br>", "COLLECTION_ORDER": "`custom`"}'
     %}
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Anilist Chart Collections"
-        
+
         The AniList Chart collections use [AniList Builders](../../../files/builders/anilist) to create the collections.

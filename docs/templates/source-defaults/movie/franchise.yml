@@ -1,0 +1,194 @@
+##############################################################################
+#                           Franchise Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://wiki.kometa.team/defaults/movie/franchise            #
+##############################################################################
+
+templates:
+  collection:
+    default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
+      collection_order: release
+      minimum_items: 2
+      name_mapping_<<key>>: <<name_mapping>>
+      movie_<<key>>: <<movie>>
+      pre: "_"
+      order_<<key>>: ""
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
+      sort_title_<<key>>: <<sort_title>>
+      radarr_add_missing_<<key>>: <<radarr_add_missing>>
+      radarr_folder_<<key>>: <<radarr_folder>>
+      radarr_tag_<<key>>: <<radarr_tag>>
+      item_radarr_tag_<<key>>: <<item_radarr_tag>>
+      radarr_monitor_<<key>>: <<radarr_monitor>>
+      collection_order_<<key>>: <<collection_order>>
+    optional:
+      - name_<<key>>
+      - summary_<<key>>
+      - movie
+      - name_mapping
+      - build_collection
+      - collection_mode
+      - collection_section
+      - radarr_add_missing
+      - radarr_folder
+      - radarr_tag
+      - item_radarr_tag
+      - radarr_monitor
+      - url_poster_<<key>>
+      - url_background_<<key>>
+      - url_logo_<<key>>
+      - url_square_art_<<key>>
+      - file_poster_<<key>>
+      - file_background_<<key>>
+      - file_logo_<<key>>
+      - file_square_art_<<key>>
+    name: <<name_<<key>>>>
+    summary: <<summary_<<key>>>>
+    cache_builders: 1
+    minimum_items: <<minimum_items>>
+    url_poster: <<url_poster_<<key>>>>
+    url_background: <<url_background_<<key>>>>
+    url_logo: <<url_logo_<<key>>>>
+    url_square_art: <<url_square_art_<<key>>>>
+    file_poster: <<file_poster_<<key>>>>
+    file_background: <<file_background_<<key>>>>
+    file_logo: <<file_logo_<<key>>>>
+    file_square_art: <<file_square_art_<<key>>>>
+    tmdb_collection_details: <<value>>
+    tmdb_movie: <<movie_<<key>>>>
+    name_mapping: <<name_mapping_<<key>>>>
+    sort_title: <<sort_title_<<key>>>>
+    build_collection: <<build_collection>>
+    sync_mode: <<sync_mode_<<key>>>>
+    collection_mode: <<collection_mode>>
+    collection_order: <<collection_order_<<key>>>>
+    radarr_add_missing: <<radarr_add_missing_<<key>>>>
+    radarr_folder: <<radarr_folder_<<key>>>>
+    radarr_tag: <<radarr_tag_<<key>>>>
+    item_radarr_tag: <<item_radarr_tag_<<key>>>>
+    radarr_monitor: <<radarr_monitor_<<key>>>>
+
+dynamic_collections:
+  TMDb Collections:
+    type: tmdb_collection
+    remove_suffix: "Collection"
+    template: collection
+    custom_keys: false
+    addons:
+      8091:       # Alien
+        - 135416    # Prometheus
+      2806:       # American Pie
+        - 298820    # American Pie (Spin-off)
+      87800:      # Appleseed
+        - 371526    # Appleseed XIII
+      477208:     # DC Super Hero Girls
+        - 557495    # LEGO DC Super Hero Girls
+      86066:      # Despicable Me
+        - 544669    # Minions
+      86115:      # Garfield
+        - 373918    # Garfield CGI
+      91361:      # Halloween
+        - 126209    # Halloween (Rob Zombie Series)
+      9818:       # Mortal Kombat
+        - 931431    # Mortal Kombat
+      495:        # Shaft
+        - 608103    # Shaft (Reboot)
+      1582:       # Teenage Mutant Ninja Turtles
+        - 401562    # Teenage Mutant Ninja Turtles (Remake)
+      111751:     # Texas Chainsaw Massacre
+        - 425175    # Texas Chainsaw (Reboot)
+      748:        # X-Men
+        - 453993    # The Wolverine
+    title_override:
+      10: "Star Wars: Skywalker Saga"
+      535313: Godzilla (MonsterVerse)
+      535790: Godzilla (Anime)
+    template_variables:
+      movie:
+        521226:     # A Quiet Place
+          - 762441    # A Quiet Place: Day One
+        105995:     # Anaconda
+          - 336560    # Lake Placid vs. Anaconda
+        176097:     # Barbershop
+          - 14177     # Beauty Shop
+        448150:     # Deadpool
+          - 567604    # Once Upon a Deadpool
+        9485:       # The Fast and the Furious
+          - 384018    # Hobbs & Shaw
+        9735:       # Friday the 13th
+          - 6466      # Freddy vs. Jason
+          - 222724    # Crystal Lake Memories: The Complete History of Friday the 13th
+        386382:     # Frozen
+          - 326359    # Frozen Fever
+          - 460793    # Olaf's Frozen Adventure
+        2980:       # Ghostbusters
+          - 43074     # Ghostbusters (2016)
+        374509:     # Godzilla (Showa)
+          - 18983     # Godzilla, King of the Monsters!
+        374511:     # Godzilla (Heisei)
+          - 39256     # Godzilla 1985
+        535313:     # Godzilla
+          - 293167    # Kong: Skull Island
+        9743:       # The Hannibal Lecter
+          - 11454     # Manhunter
+        8354:       # Ice Age
+          - 79218     # Ice Age: A Mammoth Christmas
+          - 387893    # Ice Age: The Great Egg-Scapade
+        70068:      # Ip Man
+          - 658009    # Ip Man: Kung Fu Master
+          - 643413    # Ip Man and Four Kings
+          - 450001    # Master Z: Ip Man Legacy
+          - 751391    # Young Ip Man: Crisis Time
+          - 44249     # The Legend Is Born: Ip Man
+          - 182127    # Ip Man: The Final Fight
+          - 44865     # The Grandmaster
+        328:        # Jurassic Park
+          - 630322    # Battle at Big Rock
+        8580:       # The Karate Kid
+          - 38575     # The Karate Kid (2010)
+        14740:      # Madagascar
+          - 161143    # Madagascar: Madly Madagascar
+          - 25472     # Merry Madagascar
+          - 270946    # Penguins of Madagascar
+        9818:       # Mortal Kombat
+          - 664767    # Mortal Kombat Legends: Scorpion's Revenge
+        171732:     # Rebirth of Mothra
+          - 39410     # Mothra
+        8581:       # A Nightmare on Elm Street
+          - 6466      # Freddy vs. Jason
+          - 23437     # A Nightmare on Elm Street (2010)
+        627517:     # Oz
+          - 13155     # Oz: Return to Oz
+          - 68728     # Oz the Great and Powerful
+        10789:      # Pet Sematary
+          - 157433    # Pet Sematary (2019)
+        708816:     # Power Rangers
+          - 305470    # Power Rangers (2017)
+          - 306264    # Power Rangers Super Megaforce: The Legendary Battle
+        190435:     # Street Fighter (Animated)
+          - 687354    # Street Fighter Assassin's Fist
+          - 11667     # Street Fighter
+        1582:       # Teenage Mutant Ninja Turtles
+          - 1273      # TMNT
+        2467:       # Tomb Raider
+          - 338970    # Tomb Raider (2018)
+        10194:      # Toy Story
+          - 130925    # Partysaurus Rex
+        63043:      # TRON
+          - 73362     # TRON: The Next Day
+        748:        # X-Men
+          - 567604    # Once Upon a Deadpool
+      name_mapping:
+        1565: 28 Days-Weeks Later
+        508334: Angels in the
+        115838: Escape From
+        386534: Has Fallen
+        87359: Mission Impossible
+        133352: Resident Evil Biohazard
+        115575: Star Trek Alternate Reality
+        115570: Star Trek The Next Generation
+        151: Star Trek The Original Series
+        10: Star Wars Skywalker Saga

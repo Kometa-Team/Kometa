@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Subtitle Language", 
-        "CODE_NAME": "subtitle_language",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "095", 
-        "DESCRIPTION": "dynamically create collections based on the subtitle languages available in your library."
-    }'
+    "COLLECTION": "Subtitle Language",
+    "CODE_NAME": "subtitle_language",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "095",
+    "DESCRIPTION": "dynamically create collections based on the subtitle languages available in your library."
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Subtitle Language"}' %}
 | `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn` | Collection of Movies/Shows that have this Subtitle Language. |
@@ -39,7 +39,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="exclude|include|include-extra|key_name_override|limit|sort_by|format"
         replace='{
-            "DYNAMIC_NAME": "Subtitle Languages", 
+            "DYNAMIC_NAME": "Subtitle Languages",
             "DYNAMIC_VALUE": "[ISO 639-1](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) or [ISO 639-2](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes) codes",
             "NAME_FORMAT": "<<key_name>> Subtitles",
             "SUMMARY_FORMAT": "<<library_translationU>>s with <<key_name>> Subtitles."
@@ -53,7 +53,7 @@ hide:
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Subtitle Language Collections"
-        
+
         The Subtitle Languages collections use smart filters based on a default list of target languages.
 
     === "Default `include`"
@@ -61,7 +61,7 @@ hide:
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         include: 
     {%    
-      include-markdown "../../../defaults/both/subtitle_language.yml" 
+      include-markdown "../../templates/source-defaults/both/subtitle_language.yml"
       comments=false
       start="include:\n"
       end="key_name_override:"
@@ -69,11 +69,11 @@ hide:
         ```
 
     === "Default `key_name_override`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         key_name_override: 
     {%    
-      include-markdown "../../../defaults/both/subtitle_language.yml" 
+      include-markdown "../../templates/source-defaults/both/subtitle_language.yml"
       comments=false
       start="key_name_override:\n"
     %}

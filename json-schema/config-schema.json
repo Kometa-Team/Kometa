@@ -14147,6 +14147,39 @@
           "description": "Disable a specific seasonal collection by key. Set to false to turn off.",
           "type": "boolean"
         },
+        "^visible_home_.+$": {
+          "description": "Override Home Tab visibility for a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/schedule"
+            }
+          ]
+        },
+        "^visible_library_.+$": {
+          "description": "Override Library Tab visibility for a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/schedule"
+            }
+          ]
+        },
+        "^visible_shared_.+$": {
+          "description": "Override Shared Home visibility for a specific collection by key.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/schedule"
+            }
+          ]
+        },
         "^schedule_.+$": {
           "type": "string"
         },

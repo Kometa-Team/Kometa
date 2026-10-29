@@ -586,14 +586,15 @@ class Operations:
 
                 _mdb_obj = None
 
-                def mdb_obj():
+                def mdb_obj(require_digital=False):
                     nonlocal _mdb_obj
-                    if _mdb_obj is None:
+                    if _mdb_obj is None or (require_digital and _mdb_obj and not _mdb_obj.digital_release_checked):
                         _mdb_obj = False
+                        lookup_options = {"require_digital": True} if require_digital else {}
                         if self.config.MDBList.limit is False:
                             if self.library.is_show and tvdb_id:
                                 try:
-                                    _mdb_obj = self.config.MDBList.get_series(tvdb_id)
+                                    _mdb_obj = self.config.MDBList.get_series(tvdb_id, **lookup_options)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:
@@ -603,7 +604,7 @@ class Operations:
                                     raise
                             if self.library.is_movie and tmdb_id:
                                 try:
-                                    _mdb_obj = self.config.MDBList.get_movie(tmdb_id)
+                                    _mdb_obj = self.config.MDBList.get_movie(tmdb_id, **lookup_options)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:
@@ -613,7 +614,7 @@ class Operations:
                                     raise
                             if imdb_id and not _mdb_obj:
                                 try:
-                                    _mdb_obj = self.config.MDBList.get_imdb(imdb_id)
+                                    _mdb_obj = self.config.MDBList.get_imdb(imdb_id, **lookup_options)
                                 except LimitReached as err:
                                     logger.debug(err)
                                 except Failed as err:
@@ -1145,7 +1146,7 @@ class Operations:
                                     elif option == "mdb":
                                         new_date = mdb_obj().released  # noqa
                                     elif option == "mdb_digital":
-                                        new_date = mdb_obj().released_digital  # noqa
+                                        new_date = mdb_obj(require_digital=True).released_digital  # noqa
                                     elif option == "anidb":
                                         new_date = anidb_obj().released  # noqa
                                     elif option == "mal":

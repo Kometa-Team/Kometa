@@ -44,17 +44,17 @@ webhooks:
       - https://www.myspecialdomain.com/kometa
       - https://www.myotherdomain.com/kometa
   ```
-  
+
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
 * To send notifications to [Gotify](gotify.md) just add `gotify` to a webhook instead of the webhook url.
 * To send notifications to [ntfy](ntfy.md) just add `ntfy` to a webhook instead of the webhook url.
 * To send notifications to [Apprise](apprise.md) just add `apprise` to a webhook instead of the webhook url.
 
-## Error Notifications
+## Error notifications
 
 The Error notification will be sent whenever an error occurs. The payload that is sent is different Depending on which level the error occurs.
 
-### Global JSON Payload
+### Global JSON payload
 
 ```yaml
 {
@@ -64,7 +64,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 }
 ```
 
-### Library JSON Payload
+### Library JSON payload
 
 ```yaml
 {
@@ -76,7 +76,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 }
 ```
 
-### Collection JSON Payload
+### Collection JSON payload
 
 ```yaml
 {
@@ -89,7 +89,7 @@ The Error notification will be sent whenever an error occurs. The payload that i
 }
 ```
 
-### Playlist JSON Payload
+### Playlist JSON payload
 
 ```yaml
 {
@@ -101,11 +101,11 @@ The Error notification will be sent whenever an error occurs. The payload that i
 }
 ```
 
-## Version Notifications
+## Version notifications
 
 The Version notification will be sent at the beginning of a run if there is a newer version available.
 
-### JSON Payload
+### JSON payload
 
 ```yaml
 {
@@ -116,11 +116,11 @@ The Version notification will be sent at the beginning of a run if there is a ne
 }
 ```
 
-## Run Start Notifications
+## Run start notifications
 
 The Run Start notification will be sent at the beginning of every run.
 
-### JSON Payload
+### JSON payload
 
 ```yaml
 {
@@ -129,11 +129,11 @@ The Run Start notification will be sent at the beginning of every run.
 }
 ```
 
-## Run End Notifications
+## Run end notifications
 
 The Run End notification will be sent at the end of every run with statistics.
 
-### JSON Payload
+### JSON payload
 
 ```yaml
 {
@@ -155,11 +155,11 @@ The Run End notification will be sent at the end of every run with statistics.
 }
 ```
 
-## Delete Notifications
+## Delete notifications
 
 The Delete Notification will be sent whenever a collection/playlist is deleted containing the following payload.
 
-### JSON Payload
+### JSON payload
 
 ```yaml
 {
@@ -170,11 +170,11 @@ The Delete Notification will be sent whenever a collection/playlist is deleted c
 }
 ```
 
-## Changes Notifications
+## Changes notifications
 
 The Changes Notification will be sent after each collection/playlist containing the following payload if the collection/playlist has been created, has new items, or has had items removed.
 
-### JSON Payload
+### JSON payload
 
 ```yaml
 {

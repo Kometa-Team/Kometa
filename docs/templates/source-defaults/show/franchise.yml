@@ -1,0 +1,119 @@
+##############################################################################
+#                           Franchise Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#              Additional contributions by the Kometa Community              #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://wiki.kometa.team/defaults/show/franchise            #
+##############################################################################
+
+templates:
+  tmdbshow:
+    default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
+      collection_order: release
+      minimum_items: 2
+      name_mapping_<<key>>: <<name_mapping>>
+      pre: "_"
+      order_<<key>>: ""
+      sort_title: "!<<collection_section>><<pre>><<order_<<key>>>><<title>>"
+      sort_title_<<key>>: <<sort_title>>
+      sonarr_add_missing_<<key>>: <<sonarr_add_missing>>
+      sonarr_folder_<<key>>: <<sonarr_folder>>
+      sonarr_tag_<<key>>: <<sonarr_tag>>
+      item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
+      sonarr_monitor_<<key>>: <<sonarr_monitor>>
+      collection_order_<<key>>: <<collection_order>>
+      url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/franchise/<<key_name_encoded>>.jpg
+    optional:
+      - name_<<key>>
+      - summary_<<key>>
+      - name_mapping
+      - sort_title
+      - build_collection
+      - collection_mode
+      - collection_order
+      - collection_section
+      - sonarr_add_missing
+      - sonarr_folder
+      - sonarr_tag
+      - item_sonarr_tag
+      - sonarr_monitor
+    name: <<name_<<key>>>>
+    summary: <<summary_<<key>>>>
+    minimum_items: <<minimum_items>>
+    tmdb_show: <<value>>
+    url_poster: <<url_poster_<<key>>>>
+    name_mapping: <<name_mapping_<<key>>>>
+    sort_title: <<sort_title_<<key>>>>
+    build_collection: <<build_collection>>
+    sync_mode: <<sync_mode_<<key>>>>
+    collection_mode: <<collection_mode>>
+    collection_order: <<collection_order_<<key>>>>
+    sonarr_add_missing: <<sonarr_add_missing_<<key>>>>
+    sonarr_folder: <<sonarr_folder_<<key>>>>
+    sonarr_tag: <<sonarr_tag_<<key>>>>
+    item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
+    sonarr_monitor: <<sonarr_monitor_<<key>>>>
+
+dynamic_collections:
+  Show Franchise Collections:
+    type: custom
+    data:
+      "121": Doctor Who
+      "253": Star Trek
+      "549": Law & Order
+      "951": Archie Comics
+      "1399": Game of Thrones
+      "1402": The Walking Dead
+      "1412": Arrowverse
+      "1431": CSI
+      "4614": NCIS
+      "4629": Stargate
+      "8514": "RuPaul's Drag Race"
+      "6357": The Twilight Zone
+      "10222": The Real Housewives
+      "31917": Pretty Little Liars
+      "44006": One Chicago
+      "54650": Power
+      "73586": Yellowstone
+      "75219": 9-1-1
+      "79744": The Rookie
+      "80748": FBI
+      "85536": Star Wars
+      "46296": Spartacus
+      "108978": Reacher
+      "60585": Bosch
+      "3476": Inspector Morse
+      "61511": Father Brown (2013)
+      "41956": Death in Paradise (2011)
+    template:
+      - tmdbshow
+    addons:
+      121: [57243, 1057, 424, 203, 64073, 239770]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class, Doctor Who (2023)
+      253: [655, 580, 1855, 1992, 314, 103516, 67198, 82491, 85948, 85949, 106393] # TOS, TAS, TNG, DS9, VOY, ENT, DIS, SHO, PIC, LOW, PRO, SNW
+      549: [2734, 4601, 3357, 32632, 72496, 106158, 7098]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime, UK
+      951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
+      1399: [94997] # Game of Thrones, House of the Dragon
+      1402: [62286, 94305, 194583, 211684, 206586] # The Walking Dead: Fear the Walking Dead, World Beyond, Dead City, Daryl Dixon, The Ones Who Live
+      1412: [60735, 62688, 62643, 71663, 89247]  # Arrow: The Flash, Supergirl, Legends of Tomorrow, Black Lightning, Batwoman
+      1431: [1620, 2458, 122194, 61811] # CSI: Miami, NY, Vegas, Cyber
+      4614: [17610, 124271, 61387, 4376, 157950, 243006, 247732, 319800]  # NCIS: Los Angeles, Hawaii, New Orleans, JAG, Sydney, Origins, Tony & Ziva, New York
+      4629: [2290, 5148, 72925] # Stargate SG-1: Atlantis, Universe, Origins
+      8514: [200870, 212798, 38409, 200865, 67482, 124045, 216276, 77233, 92611, 98888, 94038, 127841, 67564, 122692, 139203, 203734, 108934, 204701, 210689, 155431, 106475, 152261, 66769] #Drag Race: Sweden, Sweden Untucked, Untucked, Belgium, All-Stars, Spain, Brazil, Thailand, UK, Secret Celebrity, Canada, Italy, All Stars Untucked, Australia, Philippines, Canada VS the World, Holland, Philippines Untucked, Spain Untucked, UK VS the World, Vegas Revue, France, Ruvealed
+      6357: [1918, 83135, 16399]  # The Twilight Zone (multiple)
+      10222: [34268, 32390, 17380, 18204, 65300, 31493, 217065, 14808, 136105, 61868, 39283, 62087, 76474, 70612, 110381, 70463, 67480, 196592, 139703, 126149, 59556, 113333, 214463, 131449, 216849] # Real Housewives of Orange County: Miami, BH, ATL, NJ, Potomac, DC, Capetown, NYC, Ult. Girls Trip, Cheshire, Dallas, Melbourne, Hungary, Toronto, SLC, Sydney, Auckland, Dubai, ATL Porsha’s Family Matters, Johannesburg, Vancouver, Jersey, Amsterdam, Durban, Cheshire Christmas Cruising
+      31917: [46958, 79863, 110531] # Pretty Little Liars: Ravenswood, The Perfectionists, Original Sin
+      44006: [58841, 62650, 67993] # Chicago Fire: Med, PD, Justice
+      54650: [97890, 124394, 119845] # Power, Ghost, Raising Kanan, Force
+      73586: [157744, 118357, 157732] #Yellowstone: 1883, 1923, 1883: The Bass Reeves Story
+      75219: 89393 # 9-1-1: 9-1-1 Lone Star
+      79744: 201992 # The Rookie: Feds
+      80748: [94372, 121658] # FBI: Most Wanted, International
+      85536: [71412, 3478, 105971, 92830, 83867, 60554, 82856, 115036, 114461, 202879, 114478, 79093, 4194, 203085] # Star Wars Galaxy of Adventures: Forces of Destiny, Ewoks, The Bad Batch, Obi-Wan Kenobi, Andor, Rebels, The Mandalorian, The Book of Boba Fett, Ahsoka, Skeleton Crew, Visions, Resistance, Clone Wars, Tales of the Jedi
+      46296: 240459 # Spartacus: House of Ashur
+      108978: 273207 # Neagley
+      60585: 153657 # Bosch: Legacy
+      3476: [44264, 2343] # Inspector Morse, Endeavour, Lewis
+      61511: 157282 # Sister Boniface Mysteries (2022)
+      41956: [205072, 244978] # Beyond Paradise (2023), Return to Paradise (2025)

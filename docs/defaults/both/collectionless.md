@@ -6,11 +6,11 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Collectionless", 
-        "CODE_NAME": "collectionless",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create a [Collectionless collection](../../files/builders/plex/collectionless.md) to help Show/Hide Movies/Shows properly in your library"
-    }'
+    "COLLECTION": "Collectionless",
+    "CODE_NAME": "collectionless",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create a [Collectionless collection](../../files/builders/plex/builders.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library"
+}'
     rewrite-relative-urls=false
     end="<!--image-->"
 %}
@@ -38,9 +38,9 @@ Requirements:
 
 | Collection       | Description                                                                                                                    |
 |:-----------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| `Collectionless` | [Collectionless collection](../../files/builders/plex/collectionless.md) to help Show/Hide Movies/Shows properly in your library. |
+| `Collectionless` | [Collectionless collection](../../files/builders/plex/builders.md#plex-collectionless) to help Show/Hide Movies/Shows properly in your library. |
 
-{% include-markdown "./../../templates/defaults/base/mid.md" 
+{% include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "collectionless"}'
     include-tags='all|movie|show|hide'
 %}
@@ -69,11 +69,11 @@ Requirements:
         include-tags="collectionless"
         rewrite-relative-urls=false
     %}                                                                                                                                                                                                                                                                                                                                                                                                                             |
-    
+
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Collectionless Collection"
 
-        The Collectionless collection use the [`plex_collectionless` Builder](../../files/builders/plex/collectionless.md) to create the collection.
-        
+        The Collectionless collection use the [`plex_collectionless` Builder](../../files/builders/plex/builders.md#plex-collectionless) to create the collection.
+
         Collections and their items are excluded from this collection based on a name prefix or the collection name.

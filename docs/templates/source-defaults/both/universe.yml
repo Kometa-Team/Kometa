@@ -1,0 +1,125 @@
+##############################################################################
+#                            Universe Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://wiki.kometa.team/defaults/both/universe             #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "040"
+
+templates:
+  universe:
+    conditionals:
+      mdblist_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            tmdb_list_<<key>>>>.exists: false
+            value: <<mdblist_url>>
+      imdb_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            tmdb_list_<<key>>>>.exists: false
+            value: <<imdb_url>>
+      tmdb_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            tmdb_list_<<key>>>>.exists: false
+            value: <<tmdb_url>>
+    default:
+      minimum_items_<<key>>: <<minimum_items>>
+      mdblist_list_<<key>>: <<mdblist_list>>
+      imdb_list_<<key>>: <<imdb_list>>
+      tmdb_list_<<key>>: <<tmdb_list>>
+      name_mapping_<<key>>: <<name_mapping>>
+      delete_collections_named_<<key>>: <<delete_collections_named>>
+      minimum_items: 2
+    optional:
+      - name_mapping
+      - imdb_list_<<key>>
+      - mdblist_list_<<key>>
+      - tmdb_list_<<key>>
+      - mdblist_url
+      - imdb_url
+      - tmdb_url
+      - minimum_items
+      - delete_collections_named
+    minimum_items: <<minimum_items_<<key>>>>
+    name_mapping: <<name_mapping_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
+    tmdb_list: <<tmdb_list_<<key>>>>
+    delete_collections_named: <<delete_collections_named_<<key>>>>
+
+collections:
+  Universe Collections:
+    template:
+      - name: separator
+        separator: universe
+        key_name: Universe
+        translation_key: separator
+
+dynamic_collections:
+  Universe Collections:
+    type: custom
+    data:
+      avp: Alien / Predator
+      arrow: Arrowverse
+      askew: View Askewniverse
+      conjuring: Conjuring Universe
+      dca: DC Animated Universe
+      dceu: DC Extended Universe
+      dcu: DC Universe
+      fast: Fast & Furious
+      marvel: In Association With Marvel
+      mcu: Marvel Cinematic Universe
+      middle: Middle Earth
+      rocky: Rocky / Creed
+      trek: Star Trek
+      star: Star Wars Universe
+      mummy: Mummy Universe
+      wizard: Wizarding World
+      xmen: X-Men Universe
+    template:
+      - universe
+      - arr
+      - custom
+      - shared
+    template_variables:
+      allowed_libraries:
+        avp: movie
+        conjuring: movie
+        wizard: movie
+        fast: movie
+        rocky: movie
+        mummy: movie
+      imdb_url:
+        arrow: https://www.imdb.com/list/ls566667558/
+        avp: https://www.imdb.com/list/ls543971628/
+        conjuring: https://www.imdb.com/list/ls068768438/
+        fast: https://www.imdb.com/list/ls4102351575/
+        mcu: https://www.imdb.com/list/ls539646485/
+        star: https://www.imdb.com/list/ls501373412/
+        trek: https://www.imdb.com/list/ls547463722/
+        xmen: https://www.imdb.com/list/ls567618635/
+      mdblist_url:
+        dca: https://mdblist.com/lists/johnfawkes/dca
+        dceu: https://mdblist.com/lists/fa11en82/dc-extended-universe
+        marvel: https://mdblist.com/lists/k0meta/external/15110
+        middle: https://mdblist.com/lists/k0meta/external/46550
+        mummy: https://mdblist.com/lists/k0meta/external/9249
+        rocky: https://mdblist.com/lists/k0meta/external/9248
+        askew: https://mdblist.com/lists/k0meta/external/15362
+        wizard: https://mdblist.com/lists/k0meta/external/23683
+      tmdb_url:
+        dcu: 8642250
+      image:
+        default: universe/<<key>>
+      delete_collections_named:
+        mummy: The Mummy Universe
+        conjuring: The Conjuring Universe

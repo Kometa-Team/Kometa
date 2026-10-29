@@ -174,16 +174,17 @@ for sponsor in get_lifetime():
 # print(f"bronze_sponsors: {len(bronze_sponsors)}")
 # print(f"standard_sponsors: {len(standard_sponsors)}")
 
-with open("README.md", "r") as f:
-    readme_data = f.readlines()
+for filename in ("README.md", "docs/templates/project.md"):
+    with open(filename, "r", encoding="utf-8") as f:
+        readme_data = f.readlines()
 
-for i, line in enumerate(readme_data):
-    if line.startswith("<!--gold-sponsors-->"):
-        readme_data[i] = f"<!--gold-sponsors-->{'&nbsp;&nbsp;'.join(gold_sponsors)}\n"
-    if line.startswith("<!--silver-sponsors-->"):
-        readme_data[i] = f"<!--silver-sponsors-->{'&nbsp;&nbsp;'.join(silver_sponsors)}\n"
-    if line.startswith("<!--bronze-sponsors-->"):
-        readme_data[i] = f"<!--bronze-sponsors-->{'&nbsp;&nbsp;'.join(bronze_sponsors)}\n"
+    for i, line in enumerate(readme_data):
+        if line.startswith("<!--gold-sponsors-->"):
+            readme_data[i] = f"<!--gold-sponsors-->{'&nbsp;&nbsp;'.join(gold_sponsors)}\n"
+        if line.startswith("<!--silver-sponsors-->"):
+            readme_data[i] = f"<!--silver-sponsors-->{'&nbsp;&nbsp;'.join(silver_sponsors)}\n"
+        if line.startswith("<!--bronze-sponsors-->"):
+            readme_data[i] = f"<!--bronze-sponsors-->{'&nbsp;&nbsp;'.join(bronze_sponsors)}\n"
 
-with open("README.md", "w") as f:
-    f.writelines(readme_data)
+    with open(filename, "w", encoding="utf-8") as f:
+        f.writelines(readme_data)

@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kometa-docs-include"
+version = "1.0.0"
+description = "Kometa's include-markdown extension for Zensical"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+dependencies = ["Markdown>=3.8", "wcmatch>=10", "zensical>=0.0.72,<0.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

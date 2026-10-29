@@ -22,6 +22,7 @@ SHIPPED = {
     "defaults/overlays/images/rating.png": b"image",
     "fonts/font.ttf": b"font",
     "docs/kometa/logs.md": b"logs",
+    "zensical.toml": b"[project]\n",
     "config/config.yml.template": b"config",
 }
 
@@ -288,6 +289,14 @@ def test_docker_excludes_operating_system_and_missing_package_files(installation
     assert check(installation, "docker")["state"] == "Verified"
     (root / "modules/test_patch.py").write_bytes(b"added")
     assert check(installation, "docker")["added"] == ["modules/test_patch.py"]
+
+
+def test_documentation_config_is_only_required_for_source_installs(installation):
+    (installation[0] / "zensical.toml").unlink()
+    assert check(installation, "docker")["state"] == "Verified"
+    report = check(installation)
+    assert report["state"] == "Modified"
+    assert report["missing"] == ["zensical.toml"]
 
 
 @pytest.mark.parametrize("name", ["../escape.py", "modules/../../escape", "/absolute", "C:/escape", "modules\\escape"])

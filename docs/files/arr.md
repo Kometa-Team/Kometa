@@ -1,7 +1,6 @@
 ---
 hide:
   - tags
-  - toc
 tags:
   - radarr_add_missing
   - radarr_add_existing
@@ -49,93 +48,222 @@ tags:
   - item_sonarr_tag.remove
   - item_sonarr_tag.sync
 ---
-# Radarr/Sonarr Definition Settings
 
-## Radarr Definition Settings
+# Radarr, Sonarr, and Seerr Options
 
-All the following attributes can override the global/library [Radarr](../config/radarr.md) attributes which are the default unless otherwise specified.
+Control media additions, requests, and tag updates for an individual collection
+or playlist definition. Put these options beside a builder, rather than inside
+its dictionary. For source selection, see the
+[Radarr](builders/radarr/index.md) and [Sonarr](builders/sonarr/index.md) builders.
 
-| Attribute                 | Description & Values                                                                                                                                                                                                                                              |
-|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `radarr_add_missing`      | **Description:** Override Radarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                         |
-| `radarr_add_existing`     | **Description:** Override Radarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                    |
-| `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                    |
-| `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `radarr_root_folder_path` | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                          |
-| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `true` or `false`                                                                                                                                                                             |
-| `radarr_minimum_availability` | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                                                                                                             |
-| `radarr_quality_profile`  | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                                                                                                                |
-| `radarr_tags`             | **Description:** Override Radarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                          |
-| `radarr_search`           | **Description:** Override Radarr `search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                              |
-| `item_radarr_tag`         | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                    |
-| `item_radarr_tag.remove`  | **Description:** Used to remove existing tags in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags            |
-| `item_radarr_tag.sync`    | **Description:** Matches the tags in Radarr for every movie found by the builders that's in Radarr with the provided tags<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags |
+!!! warning "Configure the service first"
 
-## Sonarr Definition Settings
+    Configure [Radarr](../config/radarr.md), [Sonarr](../config/sonarr.md), or
+    [Seerr](../config/seerr.md) globally or for the library before using its
+    definition options. Radarr/Sonarr values inherit their global/library
+    configuration unless overridden here.
 
-All the following attributes can override the global/library [Sonarr](../config/sonarr.md) attributes which are the default unless otherwise specified.
+## Adding to arr
 
-| Attribute                 | Description & Values                                                                                                                                                                                                                                               |
-|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `sonarr_add_missing`      | **Description:** Override Sonarr `add_missing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                          |
-| `sonarr_add_existing`     | **Description:** Override Sonarr `add_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                         |
-| `sonarr_upgrade_existing` | **Description:** Override Sonarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                     |
-| `sonarr_monitor_existing` | **Description:** Override Sonarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                     |
-| `sonarr_ignore_cache`     | **Description:** Override Sonarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                                                                                                         |
-| `sonarr_root_folder_path` | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                           |
-| `sonarr_monitor`          | **Description:** Override Sonarr `monitor` attribute<br>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                                                                                                     |
-| `sonarr_quality_profile`  | **Description:** Override Sonarr `quality_profile` attribute<br>**Values:** Sonarr Quality Profile                                                                                                                                                                 |
-| `sonarr_language_profile` | **Description:** Override Sonarr `language_profile` attribute<br>**Values:** Sonarr Language Profile                                                                                                                                                               |
-| `sonarr_series_type`      | **Description:** Override Sonarr `series_type` attribute<br>**Values:** `standard`, `daily`, `anime`                                                                                                                                                               |
-| `sonarr_season_folder`    | **Description:** Override Sonarr `season_folder` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `sonarr_tags`             | **Description:** Override Sonarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                           |
-| `sonarr_search`           | **Description:** Override Sonarr `search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                               |
-| `sonarr_cutoff_search`    | **Description:** Override Sonarr `cutoff_search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `item_sonarr_tag`         | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                    |
-| `item_sonarr_tag.remove`  | **Description:** Used to remove existing tags in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags            |
-| `item_sonarr_tag.sync`    | **Description:** Matches the tags in Sonarr for every series found by the builders that's in Sonarr with the provided tags<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags |
+| Option | Selects for addition |
+|:-------|:---------------------|
+| `radarr_add_missing`, `sonarr_add_missing` | Builder results missing from Plex |
+| `radarr_add_existing`, `sonarr_add_existing` | Builder results already in Plex but not in Radarr/Sonarr |
 
-## Seerr Definition Settings
+<span id="arr-add-missing"></span>
+<span id="arr-add-existing"></span>
 
-These attributes override Seerr request behavior for the collection or playlist. Seerr must be configured globally or for the library; see the [Seerr configuration](../config/seerr.md).
+Missing additions help acquire unavailable media. Existing additions register
+media you already have. When Plex and Radarr/Sonarr see different filesystem
+paths, set `plex_path` with `radarr_path` or `sonarr_path` in the corresponding
+service configuration; those mappings are not definition-level options here.
 
-| Attribute             | Description & Values                                                                                                                                                                  |
-|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `seerr_add_missing`   | **Description:** Submit movies or shows missing from the Plex library to Seerr<br>**Values:** `true` or `false`                                                                        |
-| `seerr_add_existing`  | **Description:** Submit movies or shows already in the Plex library to Seerr, for example to request a 4K version<br>**Values:** `true` or `false`                                     |
-| `seerr_instance`      | **Description:** Seerr request tier(s) to use<br>**Values:** `standard`, `4k`, or `both` (default: `standard`)                                                                          |
-| `seerr_overrides`     | **Description:** Override Seerr's server, quality profile, or root folder separately for each tier<br>**Values:** Dictionary with `standard` and/or `4k` entries; see [Seerr configuration](../config/seerr.md) |
+## Shared Radarr/Sonarr overrides
 
-## Adding to Arr
-You can add items to Radarr/Sonarr in two different ways.
-  1. Items found by Kometa that are missing from your collections/playlists.
-  2. Items found by Kometa that already exist in Plex but are not in Radarr/Sonarr.
+All options in this table are booleans. Use unquoted `true` or `false` to override
+the corresponding service setting for this definition.
 
-### Arr Add Missing
+| Radarr option | Sonarr option | Purpose |
+|:--------------|:--------------|:--------|
+| `radarr_add_missing` | `sonarr_add_missing` | Add missing builder results |
+| `radarr_add_existing` | `sonarr_add_existing` | Add existing Plex media to the service |
+| `radarr_upgrade_existing` | `sonarr_upgrade_existing` | Apply the definition's quality profile to existing records |
+| `radarr_monitor_existing` | `sonarr_monitor_existing` | Apply monitoring settings to existing records |
+| `radarr_ignore_cache` | `sonarr_ignore_cache` | Ignore Kometa's cache when adding items |
+| `radarr_search` | `sonarr_search` | Search when adding media |
 
-When `radarr_add_missing`/`sonarr_add_missing` are true the items missing from the collection/playlist will be added to Radarr/Sonarr.
+### Missing movies
 
-### Arr Add Existing
+Selects the top 20 popular TMDb movies and enables missing-movie additions to
+Radarr. `true` is a boolean, while `20` is the builder's integer result count.
+The root folder and profile strings must match your Radarr configuration.
 
-When `radarr_add_existing`/`sonarr_add_existing` are true the items that exist in the collection/playlist will be added to Radarr/Sonarr. 
+```yaml
+collections:
+  Popular Movies to Add:
+    tmdb_popular: 20
+    radarr_add_missing: true
+    radarr_root_folder_path: /movies
+    radarr_quality_profile: HD-1080p
+    radarr_search: true
+```
 
-If your Radarr/Sonarr has different file system mappings from your Plex use `radarr_path`/`sonarr_path` along with `plex_path` from your 
-[Radarr](../config/radarr.md)/[Sonarr](../config/sonarr.md) global config settings.
+## Radarr options {#radarr-definition-settings}
 
-### Radarr Add Settings
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `radarr_root_folder_path` | Folder path string | Root folder for additions |
+| `radarr_monitor` | Boolean | Monitor newly added movies |
+| `radarr_minimum_availability` | `announced`, `cinemas`, `released`, `db` | Override the service's `availability` setting |
+| `radarr_quality_profile` | Radarr quality profile | Override `quality_profile` |
+| `radarr_tags` | YAML list or comma-separated tag string | Override the service's `tag` setting |
 
-When adding a movie in Radarr you get the screen below to set these options use `radarr_root_folder_path`, `radarr_monitor`, `radarr_minimum_availability`, `radarr_quality_profile`, `radarr_tags`, and `radarr_search`.
+### Radarr add settings
 
-![Radarr Details](../assets/images/files/radarr-settings.png)
+These correspond to the options available when adding a movie in Radarr.
 
-### Sonarr Add Settings
+??? info "Radarr add screen"
 
-When adding a show in Sonarr you get the screen below to set these options use `sonarr_root_folder_path`, `sonarr_monitor`, `sonarr_quality_profile`, `sonarr_language_profile`, `sonarr_series_type`,
-`sonarr_season_folder`, `sonarr_tags`, `sonarr_search`, and `sonarr_cutoff_search`.
+    ![Radarr add settings](../assets/images/files/radarr-settings.png)
 
-![Sonarr Details](../assets/images/files/sonarr-settings.png)
+## Sonarr options {#sonarr-definition-settings}
 
-## Arr Edit Settings
+| Attribute | Value | Purpose |
+|:----------|:------|:--------|
+| `sonarr_root_folder_path` | Folder path string | Root folder for additions |
+| `sonarr_monitor` | `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none` | Episode monitoring policy |
+| `sonarr_quality_profile` | Sonarr quality profile | Override `quality_profile` |
+| `sonarr_language_profile` | Sonarr language profile | Override `language_profile` |
+| `sonarr_series_type` | `standard`, `daily`, `anime` | Series type for additions |
+| `sonarr_season_folder` | Boolean | Use season folders |
+| `sonarr_tags` | YAML list or comma-separated tag string | Override the service's `tag` setting |
+| `sonarr_cutoff_search` | Boolean | Search for episodes with an unmet quality cutoff |
 
-When editing the details of items that exist in the collection/playlist and in Radarr/Sonarr use `item_radarr_tag` and `item_sonarr_tag`
+Use the exact profile names, including spaces and capitalization, from your
+service configuration.
+
+### Sonarr add settings
+
+Selects 10 popular shows, enables missing-show additions, monitors future episodes,
+and uses season folders. `future` is a monitoring string, not a boolean. Tags are
+strings in a YAML list; replace paths and profiles with your own values.
+
+```yaml
+collections:
+  Popular Shows to Add:
+    tmdb_popular: 10
+    sonarr_add_missing: true
+    sonarr_root_folder_path: /tv
+    sonarr_quality_profile: HD-1080p
+    sonarr_monitor: future
+    sonarr_series_type: standard
+    sonarr_season_folder: true
+    sonarr_tags:
+      - kometa
+      - popular
+```
+
+??? info "Sonarr add screen"
+
+    ![Sonarr add settings](../assets/images/files/sonarr-settings.png)
+
+## Arr edit settings
+
+These options affect items found by the builders that already have a record in
+Radarr/Sonarr. They differ from `radarr_tags` / `sonarr_tags`, which override the
+service's addition settings. Values accept a YAML list or comma-separated string.
+
+| Radarr option | Sonarr option | Effect |
+|:--------------|:--------------|:-------|
+| `item_radarr_tag` | `item_sonarr_tag` | Append the supplied tags |
+| `item_radarr_tag.remove` | `item_sonarr_tag.remove` | Remove the supplied tags |
+| `item_radarr_tag.sync` | `item_sonarr_tag.sync` | Replace the existing tag set with the supplied tags |
+
+=== "Append"
+
+    Finds library movies tracked by Radarr and appends the `kometa` and
+    `reviewed` tags to their Radarr records, retaining other existing tags.
+
+    ```yaml
+    collections:
+      Tagged Radarr Movies:
+        radarr_all: true
+        item_radarr_tag:
+          - kometa
+          - reviewed
+    ```
+
+=== "Remove"
+
+    Removes `old-tag` from Sonarr records for the selected series. It does not
+    remove the series or its other tags.
+
+    ```yaml
+    collections:
+      Update Sonarr Tags:
+        sonarr_all: true
+        item_sonarr_tag.remove: old-tag
+    ```
+
+=== "Synchronize"
+
+    Sets selected movies' Radarr tags to exactly `kometa` and `curated`.
+    Other existing tags are removed; the quoted value is a comma-separated string.
+
+    ```yaml
+    collections:
+      Curated Radarr Tags:
+        radarr_taglist: curated
+        item_radarr_tag.sync: "kometa,curated"
+    ```
+
+## Seerr options {#seerr-definition-settings}
+
+Seerr routes movie/show requests through its configured Radarr and Sonarr servers.
+Its request options are independent of direct Radarr/Sonarr additions: enabling
+both routes also sends additions directly to those services.
+
+| Attribute | Value | Purpose / default |
+|:----------|:------|:------------------|
+| `seerr_add_missing` | Boolean | Request media missing from Plex |
+| `seerr_add_existing` | Boolean | Request media already in Plex, such as a 4K version |
+| `seerr_instance` | `standard`, `4k`, `both` | Request tier; default `standard` |
+| `seerr_overrides` | Dictionary with `standard` and/or `4k` | Per-tier server, profile, and root-folder overrides |
+
+Each override tier can contain `server_id`, `quality_profile` (ID or name), and
+`root_folder`. Unset values use Seerr's defaults for that tier; configure regular
+and 4K servers in Seerr. `both` makes separate tier requests, so one tier's failure
+or duplicate does not prevent the other from being attempted. Shows request all
+seasons. See [Seerr configuration](../config/seerr.md) for connection settings.
+
+=== "Both tiers"
+
+    Requests missing popular movies in both standard and 4K tiers. The integer
+    `20` limits the source builder; `true` enables requests and `both` is a tier string.
+
+    ```yaml
+    collections:
+      Popular Movie Requests:
+        tmdb_popular: 20
+        seerr_add_missing: true
+        seerr_instance: both
+    ```
+
+=== "Existing media and nested overrides"
+
+    Requests a 4K version of movies already in Plex. The nested dictionary
+    overrides only the 4K tier. Replace server ID, quality profile ID, and root
+    folder with values from your Seerr setup.
+
+    ```yaml
+    collections:
+      Existing Movies in 4K:
+        plex_all: true
+        seerr_add_existing: true
+        seerr_instance: 4k
+        seerr_overrides:
+          4k:
+            server_id: 2
+            quality_profile: 4
+            root_folder: /media/movies-4k
+    ```

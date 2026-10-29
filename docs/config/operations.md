@@ -24,7 +24,7 @@ libraries:
       split_duplicates: true
 ```
 
-## Operation Blocks
+## Operation blocks
 
 You can create individual blocks of operations by using a list under `operations` with each item in the list being a "block" that can be individually scheduled.
 
@@ -42,7 +42,7 @@ libraries:
         split_duplicates: true
 ```
 
-## A Note on Data Sources
+## A note on data sources
 
 Several of these operations use data from external sources such as MDBList. You will need to authenticate against each service you wish to use in these operations.
 
@@ -50,13 +50,13 @@ Some of these sources have free and paid tiers of access. Your entire library ma
 
 For example, MDBList's free tier is limited [at time of writing] to 1000 API requests daily. Changes in external site paid/free status and limits are not under Kometa's control.
 
-## A Note on Mass Operations
+## A note on mass operations
 
 Several of these operations perform **mass** updates; these are just that, **mass** updates.  Except as shown below, they cannot be filtered to operate on only a subset of the items in your library.
 
-## Operation Attributes
+## Operation attributes
 
-###### Mass Metadata Update
+###### Mass metadata update
 
 ??? info "`mass_metadata_update` - Updates metadata fields, artwork, ratings, mappings, and metadata backup data."
     `mass_metadata_update` groups the legacy `mass_*_update` operations into one operation block.
@@ -130,7 +130,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     ??? tip "Scheduling Mass Metadata Operations"
 
         `mass_metadata_update` can be scheduled as a whole operation block, or each top-level sub-attribute can be scheduled individually.
-        
+
         When `schedule` is set on the `mass_metadata_update` operation block, that schedule applies to every sub-operation inside the block unless the sub-operation defines its own `schedule`.
         ```yaml
         operations:
@@ -144,7 +144,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 critic: imdb
         ```
         In this example, `genre`, `content_rating`, and `ratings.critic` all run on Monday.
-        
+
         You can also schedule individual sub-attributes:
         ```yaml
         operations:
@@ -167,14 +167,14 @@ Several of these operations perform **mass** updates; these are just that, **mas
               source: tmdb
         ```
         In this example:
-        
+
         | Attribute | Schedule |
         | --- | --- |
         | `genre` | Monday |
         | `content_rating` | Tuesday |
         | `original_title` | Wednesday |
         | `studio` | Thursday |
-        
+
         For attributes that support both a shorthand value and a dictionary, `source` is optional. These two examples are equivalent:
         ```yaml
         operations:
@@ -288,15 +288,15 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Source | Description |
         | --- | --- |
-        | `mdb` | Use MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_commonsense` | Use Common Sense rating through MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_commonsense0` | Use Common Sense rating with zero padding through MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb` | Use MDBList for content ratings. Requires [MDBList key](mdblist.md). |
+        | `mdb_commonsense` | Use Common Sense rating through MDBList for content ratings. Requires [MDBList key](mdblist.md). |
+        | `mdb_commonsense0` | Use Common Sense rating with zero padding through MDBList for content ratings. Requires [MDBList key](mdblist.md). |
         | `plex_csm` | Use Common Sense Media age rating cached on the Plex item itself. Requires the new Plex Movie/Series agent; no external API key. |
         | `plex_csm0` | Use Common Sense Media age rating cached on the Plex item itself with zero padding. Requires the new Plex Movie/Series agent; no external API key. |
-        | `mdb_age_rating` | Use MDBList age rating for content ratings. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_age_rating0` | Use MDBList age rating with zero padding for content ratings. Requires [MDBList key](../config/mdblist.md). |
-        | `omdb` | Use IMDb through OMDb for content ratings. Requires [OMDB key](../config/omdb.md). |
-        | `mal` | Use MyAnimeList for content ratings. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mdb_age_rating` | Use MDBList age rating for content ratings. Requires [MDBList key](mdblist.md). |
+        | `mdb_age_rating0` | Use MDBList age rating with zero padding for content ratings. Requires [MDBList key](mdblist.md). |
+        | `omdb` | Use IMDb through OMDb for content ratings. Requires [OMDB key](omdb.md). |
+        | `mal` | Use MyAnimeList for content ratings. Requires [MyAnimeList authentication](myanimelist.md). |
         | `lock` | Lock the content rating field. |
         | `unlock` | Unlock the content rating field. |
         | `remove` | Remove the content rating and lock the field. |
@@ -369,11 +369,11 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `tmdb_physical` | Use TMDb physical release date. Movie libraries only. |
         | `tmdb_tv` | Use TMDb TV release date. Movie libraries only. |
         | `tvdb` | Use TVDb release date. |
-        | `omdb` | Use IMDb release date through OMDb. Requires [OMDB key](../config/omdb.md). |
-        | `mdb` | Use MDBList release date. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_digital` | Use MDBList digital release date. Requires [MDBList key](../config/mdblist.md). |
+        | `omdb` | Use IMDb release date through OMDb. Requires [OMDB key](omdb.md). |
+        | `mdb` | Use MDBList release date. Requires [MDBList key](mdblist.md). |
+        | `mdb_digital` | Use MDBList digital release date. Requires [MDBList key](mdblist.md). |
         | `anidb` | Use AniDB release date. |
-        | `mal` | Use MyAnimeList release date. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal` | Use MyAnimeList release date. Requires [MyAnimeList authentication](myanimelist.md). |
         | `lock` | Lock the date field. |
         | `unlock` | Unlock the date field. |
         | `remove` | Remove the date and lock the field. |
@@ -403,11 +403,11 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | --- | --- |
         | `tmdb` | Use TMDb for genres. |
         | `tvdb` | Use TVDb for genres. |
-        | `serializd` | Use Serializd for show genres. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
-        | `serializd_nanogenres` | Use Serializd's highest-voted nanogenres for shows. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
-        | `serializd_all` | Use both Serializd genres and its highest-voted nanogenres for shows. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
+        | `serializd` | Use Serializd for show genres. Requires [Serializd authentication](serializd.md) and is only available for show libraries. |
+        | `serializd_nanogenres` | Use Serializd's highest-voted nanogenres for shows. Requires [Serializd authentication](serializd.md) and is only available for show libraries. |
+        | `serializd_all` | Use both Serializd genres and its highest-voted nanogenres for shows. Requires [Serializd authentication](serializd.md) and is only available for show libraries. |
         | `imdb` | Use IMDb for genres. |
-        | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](../config/omdb.md). |
+        | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](omdb.md). |
         | `anidb` | Use AniDB main tags for genres. |
         | `anidb_3_0` | Use AniDB main tags and all 3 star tags and above for genres. |
         | `anidb_2_5` | Use AniDB main tags and all 2.5 star tags and above for genres. |
@@ -415,8 +415,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `anidb_1_5` | Use AniDB main tags and all 1.5 star tags and above for genres. |
         | `anidb_1_0` | Use AniDB main tags and all 1 star tags and above for genres. |
         | `anidb_0_5` | Use AniDB main tags and all 0.5 star tags and above for genres. |
-        | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](myanimelist.md). |
+        | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](myanimelist.md). |
         | `lock` | Lock the genre field. |
         | `unlock` | Unlock the genre field. |
         | `remove` | Remove all genres and lock the genre field. |
@@ -523,7 +523,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
             MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Rating & Episode Rating Operations"
-    
+
             ```yaml
             operations:
               mass_metadata_update:
@@ -552,29 +552,29 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `anidb_average` | Use AniDB average. |
         | `anidb_rating` | Use AniDB rating. |
         | `anidb_score` | Use AniDB review score. |
-        | `flicklist_user` | Use FlickList user's personal rating. Requires [FlickList key](../config/flicklist.md). |
+        | `flicklist_user` | Use FlickList user's personal rating. Requires [FlickList key](flicklist.md). |
         | `imdb` | Use IMDb rating. |
-        | `mal` | Use MyAnimeList score. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mdb` | Use MDBList score. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_average` | Use MDBList average score. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_imdb` | Use IMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_letterboxd` | Use Letterboxd rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_metacritic` | Use Metacritic rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_metacriticuser` | Use Metacritic user rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_myanimelist` | Use MyAnimeList rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_tmdb` | Use TMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_tomatoes` | Use Rotten Tomatoes rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_tomatoesaudience` | Use Rotten Tomatoes audience rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `omdb` | Use IMDb rating through OMDb. Requires [OMDB key](../config/omdb.md). |
-        | `omdb_metascore` | Use Metacritic metascore through OMDb. Requires [OMDB key](../config/omdb.md). |
-        | `omdb_tomatoes` | Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](../config/omdb.md). |
+        | `mal` | Use MyAnimeList score. Requires [MyAnimeList authentication](myanimelist.md). |
+        | `mdb` | Use MDBList score. Requires [MDBList key](mdblist.md). |
+        | `mdb_average` | Use MDBList average score. Requires [MDBList key](mdblist.md). |
+        | `mdb_imdb` | Use IMDb rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_letterboxd` | Use Letterboxd rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_metacritic` | Use Metacritic rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_metacriticuser` | Use Metacritic user rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_myanimelist` | Use MyAnimeList rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_tmdb` | Use TMDb rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_tomatoes` | Use Rotten Tomatoes rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `mdb_tomatoesaudience` | Use Rotten Tomatoes audience rating through MDBList. Requires [MDBList key](mdblist.md). |
+        | `omdb` | Use IMDb rating through OMDb. Requires [OMDB key](omdb.md). |
+        | `omdb_metascore` | Use Metacritic metascore through OMDb. Requires [OMDB key](omdb.md). |
+        | `omdb_tomatoes` | Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](omdb.md). |
         | `plex_imdb` | Use IMDb rating through Plex. |
         | `plex_tmdb` | Use TMDb rating through Plex. |
         | `plex_tomatoes` | Use Rotten Tomatoes rating through Plex. |
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
-        | `serializd` | Use the Serializd community show rating. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
+        | `serializd` | Use the Serializd community show rating. Requires [Serializd authentication](serializd.md) and is only available for show libraries. |
         | `tmdb` | Use TMDb rating. |
-        | `wetrakr_user` | Use WeTrakr user's personal rating. Requires [WeTrakr authorization](../config/wetrakr.md). |
+        | `wetrakr_user` | Use WeTrakr user's personal rating. Requires [WeTrakr authorization](wetrakr.md). |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -586,8 +586,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `imdb` | Use IMDb rating. |
         | `plex_imdb` | Use IMDb rating through Plex. |
         | `plex_tmdb` | Use TMDb rating through Plex. |
-        | `serializd` | Use the Serializd community episode rating. Requires [Serializd authentication](../config/serializd.md). |
-        | `serializd_user` | Use the authenticated Serializd user's episode rating. Requires [Serializd authentication](../config/serializd.md). |
+        | `serializd` | Use the Serializd community episode rating. Requires [Serializd authentication](serializd.md). |
+        | `serializd_user` | Use the authenticated Serializd user's episode rating. Requires [Serializd authentication](serializd.md). |
         | `tmdb` | Use TMDb rating. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
@@ -614,7 +614,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
          | Value | Description |
         | --- | --- |
         | `anidb` | Use AniDB animation work. |
-        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](myanimelist.md). |
         | `tmdb` | Use TMDb studio. |
         | `lock` | Lock the studio field. |
         | `unlock` | Unlock the studio field. |
@@ -642,9 +642,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | --- | --- |
         | `anidb` | Use AniDB main title. |
         | `anidb_official` | Use AniDB official title based on the language attribute in the config file. |
-        | `mal` | Use MyAnimeList main title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_english` | Use MyAnimeList English title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_japanese` | Use MyAnimeList Japanese title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal` | Use MyAnimeList main title. Requires [MyAnimeList authentication](myanimelist.md). |
+        | `mal_english` | Use MyAnimeList English title. Requires [MyAnimeList authentication](myanimelist.md). |
+        | `mal_japanese` | Use MyAnimeList Japanese title. Requires [MyAnimeList authentication](myanimelist.md). |
         | `lock` | Lock the original title field. |
         | `unlock` | Unlock the original title field. |
         | `remove` | Remove original title and lock the field. |
@@ -654,7 +654,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `studio` Value | Description |
         | --- | --- |
         | `anidb` | Use AniDB animation work. |
-        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](myanimelist.md). |
         | `tmdb` | Use TMDb studio. |
         | `lock` | Lock the studio field. |
         | `unlock` | Unlock the studio field. |
@@ -663,7 +663,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | Any string | Set an explicit studio. |
 
 
-###### Assets For All
+###### Assets for all
 
 ??? info "`assets_for_all` - Used to search the asset directories for images for all items in the library."
     Ordinarily, Kometa searches the asset directories for collection artwork. Enabling this Operation tells Kometa
@@ -682,7 +682,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               assets_for_all: false
         ```
 
-###### Assets For All Collections
+###### Assets for all collections
 
 ??? info "`assets_for_all_collections` - Used to search the asset directories for images for all unmanaged and/or unconfigured in the library."
     Enabling this Operation tells Kometa
@@ -703,7 +703,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               assets_for_all_collections: false
         ```
 
-###### Delete Collections
+###### Delete collections
 
 ??? info "`delete_collections` - Deletes collections based on a set of given attribute."
     Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
@@ -739,7 +739,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 managed: true
         ```
 
-###### Update Blank Track Titles
+###### Update blank track titles
 
 ??? info "`update_blank_track_titles` - Updates blank track titles of every item in the library."
     Search though every track in a music library and replace any blank track titles with the tracks sort title.
@@ -757,7 +757,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               update_blank_track_titles: true
         ```
 
-###### Remove Title Parentheses
+###### Remove title parentheses
 
 ??? info "`remove_title_parentheses` - Removes title parentheses of every item in the library."
     Search through every title and remove all ending parentheses in an items title if the title is not locked.
@@ -775,7 +775,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               remove_title_parentheses: true
         ```
 
-###### Sync Watchlist to Serializd
+###### Sync watchlist to Serializd
 
 ??? info "`sync_watchlist_to_serializd` - Adds the Plex server owner's watched episodes to Serializd."
     This show-library operation reads episode watched state for the owner authenticated by the configured Plex token and marks those episodes as watched for the authenticated [Serializd](serializd.md) account. Episodes are sent in season-level batches. The operation is additive: it does not mark any Serializd episodes unwatched.
@@ -797,7 +797,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               sync_watchlist_to_serializd: true
         ```
 
-###### Ignore Labels
+###### Ignore labels
 
 ??? info "`ignore_labels` - Skips items from Library Operations when they have any of the given labels."
     Enabling this Operation tells Kometa to skip items from item-based Library Operations when the item has any label listed in `ignore_labels`.
@@ -826,7 +826,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                   critic: tmdb
         ```
 
-###### Respect Ignore IDs
+###### Respect ignore IDs
 
 ??? info "`respect_ignore_ids` - Skips items from Library Operations when their IDs are ignored."
     Enabling this Operation tells Kometa to skip items from Library Operations when their TMDb/TVDb ID is listed in `ignore_ids` or their IMDb ID is listed in `ignore_imdb_ids`.
@@ -862,7 +862,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ```
 
-###### Split Duplicates
+###### Split duplicates
 
 ??? info "`split_duplicates` - Splits all duplicate items found in this library."
     Splits all duplicate items found in this library.
@@ -880,7 +880,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               split_duplicates: true
         ```
 
-###### Radarr Add All
+###### Radarr add all
 
 ??? info "`radarr_add_all` - Adds every item in the library to Radarr."
     Adds every item in the library to Radarr.
@@ -903,7 +903,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               radarr_add_all: true
         ```
 
-###### Radarr Remove By Tag
+###### Radarr remove by tag
 
 ??? info "`radarr_remove_by_tag` - Removes every item from Radarr with the Tags given."
     Removes every item from Radarr with the Tags given.
@@ -921,7 +921,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               radarr_remove_by_tag: mytag1, mytag2
         ```
 
-###### Sonarr Add All
+###### Sonarr add all
 
 ??? info "`sonarr_add_all` - Adds every item in the library to Sonarr."
     Adds every item in the library to Sonarr.
@@ -944,7 +944,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               sonarr_add_all: true
         ```
 
-###### Sonarr Remove By Tag
+###### Sonarr remove by tag
 
 ??? info "`sonarr_remove_by_tag` - Removes every item from Sonarr with the Tags given."
     Removes every item from Sonarr with the Tags given.
@@ -962,7 +962,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
               sonarr_remove_by_tag: mytag1, mytag2
         ```
 
-###### Plex Bulk Edits Batch Size
+###### Plex bulk edits batch size
 
 ??? info "`plex_bulk_edit_batch_size` - Breaks up processing of operations into chunks of this many items."
     Setting this file tells Kometa to break up operations that require inspecting/modifying the entire library into chunks. Setting this can be particularly helpful for large libraries.

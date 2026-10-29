@@ -127,7 +127,7 @@ jobs:
             echo "" > "PART"
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            git add README.md
+            git add README.md docs/templates/project.md
             git add VERSION
             git add PART
             git add requirements.txt

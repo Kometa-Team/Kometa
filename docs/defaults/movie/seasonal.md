@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Seasonal", 
-        "CODE_NAME": "seasonal",
-        "LIBRARY_TYPE": "Movie", 
-        "SECTION_NUMBER": "090", 
-        "DESCRIPTION": "dynamically create seasonal collections based on holidays"
-    }'
+    "COLLECTION": "Seasonal",
+    "CODE_NAME": "seasonal",
+    "LIBRARY_TYPE": "Movie",
+    "SECTION_NUMBER": "090",
+    "DESCRIPTION": "dynamically create seasonal collections based on holidays"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Seasonal"}' %}
 | `Asian American Pacific Islander Movies` | `aapi`          | Collection of Movies related to Asian American Pacific Islander Month. |
@@ -82,7 +82,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="seasonal|data|exclude|limit|sort_by|sync_mode|format"
         replace='{
-            "DYNAMIC_NAME": "Seasons", 
+            "DYNAMIC_NAME": "Seasons",
             "DYNAMIC_VALUE": "Seasons Keys",
             "NAME_FORMAT": "<<key_name>> <<library_translationU>>s",
             "SUMMARY_FORMAT": "A collection of <<key_name>> <<library_translation>>s that may relate to the season."
@@ -100,11 +100,11 @@ hide:
         The Seasonal collections are based on lists from a few different sources.
 
     === "Default `data`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         data: 
     {%    
-      include-markdown "../../../defaults/movie/seasonal.yml" 
+      include-markdown "../../templates/source-defaults/movie/seasonal.yml"
       comments=false
       start="data:\n"
       end="title_format:"
@@ -112,11 +112,11 @@ hide:
         ```
 
     === "Default `schedule`"
-    
+
         ???+ tip 
-        
+
             Pass `schedule_<<key>>` to the file as Template Variables to change this value per collection.
-    
+
             ```yaml
               - default: seasonal
                 template_variables:
@@ -126,7 +126,7 @@ hide:
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         schedule: 
   {%    
-    include-markdown "../../../defaults/movie/seasonal.yml" 
+    include-markdown "../../templates/source-defaults/movie/seasonal.yml"
     comments=false
     start="schedule:\n"
     end="imdb_search:"
@@ -134,11 +134,11 @@ hide:
         ```
 
     === "Default `imdb_search`"
-        
+
         ???+ tip 
-        
+
             Pass `imdb_search_<<key>>` to the file as Template Variables to change this value per collection.
-    
+
             ```yaml
               - default: seasonal
                 template_variables:
@@ -151,7 +151,7 @@ hide:
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         imdb_search: 
   {%    
-    include-markdown "../../../defaults/movie/seasonal.yml" 
+    include-markdown "../../templates/source-defaults/movie/seasonal.yml"
     comments=false
     start="imdb_search:\n"
     end="tmdb_collection:"
@@ -159,11 +159,11 @@ hide:
         ```
 
     === "Default `tmdb_collection`"
-    
+
         ???+ tip 
-        
+
             Pass `tmdb_collection_<<key>>` to the file as Template Variables to change this value per collection.
-    
+
             ```yaml
               - default: seasonal
                 template_variables:
@@ -171,11 +171,11 @@ hide:
                     - 1234
                     - 5678
             ```
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         tmdb_collection: 
   {%    
-  include-markdown "../../../defaults/movie/seasonal.yml" 
+  include-markdown "../../templates/source-defaults/movie/seasonal.yml"
   comments=false
   start="tmdb_collection:\n"
   end="tmdb_movie:"
@@ -183,11 +183,11 @@ hide:
         ```
 
     === "Default `tmdb_movie`"
-    
+
         ???+ tip 
-        
+
             Pass `tmdb_movie_<<key>>` to the file as Template Variables to change this value per collection.
-    
+
             ```yaml
               - default: seasonal
                 template_variables:
@@ -195,11 +195,11 @@ hide:
                     - 4321
                     - 8765
             ```
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         tmdb_movie: 
   {%    
-    include-markdown "../../../defaults/movie/seasonal.yml" 
+    include-markdown "../../templates/source-defaults/movie/seasonal.yml"
     comments=false
     start="tmdb_movie:\n"
     end="mdblist_list:"
@@ -207,11 +207,11 @@ hide:
         ```
 
     === "Default `mdblist_list`"
-    
+
         ???+ tip 
-        
+
             Pass `mdblist_list_<<key>>` to the file as Template Variables to change this value per collection.
-    
+
             ```yaml
               - default: seasonal
                 template_variables:
@@ -221,7 +221,7 @@ hide:
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         mdblist_list: 
   {%    
-    include-markdown "../../../defaults/movie/seasonal.yml" 
+    include-markdown "../../templates/source-defaults/movie/seasonal.yml"
     comments=false
     start="mdblist_list:\n"
     end="letterboxd_list:"
@@ -231,7 +231,7 @@ hide:
     === "Default `letterboxd_list`"
 
         ???+ tip 
-    
+
         Pass `letterboxd_list_<<key>>` to the file as Template Variables to change this value per collection.
 
         ```yaml
@@ -243,7 +243,7 @@ hide:
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         letterboxd_list: 
   {%    
-    include-markdown "../../../defaults/movie/seasonal.yml" 
+    include-markdown "../../templates/source-defaults/movie/seasonal.yml"
     comments=false
     start="letterboxd_list:\n"
     end="delete_collections_named:"

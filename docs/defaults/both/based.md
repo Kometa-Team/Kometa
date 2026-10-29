@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Based On...", 
-        "CODE_NAME": "based",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "085", 
-        "DESCRIPTION": "create collections with items that are based on or inspired by various media outlets (such as Books or Video Games)"
-    }'
+    "COLLECTION": "Based on...",
+    "CODE_NAME": "based",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "085",
+    "DESCRIPTION": "create collections with items that are based on or inspired by various media outlets (such as Books or Video Games)"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Based on..."}' %}
 | `Based on a Book`       | `books`       | Collection of Movies/Shows based on or inspired by books        |
@@ -45,7 +45,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="exclude|limit|sort_by|sync_mode|format"
         replace='{
-            "DYNAMIC_NAME": "Media Outlets", 
+            "DYNAMIC_NAME": "Media Outlets",
             "DYNAMIC_VALUE": "Media Outlet Keys",
             "NAME_FORMAT": "Based on a <<key_name>>",
             "SUMMARY_FORMAT": "<<library_translationU>>s based on or inspired by <<translated_key_name>>s."
@@ -59,6 +59,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Based On A ... Collections"
-        
-        The Based On A ... collections are created using IMDb keyword searches.
 
+        The Based On A ... collections are created using IMDb keyword searches.

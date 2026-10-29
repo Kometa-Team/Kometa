@@ -18,6 +18,107 @@ Special thanks to Magic815 for the overlay image inspiration and base template.
 
 Please consider [donating](https://github.com/sponsors/meisnate12) towards the project.
 
+## Available defaults {#list-of-defaults-files}
+
+Find a default by name below. Each page lists the collections or overlays it creates and the variables you can customize.
+
+??? info "Collections"
+
+    - [Academy Awards (Oscars)](award/oscars.md)
+    - [Actors](both/actor.md)
+    - [AniList Charts](chart/anilist.md)
+    - [Aspect Ratio](both/aspect.md)
+    - [AU Content Ratings](both/content_rating_au.md)
+    - [Audio Languages](both/audio_language.md)
+    - [Based On...](both/based.md)
+    - [Basic Charts](chart/basic.md)
+    - [Berlin Film Festival Awards](award/berlinale.md)
+    - [British Academy of Film Awards](award/bafta.md)
+    - [Cannes Film Festival Awards](award/cannes.md)
+    - [Collectionless](both/collectionless.md)
+    - [Common Sense Media Content Ratings](both/content_rating_cs.md)
+    - [Continents (Movie)](movie/continent.md)
+    - [Continents (Show)](show/continent.md)
+    - [Countries (Movie)](movie/country.md)
+    - [Countries (Show)](show/country.md)
+    - [Critics Choice Awards](award/choice.md)
+    - [César Awards](award/cesar.md)
+    - [DE Content Ratings](both/content_rating_de.md)
+    - [Decades (Movie)](movie/decade.md)
+    - [Decades (Show)](show/decade.md)
+    - [Directors](movie/director.md)
+    - [Emmy Awards](award/emmy.md)
+    - [Franchises (Movie)](movie/franchise.md)
+    - [Franchises (Show)](show/franchise.md)
+    - [Genres](both/genre.md)
+    - [Golden Globe Awards](award/golden.md)
+    - [IMDb Charts](chart/imdb.md)
+    - [Independent Spirit Awards](award/spirit.md)
+    - [Letterboxd Charts](chart/letterboxd.md)
+    - [MyAnimeList Charts](chart/myanimelist.md)
+    - [MyAnimeList Content Ratings](both/content_rating_mal.md)
+    - [National Film Registry](award/nfr.md)
+    - [Networks](show/network.md)
+    - [NZ Content Ratings](both/content_rating_nz.md)
+    - [Other Charts](chart/other.md)
+    - [People's Choice Awards](award/pca.md)
+    - [Producers](movie/producer.md)
+    - [Razzie Awards](award/razzie.md)
+    - [Regions (Movie)](movie/region.md)
+    - [Regions (Show)](show/region.md)
+    - [Resolutions](both/resolution.md)
+    - [Screen Actors Guild Awards](award/sag.md)
+    - [Seasonal](movie/seasonal.md)
+    - [Separator](award/separator.md)
+    - [Separator](chart/separator.md)
+    - [Simkl Charts](chart/simkl.md)
+    - [Streaming](both/streaming.md)
+    - [Studios](both/studio.md)
+    - [Subtitle Languages](both/subtitle_language.md)
+    - [Sundance Film Festival Awards](award/sundance.md)
+    - [Tautulli Charts](chart/tautulli.md)
+    - [TMDb Charts](chart/tmdb.md)
+    - [Toronto International Film Festival](award/tiff.md)
+    - [Tracearr Charts](chart/tracearr.md)
+    - [UK Content Ratings](both/content_rating_uk.md)
+    - [Universes](both/universe.md)
+    - [US Content Ratings (Movie)](movie/content_rating_us.md)
+    - [US Content Ratings (Show)](show/content_rating_us.md)
+    - [Venice Film Festival Awards](award/venice.md)
+    - [Writers](movie/writer.md)
+    - [Years](both/year.md)
+
+??? info "Overlays"
+
+    - [Aspect Ratio](overlays/aspect.md)
+    - [AU Content Ratings](overlays/content_rating_au.md)
+    - [Audio Codec](overlays/audio_codec.md)
+    - [Audio/Subtitle Language Count](overlays/language_count.md)
+    - [Audio/Subtitle Language Flags](overlays/languages.md)
+    - [Common Sense Age Ratings](overlays/commonsense.md)
+    - [DE Content Ratings](overlays/content_rating_de.md)
+    - [Direct Play Only](overlays/direct_play.md)
+    - [Episode Info](overlays/episode_info.md)
+    - [MediaStinger](overlays/mediastinger.md)
+    - [Networks](overlays/network.md)
+    - [NZ Content Ratings](overlays/content_rating_nz.md)
+    - [Ratings](overlays/ratings.md)
+    - [Resolution/Edition](overlays/resolution.md)
+    - [Ribbon](overlays/ribbon.md)
+    - [Runtimes](overlays/runtimes.md)
+    - [Status](overlays/status.md)
+    - [Streaming](overlays/streaming.md)
+    - [Studios](overlays/studio.md)
+    - [UK Content Ratings](overlays/content_rating_uk.md)
+    - [US Content Ratings (Movie)](overlays/content_rating_us_movie.md)
+    - [US Content Ratings (Show)](overlays/content_rating_us_show.md)
+    - [Versions](overlays/versions.md)
+    - [Video Format](overlays/video_format.md)
+
+??? info "Playlists"
+
+    - [Playlists](playlist.md)
+
 ## Configurations
 
 To run a default Kometa Collection or Overlay File you can simply add it to your `collection_files` (For Collection Files) or `overlay_files` (For Overlay Files) using `default` like so:
@@ -55,7 +156,7 @@ For, example, the IMDB default creates three collections, each with their own "k
 
 You use that key to customize the individual collection or overlay.
 
-This example disables two keys, which will prevent those collections from being created. It also sets the visibility of one of the keys [`top`] so that it is visible on the library tab, 
+This example disables two keys, which will prevent those collections from being created. It also sets the visibility of one of the keys [`top`] so that it is visible on the library tab,
 the server owner's home screen and shared user's home screens (assuming the server owner and/or the shared users have the library pinned to their home screen)
 
 It also changes the resolution overlay to skip applying the overlay to 480p movies.
@@ -124,7 +225,7 @@ libraries:
 
 All of the Defaults Files are customized in this basic fashion.
 
-**NOTE: this `template_variable` system is specific to the Defaults. If and when you start creating your own [collection](../files/collections.md) or [overlay](../files/overlays.md) files, 
+**NOTE: this `template_variable` system is specific to the Defaults. If and when you start creating your own [collection](../files/collections.md) or [overlay](../files/overlays.md) files,
 you cannot use this `template_variables` setup unless you specifically write your files to implement it.**
 
 Each of these Defaults Files has a page on the wiki showing its keys, available `template_variables`, and default settings. 
@@ -133,12 +234,43 @@ For example, the Defaults Overlay File `default: resolution` has a page [here](o
 The shared Template Variables can be reviewed here for [Collections](shared.md) and [Overlays](overlay_variables.md). These are also linked from each Defaults File's wiki page. 
 Keep in mind that *most*, but not all Defaults Files have access to the shared variables. This will be noted on the individual files' page.
 
-## Collection Defaults
+## Collection defaults
 
-See the [Collection Defaults](collections.md) Page for more information on the specifics of the Collection Defaults.
+See the [Collection Defaults](collections/usage.md) Page for more information on the specifics of the Collection Defaults.
 
-## Overlay Defaults
+## Overlay defaults
 
-See the [Overlay Defaults](overlays.md) Page for more information on the specifics of the Overlay Defaults.
+See the [Overlay Defaults](overlays/usage.md) Page for more information on the specifics of the Overlay Defaults.
 
 {% include-markdown "./../templates/snippets/example_config.md" %}
+
+## Example: customize Academy Award collections
+
+
+Perhaps you want to explore the collections and overlays that Kometa provides as part of the defaults. If you want to create a variety of collections with a minimum of fuss,
+these are for you. They can be enabled in your config with a single line, and support limited customization via "template_variables" in the config file.
+
+For example, this will create 7 Academy Award collections, "Best Picture" (all years), "Best Director" (all years), and yearly collections for the past five years.
+
+```yaml
+libraries:
+  Movies:
+    collection_files:
+      - default: oscars
+```
+
+If you wanted to create yearly collections for the past ten years, you could do that with:
+
+```yaml
+libraries:
+  Movies:
+    collection_files:
+      - default: oscars
+        template_variables:
+          data:
+           starting: latest-11
+```
+
+All of the defaults work this way. You can enable them with a single line, and customize them with `template_variables`.
+
+The defaults are all documented starting [here](guide.md).

@@ -1,11 +1,11 @@
 {%
     include-markdown "./base/collection/header.md"
     replace='{
-        "COLLECTION": "Decade", 
-        "CODE_NAME": "decade",
-        "DESCRIPTION": "dynamically create collections based on the decades available in your library, sorted by critic rating to create \"Best of <decade>s Collections\"",
-        "SECTION_NUMBER": "100"
-    }'
+    "COLLECTION": "Decade",
+    "CODE_NAME": "decade",
+    "DESCRIPTION": "dynamically create collections based on the decades available in your library, sorted by critic rating to create \"Best of <decade>s Collections\"",
+    "SECTION_NUMBER": "100"
+}'
 %}
 {% include-markdown "./../snippets/separator_line.md" replace='{"SEPARATOR": "Decade"}' %}
 | `Best of <<Decade>>`<br>**Example:** `Best of 2020s` | `<<Year>>`<br>**Example:** `2020` | Collection of FULL_TYPE released in this Decade. |

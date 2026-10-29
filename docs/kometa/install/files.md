@@ -11,7 +11,7 @@ There is one required configuration file, `config.yml`, and several optional con
 
 ## `config.yml`
 
-[`config.yml`](../../config/overview.md) is the main [and only required] configuration file for Kometa. This is where you configure global settings like your Plex server details, 
+[`config.yml`](../../config/overview.md) is the main [and only required] configuration file for Kometa. This is where you configure global settings like your Plex server details,
 the libraries you want Kometa to act on, any external services you want to use, and other global settings.
 
 Collections, overlays, and metadata changes are **not** defined in `config.yml`. These are defined in separate files.
@@ -69,7 +69,7 @@ libraries:
 
 The specifics of what Template Variables are available for a given default are found on the wiki page for each default, which you can find starting [here](../../defaults/guide.md).
 
-Like the rest of the [external files](../../files/overview.md), these default references cannot be moved out of the `config.yml` file.
+Like the rest of the [external files](../../files/definition-components.md), these default references cannot be moved out of the `config.yml` file.
 
 ???+ tip
 
@@ -88,7 +88,7 @@ Like the rest of the [external files](../../files/overview.md), these default re
 ## Collection files
 
 Collections are defined in [separate collection files](../../files/collections.md). They can be used to create collections of movies, TV shows, or music.
-They can also be used to apply labels or make other changes to items based on [builders](../../files/builders/overview.md) without actually creating collections.
+They can also be used to apply labels or make other changes to items based on [builders](../../files/definition-components.md#builders) without actually creating collections.
 
 A Collection File can contain one or more collections.
 
@@ -102,7 +102,7 @@ collections:
     tmdb_list: 10 
 ```
 
-One collection with a name and a [Builder](../../files/builders/overview.md) that defines the criteria for the collection.
+One collection with a name and a [Builder](../../files/definition-components.md#builders) that defines the criteria for the collection.
 
 That would go in a file like `config/my-neat-collection.yml` and be referenced in the `config.yml` file like this:
 
@@ -127,7 +127,7 @@ overlays:
         resolution: 4K
 ```
 
-One overlay with a name and a [Builder](../../files/builders/overview.md) that defines the criteria for the collection.
+One overlay with a name and a [Builder](../../files/definition-components.md#builders) that defines the criteria for the collection.
 
 This would go in a file like `config/my-neat-overlay.yml` and be referenced in the `config.yml` file like this:
 
@@ -156,7 +156,7 @@ metadata:
 
 One metadata change [`content_rating`] with a name and a match criteria.
 
-Metadata files use the criteria in the `match` key to find individual items (like this one which finds a movie titled "Godzilla" released in 1954), 
+Metadata files use the criteria in the `match` key to find individual items (like this one which finds a movie titled "Godzilla" released in 1954),
 and then the specified changes [in this case setting the content rating to `R`] are applied to the [probably one] thing that matches the criteria.
 
 This would go in a file like `config/my-neat-metadata.yml` and be referenced in the `config.yml` file like this:
@@ -184,7 +184,7 @@ playlists:
     mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
 ```
 
-One playlist with a name and a [Builder](../../files/builders/overview.md) that produces the list of items to put in the playlist.
+One playlist with a name and a [Builder](../../files/definition-components.md#builders) that produces the list of items to put in the playlist.
 
 If `libraries` is not specified, Kometa pulls items for the playlist from every library processed as part of the run.
 If you want to pull from only specific libraries, you can specify them in the playlist file.

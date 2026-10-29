@@ -65,7 +65,7 @@ IGNORED_ROOTS = {
     ".idea",
 }
 DOCKER_ROOTS = {"modules", "defaults", "fonts", "docker", "scripts"}
-DOCKER_OMITTED = {"docs", "json-schema", "CHANGELOG.md", "Dockerfile", "LICENSE", "README.md", ".readthedocs.yml", "test.py"}
+DOCKER_OMITTED = {"docs", "json-schema", "CHANGELOG.md", "Dockerfile", "LICENSE", "README.md", ".readthedocs.yml", "test.py", "zensical.toml"}
 DESKTOP_METADATA = {".DS_Store", "Thumbs.db", "desktop.ini"}
 TEXT_SUFFIXES = {".py", ".pyi", ".pyx", ".sh", ".bash", ".yml", ".yaml", ".json", ".toml", ".cfg", ".ini", ".txt", ".template", ".md", ".rst", ".html", ".css", ".js", ".svg", ".bat", ".cmd", ".ps1", ".lock"}
 TEXT_NAMES = {"VERSION", "PART", "Dockerfile", "LICENSE"}

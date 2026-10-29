@@ -5,15 +5,16 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Direct Play", 
-        "CODE_NAME": "direct_play",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)"
-    }'
+    "OVERLAY_NAME": "Direct Play",
+    "CODE_NAME": "direct_play",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay to indicate items that cannot be transcoded and instead only support Direct Play (i.e. if you use Tautulli to kill 4K transcoding)",
+    "OVERLAY_LABEL": "direct play"
+}'
     end='<!--rec-sub-->'
 %}
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "direct_play", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode' 
 %}
@@ -51,6 +52,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "direct_play"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Direct Play Overlays"
-    
-        The Direct Play overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for 4K items.
+
+    The Direct Play overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for 4K items.

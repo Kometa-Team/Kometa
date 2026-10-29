@@ -28,3 +28,10 @@ test.py
 .agents
 .claude
 **/MODULE.md
+
+# Documentation build tooling
+zensical.toml
+site
+.cache
+.venv-docs
+.zensical-rtd-*.toml

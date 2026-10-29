@@ -1,0 +1,40 @@
+{# Keep Zensical's native tree renderer and expansion/accessibility behavior. #}
+{% import "partials/nav-item.html" as item with context %}
+{% set homepage = config.extra.homepage | d(nav.homepage.url, true) %}
+<nav class="md-nav md-nav--primary kometa-navigation" aria-label="{{ lang.t('nav') }}" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="{{ homepage | url }}" title="{{ config.site_name | e }}" class="md-nav__button md-logo" aria-label="{{ config.site_name | e }}" data-md-component="logo">
+      {% include "partials/logo.html" %}
+    </a>
+    {{ config.site_name }}
+  </label>
+  <div class="kometa-sidebar-brand">
+    <a href="{{ homepage | url }}" class="md-logo" aria-label="{{ config.site_name | e }}" data-md-component="logo">
+      {% include "partials/logo.html" %}
+      <span data-kometa-site-title>{{ config.site_name }}</span>
+    </a>
+  </div>
+  <div class="kometa-sidebar-actions">
+    <div>
+      <a href="{{ homepage | url }}" class="kometa-sidebar-action" data-kometa-home-link>
+        <span class="md-icon" aria-hidden="true">{% include ".icons/lucide/house.svg" %}</span>
+        Home
+      </a>
+    </div>
+    {% if "search" in config.plugins and config.plugins.search.config.enabled %}
+      <button type="button" class="kometa-sidebar-action" data-kometa-search aria-label="Search documentation">
+        <span class="md-icon" aria-hidden="true">{% include ".icons/lucide/search.svg" %}</span>
+        Search
+      </button>
+    {% endif %}
+  </div>
+  <div class="kometa-sidebar-heading">Documentation</div>
+  <ul class="md-nav__list" data-md-scrollfix>
+    {% for nav_item in nav.items %}
+      {% set path = "__nav_" ~ loop.index %}
+      {% if nav_item.url != nav.homepage.url %}
+        {{ item.render(nav_item, path, 1) }}
+      {% endif %}
+    {% endfor %}
+  </ul>
+</nav>

@@ -10,11 +10,11 @@ Kometa can apply overlays to item posters [movies, shows, and seasons] and episo
 
 The how of doing this is covered on the [overlays files](../../files/overlays.md) page.
 
-There are also a number of [default overlays](../../defaults/overlays.md) that you can leverage.
+There are also a number of [default overlays](../../defaults/overlays/usage.md) that you can leverage.
 
 This article is intended as an overview of how Kometa handles and applies overlays.
 
-## Important Prerequisite Facts
+## Important prerequisite facts
 
 ### Applying overlays to a subset of the library
 
@@ -36,7 +36,7 @@ Again, there is no way to target a **subset** of the library with overlays.  You
 
 There is no need to remove overlays prior to changing them.  Kometa will automatically add and remove overlays to reflect your current config.  For example, if you add the default `network` and `streaming` overlays and then decide that you don't want the `streaming` one after all, you need only remove it from the config and run Kometa.  That streaming overlay will be removed on the next run.  *There is no need to remove overlays first or force Kometa to reapply overlays for this purpose*.
 
-## NOTE
+## Note
 
 Some things in this article are discussed *later in the article*.  These things are indicated in ***bold italic***.
 
@@ -123,7 +123,7 @@ As mentioned above, when Kometa applies an overlay to an item, it applies a labe
 
 In this step, Kometa queries Plex for everything with that label, and if anything with the label is **not** found in the current overlay list, the art for that item is replaced by the ***clean backup art***.
 
-### Step 3. Overlay application loop
+### Step 3. overlay application loop
 
 Now Kometa is going to iterate through every item in the library, applying the required overlays to each item.
 
@@ -131,7 +131,7 @@ Here's a flowchart detailing the steps performed for each item in the library wh
 
 ![overlay application flowchart](https://raw.githubusercontent.com/Kometa-Team/Cookbook/refs/heads/main/cookbook/overlay-application-workflow.png)
 
-#### 3a. Apply overlays as needed to the ***clean art*** for the item
+#### 3A. apply overlays as needed to the ***clean art*** for the item
 
 Kometa applies overlays to a item in the overlay list in any of the following scenarios:
 
@@ -145,15 +145,15 @@ When applying overlays, Kometa takes a copy of the ***current clean art*** for t
 
 This image also gets an internal tag identifying it as an overlaid image which was created by Kometa.  This prevents Kometa from double-overlaying an image in the event that Plex provides an already-overlaid image as the "clean art".
 
-#### 3b. Kometa uploads that overlaid image to Plex
+#### 3B. Kometa uploads that overlaid image to Plex
 
 Once the image is generated, Kometa uploads that image to Plex.  Plex requires that an uploaded image be smaller than 10MB, so if this composited image is larger than that [which is unlikely], the upload will be aborted and this will be noted in the log.  This is typically only a problem if you are attempting to use very large source images from an external source.
 
 Every time a new image is uploaded to Plex, whether or not that image is the same as one that's already there, that new image is added to the Plex metadata, which increases the size of that metadata.  Over time, this can lead to significant bloat, so things like reapplying overlays should be avoided.
 
-#### 3c. Kometa makes a backup of the clean art (if one does not already exist)
+#### 3C. Kometa makes a backup of the clean art (if one does not already exist)
 
-If you are not using the [asset directory](./assets.md) to manage your custom art, Kometa will download the current art from Plex and store it in:
+If you are not using the [asset directory](assets.md) to manage your custom art, Kometa will download the current art from Plex and store it in:
 
 ```
 config/overlays/LIBRARY_NAME Original Posters/
@@ -165,9 +165,9 @@ This clean art is used when overlays are updated, removed, or reapplied.  You sh
 
 This backup is required since once Kometa uploads new art, it no longer has any idea what the art on the thing *was*.  This clean backup copy is the only source of that information.
 
-If you *ARE* using the [asset directory](./assets.md) to manage your custom art, then that asset image becomes the source of truth for the clean art and the backup directory is not used.
+If you *ARE* using the [asset directory](assets.md) to manage your custom art, then that asset image becomes the source of truth for the clean art and the backup directory is not used.
 
-#### 3d. Kometa sets an ***"Overlay" label on the item*** in Plex so it knows that overlays have been applied to the item
+#### 3D. Kometa sets an ***"overlay" label on the item*** in Plex so it knows that overlays have been applied to the item
 
 Once the image has been generated and uploaded, Kometa sets a sharing label on the item in Plex: "Overlay"
 
@@ -175,11 +175,11 @@ Once the image has been generated and uploaded, Kometa sets a sharing label on t
 
 Kometa uses this label as discussed earlier to determine which items already have overlays; this mainly affects where it should get the clean art [in the absence of a asset image].  Is there a label?  Get the art from the backup directory.  No label?  Download the art from Plex.  As above, if there is asset art for this item, the label is not used for this purpose since the asset image is the single source of truth.
 
-#### 3e. Kometa caches a description of the overlays it just applied to the item to use next time in step 3a above
+#### 3E. Kometa caches a description of the overlays it just applied to the item to use next time in step 3a above
 
 Last, when an overlay is successfully applied, Kometa caches [in its own database] a record indicating which overlays were applied.  It uses this cache on each run to decide if the overlays on the current run differ from the last run, as discussed above in step 3a.
 
-## Overlay Success in Logs
+## Overlay success in logs
 
 If overlay application succeeds, you will see one of two things in the log:
 
@@ -197,7 +197,7 @@ Overlay was NOT applied on this run because it hasn't changed from last time:
 [INFO]     |   Overlay Update Not Needed
 ```
 
-## Common Overlay Issues
+## Common overlay issues
 
 The most common issue with overlays is that the item you expected an overlay on doesn't qualify for the overlay for some reason.  With the defaults, a common reason is that you aren't using TRaSH naming for your files, and some of the default overlays expect it.
 
@@ -219,13 +219,13 @@ Less common:
 
 The backup art that Plex provided and Kometa saved has gone corrupt.  This is typically indicative of some disk issues.
 
-## So You Wanna...
+## So you wanna...
 
 ### So you wanna change the artwork on something after overlays are applied?
 
 Simplest:
 
-Put the new artwork into an [asset directory](./assets.md), make sure the `assets_for_all` operation is enabled on the library and `prioritize_assets` is set to `true`, and run Kometa.  Kometa will pick up the new art, apply overlays to it, and send it to Plex.  if you want to change the art, just drag a new image into that folder.
+Put the new artwork into an [asset directory](assets.md), make sure the `assets_for_all` operation is enabled on the library and `prioritize_assets` is set to `true`, and run Kometa.  Kometa will pick up the new art, apply overlays to it, and send it to Plex.  if you want to change the art, just drag a new image into that folder.
 
 Slightly less Simple:
 
@@ -258,4 +258,3 @@ Change the art on the item in Plex, and remove the "Overlay" label from the item
             episode_label: Overlay
             title:  NAME OF SHOW HERE
     ```
-

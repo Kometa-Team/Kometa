@@ -1,4 +1,4 @@
-### Standard Style
+### Standard style
 
 Below is a screenshot of the alternative Standard (`standard`) style which can be set via the `style` Template Variable.
 

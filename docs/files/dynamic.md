@@ -36,7 +36,7 @@ tags:
 Kometa can dynamically create collections based on different criteria, such as
 
 * Collections based on the Collections from TMDb for every item in the library. (
-[Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), 
+[Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection),
 [Harry Potter](https://www.themoviedb.org/collection/1241), etc...)
 
 * Collections for the top `X` popular people on TMDb (Bruce Willis, Tom Hanks, etc...)
@@ -48,20 +48,20 @@ Kometa can dynamically create collections based on different criteria, such as
 The main purpose of dynamic collections is to automate the creation of collections which would otherwise require 
 considerable user input and repetition (such as creating a collection for every genre).
 
-## Using Dynamic Collections
+## Using dynamic collections
 
 Each dynamic collection definition creates a set of collection definitions based on some given criteria and uses either 
 the built-in default template or a user defined custom template to dynamically create collection definitions.
 
-#### Collection Naming
+#### Collection naming
 
-By default, the collections generated will be named for the thing being used to create them; things like genres, 
+By default, the collections generated will be named for the thing being used to create them; things like genres,
 countries or actors.
 
-To change the name of the collection, you can use dynamic collection attributes including `title_format`, 
+To change the name of the collection, you can use dynamic collection attributes including `title_format`,
 `remove_suffix`, `remove_prefix`, `key_name_override`, and `title_override` all detailed below.
 
-#### Dynamic Keys & Key Names
+#### Dynamic keys & key names
 
 A `dynamic key` or `key` for short is used to refer to a specific value/result from the dynamic collection criteria that
 will be used to create the collection.
@@ -76,7 +76,7 @@ An example of some keys and their names that would be generated from a `tmdb_col
 | 1241  | Harry Potter Collection |
 
 
-### Example Key Usage
+### Example key usage
 
 Keys can be used for a number of purposes, examples can be found throughout this page. A few examples are shown below:
 
@@ -105,7 +105,7 @@ dynamic_collections:
       France: French
 ```
 
-* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into one "MTV" 
+* Using the `addons` attribute to combine multiple `keys`, i.e. merging "MTV2", "MTV3" and "MTV (UK)" into one "MTV"
 collection.
 
     * When doing this, individual collections will not be created for the individual MTV collections, instead they will
@@ -122,7 +122,7 @@ dynamic_collections:
         - MTV (UK)
 ```
 
-## Dynamic Collection Definition
+## Dynamic collection definition
 
 Each dynamic collection definition must have a mapping name (just like standard collections) under the 
 `dynamic_collections` attribute, which is also attached to the collection as a label to mark it as having been created 
@@ -131,7 +131,7 @@ by this dynamic collection.
 ??? example "Dynamic Collection Example (Click to Expand)"
 
     This example will create a collection for every TMDb Collection associated with items in the library.
-    
+
     ```yaml
     dynamic_collections:
       TMDb Collections:          # This name is the mapping name
@@ -145,28 +145,28 @@ by this dynamic collection.
 
     <div id="type-data" />Used to specify the type of Dynamic Collection and its data. `type` is required for every 
     dynamic collection and `data` is required for any type that uses the attribute.
-    
+
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `type` & `data`
-    
+
     **Accepted Values:** See [Dynamic Collection Types & Data](dynamic_types.md)
 
 ??? blank "`exclude` - Used to exclude a list of keys from being created into collections.<a class="headerlink" href="#exclude" title="Permanent link">¶</a>"
 
     <div id="exclude" />Used to exclude a list of `dynamic keys` from being created into collections.
-    
+
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `exclude`
-    
+
     **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of keys
 
     ???+ example "Example"
-        
+
         For example when making a `genre` dynamic collection definition you can exclude "Horror" from having a 
         collection created from the key.
-        
+
         ```yaml
         dynamic_collections:
           Genres:         # mapping name does not matter, just needs to be unique
@@ -183,16 +183,16 @@ by this dynamic collection.
     custom key combining all keys into one key.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `addons`
-    
+
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` and the value is a
     list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of `dynamic keys` to combine.
 
     ???+ example "Example"
-        
+
         In this example the attribute is used to merge "MTV2", "MTV3" and "MTV (UK)" into the "MTV" collection.
-        
+
         ```yaml
         dynamic_collections:
           networks:
@@ -218,9 +218,9 @@ by this dynamic collection.
     * `key_name`: The key after `key_name_override`, `remove_prefix`, or `remove_suffix` are run on it.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `template`
-    
+
     **Accepted Values:** Name of template or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of templates to use 
 
     ???+ example "Example"
@@ -228,7 +228,7 @@ by this dynamic collection.
         In this example the template removes the limit on the `smart_filter` so it shows all items in each network.
 
         Press the :fontawesome-solid-circle-plus: icon to learn more
-        
+
         ```yaml
         templates:
           network collection: #(1)!
@@ -242,7 +242,7 @@ by this dynamic collection.
             title_format: <<key_name>>
             template: network collection #(3)!
         ```
-        
+
         1. This is the mapping name of the template.
         2. This is the mapping name of the Dynamic Collection Definition.
         3. This must match the mapping name of the template you want to use.
@@ -257,9 +257,9 @@ by this dynamic collection.
         You can set a default value for a variable by using `default` instead of the dynamic key. 
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `template_variables`
-    
+
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the Template Variable and the value 
     is another Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` of the collection you want 
     change the Template Variable for and the value is the new value for the Template Variable.
@@ -267,7 +267,7 @@ by this dynamic collection.
     ???+ example "Example"
 
         For example, when using `type: tmdb_collection` and you want to define a poster url for some collections.
-        
+
         ```yaml
         templates:
           my_template:
@@ -297,9 +297,9 @@ by this dynamic collection.
     <div id="remove-suffix" />Used to remove the defined suffixes from the key before it’s used in the collection title.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `remove_suffix`
-    
+
     **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of suffixes to remove
 
     ???+ example "Example"
@@ -318,9 +318,9 @@ by this dynamic collection.
     <div id="remove-prefix" />Used to remove the defined prefixes from the key before it’s used in the collection title.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `remove_prefix`
-    
+
     **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of prefixes to remove
 
     ???+ example "Example"
@@ -351,9 +351,9 @@ by this dynamic collection.
     type.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `title_format`
-    
+
     **Accepted Values:** String with `<<key_name>>` in it.
 
     ???+ example "Example"
@@ -371,9 +371,9 @@ by this dynamic collection.
     titles.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `key_name_override`
-    
+
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the key name you want to change and 
     the value is what to change that key name to. 
 
@@ -381,10 +381,10 @@ by this dynamic collection.
 
         This example uses `key_name_override` to change the formatting of "France" to "French" so that a collection can 
         be named "French Cinema" instead of simply "France".
-          
+
         * This particular example also uses the `title_format` attribute to manipulate the naming convention of the 
         collections.
-        
+
         ```yaml
         dynamic_collections:
           Countries:         # mapping name does not matter, just needs to be unique
@@ -399,16 +399,16 @@ by this dynamic collection.
     <div id="title-override" />Defines how collection titles can be overridden ignoring title formatting.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `title_override`
-    
+
     **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } where the key is the `dynamic key` you want to change 
     and the value is what to change the title to. 
 
     ???+ example "Example"
 
         This example will override the TMDb Star Wars collection which has an TMDb ID of `10` with `Star Wars Universe.
-        
+
         ```yaml
         dynamic_collections:
           TMDb Collections:          # mapping name does not matter, just needs to be unique
@@ -423,9 +423,9 @@ by this dynamic collection.
     <div id="custom-keys" />Defines if custom keys are allowed. **Defaults to `true`**
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `custom_keys`
-    
+
     **Accepted Values:** `true` or `false`
 
     ???+ example "Example"
@@ -444,9 +444,9 @@ by this dynamic collection.
     **Defaults to `fales`**
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `test`
-    
+
     **Accepted Values:** `true` or `false`
 
     ???+ example "Example"
@@ -463,14 +463,14 @@ by this dynamic collection.
     <div id="sync" />Will remove dynamic collections that are no longer in the creation list. **Defaults to `fales`**
 
     ???+ warning
-    
+
         The mapping name is added as a label to any collection created using this dynamic collection set and because of 
         this when `sync` is true all collections with that label not found in this run will be deleted.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `sync`
-    
+
     **Accepted Values:** `true` or `false`
 
 
@@ -479,7 +479,7 @@ by this dynamic collection.
     <div id="include" />Define a list of keys to be made into collections. 
 
     ???+ warning
-    
+
         This cannot be used with `exclude`.
 
     ???+ tip
@@ -488,9 +488,9 @@ by this dynamic collection.
         in any [`addons`](#addons) list.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `include`
-    
+
     **Accepted Values:** `true` or `false`
 
     ???+ example "Example"
@@ -519,9 +519,9 @@ by this dynamic collection.
     [`addons`](#addons) will be combined into this collection.
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `other_name`
-    
+
     **Accepted Values:** String to make the "other" collection's name
 
     ???+ example "Example"
@@ -550,7 +550,7 @@ by this dynamic collection.
     to be different from the regular collection templates.
 
     ???+ tip
-    
+
         To use an other collection you must be using the [`include`](#include) and [`other_name`](#other-name) 
         attributes.
 
@@ -567,9 +567,9 @@ by this dynamic collection.
     * `used_keys`: The list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of all keys used (included_keys and their addon keys)
 
     <hr style="margin: 0px;">
-    
+
     **Attribute:** `other_template`
-    
+
     **Accepted Values:** Name of template or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of templates to use for the other collection only
 
     ???+ example "Example"
@@ -599,7 +599,7 @@ by this dynamic collection.
               - War
         ```
 
-## Dynamic Collection Template Variables
+## Dynamic collection template variables
 
 When calling a Collection File with dynamic collection all the following are automatically accepted as template 
 variables which will just replace the same attribute when running the file.
@@ -618,7 +618,7 @@ variables which will just replace the same attribute when running the file.
 * `include`
 * `other_name`
 
-There are also several Template Variables that will be automatically append/remove from `data`, `exclude`, `include`, 
+There are also several Template Variables that will be automatically append/remove from `data`, `exclude`, `include`,
 and `addons` so they can be changed by the user on the fly when needed.
 
 * `append_data`

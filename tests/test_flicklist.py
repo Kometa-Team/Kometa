@@ -13,6 +13,39 @@ def make_flicklist(responses, read_only=False):
     return FlickList(FakeRequests(responses), read_only, {"api_key": "fs_live_test"})
 
 
+@pytest.mark.parametrize("path", ["lists/dc-universe-chronological", "list/dc-universe-chronological", "lists/dc-universe-chronological/?sort=rank#items", "lists/123"])
+def test_validate_lists_resolves_user_url_through_paginated_public_lists(path):
+    slug = "123" if path.endswith("123") else "dc-universe-chronological"
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 1, "slug": "another-list"}], headers={"X-FlickList-Page-Count": "2"}),
+            FakeResponse(json_data=[{"id": 4479, "slug": slug}]),
+            FakeResponse(json_data=[{"ids": {"tmdb": 550}, "media_type": "movie"}]),
+            FakeResponse(json_data={"description": "DC timeline"}),
+        ]
+    )
+    ids = flicklist.validate_lists("Collection", f"https://flicklist.tv/u/Furglitch/{path}")
+    assert ids == [4479]
+    assert flicklist.get_flicklist_ids("flicklist_list_details", ids[0], True) == [(550, "tmdb")]
+    assert flicklist.list_description(ids[0]) == "DC timeline"
+    assert flicklist.requests.gets[0][0].endswith("/users/Furglitch/lists")
+    assert "Authorization" not in flicklist.requests.gets[0][1]
+    assert flicklist.requests.gets[2][0].endswith("/lists/4479/items")
+
+
+@pytest.mark.parametrize("response", [FakeResponse(json_data=[]), FakeResponse(status_code=404)])
+def test_validate_lists_reports_missing_user_list(response):
+    flicklist = make_flicklist([response])
+    with pytest.raises(Failed, match="List missing not found for user Furglitch"):
+        flicklist.validate_lists("Collection", "https://flicklist.tv/u/Furglitch/lists/missing")
+
+
+def test_validate_lists_preserves_numeric_ids_and_legacy_urls():
+    flicklist = make_flicklist([])
+    assert flicklist.validate_lists("Collection", [4821, "9310", "https://flicklist.tv/list/123/"]) == [4821, 9310, 123]
+    assert flicklist.requests.gets == []
+
+
 def test_test_connection_success_logs_username():
     flicklist = make_flicklist([FakeResponse(json_data={"username": "chris"})])
     flicklist.test_connection()
@@ -127,6 +160,43 @@ def _movie(tmdb=None, tvdb=None, imdb=None, fldb=None, title="Movie", media_type
 def test_parse_ids_movie_with_tmdb():
     flicklist = make_flicklist([])
     assert flicklist._parse_ids([_movie(tmdb=550)]) == [(550, "tmdb")]
+
+
+def test_playlist_preserves_seasons_and_episodes_in_source_order():
+    season_one = dict(_movie(tmdb=110492, tvdb=391153, fldb="flt_f8", media_type="tv"), season_number=1, episode_number=None)
+    season_two = dict(season_one, season_number=2)
+    episode = dict(season_one, season_number=0, episode_number=1)
+    flicklist = make_flicklist([FakeResponse(json_data=[season_one, _movie(tmdb=1061474), season_two, episode, season_one])])
+    assert flicklist.get_flicklist_ids("flicklist_list", 4479, None) == [("110492_1", "tmdb_season"), (1061474, "tmdb"), ("110492_2", "tmdb_season"), ("110492_0_1", "tmdb_episode")]
+
+
+@pytest.mark.parametrize("episode, expected", [(None, ("391153_1", "tvdb_season")), (3, ("391153_1_3", "tvdb_episode"))])
+def test_playlist_parts_fall_back_to_tvdb(episode, expected):
+    item = dict(_movie(tvdb=391153, media_type="tv"), season_number=1, episode_number=episode)
+    assert make_flicklist([])._parse_ids([item]) == [expected]
+
+
+def test_show_collections_still_resolve_season_entries_to_parent_show():
+    item = dict(_movie(tmdb=110492, fldb="flt_f8", media_type="tv"), season_number=1)
+    assert make_flicklist([])._parse_ids([item, dict(item, season_number=2)], is_movie=False) == [(110492, "tmdb_show")]
+
+
+@pytest.mark.parametrize("level", ["season", "episode"])
+def test_collection_builder_levels_preserve_listed_season(level):
+    item = dict(_movie(tmdb=110492, fldb="flt_f8", media_type="tv"), season_number=1)
+    flicklist = make_flicklist([FakeResponse(json_data=[item, dict(item, season_number=2), _movie(tmdb=550)])])
+    assert flicklist.get_flicklist_ids("flicklist_list", 4479, False, builder_level=level) == [("110492_1", "tmdb_season"), ("110492_2", "tmdb_season")]
+
+
+@pytest.mark.parametrize("level, expected", [("season", ("110492_1", "tmdb_season")), ("episode", ("110492_1_3", "tmdb_episode"))])
+def test_collection_episode_entry_respects_builder_level(level, expected):
+    item = dict(_movie(tmdb=110492, media_type="tv"), season_number=1, episode_number=3)
+    assert make_flicklist([])._parse_ids([item], is_movie=False, builder_level=level) == [expected]
+
+
+def test_playlist_does_not_expand_season_with_only_imdb_id_to_whole_show():
+    item = dict(_movie(imdb="tt13146488", media_type="tv"), season_number=1)
+    assert make_flicklist([])._parse_ids([item]) == []
 
 
 def test_parse_ids_show_with_tmdb():

@@ -41,11 +41,11 @@ The available setting attributes which can be set at each level are outlined bel
     /path/to/assets/level-0/level-1
     /path/to/assets/level-0/level-1/level-2
     ```
-    
+
     The first match will be accepted.
 
     Specifically, if Kometa is looking for the asset name "Star Wars (1977)", then it would be found in any of:
-    
+
     ```
     /path/to/assets/Star Wars (1977)
     /path/to/assets/Movies/Star Wars (1977)
@@ -232,7 +232,7 @@ The available setting attributes which can be set at each level are outlined bel
         ```
 
 
-??? blank "`create_asset_folders` - Used to automatically create asset folders when none exist.<a class="headerlink" href="#create-asset-folders title="Permanent link">¶</a>"
+??? blank "`create_asset_folders` - Used to automatically create asset folders when none exist.<a class="headerlink" href="#create-asset-folders" title="Permanent link">¶</a>"
 
     <div id="create-asset-folders" />Whilst searching for assets, if an asset folder cannot be found within the `asset_directory` one will be created.
 
@@ -1198,7 +1198,7 @@ The available setting attributes which can be set at each level are outlined bel
           tvdb_language: eng
         ```
 
-## Default Values
+## Default values
 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.
 
@@ -1209,7 +1209,7 @@ The below in an extract of the `config.yml.template` and is the initial values t
 
 ~~~yaml
 settings: {%
-  include-markdown "../../config/config.yml.template"
+  include-markdown "../templates/config.yml.template"
   comments=false
   preserve-includer-indent=false
   start="settings:"
@@ -1217,7 +1217,7 @@ settings: {%
 %}
 ~~~
 
-## Example Library-Level Settings
+## Example library-level settings
 
 The below showcases how to set a library-level setting, assuming that the attribute is listed as a library-level compatible attribute in the above table.
 
