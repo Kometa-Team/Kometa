@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Identify items by title instead of internal GUID in mass metadata missing-provider-ID messages.
+
 - Apply Jellyfin/Emby duplicate filters before version splitting and recheck each item so single-version or already-separated items do not receive split requests.
 
 - Preserve Jellyfin/Emby movie TVDb provider IDs for metadata and artwork lookups, without treating movie IDs as TVDb series IDs during TMDb conversion.

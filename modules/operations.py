@@ -571,7 +571,7 @@ class Operations:
                         if self.config.OMDb.limit is not False:
                             logger.error("Daily OMDb Limit Reached")
                         elif not imdb_id:
-                            logger.info(f"No IMDb ID for Guid: {item.guid}")
+                            logger.info(f"No IMDb ID for: {item.title}")
                         else:
                             try:
                                 _omdb_obj = self.config.OMDb.get_omdb(imdb_id)
@@ -612,7 +612,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.info(f"No TVDb ID for Guid: {item.guid}")
+                            logger.info(f"No TVDb ID for: {item.title}")
                     if not _tvdb_obj:
                         raise Failed
                     return _tvdb_obj
@@ -680,7 +680,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.warning(f"No AniDB ID for Guid: {item.guid}")
+                            logger.warning(f"No AniDB ID for: {item.title}")
                     if not _anidb_obj:
                         raise Failed
                     return _anidb_obj
@@ -697,12 +697,12 @@ class Operations:
                         if item.ratingKey in self.library.reverse_mal:
                             mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
-                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '{item.guid}'")
+                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for '{item.title}'")
                         else:
                             try:
                                 mal_id = self.config.Convert.anidb_to_mal(anidb_id)
                             except Failed as err:
-                                logger.warning(f"{err} of Guid: {item.guid}")
+                                logger.warning(f"{err} for: {item.title}")
                         if mal_id:
                             try:
                                 _mal_obj = self.config.MyAnimeList.get_anime(mal_id)
@@ -1509,7 +1509,7 @@ class Operations:
                 if self.library.is_show and any([x is not None for x, _ in episode_ops]):
 
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
-                        logger.info(f"No IMDb ID for Guid: {item.guid}")
+                        logger.info(f"No IMDb ID for: {item.title}")
 
                     for ep in self.library.cached_item_subitems(item, "episodes"):
                         ep = self.library.reload(ep)

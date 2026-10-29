@@ -385,7 +385,8 @@ def test_high_volume_normalizations_do_not_overlap() -> None:
 
 def test_additional_item_messages_are_consolidated() -> None:
     cases = [
-        (["No AniDB ID for Guid: plex://movie/1", "No AniDB ID for Guid: plex://movie/2"], "No AniDB ID for Guid"),
+        (["No AniDB ID for: Movie One", "No AniDB ID for: Movie Two"], "No AniDB ID found"),
+        (["No AniDB ID for Guid: plex://movie/1", "No AniDB ID for Guid: plex://movie/2"], "No AniDB ID found"),
         (["No Poster found to restore for Movie One", "No Poster found to restore for Movie Two"], "No Poster found to restore"),
         (["Plex Warning: Show One has no Season 1 Episode 1", "Plex Warning: Show Two has no Season 1 Episode 1 "], "Plex Warning: No Season 1 Episode 1 found"),
         (
