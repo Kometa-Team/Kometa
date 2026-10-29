@@ -33,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Invalidate obsolete reverse ID lookups when provider mappings change, including equivalent numeric and text IDs, so cached reads agree with the corrected mapping during the same run. #3803
 - Ignore the unsupported `kometa_poster` and `pmm_poster` attributes with a clear error directing users to supported poster options, instead of attempting legacy poster rendering. #3796
 - Fetch complete MDBList digital release dates for `mdb_digital` date operations when batch or older cached results omit them, and cache confirmed missing dates to avoid repeated lookups. #3798
 - Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.
@@ -53,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Validate People-Images poster URLs before selection so missing images allow an available TMDb poster to be selected; cache validation misses for the current run and distinguish temporary validation failures from confirmed missing images. #3715
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
+- Invalidate obsolete reverse ID lookups when provider mappings change, including equivalent numeric and text IDs, so cached reads agree with the corrected mapping during the same run. #3803
 - Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
 - Cache IMDb genres locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /genre` and reuses them until `cache_expiration`; later genre lookups read the cache, and misses are batched instead of requested one title at a time.
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
