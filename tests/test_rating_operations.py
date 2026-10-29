@@ -101,4 +101,4 @@ def test_failed_provider_write_does_not_block_profile_write():
     update_silo_ratings(library, item, {"silo_imdb": [8], "silo_user": [7]}, logger)
     assert library.update_native_ratings.call_args_list == [call(item, {"rating_imdb": 8}), call(item, {"user_rating": 4})]
     logger.error.assert_called_once()
-    logger.info.assert_called_once_with("silo_user Updated | 4")
+    logger.info.assert_called_once_with("User Rating Updated | 4")

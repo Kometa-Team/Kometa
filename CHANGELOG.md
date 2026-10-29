@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Display native personal-rating updates as User Rating instead of the internal silo_user target name.
+
 - Identify the MDBList prefetch and Silo detail-loading stages in logs, and include titles and provider IDs in invalid MDBList rating warnings.
 
 - Select the Emby adapter before its Jellyfin base class and preserve current user state during native rating writes.

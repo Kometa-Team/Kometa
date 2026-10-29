@@ -71,6 +71,7 @@ def rating_value(target, score):
 def update_silo_ratings(library, item, targets, logger):
     updates = {}
     for target, sources in targets.items():
+        label = "User Rating" if target == "silo_user" else target
         for source in sources:
             try:
                 if source == "clear":
@@ -95,12 +96,12 @@ def update_silo_ratings(library, item, targets, logger):
                 value = rating_value(target, score)
                 field = SILO_TARGETS[target]
                 if field in item.data and (item.data[field] == value or field == "user_rating" and value is None and item.data[field] == 0):
-                    logger.info(f"{target} Unchanged | {value}")
+                    logger.info(f"{label} Unchanged | {value}")
                 else:
                     updates[field] = value
                 break
             except Failed as error:
-                logger.warning(f"Silo Rating Warning: {item.title} {target} from {source}: {error}")
+                logger.warning(f"Silo Rating Warning: {item.title} {label} from {source}: {error}")
     for batch in ({field: value for field, value in updates.items() if field != "user_rating"}, {"user_rating": updates["user_rating"]} if "user_rating" in updates else {}):
         if not batch:
             continue
@@ -111,4 +112,5 @@ def update_silo_ratings(library, item, targets, logger):
             continue
         for target, field in SILO_TARGETS.items():
             if field in batch:
-                logger.info(f"{target} Updated | {batch[field] if batch[field] is not None else 'cleared'}")
+                label = "User Rating" if target == "silo_user" else target
+                logger.info(f"{label} Updated | {batch[field] if batch[field] is not None else 'cleared'}")
