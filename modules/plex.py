@@ -2771,6 +2771,8 @@ class Plex(Library):
     def prefetch_mdblist(self, items):
         if self.config.MDBList.limit is not False:
             return
+        if logger:
+            logger.info("Fetching MDBList ratings...")
         primary_ids = []
         imdb_ids = []
         imdb_by_primary_id = {}

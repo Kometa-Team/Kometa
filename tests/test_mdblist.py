@@ -590,3 +590,14 @@ def test_daily_quota_preserved_during_list_loading(monkeypatch, metadata_succeed
     assert "Wait for the daily quota to reset" in str(caught.value)
     assert str(caught.value).count("MDBList Error:") == 1
     assert adapter.requests.get.call_count == (2 if metadata_succeeds else 1)
+
+
+@pytest.mark.parametrize(("data", "identity"), [({"title": "Example Movie", "imdbid": "tt123"}, "IMDb: tt123"), ({"title": "Example Movie", "tmdbid": 42}, "TMDb: 42")])
+def test_invalid_score_warning_identifies_movie(monkeypatch, data, identity):
+    from modules.mdblist import MDbObj
+
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.mdblist.logger", logger)
+    MDbObj({**data, "score": -1})
+    assert len(logger.warning_messages) == 1
+    assert f"Example Movie ({identity}): score rating value -1" in logger.warning_messages[0]

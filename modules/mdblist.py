@@ -230,8 +230,9 @@ class MDbObj:
         self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
         if logger:
+            identity = f"IMDb: {self.imdbid}" if self.imdbid else f"TMDb: {self.tmdbid}" if self.tmdbid else "ID unavailable"
             for source, value in self._invalid_rating_values:
-                logger.warning(f"MDBList Warning: {source} rating value {value} is invalid; expected a finite value in the provider's supported range; response will not be cached")
+                logger.warning(f"MDBList Warning: {self.title or 'Unknown title'} ({identity}): {source} rating value {value} is invalid; expected a finite value in the provider's supported range; response will not be cached")
 
     @property
     def ratings_valid(self):

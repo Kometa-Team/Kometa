@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Identify the MDBList prefetch and Silo detail-loading stages in logs, and include titles and provider IDs in invalid MDBList rating warnings.
+
 - Select the Emby adapter before its Jellyfin base class and preserve current user state during native rating writes.
 
 - Run native assets_for_all without requiring server labels or Plex item fields, reuse the filesystem artwork uploader, and protect posters with local overlay backups.

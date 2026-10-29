@@ -828,10 +828,10 @@ class Silo(Library):
 
     def bulk_reload(self, items, force=False):
         items = list(items)
-        logger.info(f"Loading details for {len(items)} Silo items")
+        logger.info(f"Loading Silo item details: {len(items)} items")
         try:
             for index, item in enumerate(items, 1):
-                logger.ghost(f"Loading details: {index}/{len(items)} {item.title}")
+                logger.ghost(f"Loading Silo item details: {index}/{len(items)} {item.title}")
                 self.reload(item, force=force)
                 if index % 200 == 0:
                     logger.info(f"Loaded details: {index}/{len(items)}")
