@@ -6,6 +6,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from modules.util import Failed
 
 SILO_TARGETS = {"silo_imdb": "rating_imdb", "silo_tmdb": "rating_tmdb", "silo_tomatoes": "rating_rt_critic", "silo_tomatoesaudience": "rating_rt_audience", "silo_user": "user_rating"}
+SILO_LABELS = {"silo_imdb": "Silo IMDB", "silo_tmdb": "Silo TMDB", "silo_tomatoes": "Silo Rotten Tomatoes", "silo_tomatoesaudience": "Silo Rotten Tomatoes Audience", "silo_user": "User Rating"}
 SILO_OPERATIONS = {target: f"mass_{target}_rating_update" for target in SILO_TARGETS}
 GENERIC_OPERATIONS = {name: f"mass_{name}_rating_update" for name in ("user", "critic", "audience", "episode_user", "episode_critic", "episode_audience")}
 SILO_SOURCES = {target: f"Use Silo {target.removeprefix('silo_')} rating" for target in SILO_TARGETS}
@@ -71,7 +72,7 @@ def rating_value(target, score):
 def update_silo_ratings(library, item, targets, logger):
     updates = {}
     for target, sources in targets.items():
-        label = "User Rating" if target == "silo_user" else target
+        label = SILO_LABELS[target]
         for source in sources:
             try:
                 if source == "clear":
@@ -112,5 +113,5 @@ def update_silo_ratings(library, item, targets, logger):
             continue
         for target, field in SILO_TARGETS.items():
             if field in batch:
-                label = "User Rating" if target == "silo_user" else target
+                label = SILO_LABELS[target]
                 logger.info(f"{label} Updated | {batch[field] if batch[field] is not None else 'cleared'}")
