@@ -1487,3 +1487,37 @@ def test_split_operation_only_sends_delete_for_a_verified_duplicate(kind, monkey
     assert writes[0]["url"].endswith("/Videos/group/AlternateSources")
     assert "MediaSources" in session.calls[0]["params"]["fields"]
     library.refresh_item_cache_and_mappings.assert_called_once()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("status", [502, 503, 504])
+def test_read_retries_gateway_errors(monkeypatch, kind, status):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([FakeResponse(status_code=status), FakeResponse({"Id": "432"})])
+    client = MediaBrowserClient(_server(kind), session=session)
+    assert client.get_item("432") == {"Id": "432"}
+    assert delays == [1]
+    assert session.calls[0] == session.calls[1]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_gateway_retries_stop_after_three_attempts(monkeypatch, kind):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([FakeResponse(status_code=502) for _ in range(3)])
+    with pytest.raises(Failed, match="returned 502"):
+        MediaBrowserClient(_server(kind), session=session).get_item("432")
+    assert delays == [1, 2]
+    assert len(session.calls) == 3
+
+
+@pytest.mark.parametrize("method,status", [("POST", 502), ("GET", 400), ("GET", 401), ("GET", 404)])
+def test_gateway_retry_does_not_repeat_writes_or_permanent_errors(monkeypatch, method, status):
+    sleep = MagicMock()
+    monkeypatch.setattr(browser_module.time, "sleep", sleep)
+    session = FakeSession([FakeResponse(status_code=status)])
+    with pytest.raises(Failed, match=f"returned {status}"):
+        MediaBrowserClient(_server("emby"), session=session).request(method, "/Items/432")
+    sleep.assert_not_called()
+    assert len(session.calls) == 1

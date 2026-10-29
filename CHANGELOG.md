@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Retry Jellyfin/Emby reads after transient HTTP 502, 503, and 504 responses instead of aborting operations immediately.
+
 - Write Silo, Jellyfin, and Emby backups as regular metadata files, with nested seasons/episodes, standard matching, and tag sync instructions.
 
 - Use operation names for missing AniDB original-title and TVDb square-art IDs, and titles instead of internal GUIDs in other mass metadata missing-provider-ID messages.

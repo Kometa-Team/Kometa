@@ -150,6 +150,11 @@ class MediaBrowserClient:
         for attempt in range(3):
             try:
                 response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, data=data, headers=headers, timeout=self.server.timeout)
+                if method in ("GET", "HEAD") and response.status_code in (502, 503, 504) and attempt < 2:
+                    delay = 2**attempt
+                    logger.warning(f"{self.server.type_label} Warning: {method} {path} returned {response.status_code}; retrying in {delay} seconds ({attempt + 1}/2)")
+                    time.sleep(delay)
+                    continue
                 break
             except requests.RequestException as error:
                 transient = isinstance(error, (requests.ConnectionError, requests.Timeout, requests.exceptions.ChunkedEncodingError)) and not isinstance(error, requests.exceptions.SSLError)
