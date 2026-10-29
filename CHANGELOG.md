@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Restore regular Silo metadata backups through native metadata and personal rating APIs, with tag sync and consistent personal rating scales.
+
 - Treat content ratings as classification text when restoring native metadata backups.
 
 - Restore regular metadata backup attributes on Jellyfin and Emby through native item updates, including empty tag sync lists, ratings, and nested seasons and episodes.

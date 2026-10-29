@@ -266,6 +266,8 @@ def backup_metadata(config, library, logger):
             ("user_rating", "userRating"),
         ):
             value = getattr(item, attr, None)
+            if name == "user_rating" and library.server.type_name == "silo":
+                value = float(value) * 2 if value is not None and 1 <= float(value) <= 5 else None
             if name not in exclude and value is not None and value != "":
                 values[name] = value.strftime("%Y-%m-%d") if isinstance(value, datetime) else value
         tag_values = {"genre": item.genres}
@@ -344,7 +346,7 @@ def backup_metadata(config, library, logger):
     logger.info(f"{count} metadata records backed up to {path}")
 
 
-def restore_browser_metadata(library, item, metadata, logger):
+def restore_native_metadata(library, item, metadata, logger):
     """Apply regular backup attributes without relying on PlexAPI item methods."""
     from modules import util
 
@@ -359,8 +361,12 @@ def restore_browser_metadata(library, item, metadata, logger):
         "audience_rating": "audienceRating",
         "user_rating": "userRating",
     }
-    tag_fields = {"genre": "Genres", "label": "Tags", "country": "ProductionLocations"}
-    people_roles = {"director", "writer", "producer"}
+    browser = library.server.type_name != "silo"
+    if not browser:
+        scalar_fields.pop("critic_rating")
+        scalar_fields.pop("audience_rating")
+    tag_fields = {"genre": "Genres", "label": "Tags", "country": "ProductionLocations"} if browser else {"genre": "genres", "country": "countries"}
+    people_roles = {"director", "writer", "producer"} if browser else set()
     allowed = set(scalar_fields) | {"match", "mapping_id", "year", "seasons", "episodes"}
     allowed.update(f"{tag}{suffix}" for tag in set(tag_fields) | people_roles for suffix in ("", ".sync", ".remove"))
     metadata = {str(key).lower(): value for key, value in metadata.items()}
@@ -407,10 +413,23 @@ def restore_browser_metadata(library, item, metadata, logger):
         else:
             payload[tag_fields[name]] = after
     # All attributes are validated before writing any of this item's metadata.
+    user_rating = fields.pop("userRating", ...) if not browser else ...
     if fields:
         apply_edit(library, item, fields)
     if payload:
-        item.apply(library.client.update_item(item.ratingKey, payload))
+        if browser:
+            item.apply(library.client.update_item(item.ratingKey, payload))
+        else:
+            result = library.client.update_metadata(item.content_id, payload)
+            item.apply({**payload, **result} if isinstance(result, dict) else payload)
+    if user_rating is not ...:
+        from modules.rating_operations import rating_value
+
+        value = rating_value("silo_user", user_rating)
+        library.client.set_user_rating(item.content_id, value)
+        item.data["user_rating"] = value
+        item.apply({})
+    library.__dict__.get("_native_rating_details", {}).pop(item.ratingKey, None)
     logger.info(f"{item.title} Metadata Update Successful")
     for section, children in (("seasons", item.seasons if item.type == "show" else None), ("episodes", item.episodes if item.type == "season" else None)):
         if section not in metadata:
@@ -423,4 +442,8 @@ def restore_browser_metadata(library, item, metadata, logger):
                 raise Failed(f"Metadata Error: {item.title} {section} {number} not found")
             if values:
                 child = library.reload(indexed[str(number)])
-                restore_browser_metadata(library, child, values, logger)
+                restore_native_metadata(library, child, values, logger)
+
+
+# Retain the existing helper name for callers that restore browser-server backups.
+restore_browser_metadata = restore_native_metadata

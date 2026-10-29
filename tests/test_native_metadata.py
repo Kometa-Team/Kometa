@@ -325,7 +325,7 @@ def test_native_backup_sync_tags_provider_matching_and_schema(kind):
 
     import jsonschema
 
-    data = {"tmdb_id": 123, "genres": [], "user_rating": 0} if kind == "silo" else {"ProviderIds": {"Tmdb": "123"}, "Genres": [], "Tags": ["Keep"], "CriticRating": 85, "UserData": {"Rating": 0}}
+    data = {"tmdb_id": 123, "genres": [], "user_rating": 3} if kind == "silo" else {"ProviderIds": {"Tmdb": "123"}, "Genres": [], "Tags": ["Keep"], "CriticRating": 85, "UserData": {"Rating": 0}}
     library, item = native_item(kind, **data)
     library.metadata_backup = {"path": "/tmp/backup.yml", "sync_tags": True, "exclude": ["country"]}
     library.get_all = lambda: [item]
@@ -336,7 +336,7 @@ def test_native_backup_sync_tags_provider_matching_and_schema(kind):
     assert record["genre.sync"] == []
     assert "genre" not in record
     assert "country.sync" not in record
-    assert record["user_rating"] == 0
+    assert record["user_rating"] == (6 if kind == "silo" else 0)
     if kind != "silo":
         assert record["critic_rating"] == 8.5
         assert record["label.sync"] == "Keep"
@@ -418,3 +418,47 @@ def test_browser_restore_nested_season_and_episode_metadata(kind):
     assert season.title == "First Season"
     assert episode.summary == "Episode restored"
     assert episode.data["Tags"] == []
+
+
+def test_silo_metadata_reader_restores_regular_backup(monkeypatch):
+    from modules import meta as meta_module
+    from modules.meta import MetadataFile
+
+    library, item = native_item("silo", studios=["Old Studio"], countries=["US"], user_rating=1)
+    metadata_file = MetadataFile.__new__(MetadataFile)
+    metadata_file.library = library
+    monkeypatch.setattr(meta_module, "logger", MagicMock())
+    entry = {"title": "Restored", "content_rating": "PG-13", "studio": "Saved Studio", "originally_available": "2020-01-02", "summary": "Saved", "user_rating": 8, "genre.sync": [], "country": "GB"}
+    metadata_file.update_metadata_item(item, 123, entry, {key: key for key in entry})
+    writes = [call.args[1] for call in library.client.update_metadata.call_args_list]
+    assert writes[0]["content_rating"] == "PG-13"
+    assert writes[0]["studios"] == ["Saved Studio"]
+    assert writes[0]["release_date"] == "2020-01-02"
+    assert writes[1] == {"genres": [], "countries": ["US", "GB"]}
+    library.client.set_user_rating.assert_called_once_with(item.content_id, 4)
+    library.client.update_item.assert_not_called()
+
+
+def test_silo_backup_user_rating_round_trip():
+    from modules.native_metadata import restore_native_metadata
+
+    library, item = native_item("silo", user_rating=3)
+    library.metadata_backup = {"path": "/tmp/backup.yml", "sync_tags": True}
+    library.get_all = lambda: [item]
+    library.reload = lambda item: item
+    document = SimpleNamespace(data={}, save=MagicMock())
+    backup_metadata(SimpleNamespace(Requests=SimpleNamespace(file_yaml=lambda *args, **kwargs: document)), library, MagicMock())
+    entry = document.data["metadata"]["Example"]
+    assert entry["user_rating"] == 6
+    restore_native_metadata(library, item, entry, MagicMock())
+    library.client.set_user_rating.assert_called_once_with(item.content_id, 3)
+
+
+def test_silo_restore_rejects_browser_only_fields_before_writes():
+    from modules.native_metadata import restore_native_metadata
+    from modules.util import Failed
+
+    library, item = native_item("silo")
+    with pytest.raises(Failed, match="Unsupported attributes"):
+        restore_native_metadata(library, item, {"summary": "Saved", "label.sync": []}, MagicMock())
+    library.client.update_metadata.assert_not_called()
