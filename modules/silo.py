@@ -179,7 +179,7 @@ class SiloClient:
             delay = util.wait_for_retry_after_header.parse(response.headers.get("Retry-After"))
             if delay is None:
                 delay = min(2**attempt, 10)
-            logger.warning(f"Silo rate limit: {method} {path}; retrying in {delay:g} seconds ({attempt + 1}/5)")
+            logger.trace(f"Silo rate limit: {method} {path}; retrying in {delay:g} seconds ({attempt + 1}/5)")
             time.sleep(delay)
         if response.status_code >= 400:
             detail = _response_detail(response)

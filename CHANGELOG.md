@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Log Silo rate-limit retry notices at TRACE instead of WARNING.
+
 - Use readable Silo provider names in per-item rating update, unchanged, and warning messages.
 
 - Display native personal-rating updates as User Rating instead of the internal silo_user target name, including the operations summary, and list native provider-rating operations individually.
