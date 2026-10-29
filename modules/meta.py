@@ -11,6 +11,7 @@ from requests.exceptions import RequestException
 
 from modules import ergast, letterboxd, plex, timings, util, ytmusic
 from modules.media_server import MediaServer
+from modules.native_metadata import restore_browser_metadata
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
@@ -1961,6 +1962,8 @@ class MetadataFile(DataFile):
         return False
 
     def update_metadata_item(self, item, mapping_name, meta, methods):
+        if getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby"):
+            return restore_browser_metadata(self.library, item, meta, logger)
 
         updated = False
 

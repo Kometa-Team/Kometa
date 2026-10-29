@@ -366,3 +366,54 @@ def test_native_backup_preserves_same_title_items_and_existing_attributes(kind):
     assert "genre.sync" not in records[123]
     assert records["Example (2000) [second]"]["match"] == {"title": "Example", "year": 2000}
     assert document.data["collections"] == {"Keep": {}}
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_regular_metadata_reader_restores_browser_backup(kind, monkeypatch):
+    from modules import meta as meta_module
+    from modules.meta import MetadataFile
+
+    library, item = native_item(kind, People=[{"Name": "Old Director", "Type": "Director"}, {"Name": "Actor", "Type": "Actor"}], UserData={"Rating": 1})
+    library.reload = lambda item: item
+    metadata_file = MetadataFile.__new__(MetadataFile)
+    metadata_file.library = library
+    monkeypatch.setattr(meta_module, "logger", MagicMock())
+    entry = {"original_title": "Restored", "summary": "Saved summary", "critic_rating": 8.5, "user_rating": 0, "genre.sync": [], "label": "New", "director.sync": ["New Director"]}
+    metadata_file.update_metadata_item(item, 123, entry, {key: key for key in entry})
+    writes = [call.args[1] for call in library.client.update_item.call_args_list]
+    assert writes[0]["OriginalTitle"] == "Restored"
+    assert writes[0]["CriticRating"] == 85
+    assert writes[1]["Genres"] == []
+    assert writes[1]["Tags"] == ["Keep", "New"]
+    assert writes[1]["People"] == [{"Name": "Actor", "Type": "Actor"}, {"Name": "New Director", "Type": "Director"}]
+    library.client.update_user_data.assert_called_once_with(item.ratingKey, {"Rating": 0.0})
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_browser_restore_rejects_invalid_fields_before_writes(kind):
+    from modules.native_metadata import restore_browser_metadata
+    from modules.util import Failed
+
+    library, item = native_item(kind)
+    for entry in ({"summary": "Saved", "critic_rating": 101}, {"summary": "Saved", "genre": "A", "genre.sync": []}, {"summary": "Saved", "unsupported_option": True}):
+        with pytest.raises(Failed):
+            restore_browser_metadata(library, item, entry, MagicMock())
+    library.client.update_item.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_browser_restore_nested_season_and_episode_metadata(kind):
+    from modules.native_metadata import restore_browser_metadata
+
+    library, show = native_item(kind, Id="show", Type="Series")
+    _, season = native_item(kind, Id="season", Type="Season", IndexNumber=1)
+    _, episode = native_item(kind, Id="episode", Type="Episode", IndexNumber=2)
+    items = {item.ratingKey: item for item in (show, season, episode)}
+    library.client.update_item.side_effect = lambda key, fields: {**items[key].data, **fields}
+    show.seasons = lambda: [season]
+    season.episodes = lambda: [episode]
+    library.reload = lambda item: item
+    restore_browser_metadata(library, show, {"seasons": {1: {"title": "First Season", "episodes": {2: {"summary": "Episode restored", "label.sync": []}}}}}, MagicMock())
+    assert season.title == "First Season"
+    assert episode.summary == "Episode restored"
+    assert episode.data["Tags"] == []

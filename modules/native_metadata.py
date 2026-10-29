@@ -342,3 +342,85 @@ def backup_metadata(config, library, logger):
         logger.exorcise()
     document.save()
     logger.info(f"{count} metadata records backed up to {path}")
+
+
+def restore_browser_metadata(library, item, metadata, logger):
+    """Apply regular backup attributes without relying on PlexAPI item methods."""
+    from modules import util
+
+    scalar_fields = {
+        "title": "title",
+        "original_title": "originalTitle",
+        "summary": "summary",
+        "studio": "studio",
+        "content_rating": "contentRating",
+        "originally_available": "originallyAvailableAt",
+        "critic_rating": "rating",
+        "audience_rating": "audienceRating",
+        "user_rating": "userRating",
+    }
+    tag_fields = {"genre": "Genres", "label": "Tags", "country": "ProductionLocations"}
+    people_roles = {"director", "writer", "producer"}
+    allowed = set(scalar_fields) | {"match", "mapping_id", "year", "seasons", "episodes"}
+    allowed.update(f"{tag}{suffix}" for tag in set(tag_fields) | people_roles for suffix in ("", ".sync", ".remove"))
+    metadata = {str(key).lower(): value for key, value in metadata.items()}
+    unsupported = set(metadata) - allowed
+    if unsupported:
+        raise Failed(f"{library.server.type_label} Metadata Error: Unsupported attributes: {', '.join(sorted(unsupported))}")
+    fields = {}
+    for name, field in scalar_fields.items():
+        if name not in metadata:
+            continue
+        value = metadata[name]
+        if name.endswith("_rating"):
+            try:
+                value = float(value)
+                if not 0 <= value <= 10:
+                    raise ValueError
+            except (ValueError, TypeError):
+                raise Failed(f"Metadata Error: {name} must be a number between 0 and 10")
+        elif name == "originally_available":
+            value = util.validate_date(value, return_as="%Y-%m-%d")
+        elif value is None:
+            raise Failed(f"Metadata Error: {name} attribute is blank")
+        fields[field] = value
+    payload = {}
+    people = list(item.data.get("People") or [])
+    for name in set(tag_fields) | people_roles:
+        present = [key for key in (name, f"{name}.sync", f"{name}.remove") if key in metadata]
+        if not present:
+            continue
+        if f"{name}.sync" in present and len(present) > 1:
+            raise Failed(f"Metadata Error: Cannot combine {name}.sync with add/remove attributes")
+        before = [person["Name"] for person in people if person.get("Type", "").lower() == name and person.get("Name")] if name in people_roles else list(item.data.get(tag_fields[name]) or [])
+        if f"{name}.sync" in metadata:
+            after = util.get_list(metadata[f"{name}.sync"], return_none=False)
+        else:
+            removed = util.get_list(metadata.get(f"{name}.remove"), return_none=False)
+            after = [value for value in before if value not in removed] + util.get_list(metadata.get(name), return_none=False)
+        after = list(dict.fromkeys(after))
+        if name in people_roles:
+            retained = [person for person in people if person.get("Type", "").lower() != name or person.get("Name") in after]
+            retained.extend({"Name": value, "Type": name.title()} for value in after if value not in before)
+            people = retained
+            payload["People"] = people
+        else:
+            payload[tag_fields[name]] = after
+    # All attributes are validated before writing any of this item's metadata.
+    if fields:
+        apply_edit(library, item, fields)
+    if payload:
+        item.apply(library.client.update_item(item.ratingKey, payload))
+    logger.info(f"{item.title} Metadata Update Successful")
+    for section, children in (("seasons", item.seasons if item.type == "show" else None), ("episodes", item.episodes if item.type == "season" else None)):
+        if section not in metadata:
+            continue
+        if children is None:
+            raise Failed(f"Metadata Error: {section} is not valid for {item.type}")
+        indexed = {str(child.seasonNumber if section == "seasons" else child.episodeNumber): child for child in children()}
+        for number, values in (metadata[section] or {}).items():
+            if str(number) not in indexed:
+                raise Failed(f"Metadata Error: {item.title} {section} {number} not found")
+            if values:
+                child = library.reload(indexed[str(number)])
+                restore_browser_metadata(library, child, values, logger)
