@@ -271,10 +271,12 @@ class Operations:
         logger.info(f"Mass Genre Update: {self.library.mass_genre_update}")
         logger.info(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
         logger.info(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
-        logger.info(f"Mass User Rating Update: {self.library.mass_user_rating_update}")
         native_ratings = getattr(self.library, "silo_rating_updates", None)
-        if isinstance(native_ratings, dict) and native_ratings:
-            logger.info(f"Silo Rating Updates: {native_ratings}")
+        user_rating = native_ratings.get("silo_user", self.library.mass_user_rating_update) if isinstance(native_ratings, dict) else self.library.mass_user_rating_update
+        logger.info(f"Mass User Rating Update: {user_rating}")
+        provider_ratings = {target: sources for target, sources in native_ratings.items() if target != "silo_user"} if isinstance(native_ratings, dict) else {}
+        if provider_ratings:
+            logger.info(f"Silo Rating Updates: {provider_ratings}")
         logger.info(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
         logger.info(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
         logger.info(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
