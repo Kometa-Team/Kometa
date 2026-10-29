@@ -60,6 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Run native assets_for_all without requiring server labels or Plex item fields, reuse the filesystem artwork uploader, and protect posters with local overlay backups.
+- Resolve Silo movie assets by media folder names and reuse full item details during operations, with detail-loading progress.
+
 - Report unsupported Silo split_duplicates operations clearly and continue other library operations instead of calling a missing item method.
 
 - Restore the library operations settings summary to INFO logging for all media servers.

@@ -124,3 +124,5 @@ If a collection disappears between listing and reloading during collection opera
 The `duplicate` flag matches items with more than one file version, including alternate resolutions or editions grouped under one Silo item. It does not detect separate catalog entries for the same movie. Unknown version metadata matches neither `duplicate: true` nor `duplicate: false`.
 
 The `split_duplicates` operation is not supported by the Silo adapter. Silo grouping repair requires explicit file and target selections, which this automatic operation does not provide. When enabled, Kometa reports an error, skips that operation, and continues other library operations.
+
+The `assets_for_all` operation uploads local artwork without requiring Silo labels. Movie assets use the media file directory name, matching Plex asset naming, and fall back to the title when no file path is available. Posters with local overlay backups are preserved for the overlay run; other supported artwork can still update. Full item details are loaded with progress and reused within the run.

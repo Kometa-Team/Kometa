@@ -1312,3 +1312,21 @@ def test_random_rating_source(monkeypatch, field, episode, draw, expected, retry
     assert randint.call_count == (3 if retry else 1)
     assert all(call.args == (0, 100) for call in randint.call_args_list)
     library.Plex.editField.assert_any_call(field, expected)
+
+
+def test_assets_for_all_without_native_labels_or_plex_fields(monkeypatch):
+    from modules.media_server import Capability
+
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    item = SimpleNamespace(ratingKey="movie-1", title="Example")
+    library = make_title_test_library([item])
+    library.remove_title_parentheses = False
+    library.assets_for_all = True
+    library.asset_directory = ["assets"]
+    library.label_operations = True
+    library.supports.side_effect = lambda capability: capability != Capability.GET_ITEM_LABELS
+    library.item_labels.side_effect = AssertionError("native labels must not be read")
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.find_and_upload_assets.assert_called_once_with(item, [])
+    library.item_labels.assert_not_called()

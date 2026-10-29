@@ -373,7 +373,7 @@ class Operations:
                     logger.error(e)
                     continue
 
-                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
+                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations and self.library.supports(Capability.GET_ITEM_LABELS) else []
                 if self.library.item_has_ignore_label(item, current_labels=current_labels):
                     logger.info("Ignored by ignore_labels")
                     continue
@@ -386,7 +386,7 @@ class Operations:
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
 
-                locked_fields = [f.name for f in item.fields if f.locked]
+                locked_fields = [f.name for f in getattr(item, "fields", []) if f.locked]
 
                 item_edits = ""
 
@@ -416,8 +416,9 @@ class Operations:
                                 item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
-                if item.locations:
-                    path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
+                locations = getattr(item, "locations", [])
+                if locations:
+                    path = util.media_dirname(locations[0]) if self.library.is_movie else str(locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                         path = path[:-1] if path.endswith(("/", "\\")) else path

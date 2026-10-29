@@ -1696,3 +1696,52 @@ def test_collection_artwork_uses_the_source_url_field(monkeypatch, tmp_path):
     library.upload_background(collection, "https://image.tmdb.org/backdrop.jpg", url=True)
     assert session.calls[1]["url"].endswith("/admin/collections/col%201/backdrop")
     assert session.calls[1]["files"]["source_url"] == (None, "https://image.tmdb.org/backdrop.jpg")
+
+
+@pytest.mark.parametrize("windows", [True, False])
+@pytest.mark.parametrize("overlay", [True, False])
+def test_silo_item_assets_use_media_folder_and_preserve_overlay(tmp_path, monkeypatch, windows, overlay):
+    from modules import library as library_module
+    from modules import plex as plex_module
+
+    for module in (silo_module, library_module, plex_module):
+        monkeypatch.setattr(module, "logger", FakeLogger())
+    session = FakeSession([FakeResponse(None, status_code=204) for _ in range(1 if overlay else 2)])
+    library = _library(SiloClient(_server(), session=session))
+    library.config.Cache = None
+    library.asset_directory = [str(tmp_path / "assets")]
+    library.collection_asset_directory = []
+    library.asset_folders = True
+    library.asset_depth = 0
+    library.create_asset_folders = False
+    library.dimensional_asset_rename = False
+    library.show_missing_assets = True
+    library.show_asset_not_needed = False
+    library.overlay_backup = str(tmp_path / "backups")
+    directory = tmp_path / "assets" / "127 Hours (2010)"
+    directory.mkdir(parents=True)
+    (directory / "poster.jpg").write_bytes(b"poster")
+    (directory / "background.jpg").write_bytes(b"background")
+    if overlay:
+        backup = tmp_path / "backups"
+        backup.mkdir()
+        (backup / "movie-1.jpg").write_bytes(b"original")
+    path = r"C:\Movies\127 Hours (2010)\movie.mkv" if windows else "/Movies/127 Hours (2010)/movie.mkv"
+    item = SiloItem({"content_id": "movie-1", "type": "movie", "title": "127 Hours", "versions": [{"file_path": path}]}, library)
+    monkeypatch.setattr(silo_module, "publish_image", lambda *args, **kwargs: "https://images.example/asset.jpg")
+    monkeypatch.setattr(silo_module.time, "sleep", lambda *args: None)
+    library.find_and_upload_assets(item, [])
+    assert [call["json"]["type"] for call in session.calls] == (["backdrop"] if overlay else ["poster", "backdrop"])
+    assert all(call["url"].endswith("/movie-1/images/apply") for call in session.calls)
+
+
+def test_operations_reload_upgrades_catalog_and_reuses_full_details():
+    record = {"content_id": "movie-1", "title": "Example", "type": "movie", "versions": [{"file_path": "/Movies/Example/movie.mkv"}]}
+    session = FakeSession([FakeResponse(record)])
+    library = _library(SiloClient(_server(), session=session))
+    item = SiloItem({"content_id": "movie-1", "title": "Example", "type": "movie"}, library)
+    library._search_details = {item.content_id: item}
+    library.bulk_reload([item])
+    library.reload(item)
+    assert item.locations == ["/Movies/Example/movie.mkv"]
+    assert len(session.calls) == 1

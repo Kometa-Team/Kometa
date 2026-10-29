@@ -386,6 +386,7 @@ class SiloItem:
         self.tmdb_id = _numeric_id(self.data.get("tmdb_id"))
         self.tvdb_id = _numeric_id(self.data.get("tvdb_id"))
         self.imdb_id = self.data.get("imdb_id") or None
+        self.locations = [version["file_path"] for version in self.data.get("versions") or [] if version.get("file_path")]
         self.genres = list(self.data.get("genres") or [])
         self.studios = list(self.data.get("studios") or [])
         self.networks = list(self.data.get("networks") or [])
@@ -565,14 +566,15 @@ class Silo(Library):
             data, etag = self.client.get_collection(item.id)
             item.apply(data, etag=etag)
             return item
-        cached = getattr(self, "_search_details", {}).get(item.content_id)
-        if cached is not None and not force:
+        cached = self.__dict__.setdefault("_search_details", {}).get(item.content_id)
+        loaded = self.__dict__.setdefault("_loaded_search_details", set())
+        if cached is not None and not force and ("versions" in cached.data or item.content_id in loaded):
             item.apply(cached.data)
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
         item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
-        if hasattr(self, "_search_details"):
-            self._search_details[item.content_id] = item
+        self._search_details[item.content_id] = item
+        loaded.add(item.content_id)
         if force:
             getattr(self, "_native_rating_details", {}).pop(item.content_id, None)
         return item
@@ -783,6 +785,10 @@ class Silo(Library):
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
         name = item if isinstance(item, str) else item.title
+        if isinstance(item, SiloItem) and item.type == "movie" and item.locations:
+            path = str(item.locations[0]).replace("\\", "/")
+            folder = os.path.basename(os.path.dirname(path))
+            name = folder or name
         return Plex.find_item_assets(self, name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
 
     def item_posters(self, item, providers=None):
@@ -794,8 +800,17 @@ class Silo(Library):
         return poster
 
     def bulk_reload(self, items, force=False):
-        for item in items:
-            self.reload(item, force=force)
+        items = list(items)
+        logger.info(f"Loading details for {len(items)} Silo items")
+        try:
+            for index, item in enumerate(items, 1):
+                logger.ghost(f"Loading details: {index}/{len(items)} {item.title}")
+                self.reload(item, force=force)
+                if index % 200 == 0:
+                    logger.info(f"Loaded details: {index}/{len(items)}")
+        finally:
+            logger.exorcise()
+        logger.info(f"Loaded details: {len(items)}/{len(items)}")
 
     def get_item_display_title(self, item, sort=False):
         return (item.data.get("sort_title") or item.title) if sort else util.item_title(item)

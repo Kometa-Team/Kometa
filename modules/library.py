@@ -505,6 +505,17 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
 
+    def find_and_upload_assets(self, item, current_labels, asset_directory=None):
+        """Use the shared filesystem uploader and native overlay backup markers."""
+        from modules.plex import Plex
+
+        labels = list(current_labels or [])
+        backup = self.__dict__.get("overlay_backup")
+        if backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")):
+            if "Overlay" not in labels:
+                labels.append("Overlay")
+        return Plex.find_and_upload_assets(self, item, labels, asset_directory=asset_directory)
+
     def fetch_overlay_value(self, item, variable_name):
         """Reuse provider rating lookup and its cache for non-Plex adapters."""
         from modules.plex import Plex
