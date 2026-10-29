@@ -20,6 +20,7 @@ BROWSER_FIELDS = {
     "label": "Tags",
 }
 BROWSER_LOCKABLE = {"Name", "OriginalTitle", "Overview", "Genres", "Studios", "OfficialRating", "CommunityRating", "CriticRating", "Tags"}
+JELLYFIN_LOCKABLE = BROWSER_LOCKABLE - {"OriginalTitle", "CommunityRating", "CriticRating"}
 IMAGE_OPERATIONS = ("mass_poster_update", "mass_background_update", "mass_logo_update", "mass_square_art_update")
 SCALAR_OPERATIONS = ("mass_genre_update", "mass_content_rating_update", "mass_original_title_update", "mass_studio_update", "mass_originally_available_update", "mass_added_at_update")
 
@@ -37,8 +38,8 @@ def configure_metadata_operations(params, server_type, logger):
             option = option.replace(internal, public, 1)
         logger.error(f"Config Error: {option} is not supported by {server_type}: {reason}")
 
-    if params.get("split_duplicates"):
-        reason = "Silo grouping repair requires explicit file and target selections" if server_type == "silo" else "this adapter does not implement native version splitting"
+    if server_type == "silo" and params.get("split_duplicates"):
+        reason = "Silo grouping repair requires explicit file and target selections"
         unsupported("split_duplicates", reason)
         params["split_duplicates"] = False
     if params.get("mass_collection_mode"):
@@ -59,10 +60,12 @@ def configure_metadata_operations(params, server_type, logger):
         for source in values:
             if str(source).startswith("plex_"):
                 unsupported(f"{option} source {source}", "requires Plex metadata")
-            elif (server_type == "silo" or option in ("mass_added_at_update", "mass_originally_available_update")) and source in ("lock", "unlock"):
+            elif server_type in ("jellyfin", "emby") and option == "mass_added_at_update" and source in ("remove", "reset"):
+                unsupported("mass_metadata_update.added_at", "clearing the added date is not supported by the native metadata update; use a replacement date")
+            elif (server_type == "silo" or option in ("mass_added_at_update", "mass_originally_available_update") or server_type == "jellyfin" and option == "mass_original_title_update") and source in ("lock", "unlock"):
                 unsupported(f"{option} source {source}", "these native metadata field locks cannot be represented by this adapter")
             else:
-                if (server_type == "silo" or option in ("mass_added_at_update", "mass_originally_available_update")) and source in ("remove", "reset"):
+                if (server_type == "silo" or option in ("mass_added_at_update", "mass_originally_available_update") or server_type == "jellyfin" and option == "mass_original_title_update") and source in ("remove", "reset"):
                     unsupported(f"{option} {source} lock change", "the value will be cleared, but existing native locks are preserved")
                 accepted.append(source)
         params[option] = accepted or None
@@ -100,10 +103,7 @@ def configure_metadata_operations(params, server_type, logger):
 
 
 def current_value(item, field):
-    value = getattr(item, field, None)
-    if field == "rating" and item.library.server.type_name in ("jellyfin", "emby") and value is not None:
-        return float(value) / 10
-    return value
+    return getattr(item, field, None)
 
 
 def apply_edit(library, item, fields=None, tags=None, control=None):
@@ -127,6 +127,8 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
         fields.pop("userRating")
         user = None
     for field, value in fields.items():
+        if browser and field == "addedAt" and control in ("remove", "reset", "clear"):
+            raise Failed(f"{library.server.type_label} Error: Clearing the added date is not supported")
         key = mapping.get(field)
         if not browser and field == "originallyAvailableAt":
             key = "first_air_date" if item.type == "show" else "air_date" if item.type in ("season", "episode") else key
@@ -146,7 +148,7 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
                 if browser:
                     value += "T00:00:00Z"
             payload[key] = value
-        if browser and key in BROWSER_LOCKABLE:
+        if browser and key in (JELLYFIN_LOCKABLE if library.server.type_name == "jellyfin" else BROWSER_LOCKABLE):
             if control in ("unlock", "reset"):
                 locks = [name for name in locks if name != key]
             elif control != "clear" and key not in locks:

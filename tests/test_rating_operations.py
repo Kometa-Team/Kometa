@@ -102,3 +102,46 @@ def test_failed_provider_write_does_not_block_profile_write():
     assert library.update_native_ratings.call_args_list == [call(item, {"rating_imdb": 8}), call(item, {"user_rating": 4})]
     logger.error.assert_called_once()
     logger.info.assert_called_once_with("User Rating Updated | 4")
+
+
+@pytest.mark.parametrize("server", ["jellyfin", "emby"])
+@pytest.mark.parametrize("source,field,value,expected", [("community", "CommunityRating", 7.2, 7.2), ("audience", "CommunityRating", 0, 0), ("critic", "CriticRating", 88, 8.8), ("user", "Rating", 5, 5)])
+def test_stored_browser_ratings_are_normalized_and_server_scoped(server, source, field, value, expected):
+    from modules.rating_operations import browser_rating_value
+
+    library = SimpleNamespace(server=SimpleNamespace(type_name=server))
+    item = SimpleNamespace(data={"UserData": {field: value}} if field == "Rating" else {field: value})
+    assert browser_rating_value(library, item, f"{server}_{source}") == expected
+    other = "emby" if server == "jellyfin" else "jellyfin"
+    with pytest.raises(Failed, match="requires"):
+        browser_rating_value(library, item, f"{other}_{source}")
+
+
+@pytest.mark.parametrize("server", ["plex", "silo", "jellyfin", "emby"])
+def test_stored_rating_sources_are_rejected_on_other_servers(server):
+    logger = MagicMock()
+    params = {"mass_audience_rating_update": ["jellyfin_critic", "emby_community", "imdb"]}
+    configure_rating_updates(params, server, logger)
+    if server == "silo":
+        assert params["mass_audience_rating_update"] is None
+    else:
+        expected = (["jellyfin_critic"] if server == "jellyfin" else ["emby_community"] if server == "emby" else []) + ["imdb"]
+        assert params["mass_audience_rating_update"] == expected
+    assert logger.error.called
+
+
+def test_jellyfin_personal_score_clear_is_rejected_but_critic_clear_remains():
+    params = {"mass_user_rating_update": ["clear"], "mass_episode_user_rating_update": ["clear"], "mass_critic_rating_update": ["clear"]}
+    logger = MagicMock()
+    configure_rating_updates(params, "jellyfin", logger)
+    assert params == {"mass_user_rating_update": None, "mass_episode_user_rating_update": None, "mass_critic_rating_update": ["clear"]}
+    assert logger.error.call_count == 2
+
+
+def test_jellyfin_rating_lock_controls_fail_during_configuration():
+    logger = MagicMock()
+    params = {"mass_critic_rating_update": ["lock", "unlock", "tmdb"], "mass_audience_rating_update": ["remove"]}
+    configure_rating_updates(params, "jellyfin", logger)
+    assert params["mass_critic_rating_update"] == ["tmdb"]
+    assert params["mass_audience_rating_update"] == ["remove"]
+    assert logger.error.call_count == 3

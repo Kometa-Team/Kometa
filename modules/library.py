@@ -539,6 +539,8 @@ class Library(ABC):
         """Reuse provider rating lookup and its cache for non-Plex adapters."""
         from modules.plex import Plex
 
+        if str(variable_name).startswith(("jellyfin_", "emby_")):
+            raise Failed(f"Overlay Error: {variable_name} requires the matching Jellyfin or Emby library")
         if str(variable_name).startswith("silo_"):
             raise Failed(f"Overlay Error: {variable_name} requires a Silo library")
         if getattr(item, "type", None) in ("season", "episode"):

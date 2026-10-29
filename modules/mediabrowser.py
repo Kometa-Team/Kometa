@@ -23,6 +23,7 @@ from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_
 from modules.mediabrowser_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_media
 from modules.mediabrowser_search import values as search_values
 from modules.native_metadata import NativeItemMetadata
+from modules.rating_operations import BROWSER_RATING_FIELDS, browser_rating_value
 from modules.util import Failed
 
 logger = util.logger
@@ -236,6 +237,8 @@ class MediaBrowserClient:
 
     def update_user_data(self, item_id, fields):
         self.ensure_user()
+        if self.server.type_name == "jellyfin" and "Rating" in fields and fields["Rating"] is None:
+            raise Failed("Jellyfin Error: Clearing numeric personal ratings is not supported; the server ignores null Rating values")
         current = dict((self.get_item(item_id).get("UserData") or {}))
         current.update(fields)
         if self.server.type_name == "emby":
@@ -243,6 +246,9 @@ class MediaBrowserClient:
         else:
             self.request("POST", f"/UserItems/{_path_id(item_id)}/UserData", params={"userId": self.user_id}, json_body=current)
         return current
+
+    def split_versions(self, item_id):
+        self.request("DELETE", f"/Videos/{_path_id(item_id)}/AlternateSources", retry_safe=True)
 
     def refresh_item(self, item_id):
         self.request("POST", f"/Items/{_path_id(item_id)}/Refresh", params={"metadataRefreshMode": "FullRefresh", "imageRefreshMode": "FullRefresh"})
@@ -320,6 +326,9 @@ class _Tag:
 
 
 class MediaBrowserItem(NativeItemMetadata):
+    def split(self):
+        return self.library.split_item_versions(self)
+
     def __init__(self, data, library):
         self.library = library
         self.data = {}
@@ -340,7 +349,7 @@ class MediaBrowserItem(NativeItemMetadata):
         self.contentRating = self.data.get("OfficialRating")
         self.userRating = (self.data.get("UserData") or {}).get("Rating")
         self.audienceRating = self.data.get("CommunityRating")
-        self.rating = self.data.get("CriticRating")
+        self.rating = browser_rating_value(self.library, self, f"{self.library.server.type_name}_critic")
         providers = self.data.get("ProviderIds") or {}
         self.tmdb_id = _numeric_id(_provider(providers, "Tmdb", "TMDb", "tmdb"))
         self.tvdb_id = _numeric_id(_provider(providers, "Tvdb", "TVDb", "tvdb"))
@@ -643,6 +652,29 @@ class MediaBrowser(Library):
         if not poster:
             raise Failed(f"{self.server.type_label} Error: No poster found to restore")
         return poster
+
+    def split_item_versions(self, item):
+        if item.type not in ("movie", "episode", "video"):
+            raise Failed(f"{self.server.type_label} Error: Version splitting is not supported for {item.type}")
+        self.client.split_versions(item.ratingKey)
+        self._all_items = []
+        for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships"):
+            self.__dict__.pop(name, None)
+        self.filter_attr_cache.clear()
+
+    def get_tmdb_episode(self, item, show_tmdb_id):
+        if item.tmdb_id:
+            try:
+                return self.config.TMDb.get_episode_by_id(show_tmdb_id, item.tmdb_id)
+            except Failed:
+                logger.debug(f"TMDb Episode ID {item.tmdb_id} was not found for show {show_tmdb_id}; using positional lookup")
+        return self.config.TMDb.get_episode(show_tmdb_id, item.seasonNumber, item.episodeNumber)
+
+    def fetch_overlay_value(self, item, variable_name):
+        source = variable_name.removesuffix("_rating")
+        if source in BROWSER_RATING_FIELDS:
+            return browser_rating_value(self, item, source)
+        return super().fetch_overlay_value(item, variable_name)
 
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)

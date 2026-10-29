@@ -33,7 +33,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
-from modules.rating_operations import SILO_OPERATIONS, SILO_SOURCES, configure_rating_updates
+from modules.rating_operations import BROWSER_SOURCES, SILO_OPERATIONS, SILO_SOURCES, configure_rating_updates
 from modules.seerr import Seerr
 from modules.serializd import Serializd
 from modules.silo import Silo, SiloMediaServer
@@ -200,10 +200,11 @@ mass_episode_rating_options = {
     "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
     **SILO_SOURCES,
-    "clear": "Clear Silo rating",
+    **BROWSER_SOURCES,
+    "clear": "Clear native rating",
 }
 mass_rating_options = {
-    "clear": "Clear Silo rating",
+    "clear": "Clear native rating",
     "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
@@ -237,6 +238,7 @@ mass_rating_options = {
     "anidb_score": "Use AniDB Review Dcore",
     "mal": "Use MyAnimeList Rating",
     **SILO_SOURCES,
+    **BROWSER_SOURCES,
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 library_operations = {

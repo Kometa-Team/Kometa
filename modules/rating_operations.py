@@ -1,9 +1,25 @@
-"""Validate native rating targets and translate Kometa scores to Silo writes."""
+"""Validate native rating targets and translate stored server scores."""
 
 import math
 from decimal import ROUND_HALF_UP, Decimal
 
 from modules.util import Failed
+
+BROWSER_RATING_FIELDS = {
+    f"{server}_{slot}": (server, field, maximum) for server in ("jellyfin", "emby") for slot, field, maximum in (("community", "CommunityRating", 10), ("audience", "CommunityRating", 10), ("critic", "CriticRating", 100), ("user", "Rating", 10))
+}
+BROWSER_SOURCES = {source: f"Use stored {server.title()} {source.split('_', 1)[1]} rating" for source, (server, _, _) in BROWSER_RATING_FIELDS.items()}
+
+
+def browser_rating_value(library, item, source):
+    from modules import util
+
+    server, field, maximum = BROWSER_RATING_FIELDS[source]
+    if library.server.type_name != server:
+        raise Failed(f"Rating Error: {source} requires {server}")
+    value = (item.data.get("UserData") or {}).get(field) if field == "Rating" else item.data.get(field)
+    return float(value) * 10 / maximum if util.is_valid_rating(value, maximum=maximum) else None
+
 
 SILO_TARGETS = {"silo_imdb": "rating_imdb", "silo_tmdb": "rating_tmdb", "silo_tomatoes": "rating_rt_critic", "silo_tomatoesaudience": "rating_rt_audience", "silo_user": "user_rating"}
 SILO_LABELS = {"silo_imdb": "Silo IMDB", "silo_tmdb": "Silo TMDB", "silo_tomatoes": "Silo Rotten Tomatoes", "silo_tomatoesaudience": "Silo Rotten Tomatoes Audience", "silo_user": "User Rating"}
@@ -31,12 +47,20 @@ def configure_rating_updates(params, server_type, logger):
             reason = None
             if source == "clear" and server_type == "plex":
                 reason = "requires a native media-server rating target"
+            elif str(source).startswith(("jellyfin_", "emby_")) and (source not in BROWSER_RATING_FIELDS or BROWSER_RATING_FIELDS[source][0] != server_type):
+                reason = "requires the matching Jellyfin or Emby server and a supported native rating field"
+            elif source == "clear" and server_type == "jellyfin" and target in ("user", "episode_user"):
+                reason = "Jellyfin ignores null numeric personal ratings; clearing this score is not supported"
             elif str(source).startswith("silo_") and server_type != "silo":
                 reason = "requires Silo"
             elif str(source).startswith("plex_") and server_type != "plex":
                 reason = "requires Plex provider metadata"
+            elif server_type == "jellyfin" and target in ("critic", "audience", "episode_critic", "episode_audience") and source in ("lock", "unlock"):
+                reason = "Jellyfin has no individual lock for this numeric rating field"
             elif server_type == "silo" and source in ("lock", "unlock", "remove", "reset", "random"):
                 reason = "is not supported for native Silo rating writes; use clear to remove a rating"
+            if server_type == "jellyfin" and target in ("critic", "audience", "episode_critic", "episode_audience") and source in ("remove", "reset"):
+                logger.error(f"Config Error: ratings.{target} {source} lock change is unsupported on jellyfin: the rating will be cleared, but existing locks are preserved")
             if reason:
                 logger.error(f"Config Error: ratings.{target} source {source} is unsupported on {server_type}: {reason}")
             else:

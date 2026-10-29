@@ -2876,6 +2876,8 @@ class Plex(Library):
 
     def _fetch_overlay_value(self, item, variable_name):
         # Shared rating fetch for overlay text and value_filter. Returns a normalized 0-10 float or None.
+        if str(variable_name).startswith(("jellyfin_", "emby_")):
+            raise OverlayError(f"Overlay Error: {variable_name} requires the matching Jellyfin or Emby library")
         if str(variable_name).startswith("silo_"):
             raise OverlayError(f"Overlay Error: {variable_name} requires a Silo library")
         # Reads overlay_value_cache first and returns the cached value if warm, only fetching live on a miss/expiry.

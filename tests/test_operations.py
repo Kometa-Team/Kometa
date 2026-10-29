@@ -1349,3 +1349,18 @@ def test_native_silo_rating_operations_write_without_plex_batches(monkeypatch):
     assert library.update_native_ratings.call_args_list[0].args == (item, {"rating_imdb": 8.2})
     assert library.update_native_ratings.call_args_list[1].args == (item, {"user_rating": 4})
     library.Plex.batchMultiEdits.assert_not_called()
+
+
+def test_failed_duplicate_split_does_not_prevent_other_splits_or_mapping_refresh(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_title_test_library([])
+    library.split_duplicates = True
+    bad = SimpleNamespace(title="Bad", split=MagicMock(side_effect=ops_module.Failed("forbidden")))
+    good = SimpleNamespace(title="Good", split=MagicMock())
+    library.search.return_value = [bad, good]
+    library.refresh_item_cache_and_mappings.return_value = []
+    Operations(config=MagicMock(), library=library).run_operations()
+    good.split.assert_called_once()
+    library.refresh_item_cache_and_mappings.assert_called_once()
+    logger.error.assert_any_call("Bad | Splitting failed: forbidden")

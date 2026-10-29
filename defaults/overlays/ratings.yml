@@ -103,13 +103,13 @@ templates:
             value: mal
           - rating<<rating_num>>: [mdb, mdb_average]
             value: mdb
-          - rating<<rating_num>>: [user, silo_user]
+          - rating<<rating_num>>: [user, silo_user, jellyfin_user, emby_user]
             value: star
           - rating<<rating_num>>: [floppy]
             value: floppy
-          - rating<<rating_num>>: [critic]
+          - rating<<rating_num>>: [critic, jellyfin_critic, emby_critic]
             value: critic
-          - rating<<rating_num>>: [audience]
+          - rating<<rating_num>>: [audience, jellyfin_audience, jellyfin_community, emby_audience, emby_community]
             value: audience
       mdblist_top:
         conditions:
@@ -134,7 +134,7 @@ templates:
       plex_all:
         conditions:
           - image_level: [Rotten, Fresh]
-            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, silo_imdb, plex_tmdb, silo_tmdb, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience]
+            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, silo_imdb, plex_tmdb, silo_tmdb, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience, jellyfin_community, jellyfin_audience, jellyfin_critic, jellyfin_user, emby_community, emby_audience, emby_critic, emby_user]
             value: true
       run_this:
         default: true
@@ -149,10 +149,10 @@ templates:
             rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
             value: true
           - builder_level: episode
-            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb, serializd, floppy]
+            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb, serializd, floppy, jellyfin_community, jellyfin_audience, jellyfin_critic, jellyfin_user, emby_community, emby_audience, emby_critic, emby_user]
             value: false
           - builder_level: season
-            rating<<rating_num>>.not: [user, tmdb]
+            rating<<rating_num>>.not: [user, tmdb, jellyfin_community, jellyfin_audience, jellyfin_critic, jellyfin_user, emby_community, emby_audience, emby_critic, emby_user]
             value: false
           - image_level: Top
             rating<<rating_num>>_image: [anidb, letterboxd, omdb, mdb, tmdb, mal, star, critic, audience]

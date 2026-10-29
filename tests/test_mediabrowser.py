@@ -1372,3 +1372,61 @@ def test_user_rating_write_preserves_fresh_playback_state(kind):
     assert result == {**state, "Rating": 7.5}
     assert session.calls[1]["json"] == result
     assert session.calls[1]["url"].endswith("/Users/user-1/Items/1/UserData" if kind == "emby" else "/UserItems/1/UserData")
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_split_versions_calls_native_endpoint_and_discards_stale_caches(kind):
+    session = FakeSession([FakeResponse(None, status_code=204)])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    library._all_items = ["stale"]
+    library._search_details = {"item-1": "stale"}
+    library._media_details_loaded = {"item-1"}
+    library._collection_search_memberships = {"item-1": ["Example"]}
+    library.filter_attr_cache["stale"] = ["stale"]
+    item = MediaBrowserItem({"Id": "item-1", "Type": "Movie", "Name": "Example"}, library)
+    item.split()
+    assert session.calls[0]["method"] == "DELETE"
+    assert session.calls[0]["url"].endswith("/Videos/item-1/AlternateSources")
+    assert library._all_items == []
+    assert "_search_details" not in library.__dict__
+    assert "_media_details_loaded" not in library.__dict__
+    assert "_collection_search_memberships" not in library.__dict__
+    assert library.filter_attr_cache == {}
+
+
+def test_jellyfin_personal_rating_clear_never_sends_ignored_null():
+    session = FakeSession([])
+    with pytest.raises(Failed, match="Clearing numeric personal ratings"):
+        MediaBrowserClient(_server("jellyfin"), session=session).update_user_data("item-1", {"Rating": None})
+    assert session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_native_rating_overlay_uses_stored_value_without_provider_calls(kind):
+    session = FakeSession([])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "ep-1", "Type": "Episode", "CriticRating": 75}, library)
+    assert library.fetch_overlay_value(item, f"{kind}_critic_rating") == 7.5
+    assert session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("episode_id", [None, "123"])
+def test_tmdb_episode_metadata_uses_native_provider_id_with_position_fallback(kind, episode_id):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    library.config = SimpleNamespace(TMDb=MagicMock())
+    item = MediaBrowserItem({"Id": "episode", "Type": "Episode", "ProviderIds": {"Tmdb": episode_id}, "IndexNumber": 2, "ParentIndexNumber": 1}, library)
+    if episode_id:
+        library.config.TMDb.get_episode_by_id.side_effect = Failed("not found")
+    assert library.get_tmdb_episode(item, 10) is library.config.TMDb.get_episode.return_value
+    library.config.TMDb.get_episode.assert_called_once_with(10, 1, 2)
+    if episode_id:
+        library.config.TMDb.get_episode_by_id.assert_called_once_with(10, 123)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_item_critic_rating_facade_uses_kometa_scale_and_preserves_raw_api_value(kind):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    item = MediaBrowserItem({"Id": "movie", "Type": "Movie", "CriticRating": 75}, library)
+    assert item.rating == 7.5
+    assert item.data["CriticRating"] == 75

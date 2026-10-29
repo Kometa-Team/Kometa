@@ -88,7 +88,7 @@ def test_unsupported_operations_reported_before_item_processing(kind):
         "mass_square_art_update": {"source": "tmdb"},
     }
     configure_metadata_operations(params, kind, logger)
-    assert params["split_duplicates"] is False
+    assert params["split_duplicates"] is (kind != "silo")
     assert params["mass_collection_mode"] is None
     assert params["mass_poster_update"]["sources"] == ["tmdb"]
     if kind == "silo":
@@ -212,3 +212,54 @@ def test_silo_release_updates_use_native_date_for_item_type(level, date_field):
     apply_edit(library, item, {"originallyAvailableAt": datetime(2020, 1, 2)})
     assert library.client.update_metadata.call_args.args[1] == {date_field: "2020-01-02"}
     assert item.originallyAvailableAt == datetime(2020, 1, 2)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_added_date_clear_is_reported_before_processing_and_guarded(kind):
+    params = {"mass_added_at_update": ["remove", "reset", datetime(2020, 1, 2)]}
+    logger = MagicMock()
+    configure_metadata_operations(params, kind, logger)
+    assert params["mass_added_at_update"] == [datetime(2020, 1, 2)]
+    assert logger.error.call_count == 2
+    library, item = native_item(kind)
+    from modules.util import Failed
+
+    with pytest.raises(Failed, match="Clearing the added date"):
+        apply_edit(library, item, {"addedAt": None}, control="reset")
+    library.client.update_item.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_rating_and_original_title_locks_match_native_server_enum(kind):
+    library, item = native_item(kind)
+    apply_edit(library, item, {"originalTitle": "Original", "rating": 7.5, "audienceRating": 8.2})
+    payload = library.client.update_item.call_args.args[1]
+    native_locks = set(payload.get("LockedFields", []))
+    assert bool(native_locks & {"OriginalTitle", "CommunityRating", "CriticRating"}) is (kind == "emby")
+    assert payload["CriticRating"] == 75
+    assert payload["CommunityRating"] == 8.2
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("episodes", [False, True])
+def test_native_stored_rating_sources_run_through_operations_without_provider_requests(kind, episodes, monkeypatch):
+    from modules import operations as operations_module
+    from modules.operations import Operations
+    from tests.test_operations import make_mass_edit_library
+
+    context, item = native_item(kind, CommunityRating=7.2, Type="Episode" if episodes else "Movie")
+    root = native_item(kind, Type="Series")[1] if episodes else item
+    context.client.update_item.side_effect = lambda key, fields: {**item.data, **fields}
+    option = "mass_episode_critic_rating_update" if episodes else "mass_critic_rating_update"
+    library = make_mass_edit_library([root], **{option: [f"{kind}_community"]})
+    library.server = context.server
+    library.client = context.client
+    library.is_movie = not episodes
+    library.is_show = episodes
+    library.cached_item_subitems.return_value = [item]
+    config = MagicMock()
+    monkeypatch.setattr(operations_module, "logger", MagicMock())
+    Operations(config, library).run_operations()
+    assert library.client.update_item.call_args.args[1]["CriticRating"] == 72
+    config.TMDb.get_item.assert_not_called()
+    library.Plex.batchMultiEdits.assert_not_called()

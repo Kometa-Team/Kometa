@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add native Jellyfin/Emby version splitting and stored community, critic, and personal rating sources for mass updates and rating overlays, including TMDb episode lookup.
+
 - Support native Silo/Jellyfin/Emby mass metadata writes, mappings, field controls, episode ratings, artwork, and recursive native metadata snapshots, with preflight reports for unsupported options.
 
 - Add explicit Silo provider and profile rating targets to mass_metadata_update, with source fallbacks, score conversion, clearing, and cross-server validation of rating targets and sources.
@@ -63,6 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
 
 ### Fixed
+
+- Respect Jellyfin/Emby differences in supported metadata locks and reject added-date clears and Jellyfin numeric personal-rating clears that the APIs cannot apply.
 
 - Retry Jellyfin/Emby response-body connection resets wrapped as chunked-encoding errors for retry-safe requests, including library item listing.
 

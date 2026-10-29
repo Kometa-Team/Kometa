@@ -21,7 +21,7 @@ Provider values use their existing Kometa scales. Jellyfin/Emby critic scores co
 
 ## Lock and clear controls
 
-Jellyfin and Emby support locks for the corresponding native fields, including genres, classifications, original titles, studios, and community/critic ratings. Existing unrelated locks are preserved. `remove` clears and locks a supported field, while `reset` clears and unlocks it. Native date fields do not expose those individual locks: lock-only controls are rejected; remove/reset clear the value and report that the lock component is not supported. Numeric personal ratings have no field locks; use `clear` to remove a personal rating.
+Both servers support individual locks for genres, classifications, studios, and tags. Emby additionally supports original-title and community/critic-rating locks; Jellyfin does not expose those lock-field names. Unsupported lock-only requests are rejected during configuration. Existing unrelated locks are preserved. `remove` clears and locks a supported field, while `reset` clears and unlocks it. Native date fields do not expose those individual locks: lock-only controls are rejected. For release dates and other writable values without individual locks, remove/reset clear the value and report that the lock component is not supported. Added dates can be replaced, but remove/reset are rejected rather than claiming to clear a date that the server retains. Numeric personal ratings have no field locks. Emby accepts `clear`; Jellyfin ignores null numeric personal scores, so its `user` and `episode_user` clear operations are rejected during configuration. Community and critic scores can still be cleared on both servers.
 
 Silo's API exposes numeric lock identifiers without a field-name mapping used by this adapter. Kometa preserves those identifiers. Lock-only changes are reported as not supported. For ordinary metadata fields, remove/reset clear the value and report that the lock component is not supported. Silo's explicit rating targets instead use `clear` and reject the Plex-style remove/reset controls.
 
@@ -38,3 +38,36 @@ Native backups contain a `native_metadata` section, grouped by server/library an
 These are native metadata snapshots, not Plex-compatible metadata files or automatic restore instructions. Artwork bytes and playback history are not included. The output avoids copying stream delivery URLs or authentication headers. Existing unrelated sections of the backup file are preserved.
 
 The mappings follow the [Silo API contract used by the adapter](silo.md), [Emby item metadata](https://dev.emby.media/reference/pluginapi/MediaBrowser.Model.Dto.BaseItemDto.html), [Emby lock fields](https://dev.emby.media/reference/pluginapi/MediaBrowser.Model.Entities.MetadataFields.html), and [Jellyfin item metadata](https://kotlin-sdk.jellyfin.org/dokka/jellyfin-model/org.jellyfin.sdk.model.api/-base-item-dto/index.html).
+
+## Jellyfin and Emby API audit
+
+The metadata mappings use native item fields: `Genres`, `OfficialRating`, `OriginalTitle`, `Studios`, `PremiereDate`, `DateCreated`, `Tags`, `CommunityRating`, and `CriticRating`. Metadata writes preserve the remaining item document and unrelated locks. Personal scores go through user-data endpoints and preserve playback and favorite state. Episode ratings use the same native fields, with TMDb episode provider IDs or a positional fallback when the external score is requested. Poster/background/logo/square artwork uses Primary/Backdrop/Logo/Thumb image endpoints. Backups use the native snapshot format described above.
+
+The existing generic rating **targets** remain `audience` (community score), `critic`, `user`, and their `episode_` counterparts. These servers do not expose separate writable IMDb/TMDb rating slots. `CustomRating` is a parental classification override, not a numeric rating; likes/dislikes and favorites are separate user-state fields and are not automatically converted into scores.
+
+The following additional rating **sources** read the configured server's stored scores:
+
+| Jellyfin source | Emby source | Native value / Kometa scale |
+| :--- | :--- | :--- |
+| `jellyfin_community` | `emby_community` | `CommunityRating`, 0–10 |
+| `jellyfin_audience` | `emby_audience` | Alias for the community source |
+| `jellyfin_critic` | `emby_critic` | `CriticRating`, 0–100 converted to 0–10 |
+| `jellyfin_user` | `emby_user` | Numeric personal Rating, 0–10 |
+
+These sources work in mass rating updates and the ratings overlay default. Sources require the matching server type; unsupported cross-server sources are rejected before item processing. Missing or invalid scores do not overwrite the destination. Zero is preserved as a valid numeric score. Provider identity is not inferred from a stored community/critic value, so overlay defaults use generic audience/critic artwork rather than claiming a particular provider.
+
+```yaml
+operations:
+  mass_metadata_update:
+    ratings:
+      critic: imdb
+      audience: tmdb
+      user: jellyfin_community
+      episode_audience: tmdb
+```
+
+### Version splitting
+
+`split_duplicates: true` is supported by the Jellyfin and Emby adapters using `DELETE /Videos/{itemId}/AlternateSources`. This separates alternate versions; it does not delete media files. Failed splits are reported with the item title while other items continue. After a successful split, Kometa reloads items and provider-ID mappings and discards stale search/detail caches. Server permissions and native grouping rules still apply. Silo splitting remains unsupported because its repair API requires explicit file and target selections.
+
+This audit follows [Jellyfin item updates](https://github.com/jellyfin/jellyfin/blob/master/Jellyfin.Api/Controllers/ItemUpdateController.cs), [Jellyfin lock fields](https://github.com/jellyfin/jellyfin/blob/master/MediaBrowser.Model/Entities/MetadataField.cs), [Jellyfin user-data updates](https://github.com/jellyfin/jellyfin/blob/master/Emby.Server.Implementations/Library/UserDataManager.cs), [Emby item metadata](https://dev.emby.media/reference/pluginapi/MediaBrowser.Model.Dto.BaseItemDto.html), [Emby user-data updates](https://dev.emby.media/reference/RestAPI/PlaystateService/postUsersByUseridItemsByItemidUserdata.html), and [Emby version splitting](https://dev.emby.media/reference/RestAPI/VideosService.html).

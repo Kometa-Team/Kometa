@@ -12,7 +12,7 @@ from plexapi.video import Movie, Show
 from modules import anidb, plex, timings, tvdb, util
 from modules.media_server import Capability
 from modules.native_metadata import apply_edit, backup_metadata, current_value, is_native
-from modules.rating_operations import SILO_OPERATIONS, update_silo_ratings
+from modules.rating_operations import BROWSER_RATING_FIELDS, SILO_OPERATIONS, browser_rating_value, update_silo_ratings
 from modules.request import urlparse
 from modules.util import CollectionNotFound, Failed, LimitReached
 
@@ -321,10 +321,15 @@ class Operations:
         refreshed_items = None
         if self.library.split_duplicates:
             duplicate_items = self.library.search(**{"duplicate": True})
+            split_count = 0
             for item in duplicate_items:
-                item.split()
-                logger.info(f"{item.title[:25]:<25} | Splitting")
-            if duplicate_items:
+                try:
+                    item.split()
+                    split_count += 1
+                    logger.info(f"{item.title[:25]:<25} | Splitting")
+                except Failed as error:
+                    logger.error(f"{item.title} | Splitting failed: {error}")
+            if split_count:
                 refreshed_items = self.library.refresh_item_cache_and_mappings()
 
         if self.library.update_blank_track_titles:
@@ -739,7 +744,9 @@ class Operations:
                                 break
                             else:
                                 try:
-                                    if option == "random":
+                                    if option in BROWSER_RATING_FIELDS:
+                                        found_rating = browser_rating_value(self.library, item, option)
+                                    elif option == "random":
                                         found_rating = _random_rating(current)
                                     elif option == "tmdb":
                                         found_rating = tmdb_obj().vote_average  # noqa
@@ -1548,17 +1555,21 @@ class Operations:
                                     else:
                                         try:
                                             try:
-                                                tmdb_item = None if option == "random" else tmdb_obj()
+                                                tmdb_item = None if option == "random" or option in BROWSER_RATING_FIELDS else tmdb_obj()
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
-                                            if str(option).startswith("plex"):
+                                            if option in BROWSER_RATING_FIELDS:
+                                                found_rating = browser_rating_value(self.library, ep, option)
+                                            elif str(option).startswith("plex"):
                                                 ratings = self.library.get_ratings(ep)
                                                 try:
                                                     found_rating = ratings[option]  # noqa
                                                 except KeyError:
                                                     found_rating = None
-                                            if option == "random":
+                                            if option in BROWSER_RATING_FIELDS:
+                                                pass
+                                            elif option == "random":
                                                 found_rating = _random_rating(current)
                                             elif tmdb_item and option == "tmdb":
                                                 try:
