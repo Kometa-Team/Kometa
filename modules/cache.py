@@ -1124,6 +1124,16 @@ class Cache:
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
+                # TMDb can move an episode to different coordinates after it was cached.
+                cursor.execute(
+                    "DELETE FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ? AND NOT (tmdb_id = ? AND season_number = ? AND episode_number = ?)",
+                    (obj.episode_id, language, obj.tmdb_id, obj.season_number, obj.episode_number),
+                )
+                # Do not retain external IDs belonging to a different episode at the new position.
+                cursor.execute(
+                    "DELETE FROM tmdb_episode_data2 WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ? AND episode_id != ?",
+                    (obj.tmdb_id, obj.season_number, obj.episode_number, language, obj.episode_id),
+                )
                 cursor.execute("INSERT OR IGNORE INTO tmdb_episode_data2(tmdb_id, season_number, episode_number, language) VALUES(?, ?, ?, ?)", (obj.tmdb_id, obj.season_number, obj.episode_number, language))
                 update_sql = (
                     "UPDATE tmdb_episode_data2 SET episode_id = ?, title = ?, air_date = ?, overview = ?, still_url = ?, "
