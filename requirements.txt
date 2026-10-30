@@ -16,7 +16,7 @@ beautifulsoup4==4.15.0
     # via
     #   fastfingertips
     #   letterboxdpy
-certifi==2026.7.22
+certifi==2026.10.18
     # via
     #   apprise
     #   curl-cffi
@@ -39,7 +39,7 @@ fastfingertips==0.1.4
     # via letterboxdpy
 gitdb==4.0.12
     # via gitpython
-gitpython==3.2.0
+gitpython==3.2.1
     # via kometa
 h11==0.16.0
     # via httpcore
@@ -74,7 +74,7 @@ packaging==26.3
     # via kometa
 pathvalidate==3.3.1
     # via kometa
-pillow==12.3.0
+pillow==13.0.0
     # via kometa
 plexapi==4.18.3
     # via kometa
@@ -127,7 +127,7 @@ schedule==1.2.2
     # via kometa
 serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483
     # via kometa
-setuptools==84.0.0
+setuptools==84.1.0
     # via
     #   kometa
     #   tmdbapis

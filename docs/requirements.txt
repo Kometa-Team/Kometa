@@ -8,7 +8,7 @@ backrefs==8.1
     # via mkdocs-material
 bracex==3.1
     # via wcmatch
-certifi==2026.7.22
+certifi==2026.10.18
     # via
     #   httpcore
     #   httpx
