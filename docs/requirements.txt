@@ -31,5 +31,5 @@ tomli==2.5.0
     # via zensical
 wcmatch==11.1
     # via kometa-docs-include
-zensical==0.0.72
+zensical==0.0.73
     # via kometa-docs-include

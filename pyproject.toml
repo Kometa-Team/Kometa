@@ -137,7 +137,7 @@ docs = [
     "pyyaml==6.0.3",
     "tomli==2.5.0",
     "wcmatch==11.1",
-    "zensical==0.0.72",
+    "zensical==0.0.73",
 ]
 
 dev = [
