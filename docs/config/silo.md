@@ -35,7 +35,7 @@ libraries:
 
 `Films` uses the Silo server named `Shelf`. Add a `plex` block when another library in the same file uses Plex.
 
-With Kometa's cache enabled, resolved Silo TMDb, TVDb, and IMDb IDs persist between runs and refresh according to `cache_expiration`. Kometa still lists the catalog each run, but avoids individual detail requests for entries with fresh cached IDs. Disabling the cache restores per-run ID lookups.
+With Kometa's cache enabled, resolved Silo TMDb, TVDb, and IMDb IDs persist between runs and refresh according to `cache_expiration`. Kometa lists each requested media-type catalog once per run and reuses it across dynamic defaults and local searches, including season and episode catalogs. Explicit reloads refresh the requested catalog. Fresh cached IDs avoid individual detail requests. Disabling the cache restores per-run ID lookups.
 
 Collection summary updates use Silo's native description field. Kometa does not add its automatic collection label on Silo. Collection `sort_title` is skipped with a warning. Explicit collection label, content rating, Plex collection mode, filtering, and visibility options are not supported.
 

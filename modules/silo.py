@@ -844,9 +844,15 @@ class Silo(Library):
 
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)
-        if not builder_level and self._all_items and not load:
-            return list(self._all_items)
         media_type = _media_type(self, builder_level)
+        catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        if load and not builder_level:
+            catalogs.clear()
+        if not load and media_type in catalogs:
+            return list(catalogs[media_type])
+        if not builder_level and self._all_items and not load:
+            catalogs[media_type] = list(self._all_items)
+            return list(self._all_items)
         label = _load_label(self, builder_level)
         logger.info(f"Loading All {label} from Library: {self.name}")
         items = []
@@ -863,6 +869,7 @@ class Silo(Library):
                 logger.exorcise()
                 logger.info(f"Loaded: {len(items)}/{overall}")
         logger.info(f"Loaded {len(items)} {label}")
+        catalogs[media_type] = list(items)
         if not builder_level:
             self._all_items = list(items)
         return items

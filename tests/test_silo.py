@@ -1785,3 +1785,37 @@ def test_silo_show_episodes_are_gathered_from_its_seasons():
     library.list_seasons.return_value = [season]
     assert show.episodes() == ["episode"]
     library.list_episodes.assert_called_once_with(season)
+
+
+@pytest.mark.parametrize("level", ["episode", "season"])
+def test_child_catalog_is_reused_between_local_searches(level):
+    library = _library(MagicMock())
+    library.client.catalog_pages.return_value = [([{"content_id": "child", "type": level, "title": "One"}], 1)]
+    library._item_with_ids = lambda row: SiloItem(row, library)
+    first = list(library._local_search_items(builder_level=level, require_details=False))
+    second = list(library._local_search_items(builder_level=level, require_details=False))
+    assert second == first
+    assert second[0] is first[0]
+    library.client.catalog_pages.assert_called_once_with(library.library_id, media_type=level)
+    # Callers may sort or clear their returned list without altering the cached catalog.
+    library.get_all(builder_level=level).clear()
+    assert library.get_all(builder_level=level) == first
+
+
+def test_empty_silo_catalog_is_cached_and_can_be_explicitly_refreshed():
+    library = _library(MagicMock())
+    library.client.catalog_pages.return_value = [([], 0)]
+    assert library.get_all(builder_level="episode") == []
+    assert library.get_all(builder_level="episode") == []
+    assert library.client.catalog_pages.call_count == 1
+    library.get_all(builder_level="episode", load=True)
+    assert library.client.catalog_pages.call_count == 2
+
+
+def test_forced_root_refresh_invalidates_child_catalogs():
+    library = _library(MagicMock())
+    library.client.catalog_pages.return_value = [([], 0)]
+    library.get_all(builder_level="episode")
+    library.get_all(load=True)
+    library.get_all(builder_level="episode")
+    assert library.client.catalog_pages.call_count == 3
