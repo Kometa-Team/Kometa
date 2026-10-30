@@ -119,7 +119,7 @@ kometa-docs-include = { path = "docs/docs-extension", editable = true }
 
 [dependency-groups]
 # uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
-bootstrap = ["uv==0.13.5"]
+bootstrap = ["uv==0.13.6"]
 
 # Documentation builds only; excluded from application/runtime installs.
 docs = [
