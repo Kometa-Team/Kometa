@@ -7,19 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.4] - 2026-10-31
+
 ### Docs
 
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
+- Add Release Notes to Kometa website, available under `Useful Links` section of navigation
+
+### Removed
+
+- Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 
 ### Added
 
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
-- Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
-- Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
 - Add library schedule modes for full, added, changed, alphabetical, and explicitly selected items, plus a `--mode` / `KOMETA_MODE` override for a run.
-- Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 - Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
@@ -531,8 +535,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...HEAD
-[v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.3
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.4...HEAD
+[v2.5.4]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...v2.5.4
+[v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.2...v2.5.3
 [v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...v2.5.2
 [v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
