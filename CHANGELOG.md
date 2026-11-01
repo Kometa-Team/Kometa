@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid warning about a missing optional `sort_by` when Letterboxd user-page builders use the default sort. #3814
+
 ## [v2.5.4] - 2026-10-31
 
 ### Docs
