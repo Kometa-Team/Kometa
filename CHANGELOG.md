@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid warning about a missing optional `sort_by` when Letterboxd user-page builders use the default sort. #3814
 - Reject items without a release or first-air date when applying numeric `tmdb_year` filters instead of aborting missing-item processing. #3815
+- Apply IMDb keyword filters to missing movies and shows before reporting them or sending them to Radarr/Sonarr. #3816
 
 ## [v2.5.4] - 2026-10-31
 
