@@ -21,6 +21,9 @@ class EmptyCollection(SimpleNamespace):
 
 
 def _load_plex(monkeypatch):
+    # Importing the isolated module also replaces modules.plex on the parent package.
+    # Restore that reference along with sys.modules so later tests patch the real module.
+    monkeypatch.delattr(sys.modules["modules"], "plex", raising=False)
     monkeypatch.delitem(sys.modules, "modules.plex", raising=False)
     monkeypatch.delitem(sys.modules, "modules.builder", raising=False)
     monkeypatch.delitem(sys.modules, "modules.util", raising=False)
