@@ -856,7 +856,7 @@ class Letterboxd:
     def _validate_single_user_page(self, err_type, letterboxd_dict, page_type, language):
         dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
         incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", datatype="bool", default=True) if "incremental" in dict_methods else True
-        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest")
+        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest") if "sort_by" in dict_methods else "release_date_newest"
 
         if incremental:
             self._warn_once((page_type, "incremental"), f"{err_type} Warning: letterboxdpy does not expose stable incremental state for Letterboxd {page_type}; disabling incremental parsing.")

@@ -885,7 +885,8 @@ class TMDb:
             elif filter_attr == "tmdb_vote_average":
                 attr = item.vote_average
             elif filter_attr == "tmdb_year":
-                attr = item.release_date.year if is_movie else item.first_air_date.year
+                item_date = item.release_date if is_movie else item.first_air_date
+                attr = item_date.year if item_date else None
             if util.is_number_filter(attr, modifier, filter_data):
                 return False
         elif filter_attr in ["tmdb_genre", "tmdb_keyword", "origin_country"]:
