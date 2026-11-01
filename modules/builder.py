@@ -5437,7 +5437,7 @@ class CollectionBuilder:
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
                         or_result = False
                 if imdb_f:
-                    if not imdb_info and self.check_imdb_filters(imdb_info, imdb_f) is False:
+                    if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
                 if or_result:
                     final_return = True
