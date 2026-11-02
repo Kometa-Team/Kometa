@@ -73,6 +73,8 @@ Silo smart collections accept native query documents under `smart_filter`. Komet
 
 Network dynamic collections discover networks from native show metadata and use Silo network filters; they do not require a Plex TV agent.
 
+Episode collections accept `type: episodes` (or `episode`) within a show library. `episode_air_date` matches episode air dates, with release dates as a fallback. On show or season selectors it matches any dated child episode, using the shared episode catalog. These filters are rebuilt locally when they cannot be expressed as a native smart query.
+
 ### Search and filter fields
 
 | Metadata | Supported fields |

@@ -872,6 +872,8 @@ class Silo(Library):
         self.require(Capability.GET_ALL_ITEMS)
         media_type = _media_type(self, builder_level)
         catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        if load:
+            self.__dict__.pop("_episode_air_date_index", None)
         if load and not builder_level:
             catalogs.clear()
         if not load and media_type in catalogs:
@@ -1226,7 +1228,9 @@ class Silo(Library):
         if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
             definition = uri_args["local_collection_search"]
             predicate = self.validate_collection_search(definition)
-            items = [item for item in self._local_search_items(require_details=requires_details(definition)) if predicate(item)]
+            scope = {"episodes": "episode", "seasons": "season"}.get(definition.get("type"), definition.get("type"))
+            level = scope if scope in ("episode", "season") else None
+            items = [item for item in self._local_search_items(builder_level=level, require_details=requires_details(definition)) if predicate(item)]
             field, _, direction = definition.get("sort_by", "title.asc").rpartition(".")
 
             def sort_value(item):
@@ -1266,7 +1270,7 @@ class Silo(Library):
         if not isinstance(definition, dict) or set(definition) - {"all", "any", "sort_by", "limit", "type", "validate"}:
             raise BuilderValidationError("Silo Error: Unsupported local collection search options")
         scope = definition.get("type")
-        if scope and scope not in (("movie", "movies") if self.is_movie else ("series", "show", "shows")):
+        if scope and scope not in (("movie", "movies") if self.is_movie else ("series", "show", "shows", "episode", "episodes", "season", "seasons")):
             raise BuilderValidationError(f"Silo Error: Search type {scope} does not match this library")
         field, _, order = str(definition.get("sort_by", "title.asc")).rpartition(".")
         if field not in SORT_FIELDS or order not in ("asc", "desc"):
@@ -1287,6 +1291,20 @@ class Silo(Library):
             return value
         compile_selector({name: value})
         return value
+
+    def episode_air_dates(self, item):
+        if "_episode_air_date_index" not in self.__dict__:
+            index = {}
+            for episode in self.get_all(builder_level="episode", ignore_schedule_scope=True):
+                date = episode.data.get("air_date") or episode.data.get("release_date")
+                series = episode.data.get("series_id")
+                if date and series is not None:
+                    index.setdefault((str(series), None), []).append(date)
+                    index.setdefault((str(series), episode.seasonNumber), []).append(date)
+            self._episode_air_date_index = index
+        series = item.data.get("series_id") if item.type == "season" else item.content_id
+        season = item.seasonNumber if item.type == "season" else None
+        return self._episode_air_date_index.get((str(series), season), [])
 
     def _local_search_items(self, builder_level=None, ignore_schedule_scope=False, require_details=True):
         if not hasattr(self, "_search_details"):

@@ -24,7 +24,7 @@ TEXT_FIELDS = {
     "show_status": "show_status",
 }
 TAG_FIELDS = {"genre": "genres", "studio": "studios", "network": "networks", "country": "countries", "origin_country": "countries", "keyword": "keywords", "folder": "folder_paths"}
-DATE_FIELDS = {"release": "release_date", "added": "added_at", "first_episode_aired": "first_air_date", "last_episode_aired": "last_air_date", "last_played": "viewed_at"}
+DATE_FIELDS = {"episode_air_date": "air_date", "release": "release_date", "added": "added_at", "first_episode_aired": "first_air_date", "last_episode_aired": "last_air_date", "last_played": "viewed_at"}
 NUMBER_FIELDS = {
     "year",
     "decade",
@@ -88,7 +88,7 @@ FIELD_TYPES = {
     "release_type": "text",
 }
 FIELD_TYPES.update({"type": "tags", "status": "tags", "show_status": "tags"})
-SORT_FIELDS = {field: field for field in (*TEXT_FIELDS, *NUMBER_FIELDS, "content_rating", "original_language", "release", "added", "last_played")}
+SORT_FIELDS = {field: field for field in (*TEXT_FIELDS, *NUMBER_FIELDS, "content_rating", "original_language", "release", "added", "last_played", "episode_air_date")}
 DETAIL_FIELDS = (
     set(TRACK_FIELDS)
     | BOOLEAN_FIELDS
@@ -187,6 +187,12 @@ def values(item, field):
         if TAG_FIELDS[field] not in data:
             return None
         return [name for value in _list(data.get(TAG_FIELDS[field])) if _present(name := value.get("name") if isinstance(value, dict) else value)]
+    if field == "episode_air_date":
+        if item.type == "episode":
+            return _list(data.get("air_date") or data.get("release_date"))
+        return item.library.episode_air_dates(item)
+    if field == "release" and item.type == "episode":
+        return _list(data.get("air_date") or data.get("release_date"))
     if field in DATE_FIELDS:
         return _list((data.get("sort_metrics") or {}).get("viewed_at") if field == "last_played" else data.get(DATE_FIELDS[field]))
     if field == "original_language":

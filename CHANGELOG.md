@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Support Silo episode search scopes and episode_air_date selectors for recently aired episode collections and show status overlays.
+
 - Allow network dynamic collections on Silo using native network metadata instead of rejecting its non-Plex agent.
 
 - Persist Silo catalogs and full item details between runs using cache expiration, with scoped data, explicit refreshes, and invalidation after item writes.

@@ -1902,3 +1902,34 @@ def test_silo_persistent_details_expire_and_force_reload_bypasses_cache(tmp_path
     assert library._item_detail("one")["title"] == "Expired"
     assert len(session.calls) == 3
     library.config.Cache.connection.close()
+
+
+def test_episode_scope_and_show_air_date_selectors_share_episode_catalog():
+    from datetime import datetime, timezone
+
+    library = _library(MagicMock(), is_movie=False, is_show=True, type="Show")
+    recent = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    shows = [SiloItem({"content_id": name, "type": "series", "title": name}, library) for name in ("recent-show", "old-show")]
+    library._all_items = shows
+    rows = [
+        {"content_id": "recent-episode", "type": "episode", "series_id": "recent-show", "season_number": 1, "air_date": recent},
+        {"content_id": "old-episode", "type": "episode", "series_id": "old-show", "season_number": 1, "release_date": "2000-01-01"},
+        {"content_id": "undated-episode", "type": "episode", "series_id": "old-show", "season_number": 2},
+    ]
+    library.client.catalog_pages.return_value = [(rows, len(rows))]
+    library._item_with_ids = lambda row: SiloItem(row, library)
+    query = {"type": "episodes", "sort_by": "release.desc", "limit": 10, "any": {"episode_air_date": 7}}
+    built = library.build_local_search({"local_collection_search": query})
+    assert [item.content_id for item in library.fetchItems(built[2])] == ["recent-episode"]
+    show_query = {"any": {"episode_air_date": 7}, "sort_by": "title.asc"}
+    assert [item.content_id for item in library.fetchItems({"local_collection_search": show_query})] == ["recent-show"]
+    library.client.catalog_pages.assert_called_once_with(library.library_id, media_type="episode")
+    library.client.get_item.assert_not_called()
+    season = SiloItem({"content_id": "season", "type": "season", "series_id": "recent-show", "season_number": 1}, library)
+    assert library.episode_air_dates(season) == [recent]
+
+
+def test_episode_search_scope_is_rejected_for_movie_library():
+    library = _library(MagicMock())
+    with pytest.raises(Failed, match="does not match this library"):
+        library.validate_collection_search({"type": "episodes", "any": {"episode_air_date": 7}})
