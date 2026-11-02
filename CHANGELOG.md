@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reuse cached episode catalogs and details for Jellyfin/Emby show and season technical filters instead of repeatedly listing each parent’s episodes.
+
 - Persist Jellyfin/Emby catalogs and full media details across runs with cache expiration, scoped identities, forced refreshes, and invalidation after media writes.
 
 - Reuse completed Jellyfin/Emby media-detail lookups during builder filtering, including shows without media sources, instead of repeating requests for every technical filter.

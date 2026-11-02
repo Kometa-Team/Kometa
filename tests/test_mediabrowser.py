@@ -1678,3 +1678,41 @@ def test_collection_metadata_and_artwork_keep_persistent_media_cache(tmp_path, m
     assert cache.query_native_response(scope, "catalog:Movie") == []
     assert cache.query_native_response(scope, "item:one") == {"Name": "Media"}
     cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_nested_aspect_filters_reuse_episode_catalog_and_media_details(kind):
+    from datetime import datetime, timezone
+
+    rows = [
+        {"Id": "one", "Type": "Episode", "SeriesId": "show", "SeasonId": "season", "MediaStreams": [{"Type": "Video", "AspectRatio": "4:3"}]},
+        {"Id": "two", "Type": "Episode", "SeriesId": "show", "SeasonId": "season", "MediaStreams": [{"Type": "Video", "AspectRatio": "16:9"}]},
+        {"Id": "other", "Type": "Episode", "SeriesId": "other-show", "SeasonId": "other-season", "MediaStreams": [{"Type": "Video", "AspectRatio": "16:9"}]},
+    ]
+    session = FakeSession([FakeResponse({"Items": rows, "TotalRecordCount": len(rows)})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    show = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Andor"}, library)
+    season = MediaBrowserItem({"Id": "season", "Type": "Season", "Name": "Season 1"}, library)
+    for parent in (show, season):
+        for aspect, expected in ((1.33, True), (1.78, True), (1.66, False)):
+            assert library.check_filters(parent, [("episodes", {"aspect": aspect, "percentage": 50})], datetime.now(timezone.utc)) is expected
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_nested_episode_parent_fallback_and_details_persist(tmp_path, monkeypatch, kind):
+    from datetime import datetime, timezone
+
+    row = {"Id": "one", "Type": "Episode", "Name": "One"}
+    detail = {**row, "MediaStreams": [{"Type": "Video", "AspectRatio": "4:3"}]}
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [row], "TotalRecordCount": 1}), FakeResponse({"Items": [row], "TotalRecordCount": 1}), FakeResponse(detail)])
+    parent = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Show"}, library)
+    for _ in range(2):
+        assert library.check_filters(parent, [("episodes", {"aspect": 1.33})], datetime.now(timezone.utc)) is True
+    assert len(session.calls) == 3
+    library.config.Cache.connection.close()
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    parent = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Show"}, other)
+    assert other.check_filters(parent, [("episodes", {"aspect": 1.33})], datetime.now(timezone.utc)) is True
+    assert session.calls == []
+    other.config.Cache.connection.close()

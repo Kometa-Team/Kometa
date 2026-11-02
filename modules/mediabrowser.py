@@ -686,7 +686,7 @@ class MediaBrowser(Library):
             return False
         self.client.split_versions(item.ratingKey)
         self._all_items = []
-        for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships", "_catalog_items_by_type"):
+        for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships", "_catalog_items_by_type", "_filter_episode_indexes", "_filter_episode_children_cache"):
             self.__dict__.pop(name, None)
         self.filter_attr_cache.clear()
 
@@ -731,6 +731,9 @@ class MediaBrowser(Library):
         self.require(Capability.GET_ALL_ITEMS)
         include = _include_type(self, builder_level)
         catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        if load:
+            self.__dict__.pop("_filter_episode_indexes", None)
+            self.__dict__.pop("_filter_episode_children_cache", None)
         if load and not builder_level:
             catalogs.clear()
         if not load and include in catalogs:
@@ -1251,13 +1254,49 @@ class MediaBrowser(Library):
             compile_selector({name: value})
         return value
 
+    def _filter_episode_children(self, item):
+        parent_field = "SeasonId" if item.type == "season" else "SeriesId"
+        indexes = self.__dict__.setdefault("_filter_episode_indexes", {})
+        if parent_field not in indexes:
+            episodes = self.get_all(builder_level="episode")
+            if all(episode.data.get(parent_field) is not None for episode in episodes):
+                index = {}
+                for episode in episodes:
+                    index.setdefault(str(episode.data[parent_field]), []).append(episode)
+                indexes[parent_field] = index
+            else:
+                indexes[parent_field] = None
+        index = indexes[parent_field]
+        if index is not None:
+            return index.get(str(item.ratingKey), [])
+        # Some server versions omit ancestry in catalog rows. Preserve exact
+        # parent selection and cache that response instead of guessing ancestry.
+        children = self.__dict__.setdefault("_filter_episode_children_cache", {})
+        if item.ratingKey not in children:
+            cache, scope = self._persistent_catalog_cache()
+            resource = f"episodes:{item.ratingKey}"
+            rows = cache.query_native_response(scope, resource) if cache else None
+            if not isinstance(rows, list):
+                rows = self.client.items({"parentId": item.ratingKey, "includeItemTypes": "Episode", "recursive": "true"})
+                if cache:
+                    cache.update_native_response(scope, resource, rows)
+            children[item.ratingKey] = [self._wrap(row) for row in rows]
+        return children[item.ratingKey]
+
     def check_filters(self, item, filters_in, current_time):
         for key, value in filters_in:
             if key == "episodes" and isinstance(value, dict):
                 definition = {name: data for name, data in value.items() if name != "percentage"}
                 predicate = compile_selector(definition, self.server.type_label, current_time)
-                children = [self._wrap(row) for row in self.client.items({"parentId": item.ratingKey, "includeItemTypes": "Episode", "recursive": "true"})]
-                matched = sum(bool(predicate(self._search_metadata(self.reload(child)))) for child in children)
+                children = self._filter_episode_children(item)
+                matched = 0
+                for number, child in enumerate(children, 1):
+                    logger.ghost(f"Filtering {item.title} episodes: {number}/{len(children)}")
+                    child = self.__dict__.get("_search_details", {}).get(child.ratingKey, child)
+                    loaded = self.__dict__.get("_media_details_loaded", set())
+                    if requires_media(definition) and child.ratingKey not in loaded and "MediaSources" not in child.data and (self._search_requires_sources(definition) or "MediaStreams" not in child.data):
+                        child = self.reload(child)
+                    matched += bool(predicate(self._search_metadata(child)))
                 if not children or matched / len(children) * 100 < float(value.get("percentage", 50)):
                     return False
             else:
