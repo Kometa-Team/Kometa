@@ -1521,3 +1521,28 @@ def test_gateway_retry_does_not_repeat_writes_or_permanent_errors(monkeypatch, m
         MediaBrowserClient(_server("emby"), session=session).request(method, "/Items/432")
     sleep.assert_not_called()
     assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_child_catalog_reports_page_progress_and_is_reused(monkeypatch, kind):
+    logger = FakeLogger()
+    monkeypatch.setattr(browser_module, "logger", logger)
+    session = FakeSession(
+        [
+            FakeResponse({"Items": [{"Id": "one", "Type": "Episode", "Name": "One"}], "TotalRecordCount": 2}),
+            FakeResponse({"Items": [{"Id": "two", "Type": "Episode", "Name": "Two"}], "TotalRecordCount": 2}),
+            FakeResponse({"Items": [], "TotalRecordCount": 0}),
+        ]
+    )
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    items = library.get_all(builder_level="episode")
+    assert [item.ratingKey for item in items] == ["one", "two"]
+    assert "Loaded: 1/2" in logger.info_messages
+    assert "Loaded: 2/2" in logger.info_messages
+    items.clear()
+    assert len(library.get_all(builder_level="episode")) == 2
+    assert len(session.calls) == 2
+    assert library.get_all(builder_level="episode", load=True) == []
+    assert len(session.calls) == 3
+    assert library.get_all(builder_level="episode") == []
+    assert len(session.calls) == 3

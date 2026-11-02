@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Report Jellyfin/Emby catalog loading progress per page and reuse child catalogs across dynamic defaults during a run.
+
 - Support Silo episode search scopes and episode_air_date selectors for recently aired episode collections and show status overlays.
 
 - Allow network dynamic collections on Silo using native network metadata instead of rejecting its non-Plex agent.

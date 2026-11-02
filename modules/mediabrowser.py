@@ -204,7 +204,7 @@ class MediaBrowserClient:
             os_name = data.get("OperatingSystem") or os_name
         return {"name": data.get("ServerName"), "version": data.get("Version"), "os": os_name, "os_version": data.get("OperatingSystemVersion")}
 
-    def items(self, params, limit=None, one_page=False):
+    def items(self, params, limit=None, one_page=False, progress=None):
         self.ensure_user()
         query = {"userId": self.user_id, "fields": ITEM_FIELDS, "recursive": "true", "enableUserData": "true"}
         query.update({key: value for key, value in (params or {}).items() if value is not None})
@@ -223,6 +223,8 @@ class MediaBrowserClient:
             rows.extend(batch)
             total = data.get("TotalRecordCount", start + len(batch))
             start += len(batch)
+            if progress is not None:
+                progress(len(rows), total)
             if not batch or start >= total or (limit and len(rows) >= limit):
                 return rows[:limit] if limit else rows
 
@@ -668,7 +670,7 @@ class MediaBrowser(Library):
             return False
         self.client.split_versions(item.ratingKey)
         self._all_items = []
-        for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships"):
+        for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships", "_catalog_items_by_type"):
             self.__dict__.pop(name, None)
         self.filter_attr_cache.clear()
 
@@ -688,11 +690,24 @@ class MediaBrowser(Library):
 
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)
-        if not builder_level and self._all_items and not load:
-            return list(self._all_items)
         include = _include_type(self, builder_level)
-        rows = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true"})
+        catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        if load and not builder_level:
+            catalogs.clear()
+        if not load and include in catalogs:
+            return list(catalogs[include])
+        if not builder_level and self._all_items and not load:
+            catalogs[include] = list(self._all_items)
+            return list(self._all_items)
+        logger.info(f"Loading All {include}s from {self.server.type_label} Library: {self.name}")
+
+        def progress(count, total):
+            logger.info(f"Loaded: {count}/{total}")
+
+        rows = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true"}, progress=progress)
         items = [self._wrap(row) for row in rows]
+        logger.info(f"Loaded {len(items)} {include}s")
+        catalogs[include] = list(items)
         if not builder_level:
             self._all_items = list(items)
         return items
