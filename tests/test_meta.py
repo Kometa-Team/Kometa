@@ -859,3 +859,34 @@ class TestGetDict:
         from modules.meta import get_dict
 
         assert get_dict("collections", None) == {}
+
+
+@pytest.mark.parametrize("server_type", ["silo", "plex"])
+def test_network_dynamic_collections_allow_silo_and_keep_plex_agent_guard(monkeypatch, server_type):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: {"dynamic_collections": {"Networks": {"type": "network"}}})
+    library = SimpleNamespace(
+        server=SimpleNamespace(type_name=server_type),
+        agent=server_type,
+        type="Show",
+        is_movie=False,
+        is_show=True,
+        is_music=False,
+        collections=[],
+        metadatas=[],
+        get_tags=MagicMock(return_value=[SimpleNamespace(key="HBO", title="HBO")]),
+    )
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[], Cache=None)
+    if server_type == "silo":
+        metadata_file = MetadataFile(config, library, "File", "networks.yml", {}, None, "collection")
+        assert logger.error_messages == []
+        library.get_tags.assert_called_once_with("network")
+        assert metadata_file.collections
+    else:
+        from modules.util import Failed
+
+        with pytest.raises(Failed):
+            MetadataFile(config, library, "File", "networks.yml", {}, None, "collection")
+        assert any("network only works with the New Plex TV Agent" in message for message in logger.error_messages)
+        library.get_tags.assert_not_called()

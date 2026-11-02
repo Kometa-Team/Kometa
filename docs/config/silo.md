@@ -71,6 +71,8 @@ Silo evaluates a subset of `plex_search` overlay selectors locally using catalog
 
 Silo smart collections accept native query documents under `smart_filter`. Kometa translates supported metadata rules to native queries, including tags, people, production years, relative dates, runtime, stored ratings, and bitrate. For supported fields or modifiers that the native query engine cannot express, `smart_filter` becomes an ordinary collection rebuilt by Kometa on each run. The log identifies that fallback; matching and sorting happen before the result limit is applied. `plex_search`, collection `filters`, and overlays use the same metadata-backed field readers. Unsupported Plex-only fields, labels, and unavailable collection-membership state still report explicit errors.
 
+Network dynamic collections discover networks from native show metadata and use Silo network filters; they do not require a Plex TV agent.
+
 ### Search and filter fields
 
 | Metadata | Supported fields |

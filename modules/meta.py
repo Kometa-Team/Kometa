@@ -888,7 +888,7 @@ class MetadataFile(DataFile):
                             raise Failed(f"Config Error: {map_name} type attribute is blank")
                         elif dynamic[methods["type"]].lower() not in auto[library.type]:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
-                        elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents:
+                        elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents and getattr(getattr(library, "server", None), "type_name", None) != "silo":
                             raise Failed(f"Config Error: {map_name} type attribute: network only works with the New Plex TV Agent")
                         auto_type = dynamic[methods["type"]].lower()
                         og_exclude = []
