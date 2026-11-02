@@ -1854,3 +1854,8 @@ class Cache:
     def invalidate_silo_responses(self, scope):
         with self.connection as connection:
             connection.execute("DELETE FROM silo_response_cache WHERE scope = ?", (scope,))
+
+    # Shared native-server response storage; retain the existing table and Silo API.
+    query_native_response = query_silo_response
+    update_native_response = update_silo_response
+    invalidate_native_responses = invalidate_silo_responses

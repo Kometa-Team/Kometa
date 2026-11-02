@@ -7,6 +7,8 @@ or the server downloads a URL. Plex smart-filter addresses are not accepted.
 """
 
 import base64
+import hashlib
+import json
 import os
 import time
 import unicodedata
@@ -140,6 +142,10 @@ class MediaBrowserClient:
         if server.verify_ssl is False:
             self.session.verify = False
 
+    def _invalidate_persistent_catalogs(self):
+        for cache, scope in getattr(self, "_persistent_catalog_caches", {}).values():
+            cache.invalidate_native_responses(scope)
+
     def request(self, method, path, params=None, json_body=None, data=None, headers=None, retry_safe=False, recover=None):
         method = method.upper()
         parts = path.strip("/").split("/")
@@ -169,15 +175,25 @@ class MediaBrowserClient:
                     if recovered is not None:
                         return recovered
         if connection_failed and method == "DELETE" and item_write and response.status_code == 404:
+            if parts[1] not in getattr(self, "_non_media_item_ids", set()):
+                self._invalidate_persistent_catalogs()
             return None
         if response.status_code >= 400:
             detail = (getattr(response, "text", "") or "").strip().replace("\n", " ")[:300]
             raise Failed(f"{self.server.type_label} Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}")
+        non_media = parts[0] == "Items" and len(parts) > 1 and parts[1] in getattr(self, "_non_media_item_ids", set())
+        if method not in ("GET", "HEAD") and parts[0] in ("Items", "Videos", "Users", "UserItems", "Library") and not non_media:
+            self._invalidate_persistent_catalogs()
         if response.status_code == 204 or not response.content:
             return None
         if response.content[:1] in (b"{", b"["):
             try:
-                return response.json()
+                payload = response.json()
+                records = [payload, *(payload.get("Items") or [])] if isinstance(payload, dict) else payload if isinstance(payload, list) else []
+                for record in records:
+                    if isinstance(record, dict) and record.get("Type") in ("BoxSet", "Playlist") and record.get("Id"):
+                        self.__dict__.setdefault("_non_media_item_ids", set()).add(str(record["Id"]))
+                return payload
             except ValueError as error:
                 raise Failed(f"{self.server.type_label} Error: {method} {path} did not return JSON") from error
         return None
@@ -576,7 +592,7 @@ class MediaBrowser(Library):
             item.apply(cached.data)
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
-        item.apply(self.client.get_item(item.ratingKey))
+        item.apply(self._item_detail(item.ratingKey, force=force))
         self.__dict__.setdefault("_media_details_loaded", set()).add(item.ratingKey)
         self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
         return item
@@ -688,6 +704,29 @@ class MediaBrowser(Library):
             return browser_rating_value(self, item, source)
         return super().fetch_overlay_value(item, variable_name)
 
+    def _persistent_catalog_cache(self):
+        from modules.cache import Cache
+
+        cache = getattr(getattr(self, "config", None), "Cache", None)
+        if not isinstance(cache, Cache):
+            return None, None
+        user_id = self.client.ensure_user()
+        principal = hashlib.sha256(str(self.server.token).encode()).hexdigest()
+        scope = json.dumps(["browser_catalog_v1", self.server.type_name, self.client.base, principal, user_id, self.library_id])
+        registrations = self.client.__dict__.setdefault("_persistent_catalog_caches", {})
+        registrations[(id(cache), scope)] = (cache, scope)
+        return cache, scope
+
+    def _item_detail(self, item_id, force=False):
+        cache, scope = self._persistent_catalog_cache()
+        resource = f"item:{item_id}"
+        detail = cache.query_native_response(scope, resource) if cache and not force else None
+        if not isinstance(detail, dict):
+            detail = self.client.get_item(item_id)
+            if cache and isinstance(detail, dict):
+                cache.update_native_response(scope, resource, detail)
+        return detail
+
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)
         include = _include_type(self, builder_level)
@@ -699,6 +738,16 @@ class MediaBrowser(Library):
         if not builder_level and self._all_items and not load:
             catalogs[include] = list(self._all_items)
             return list(self._all_items)
+        cache, scope = self._persistent_catalog_cache()
+        resource = f"catalog:{include}"
+        rows = cache.query_native_response(scope, resource) if cache and not load else None
+        if isinstance(rows, list):
+            items = [self._wrap(row) for row in rows]
+            catalogs[include] = list(items)
+            if not builder_level:
+                self._all_items = list(items)
+            logger.info(f"Loaded {len(items)} {include}s from persistent {self.server.type_label} cache")
+            return list(items)
         logger.info(f"Loading All {include}s from {self.server.type_label} Library: {self.name}")
 
         def progress(count, total):
@@ -706,6 +755,8 @@ class MediaBrowser(Library):
 
         rows = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true"}, progress=progress)
         items = [self._wrap(row) for row in rows]
+        if cache:
+            cache.update_native_response(scope, resource, rows)
         logger.info(f"Loaded {len(items)} {include}s")
         catalogs[include] = list(items)
         if not builder_level:
@@ -751,7 +802,7 @@ class MediaBrowser(Library):
     def get_ids(self, item):
         self.require(Capability.GET_PROVIDER_IDS)
         if not item.tmdb_id and not item.tvdb_id and not item.imdb_id:
-            item.apply(self.client.get_item(item.ratingKey))
+            item.apply(self._item_detail(item.ratingKey))
         return item.tmdb_id, item.tvdb_id, item.imdb_id
 
     def list_children(self, item, include_type):
@@ -1079,7 +1130,7 @@ class MediaBrowser(Library):
                 item = self._search_details.get(cache_key, item)
                 logger.ghost(f"Scanning: {index}/{total} {item.title}")
                 if require_media and cache_key not in self._media_details_loaded and "MediaSources" not in item.data and (require_sources or "MediaStreams" not in item.data):
-                    item.apply(self.client.get_item(item.ratingKey))
+                    item.apply(self._item_detail(item.ratingKey))
                     self._media_details_loaded.add(cache_key)
                 if memberships is not None:
                     item.data["_kometa_collections"] = memberships.get(item.ratingKey, [])
@@ -1213,7 +1264,7 @@ class MediaBrowser(Library):
                 definition = {key: value}
                 loaded = self.__dict__.setdefault("_media_details_loaded", set())
                 if requires_media(definition) and item.ratingKey not in loaded and "MediaSources" not in item.data and (self._search_requires_sources(definition) or "MediaStreams" not in item.data):
-                    item.apply(self.client.get_item(item.ratingKey))
+                    item.apply(self._item_detail(item.ratingKey))
                     loaded.add(item.ratingKey)
                     self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
                 if self._search_requires_collections(definition):

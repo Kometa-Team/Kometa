@@ -1588,3 +1588,93 @@ def test_direct_reload_seeds_detail_cache_before_local_search():
     found = list(library._local_search_items())
     assert found[0].data["MediaStreams"] == detail["MediaStreams"]
     assert len(session.calls) == 1
+
+
+def _persistent_browser_library(tmp_path, monkeypatch, kind, responses, **server_options):
+    from modules import cache as cache_module
+    from modules.cache import Cache
+
+    monkeypatch.setattr(cache_module, "logger", FakeLogger())
+    server = _server(kind, **server_options)
+    session = FakeSession(responses)
+    library = _library(MediaBrowserClient(server, session=session), kind=kind, server=server)
+    library.config.Cache = Cache(str(tmp_path / "native.yml"), 30)
+    return library, session
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_browser_catalog_and_details_survive_restart_and_share_fields(tmp_path, monkeypatch, kind):
+    card = {"Id": "episode", "Type": "Episode", "Name": "One"}
+    detail = {**card, "MediaStreams": [{"Type": "Audio", "Language": "eng"}, {"Type": "Subtitle", "Language": "fra"}]}
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [card], "TotalRecordCount": 1}), FakeResponse(detail)])
+    assert [tag.key for tag in library.get_tags("episode.audioLanguage")] == ["en"]
+    assert len(session.calls) == 2
+    library.config.Cache.connection.close()
+
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    assert [tag.key for tag in other.get_tags("episode.audioLanguage")] == ["en"]
+    assert [tag.key for tag in other.get_tags("episode.subtitleLanguage")] == ["fr"]
+    assert session.calls == []
+    other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_persistent_browser_cache_expires_and_honors_forced_reads(tmp_path, monkeypatch, kind):
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({"Name": "Old"}), FakeResponse({"Name": "Fresh"}), FakeResponse({"Items": [], "TotalRecordCount": 0})])
+    library.get_all(builder_level="episode")
+    assert library._item_detail("one")["Name"] == "Old"
+    assert library._item_detail("one")["Name"] == "Old"
+    assert len(session.calls) == 2
+    assert library._item_detail("one", force=True)["Name"] == "Fresh"
+    library.get_all(builder_level="episode", load=True)
+    assert len(session.calls) == 4
+    with library.config.Cache.connection:
+        library.config.Cache.connection.execute("UPDATE silo_response_cache SET saved_at = 0")
+    library.config.Cache.connection.close()
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({"Name": "Expired"})])
+    other.get_all(builder_level="episode")
+    assert other._item_detail("one")["Name"] == "Expired"
+    assert len(session.calls) == 2
+    other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("changed", [{"user_id": "other"}, {"token": "other"}, {"url": "http://other"}, {"library_id": "other"}])
+def test_persistent_browser_cache_is_scoped(tmp_path, monkeypatch, kind, changed):
+    library, _ = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0})])
+    library.get_all()
+    library.config.Cache.connection.close()
+    server_options = {key: value for key, value in changed.items() if key != "library_id"}
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0})], **server_options)
+    other.library_id = changed.get("library_id", other.library_id)
+    other.get_all()
+    assert len(session.calls) == 1
+    other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("method,path", [("POST", "/Items/one"), ("POST", "/Items/one/Images/Primary"), ("DELETE", "/Videos/one/AlternateSources"), ("POST", "/UserItems/one/UserData"), ("POST", "/Users/user/Items/one/UserData")])
+def test_browser_writes_invalidate_persistent_catalogs_and_details(tmp_path, monkeypatch, kind, method, path):
+    library, _ = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({}, status_code=204)])
+    library.get_all()
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(scope, "item:one", {"Name": "Old"})
+    library.client.request(method, path)
+    assert cache.query_native_response(scope, "catalog:Movie") is None
+    assert cache.query_native_response(scope, "item:one") is None
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_metadata_and_artwork_keep_persistent_media_cache(tmp_path, monkeypatch, kind):
+    library, _ = _persistent_browser_library(
+        tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({"Id": "box", "Type": "BoxSet", "Name": "Box"}), FakeResponse({}, status_code=204), FakeResponse({}, status_code=204)]
+    )
+    library.get_all()
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(scope, "item:one", {"Name": "Media"})
+    library.client.update_item("box", {"SortName": "Box"})
+    library.client.request("POST", "/Items/box/Images/Primary")
+    assert cache.query_native_response(scope, "catalog:Movie") == []
+    assert cache.query_native_response(scope, "item:one") == {"Name": "Media"}
+    cache.connection.close()
