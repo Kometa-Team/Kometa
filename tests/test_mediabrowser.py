@@ -1546,3 +1546,45 @@ def test_child_catalog_reports_page_progress_and_is_reused(monkeypatch, kind):
     assert len(session.calls) == 3
     assert library.get_all(builder_level="episode") == []
     assert len(session.calls) == 3
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("level", [None, "episode"])
+def test_show_without_media_sources_is_not_reloaded_for_each_aspect_filter(kind, level):
+    from datetime import datetime, timezone
+
+    session = FakeSession([FakeResponse({"Id": "show", "Type": "Series", "Name": "The 100"})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "The 100"}, library)
+    library.get_all = lambda **kwargs: [item]
+    assert list(library._local_search_items(builder_level=level)) == [item]
+    for aspect in (1.33, 1.66, 1.78):
+        library.reload(item)
+        assert library.check_filters(item, [("aspect", aspect)], datetime.now(timezone.utc)) is False
+    assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_filter_detail_lookup_is_reused_when_media_fields_are_missing(kind):
+    from datetime import datetime, timezone
+
+    session = FakeSession([FakeResponse({"Id": "show", "Type": "Series", "Name": "Show"})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Show"}, library)
+    for aspect in (1.66, 1.78):
+        assert library.check_filters(item, [("aspect", aspect)], datetime.now(timezone.utc)) is False
+    assert len(session.calls) == 1
+
+
+def test_direct_reload_seeds_detail_cache_before_local_search():
+    detail = {"Id": "one", "Type": "Movie", "Name": "One", "MediaStreams": [{"Type": "Video", "Width": 1920, "Height": 1080}]}
+    session = FakeSession([FakeResponse(detail)])
+    library = _library(MediaBrowserClient(_server(), session=session))
+    library.__dict__.pop("_search_details", None)
+    first = MediaBrowserItem({"Id": "one", "Type": "Movie", "Name": "One"}, library)
+    library.reload(first)
+    summary = MediaBrowserItem({"Id": "one", "Type": "Movie", "Name": "One"}, library)
+    library.get_all = lambda: [summary]
+    found = list(library._local_search_items())
+    assert found[0].data["MediaStreams"] == detail["MediaStreams"]
+    assert len(session.calls) == 1

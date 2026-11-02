@@ -577,8 +577,8 @@ class MediaBrowser(Library):
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
         item.apply(self.client.get_item(item.ratingKey))
-        if hasattr(self, "_search_details"):
-            self._search_details[item.ratingKey] = item
+        self.__dict__.setdefault("_media_details_loaded", set()).add(item.ratingKey)
+        self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
         return item
 
     def item_reload(self, item, exclude_elements=None):
@@ -1075,7 +1075,7 @@ class MediaBrowser(Library):
         logger.info(f"Scanning {total} {self.server.type_label} items for local search{' (loading media details as needed)' if require_media else ' (catalog metadata)'}")
         try:
             for index, item in enumerate(items, 1):
-                cache_key = (builder_level, item.ratingKey) if builder_level else item.ratingKey
+                cache_key = item.ratingKey
                 item = self._search_details.get(cache_key, item)
                 logger.ghost(f"Scanning: {index}/{total} {item.title}")
                 if require_media and cache_key not in self._media_details_loaded and "MediaSources" not in item.data and (require_sources or "MediaStreams" not in item.data):
@@ -1211,8 +1211,11 @@ class MediaBrowser(Library):
                     return False
             else:
                 definition = {key: value}
-                if requires_media(definition) and "MediaSources" not in item.data and (self._search_requires_sources(definition) or "MediaStreams" not in item.data):
+                loaded = self.__dict__.setdefault("_media_details_loaded", set())
+                if requires_media(definition) and item.ratingKey not in loaded and "MediaSources" not in item.data and (self._search_requires_sources(definition) or "MediaStreams" not in item.data):
                     item.apply(self.client.get_item(item.ratingKey))
+                    loaded.add(item.ratingKey)
+                    self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
                 if self._search_requires_collections(definition):
                     item.data["_kometa_collections"] = self._search_collection_names().get(item.ratingKey, [])
                 if not compile_selector(definition, self.server.type_label, current_time)(self._search_metadata(item)):
