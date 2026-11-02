@@ -1819,3 +1819,86 @@ def test_forced_root_refresh_invalidates_child_catalogs():
     library.get_all(load=True)
     library.get_all(builder_level="episode")
     assert library.client.catalog_pages.call_count == 3
+
+
+def _persistent_test_library(tmp_path, monkeypatch, responses, **server_options):
+    from modules import cache as cache_module
+    from modules.cache import Cache
+
+    monkeypatch.setattr(cache_module, "logger", FakeLogger())
+    server = _server(**server_options)
+    session = FakeSession(responses)
+    library = _library(SiloClient(server, session=session), server=server)
+    library.config.Cache = Cache(str(tmp_path / "persistent.yml"), 30)
+    return library, session
+
+
+def test_catalog_and_full_details_survive_process_restart(tmp_path, monkeypatch):
+    card = {"content_id": "episode-1", "type": "episode", "title": "One", "tmdb_id": 123}
+    detail = {**card, "versions": [{"audio_tracks": [{"language": "en"}], "subtitle_tracks": [{"language": "fr"}]}]}
+    first, session = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [card], "total": 1}), FakeResponse(detail)])
+    items = list(first._local_search_items(builder_level="episode"))
+    assert items[0].data["versions"] == detail["versions"]
+    assert len(session.calls) == 2
+    first.config.Cache.connection.close()
+
+    second, session = _persistent_test_library(tmp_path, monkeypatch, [])
+    for _ in range(2):
+        items = list(second._local_search_items(builder_level="episode"))
+        assert items[0].data["versions"] == detail["versions"]
+    assert [tag.key for tag in second.get_tags("episode.audio_language")] == ["en"]
+    assert [tag.key for tag in second.get_tags("episode.subtitle_language")] == ["fr"]
+    assert session.calls == []
+    second.config.Cache.connection.close()
+
+
+def test_persisted_catalog_expires_and_empty_catalog_is_cached(tmp_path, monkeypatch):
+    first, _ = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [], "total": 0})])
+    assert first.get_all(builder_level="episode") == []
+    first.config.Cache.connection.close()
+    second, session = _persistent_test_library(tmp_path, monkeypatch, [])
+    assert second.get_all(builder_level="episode") == []
+    assert session.calls == []
+    with second.config.Cache.connection:
+        second.config.Cache.connection.execute("UPDATE silo_response_cache SET saved_at = 0")
+    second.config.Cache.connection.close()
+    third, session = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [], "total": 0})])
+    assert third.get_all(builder_level="episode") == []
+    assert len(session.calls) == 1
+    third.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("changed", [{"profile_id": "different"}, {"token": "different"}, {"url": "http://different"}])
+def test_persisted_silo_catalog_is_scoped_to_server_and_identity(tmp_path, monkeypatch, changed):
+    first, _ = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [], "total": 0})])
+    first.get_all()
+    first.config.Cache.connection.close()
+    other, session = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [], "total": 0})], **changed)
+    other.get_all()
+    assert len(session.calls) == 1
+    other.config.Cache.connection.close()
+
+
+def test_successful_silo_metadata_write_invalidates_persistent_data(tmp_path, monkeypatch):
+    library, session = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"items": [], "total": 0}), FakeResponse({}, status_code=204)])
+    library.get_all()
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_silo_response(scope, "item:one", {"title": "Old"})
+    library.client.update_metadata("one", {"title": "New"})
+    assert cache.query_silo_response(scope, "catalog:movie") is None
+    assert cache.query_silo_response(scope, "item:one") is None
+    cache.connection.close()
+
+
+def test_silo_persistent_details_expire_and_force_reload_bypasses_cache(tmp_path, monkeypatch):
+    library, session = _persistent_test_library(tmp_path, monkeypatch, [FakeResponse({"title": "First"}), FakeResponse({"title": "Fresh"}), FakeResponse({"title": "Expired"})])
+    assert library._item_detail("one")["title"] == "First"
+    assert library._item_detail("one")["title"] == "First"
+    assert len(session.calls) == 1
+    assert library._item_detail("one", force=True)["title"] == "Fresh"
+    assert len(session.calls) == 2
+    with library.config.Cache.connection:
+        library.config.Cache.connection.execute("UPDATE silo_response_cache SET saved_at = 0")
+    assert library._item_detail("one")["title"] == "Expired"
+    assert len(session.calls) == 3
+    library.config.Cache.connection.close()

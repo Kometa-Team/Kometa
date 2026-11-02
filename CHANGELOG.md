@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Persist Silo catalogs and full item details between runs using cache expiration, with scoped data, explicit refreshes, and invalidation after item writes.
+
 - Reuse Silo season and episode catalogs across dynamic defaults and local searches during a run instead of repeatedly loading the same catalog.
 
 - Restore regular Silo metadata backups through native metadata and personal rating APIs, with tag sync and consistent personal rating scales.

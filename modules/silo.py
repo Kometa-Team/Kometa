@@ -7,6 +7,7 @@ transfer.kometa.wiki first. Labels, item deletion, and playlists are refused
 through the capability matrix.
 """
 
+import hashlib
 import json
 import os
 import re
@@ -189,6 +190,9 @@ class SiloClient:
                 detail = detail[:300]
             error_type = CollectionNotFound if response.status_code == 404 and method.upper() == "GET" and re.fullmatch(r"/admin/collections/[^/]+", path) else Failed
             raise error_type(f"Silo Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}")
+        if method.upper() in ("POST", "PATCH", "PUT", "DELETE") and path.startswith(("/admin/items/", "/ratings/")):
+            for cache, scope in getattr(self, "_persistent_catalog_caches", {}).values():
+                cache.invalidate_silo_responses(scope)
         if response.status_code == 204 or not response.content:
             return None, response.headers
         try:
@@ -588,7 +592,7 @@ class Silo(Library):
             data, _headers = self.client.request("GET", f"/catalog/series/{_path_id(item.data['series_id'])}/seasons/{item.seasonNumber}")
             item.apply(data)
         else:
-            item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
+            item.apply(self._item_detail(item.content_id, force=force))
         self._search_details[item.content_id] = item
         loaded.add(item.content_id)
         if force:
@@ -613,7 +617,7 @@ class Silo(Library):
         if not hasattr(self, "_native_rating_details"):
             self._native_rating_details = {}
         if item.content_id not in self._native_rating_details:
-            self._native_rating_details[item.content_id] = self.client.get_item(item.content_id, library_id=self.library_id)
+            self._native_rating_details[item.content_id] = self._item_detail(item.content_id)
         detail = self._native_rating_details[item.content_id]
         field, source, maximum, factor = sources[variable_name]
         value = detail.get(field)
@@ -842,6 +846,28 @@ class Silo(Library):
     def get_item_display_title(self, item, sort=False):
         return (item.data.get("sort_title") or item.title) if sort else util.item_title(item)
 
+    def _persistent_catalog_cache(self):
+        from modules.cache import Cache
+
+        cache = getattr(self.config, "Cache", None)
+        if not isinstance(cache, Cache):
+            return None, None
+        principal = hashlib.sha256(str(self.server.token).encode()).hexdigest()
+        scope = json.dumps(["silo_catalog_v1", self.client.base, principal, self.server.profile_id, self.library_id])
+        registrations = self.client.__dict__.setdefault("_persistent_catalog_caches", {})
+        registrations[(id(cache), scope)] = (cache, scope)
+        return cache, scope
+
+    def _item_detail(self, content_id, force=False):
+        cache, scope = self._persistent_catalog_cache()
+        resource = f"item:{content_id}"
+        detail = cache.query_silo_response(scope, resource) if cache and not force else None
+        if not isinstance(detail, dict):
+            detail = self.client.get_item(content_id, library_id=self.library_id)
+            if cache and isinstance(detail, dict):
+                cache.update_silo_response(scope, resource, detail)
+        return detail
+
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)
         media_type = _media_type(self, builder_level)
@@ -854,14 +880,27 @@ class Silo(Library):
             catalogs[media_type] = list(self._all_items)
             return list(self._all_items)
         label = _load_label(self, builder_level)
+        cache, scope = self._persistent_catalog_cache()
+        resource = f"catalog:{media_type}"
+        cards = cache.query_silo_response(scope, resource) if cache and not load else None
+        if isinstance(cards, list):
+            items = [SiloItem(card, self) for card in cards]
+            catalogs[media_type] = items
+            if not builder_level:
+                self._all_items = list(items)
+            logger.info(f"Loaded {len(items)} {label} from persistent Silo cache")
+            return list(items)
         logger.info(f"Loading All {label} from Library: {self.name}")
         items = []
+        catalog_cards = []
         total = None
         for page_items, page_total in self.client.catalog_pages(self.library_id, media_type=media_type):
             if isinstance(page_total, int):
                 total = page_total
             for card in page_items:
-                items.append(self._item_with_ids(card))
+                item = self._item_with_ids(card)
+                items.append(item)
+                catalog_cards.append({**card, "tmdb_id": item.tmdb_id, "tvdb_id": item.tvdb_id, "imdb_id": item.imdb_id})
                 overall = total if isinstance(total, int) and total >= len(items) else len(items)
                 logger.ghost(f"Loaded: {len(items)}/{overall}")
             if page_items:
@@ -869,6 +908,8 @@ class Silo(Library):
                 logger.exorcise()
                 logger.info(f"Loaded: {len(items)}/{overall}")
         logger.info(f"Loaded {len(items)} {label}")
+        if cache:
+            cache.update_silo_response(scope, resource, catalog_cards)
         catalogs[media_type] = list(items)
         if not builder_level:
             self._all_items = list(items)
@@ -891,7 +932,7 @@ class Silo(Library):
     def get_ids(self, item):
         self.require(Capability.GET_PROVIDER_IDS)
         if not item.tmdb_id and not item.tvdb_id and not item.imdb_id:
-            item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
+            item.apply(self._item_detail(item.content_id))
         if self.is_movie:
             return item.tmdb_id, None, item.imdb_id
         return item.tmdb_id, item.tvdb_id, item.imdb_id
@@ -1261,7 +1302,7 @@ class Silo(Library):
                 item = self._search_details.get(item.content_id, item)
                 logger.ghost(f"Scanning: {index}/{total} {item.title}")
                 if require_details and item.content_id not in self._loaded_search_details and "versions" not in item.data:
-                    item.apply(self.client.get_item(item.content_id, library_id=self.library_id))
+                    item.apply(self._item_detail(item.content_id))
                     self._loaded_search_details.add(item.content_id)
                 self._search_details[item.content_id] = item
                 if index % 200 == 0:
@@ -1292,7 +1333,7 @@ class Silo(Library):
                 for child in children:
                     child = self.reload(child)
                     if "versions" not in child.data:
-                        child.apply(self.client.get_item(child.content_id, library_id=self.library_id))
+                        child.apply(self._item_detail(child.content_id))
                     matched += bool(predicate(child))
                 if not children or matched / len(children) * 100 < float(value.get("percentage", 50)):
                     return False
@@ -1347,7 +1388,7 @@ class Silo(Library):
                     return SiloItem({**card, **ids}, self)
         if not any(card.get(field) for field in fields) and content_id:
             try:
-                card = {**card, **(self.client.get_item(content_id, library_id=self.library_id) or {})}
+                card = {**card, **(self._item_detail(content_id, force=expired is True) or {})}
             except Failed as error:
                 logger.error(error)
         if cache and content_id and any(card.get(field) for field in fields):
