@@ -5168,6 +5168,9 @@ class CollectionBuilder:
                             valid_list.append(actor_id)
                 if not actor_id:
                     error = f"Plex Error: {attribute}: {fvalue} not found"
+                    if attribute == "collection" and modifier == ".not" and not plex_search:
+                        logger.warning(f"{error}; ignoring this collection exclusion")
+                        continue
                     if self.details["show_options"]:
                         error += f"\nOptions: {names}"
                     if validate:
