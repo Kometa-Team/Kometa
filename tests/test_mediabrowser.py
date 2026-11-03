@@ -1778,3 +1778,24 @@ def test_native_request_logs_failure_type_and_elapsed_time(monkeypatch):
     with pytest.raises(Failed):
         client.request("GET", "/Items")
     assert "SSLError | 60.00s" in logger.trace.call_args.args[0]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_series_catalog_uses_small_pages_without_dropping_items(kind):
+    rows = [{"Id": str(i), "Type": "Series", "Name": str(i)} for i in range(45)]
+    session = FakeSession([FakeResponse({"Items": rows[start : start + 20], "TotalRecordCount": len(rows)}) for start in (0, 20, 40)])
+    client = MediaBrowserClient(_server(kind), session=session)
+    assert client.items({"includeItemTypes": "Series"}) == rows
+    assert [call["params"]["limit"] for call in session.calls] == [20, 20, 20]
+    assert [call["params"]["startIndex"] for call in session.calls] == [0, 20, 40]
+
+
+@pytest.mark.parametrize("include,override,expected", [("Movie", None, 200), ("Episode", None, 200), ("Series", 50, 50)])
+def test_series_page_size_preserves_other_defaults_and_explicit_limits(include, override, expected):
+    session = FakeSession([FakeResponse({"Items": [], "TotalRecordCount": 0})])
+    client = MediaBrowserClient(_server(), session=session)
+    params = {"includeItemTypes": include}
+    if override is not None:
+        params["limit"] = override
+    client.items(params)
+    assert session.calls[0]["params"]["limit"] == expected

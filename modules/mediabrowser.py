@@ -230,7 +230,10 @@ class MediaBrowserClient:
         self.ensure_user()
         query = {"userId": self.user_id, "fields": ITEM_FIELDS, "recursive": "true", "enableUserData": "true"}
         query.update({key: value for key, value in (params or {}).items() if value is not None})
-        page_size = int(limit or query.get("limit") or 200)
+        # Series DTOs can require per-show episode/user aggregation. Keep rich
+        # series pages below gateway/read timeouts even in modest libraries.
+        default_page_size = 20 if "Series" in str(query.get("includeItemTypes", "")).split(",") else 200
+        page_size = int(limit or query.get("limit") or default_page_size)
         start = int(query.get("startIndex") or 0)
         query.pop("limit", None)
         query.pop("startIndex", None)
@@ -777,7 +780,7 @@ class MediaBrowser(Library):
         include = _include_type(self, builder_level)
         rows = []
         start = 0
-        page_size = PAGE_SIZE
+        page_size = 20 if include == "Series" else PAGE_SIZE
         while True:
             batch = self.client.items(
                 {"parentId": self.library_id, "includeItemTypes": include, "sortBy": "DateCreated", "sortOrder": "Descending", "startIndex": start, "limit": page_size},

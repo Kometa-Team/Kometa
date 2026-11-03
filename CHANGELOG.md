@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fetch rich Jellyfin/Emby series listings in pages of 20 to avoid timeouts caused by expensive per-show metadata aggregation.
+
 - Log Jellyfin/Emby request starts, response timing/status, and failure types with trace or request logging, so pending requests are visible before timeout.
 
 - Display Shows instead of Seriess in Jellyfin/Emby catalog loading messages.
