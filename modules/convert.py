@@ -411,7 +411,7 @@ class Convert:
                         tvdb = self.tmdb_to_tvdb(tmdb)
                         if tvdb:
                             tvdb_id.append(int(tvdb))
-                    if not tvdb_id:
+                    if not tvdb_id and not imdb_id:
                         raise MappingConvertError(f"Convert Error: No TVDb ID found for TMDb ID '{', '.join([str(t) for t in tmdb_id])}'")
 
             if not imdb_id and tvdb_id:
