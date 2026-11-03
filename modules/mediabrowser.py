@@ -434,8 +434,7 @@ class MediaBrowserItem(NativeItemMetadata):
         self.contentRating = rating
 
     def editTitle(self, title):
-        self.library.client.update_item(self.ratingKey, {"Name": title})
-        self.title = title
+        self.apply(self.library.client.update_item(self.ratingKey, {"Name": title}))
 
 
 class MediaBrowserCollection(MediaBrowserItem):
@@ -892,6 +891,8 @@ class MediaBrowser(Library):
         if isinstance(data, MediaBrowserCollection):
             return data
         title = data if isinstance(data, str) else str(getattr(data, "title", data))
+        # force_search selects Plex's lookup strategy; native lookups share
+        # the current collection catalog, including negative results.
         collections = self._collections()
         matches = [collection for collection in collections if str(collection.title).casefold() == title.casefold()]
         if not matches and self.server.type_name == "jellyfin":
@@ -941,6 +942,7 @@ class MediaBrowser(Library):
                 "Emby Error: A new collection requires initial members. For separator collections, set placeholder_imdb_id, placeholder_tmdb_movie, or placeholder_tvdb_show under template_variables to an item present in this library (for example, placeholder_imdb_id: tt0068646). Otherwise, use a builder-based collection."
             )
         created = self.client.create_collection(title, parent_id=self.library_id)
+        self.__dict__.pop("_collection_catalog", None)
         return self._wrap_collection(self.client.get_item(created.get("Id")) or {"Id": created.get("Id"), "Name": title, "Type": "BoxSet"})
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
@@ -962,6 +964,7 @@ class MediaBrowser(Library):
                 # Emby creates the boxset with its initial members, without a
                 # movie-library parent. These IDs must not be added twice.
                 self.client.create_collection(collection, item_ids=ids)
+                self.__dict__.pop("_collection_catalog", None)
                 return
         else:
             target = self.create_blank_collection(collection) if add and isinstance(collection, str) else self._collection(collection)
@@ -986,6 +989,7 @@ class MediaBrowser(Library):
             label = "Item"
         self.client.delete_item(obj.ratingKey)
         if isinstance(obj, MediaBrowserCollection):
+            self.__dict__.pop("_collection_catalog", None)
             self.stats["deleted"] += 1
         if notify:
             self.notify_delete(delete_message or f"{label} {obj.title} deleted")
@@ -1366,7 +1370,9 @@ class MediaBrowser(Library):
 
         return Plex.split(self, text)  # type: ignore[arg-type]  # split only reads library fields such as is_movie
 
-    def get_all_collections(self, label=None):
+    def get_all_collections(self, label=None, load=False):
+        if load:
+            self.__dict__.pop("_collection_catalog", None)
         collections = self._collections()
         if label is None:
             return collections
@@ -1374,7 +1380,9 @@ class MediaBrowser(Library):
 
     def _collections(self):
         self.require(Capability.GET_ALL_COLLECTIONS)
-        return [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true"})]
+        if "_collection_catalog" not in self.__dict__:
+            self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true"})]
+        return list(self._collection_catalog)
 
     def _playlists(self):
         self.require(Capability.GET_PLAYLIST)

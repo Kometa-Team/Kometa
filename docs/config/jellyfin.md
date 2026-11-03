@@ -8,6 +8,8 @@ hide:
 
 [Jellyfin](https://jellyfin.org/) and [Emby](https://emby.media/) are media servers. A library uses one when its [`server`](libraries.md#server) attribute names a `media_servers` entry with `type: jellyfin` or `type: emby`. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
+Collection name lookups reuse one in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data.
+
 Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
 
 Connection logs include the remote server name, version, and available OS information from `/System/Info`. Missing OS details are logged as not reported. Failure to read this optional information warns without preventing library setup.

@@ -1716,3 +1716,27 @@ def test_nested_episode_parent_fallback_and_details_persist(tmp_path, monkeypatc
     assert other.check_filters(parent, [("episodes", {"aspect": 1.33})], datetime.now(timezone.utc)) is True
     assert session.calls == []
     other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_birthday_collection_misses_reuse_listing_even_with_force_search(kind):
+    session = FakeSession([FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({"Items": [{"Id": "new", "Name": "New", "Type": "BoxSet"}], "TotalRecordCount": 1})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    for name in ("Birthday", "Old Birthday", "Birthday", "Another Person"):
+        with pytest.raises(Failed, match="not found"):
+            library.get_collection(name, force_search=True)
+    assert len(session.calls) == 1
+    assert library.get_all_collections(load=True)[0].title == "New"
+    assert library.get_collection("New").ratingKey == "new"
+    assert len(session.calls) == 2
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_delete_invalidates_name_lookup_cache(kind):
+    session = FakeSession([FakeResponse({"Items": [{"Id": "one", "Name": "One", "Type": "BoxSet"}], "TotalRecordCount": 1}), FakeResponse({}, status_code=204), FakeResponse({"Items": [], "TotalRecordCount": 0})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    collection = library.get_collection("One")
+    library.delete(collection, notify=False)
+    with pytest.raises(Failed, match="not found"):
+        library.get_collection("One", force_search=True)
+    assert len(session.calls) == 3
