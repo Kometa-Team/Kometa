@@ -8,6 +8,7 @@ JustWatch streaming charts.
 | Builder | Finds | Supports | Playlists |
 |:--------|:------|:---------|:----------|
 | [`mdblist_list`](#mdblist-list) | Items in specific lists | Movies, shows, listed episodes | Yes |
+| [`mdblist_watchlist`](#mdblist-watchlist) | Items in a user's watchlist | Movies, shows | No |
 | [`mdblist_streaming`](#mdblist-streaming) | JustWatch streaming chart entries | Movies, shows | No |
 
 Use `collection_order: custom` to retain the returned order and `sync_mode: sync`
@@ -136,6 +137,21 @@ conditions is met. External lists do not support the `usort` or `added` sort fie
 collections:
   Esquire 60 Scariest Movies of All Time:
     mdblist_list: https://mdblist.com/lists/chazlarson/external/2868
+    collection_order: custom
+    sync_mode: sync
+```
+
+## Watchlists {#mdblist-watchlist}
+
+`mdblist_watchlist: true` fetches the authenticated MDBList user's watchlist.
+The active library determines whether the movie or show endpoint is queried.
+Use `collection_order: custom` to preserve the watchlist order and
+`sync_mode: sync` to remove items no longer on the watchlist.
+
+```yaml
+collections:
+  MDBList Watchlist:
+    mdblist_watchlist: true
     collection_order: custom
     sync_mode: sync
 ```

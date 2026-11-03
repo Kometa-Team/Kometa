@@ -13,7 +13,7 @@ class MDBListLimitReached(LimitReached, ServiceError):
 
 
 # --- REQUIRED MODULE ATTRIBUTES ---
-builders = ["mdblist_list", "mdblist_streaming"]
+builders = ["mdblist_list", "mdblist_watchlist", "mdblist_streaming"]
 sort_names = [
     "rank",
     "score",
@@ -588,6 +588,11 @@ class MDBList:
 
         return valid_lists
 
+    def validate_mdblist_watchlist(self, error_type, watchlists):
+        if watchlists is not True:
+            raise Failed(f"{error_type} Error: mdblist_watchlist must be true")
+        return True
+
     @staticmethod
     def validate_mdblist_streaming(error_type, data):
         if not isinstance(data, dict):
@@ -619,6 +624,25 @@ class MDBList:
         return streaming
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
+        if method == "mdblist_watchlist":
+            if is_movie is None:
+                raise Failed("MDBList Error: mdblist_watchlist can only be used with movie or show libraries")
+            media_type = "movie" if is_movie else "show"
+            # A user's watchlist is exposed as the special `watchlist` list;
+            # the media type is part of the list-items path.
+            response, _ = self._request(f"{api_url}watchlist/items/{media_type}", params={"limit": 1000})
+            items = response.get("movies" if is_movie else "shows", response.get("items", [])) if isinstance(response, dict) else response
+            if not isinstance(items, list):
+                raise Failed("MDBList Error: watchlist response must contain a list of items")
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                tmdb_id = util.check_num(item.get("id") or item.get("tmdb_id") or item.get("tmdbid") or (item.get("ids") or {}).get("tmdb"))
+                if tmdb_id:
+                    results.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
+            return results
+
         if method == "mdblist_streaming":
             if is_movie is None:
                 raise Failed("MDBList Error: mdblist_streaming can only be used with movie or show libraries")

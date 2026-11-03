@@ -689,6 +689,7 @@ custom_sort_builders = [
     "tmdb_on_the_air",
     "trakt_list",
     "mdblist_streaming",
+    "mdblist_watchlist",
     "floppy_list",
     "floppy_list_details",
     "floppy_tracked",
@@ -729,6 +730,7 @@ custom_sort_builders = [
     "tracearr_watched_media",
     *tautulli.builders,
     "mdblist_list",
+    "mdblist_watchlist",
     "letterboxd_list",
     *letterboxd.semantic_builders,
     "icheckmovies_list",
@@ -832,6 +834,7 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "mdblist_watchlist",
         "flicklist_list",
         "flicklist_list_details",
         "flicklist_user_lists",
@@ -3758,6 +3761,8 @@ class CollectionBuilder:
     def _mdblist(self, method_name, method_data):
         if method_name == "mdblist_streaming":
             self.builders.append((method_name, self.config.MDBList.validate_mdblist_streaming(self.Type, method_data)))
+        elif method_name == "mdblist_watchlist":
+            self.builders.append((method_name, self.config.MDBList.validate_mdblist_watchlist(self.Type, method_data)))
         else:
             for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
                 self.builders.append((method_name, mdb_dict))
