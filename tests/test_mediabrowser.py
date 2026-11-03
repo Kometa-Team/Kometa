@@ -1740,3 +1740,41 @@ def test_collection_delete_invalidates_name_lookup_cache(kind):
     with pytest.raises(Failed, match="not found"):
         library.get_collection("One", force_search=True)
     assert len(session.calls) == 3
+
+
+@pytest.mark.parametrize("request_logging", [True, False])
+def test_native_request_logs_before_waiting_and_omits_credentials(monkeypatch, request_logging):
+    logger = MagicMock()
+    logger.log_requests = request_logging
+    monkeypatch.setattr(browser_module, "logger", logger)
+    clock = iter((10.0, 10.25))
+    monkeypatch.setattr(browser_module.time, "monotonic", lambda: next(clock))
+    log = logger.debug if request_logging else logger.trace
+    session = FakeSession([])
+
+    def request(*args, **kwargs):
+        assert log.call_count == 1
+        assert "Request: GET /Items" in log.call_args.args[0]
+        return FakeResponse({}, status_code=204)
+
+    session.request = request
+    client = MediaBrowserClient(_server(), session=session)
+    client.request("GET", "/Items", params={"limit": 200, "api_key": "private-value"}, headers={"Authorization": "private-value"}, json_body={"password": "private-value"})
+    messages = "\n".join(call.args[0] for call in log.call_args_list)
+    assert "HTTP 204 | 0.25s" in messages
+    assert "limit" in messages
+    assert "private-value" not in messages
+    assert "Authorization" not in messages
+    assert "password" not in messages
+
+
+def test_native_request_logs_failure_type_and_elapsed_time(monkeypatch):
+    logger = MagicMock()
+    logger.log_requests = False
+    monkeypatch.setattr(browser_module, "logger", logger)
+    clock = iter((10.0, 70.0))
+    monkeypatch.setattr(browser_module.time, "monotonic", lambda: next(clock))
+    client = MediaBrowserClient(_server(), session=FakeSession([requests.exceptions.SSLError("TLS failure")]))
+    with pytest.raises(Failed):
+        client.request("GET", "/Items")
+    assert "SSLError | 60.00s" in logger.trace.call_args.args[0]

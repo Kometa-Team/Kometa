@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Log Jellyfin/Emby request starts, response timing/status, and failure types with trace or request logging, so pending requests are visible before timeout.
+
 - Display Shows instead of Seriess in Jellyfin/Emby catalog loading messages.
 
 - Reuse Jellyfin/Emby collection listings for repeated name and missing-collection lookups, refreshing after creation/deletion or an explicit collection-list reload.
