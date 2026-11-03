@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reject items without a release or first-air date when applying numeric `tmdb_year` filters instead of aborting missing-item processing. #3815
 - Apply IMDb keyword filters to missing movies and shows before reporting them or sending them to Radarr/Sonarr. #3816
 
+### Added
+
+- Added `mdblist_watchlist` builder to create collections based on watchlist
+
 ## [v2.5.4] - 2026-10-31
 
 ### Docs
