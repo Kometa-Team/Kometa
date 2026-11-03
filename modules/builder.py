@@ -5169,7 +5169,7 @@ class CollectionBuilder:
                 if not actor_id:
                     error = f"Plex Error: {attribute}: {fvalue} not found"
                     if attribute == "collection" and modifier == ".not" and not plex_search:
-                        logger.warning(f"{error}; ignoring this collection exclusion")
+                        logger.warning(f"Plex Warning: collection: {fvalue} not found; ignoring this collection exclusion")
                         continue
                     if self.details["show_options"]:
                         error += f"\nOptions: {names}"

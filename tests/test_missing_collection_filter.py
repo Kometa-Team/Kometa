@@ -60,7 +60,7 @@ def test_missing_collection_exclusion_keeps_builder_candidates(builder, item_cla
     assert builder.test_logger.error_messages == []
     if not available:
         assert len(builder.test_logger.warning_messages) == 1
-        assert MISSING in builder.test_logger.warning_messages[0]
+        assert builder.test_logger.warning_messages[0] == f"Plex Warning: collection: {MISSING} not found; ignoring this collection exclusion"
 
 
 def test_mixed_collection_exclusions_keep_existing_names(builder):
