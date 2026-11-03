@@ -729,6 +729,7 @@ class MediaBrowser(Library):
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         self.require(Capability.GET_ALL_ITEMS)
         include = _include_type(self, builder_level)
+        label = "Shows" if include == "Series" else f"{include}s"
         catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
         if load:
             self.__dict__.pop("_filter_episode_indexes", None)
@@ -748,9 +749,9 @@ class MediaBrowser(Library):
             catalogs[include] = list(items)
             if not builder_level:
                 self._all_items = list(items)
-            logger.info(f"Loaded {len(items)} {include}s from persistent {self.server.type_label} cache")
+            logger.info(f"Loaded {len(items)} {label} from persistent {self.server.type_label} cache")
             return list(items)
-        logger.info(f"Loading All {include}s from {self.server.type_label} Library: {self.name}")
+        logger.info(f"Loading All {label} from {self.server.type_label} Library: {self.name}")
 
         def progress(count, total):
             logger.info(f"Loaded: {count}/{total}")
@@ -759,7 +760,7 @@ class MediaBrowser(Library):
         items = [self._wrap(row) for row in rows]
         if cache:
             cache.update_native_response(scope, resource, rows)
-        logger.info(f"Loaded {len(items)} {include}s")
+        logger.info(f"Loaded {len(items)} {label}")
         catalogs[include] = list(items)
         if not builder_level:
             self._all_items = list(items)

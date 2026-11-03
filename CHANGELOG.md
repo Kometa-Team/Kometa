@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Display Shows instead of Seriess in Jellyfin/Emby catalog loading messages.
+
 - Reuse Jellyfin/Emby collection listings for repeated name and missing-collection lookups, refreshing after creation/deletion or an explicit collection-list reload.
 
 - Reuse cached episode catalogs and details for Jellyfin/Emby show and season technical filters instead of repeatedly listing each parent’s episodes.
