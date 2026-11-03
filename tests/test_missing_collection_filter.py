@@ -6,6 +6,7 @@ import pytest
 from plexapi.video import Movie, Show
 
 import modules.builder as builder_module
+from modules.log_summary import RunLogSummary
 from modules.plex import Plex
 from modules.util import Failed, FilterFailed
 from tests.conftest import FakeLogger
@@ -105,3 +106,21 @@ def test_other_missing_negative_tags_still_fail_validation(builder, attribute):
 def test_plex_search_missing_collection_still_fails_validation(builder, modifier):
     with pytest.raises(FilterFailed, match="not found"):
         builder.validate_attribute("collection", modifier, f"collection{modifier}", MISSING, True, plex_search=True)
+
+
+@pytest.mark.parametrize("details", [False, True])
+def test_missing_collection_warnings_group_in_run_summary(builder, details):
+    summary = RunLogSummary([], details=details)
+    for name in [MISSING, "Missing Christmas Collection", MISSING]:
+        builder._filters("filters", {"collection.not": name})
+    for warning in builder.test_logger.warning_messages:
+        summary.add("WARNING", warning)
+
+    if details:
+        assert summary.severity_rows("WARNING") == [
+            (f"Plex Warning: collection: {MISSING} not found; ignoring this collection exclusion", 2),
+            ("Plex Warning: collection: Missing Christmas Collection not found; ignoring this collection exclusion", 1),
+        ]
+    else:
+        assert summary.severity_rows("WARNING") == [("Plex Warning: Collection not found; ignoring this collection exclusion", 3)]
+    assert summary.severity_rows("ERROR") == []
