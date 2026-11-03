@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Warn and ignore missing collection names in `collection.not` post-filters instead of rejecting the definition, allowing overlays to continue after an excluded collection is deleted.
 - Preserve IMDb show mappings when TMDb cannot provide a TVDb ID, allowing metadata files to match those shows by IMDb ID. #3820
 - Avoid warning about a missing optional `sort_by` when Letterboxd user-page builders use the default sort. #3814
 - Reject items without a release or first-air date when applying numeric `tmdb_year` filters instead of aborting missing-item processing. #3815
