@@ -181,6 +181,19 @@ class TestMDBList:
         )
         assert result[0]["sort_by"] == "score"
 
+    def test_validate_watchlist_requires_true(self, adapter):
+        assert adapter.validate_mdblist_watchlist("Collection", True) is True
+        with pytest.raises(Failed, match="must be true"):
+            adapter.validate_mdblist_watchlist("Collection", "linaspurinis")
+
+    def test_get_tmdb_ids_for_watchlist_uses_library_media_type(self, adapter):
+        adapter._request = MagicMock(return_value=({"movies": [{"id": 101}, {"tmdb_id": 202}]}, {"X-Has-More": "false"}))
+
+        result = adapter.get_tmdb_ids("mdblist_watchlist", True, is_movie=True)
+
+        assert result == [(101, "tmdb"), (202, "tmdb")]
+        adapter._request.assert_called_once_with("https://api.mdblist.com/watchlist/items/movie", params={"limit": 1000})
+
     def test_validate_streaming_normalizes_options(self, adapter):
         result = adapter.validate_mdblist_streaming(
             "Collection",

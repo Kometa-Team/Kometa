@@ -763,6 +763,11 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/mdblist-list-entry" }] } }
                     ]
                 },
+                "mdblist_watchlist": {
+                    "description": "Fetches the authenticated MDBList user's watchlist. Uses the current movie or show library type.",
+                    "type": "boolean",
+                    "const": true
+                },
                 "mdblist_streaming": { "$ref": "#/definitions/mdblist-streaming-entry" },
 
                 "letterboxd_list": {
