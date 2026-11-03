@@ -1799,3 +1799,57 @@ def test_series_page_size_preserves_other_defaults_and_explicit_limits(include, 
         params["limit"] = override
     client.items(params)
     assert session.calls[0]["params"]["limit"] == expected
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_interrupted_catalog_resumes_saved_pages_after_restart(tmp_path, monkeypatch, kind):
+    first_page = [{"Id": "one", "Type": "Episode"}]
+    last_page = [{"Id": "two", "Type": "Episode"}]
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": first_page, "TotalRecordCount": 2}), requests.exceptions.SSLError("interrupted")])
+    with pytest.raises(Failed):
+        library.get_all(builder_level="episode")
+    cache, scope = library._persistent_catalog_cache()
+    assert cache.query_native_response(scope, "catalog:Episode") is None
+    assert "Episode" not in library._catalog_items_by_type
+    cache.connection.close()
+
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": last_page, "TotalRecordCount": 2})])
+    items = other.get_all(builder_level="episode")
+    assert [item.ratingKey for item in items] == ["one", "two"]
+    assert len(session.calls) == 1
+    assert session.calls[0]["params"]["startIndex"] == 1
+    cache, scope = other._persistent_catalog_cache()
+    assert len(cache.query_native_response(scope, "catalog:Episode")) == 2
+    assert cache.connection.execute("SELECT count(*) FROM silo_response_cache WHERE scope = ? AND resource LIKE 'catalog:Episode:pages%'", (scope,)).fetchone()[0] == 0
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_forced_catalog_load_does_not_mix_old_and_new_checkpoint_pages(tmp_path, monkeypatch, kind):
+    library, session = _persistent_browser_library(
+        tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "old", "Type": "Episode"}], "TotalRecordCount": 1}), FakeResponse({"Items": [{"Id": "new-one", "Type": "Episode"}], "TotalRecordCount": 2}), requests.exceptions.SSLError("interrupted")]
+    )
+    library.get_all(builder_level="episode")
+    with pytest.raises(Failed):
+        library.get_all(builder_level="episode", load=True)
+    cache, scope = library._persistent_catalog_cache()
+    assert cache.query_native_response(scope, "catalog:Episode") is None
+    cache.connection.close()
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "new-two", "Type": "Episode"}], "TotalRecordCount": 2})])
+    assert [item.ratingKey for item in other.get_all(builder_level="episode")] == ["new-one", "new-two"]
+    assert len(session.calls) == 1
+    other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_expired_partial_catalog_starts_a_fresh_page_generation(tmp_path, monkeypatch, kind):
+    library, _ = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "old", "Type": "Episode"}], "TotalRecordCount": 2}), requests.exceptions.SSLError("interrupted")])
+    with pytest.raises(Failed):
+        library.get_all(builder_level="episode")
+    with library.config.Cache.connection:
+        library.config.Cache.connection.execute("UPDATE silo_response_cache SET saved_at = 0")
+    library.config.Cache.connection.close()
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "fresh", "Type": "Episode"}], "TotalRecordCount": 1})])
+    assert [item.ratingKey for item in other.get_all(builder_level="episode")] == ["fresh"]
+    assert session.calls[0]["params"]["startIndex"] == 0
+    other.config.Cache.connection.close()

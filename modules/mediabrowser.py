@@ -12,6 +12,7 @@ import json
 import os
 import time
 import unicodedata
+import uuid
 from collections.abc import Iterable
 from datetime import datetime, timezone
 from types import SimpleNamespace
@@ -226,7 +227,7 @@ class MediaBrowserClient:
             os_name = data.get("OperatingSystem") or os_name
         return {"name": data.get("ServerName"), "version": data.get("Version"), "os": os_name, "os_version": data.get("OperatingSystemVersion")}
 
-    def items(self, params, limit=None, one_page=False, progress=None):
+    def items(self, params, limit=None, one_page=False, progress=None, page_cache=None):
         self.ensure_user()
         query = {"userId": self.user_id, "fields": ITEM_FIELDS, "recursive": "true", "enableUserData": "true"}
         query.update({key: value for key, value in (params or {}).items() if value is not None})
@@ -241,7 +242,14 @@ class MediaBrowserClient:
         while True:
             query["startIndex"] = start
             query["limit"] = page_size
-            data = self.request("GET", "/Items", params=dict(query)) or {}
+            resource = f"{page_cache[2]}:{start}:{page_size}" if page_cache else None
+            data = page_cache[0].query_native_response(page_cache[1], resource) if page_cache else None
+            if not isinstance(data, dict):
+                data = self.request("GET", "/Items", params=dict(query)) or {}
+                if page_cache and isinstance(data.get("Items"), list):
+                    page_cache[0].update_native_response(page_cache[1], resource, data)
+            else:
+                logger.trace(f"{self.server.type_label} Cache: reused /Items page at {start} (limit {page_size})")
             batch = data.get("Items") or []
             if one_page:
                 return batch
@@ -765,10 +773,23 @@ class MediaBrowser(Library):
         def progress(count, total):
             logger.info(f"Loaded: {count}/{total}")
 
-        rows = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true"}, progress=progress)
+        page_cache = None
+        if cache:
+            manifest_resource = f"{resource}:pages"
+            manifest = cache.query_native_response(scope, manifest_resource) if not load else None
+            if not isinstance(manifest, dict) or not isinstance(manifest.get("generation"), str):
+                manifest = {"generation": uuid.uuid4().hex}
+                cache.update_native_response(scope, manifest_resource, manifest)
+            else:
+                logger.info(f"Reusing saved {label} pages from persistent {self.server.type_label} cache")
+            if load:
+                cache.delete_native_response(scope, resource)
+            page_cache = (cache, scope, f"{manifest_resource}:{manifest['generation']}")
+        rows = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true"}, progress=progress, page_cache=page_cache)
         items = [self._wrap(row) for row in rows]
         if cache:
             cache.update_native_response(scope, resource, rows)
+            cache.delete_native_response(scope, manifest_resource, descendants=True)
         logger.info(f"Loaded {len(items)} {label}")
         catalogs[include] = list(items)
         if not builder_level:

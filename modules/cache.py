@@ -1859,3 +1859,10 @@ class Cache:
     query_native_response = query_silo_response
     update_native_response = update_silo_response
     invalidate_native_responses = invalidate_silo_responses
+
+    def delete_native_response(self, scope, resource, descendants=False):
+        with self.connection as connection:
+            if descendants:
+                connection.execute("DELETE FROM silo_response_cache WHERE scope = ? AND (resource = ? OR substr(resource, 1, length(?) + 1) = ? || ':')", (scope, resource, resource, resource))
+            else:
+                connection.execute("DELETE FROM silo_response_cache WHERE scope = ? AND resource = ?", (scope, resource))
