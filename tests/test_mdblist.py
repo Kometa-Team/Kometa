@@ -192,9 +192,7 @@ class TestMDBList:
         result = adapter.get_tmdb_ids("mdblist_watchlist", True, is_movie=True)
 
         assert result == [(101, "tmdb"), (202, "tmdb")]
-        adapter._request.assert_called_once_with(
-            "https://api.mdblist.com/watchlist/items/movie", params={"limit": 1000}
-        )
+        adapter._request.assert_called_once_with("https://api.mdblist.com/watchlist/items/movie", params={"limit": 1000})
 
     def test_validate_streaming_normalizes_options(self, adapter):
         result = adapter.validate_mdblist_streaming(
