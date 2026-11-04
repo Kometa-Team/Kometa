@@ -861,7 +861,7 @@ class TestGetDict:
         assert get_dict("collections", None) == {}
 
 
-@pytest.mark.parametrize("server_type", ["silo", "plex"])
+@pytest.mark.parametrize("server_type", ["silo", "jellyfin", "plex"])
 def test_network_dynamic_collections_allow_silo_and_keep_plex_agent_guard(monkeypatch, server_type):
     logger = FakeLogger()
     monkeypatch.setattr("modules.meta.logger", logger)
@@ -878,7 +878,7 @@ def test_network_dynamic_collections_allow_silo_and_keep_plex_agent_guard(monkey
         get_tags=MagicMock(return_value=[SimpleNamespace(key="HBO", title="HBO")]),
     )
     config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[], Cache=None)
-    if server_type == "silo":
+    if server_type in ("silo", "jellyfin"):
         metadata_file = MetadataFile(config, library, "File", "networks.yml", {}, None, "collection")
         assert logger.error_messages == []
         library.get_tags.assert_called_once_with("network")

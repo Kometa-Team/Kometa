@@ -61,7 +61,7 @@ FIELD_TYPES = {
     **dict.fromkeys(BOOLEAN_FIELDS, "boolean"),
     **dict.fromkeys(TRACK_FIELDS, "text"),
     **dict.fromkeys(("title", "edition", "filepath", "folder", "container"), "text"),
-    **dict.fromkeys(("genre", "studio", "country", "actor", "director", "writer", "producer", "content_rating", "resolution", "audio_language", "subtitle_language", "original_language", "collection"), "tags"),
+    **dict.fromkeys(("genre", "studio", "network", "country", "actor", "director", "writer", "producer", "content_rating", "resolution", "audio_language", "subtitle_language", "original_language", "collection"), "tags"),
     "release": "date",
     "added": "date",
 }
@@ -127,6 +127,8 @@ def _max(values):
 
 
 def values(item, field):
+    if field == "network":
+        return common_values(item, "studio")
     raw = item.data.get("native", {})
     sources = raw.get("MediaSources")
     versions = sources if isinstance(sources, list) and sources else [raw]

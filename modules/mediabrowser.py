@@ -1280,6 +1280,8 @@ class MediaBrowser(Library):
             names = {name for item in self._local_search_items(builder_level="episode" if tag.startswith("episode.") else None) for name in values(self._search_metadata(item), field)}
             return [SimpleNamespace(key=name, title=name) for name in sorted(names)]
         fields = {"contentRating": "contentRating", "content_rating": "contentRating", "genre": "genres", "studio": "studios", "country": "countries"}
+        if tag == "network" and self.server.type_name == "jellyfin" and self.is_show:
+            fields["network"] = "studios"
         field = fields.get(tag)
         if field is None:
             raise Failed(f"{self.server.type_label} Error: Dynamic collection tag '{tag}' is not supported; supported tags: genre, studio, country, content_rating, audio_language, subtitle_language, resolution, year, decade")

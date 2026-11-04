@@ -1946,3 +1946,16 @@ def test_collection_listing_can_omit_expensive_counts(kind):
     fields = session.calls[0]["params"]["fields"].split(",")
     assert "ChildCount" not in fields
     assert "RecursiveItemCount" not in fields
+
+
+def test_jellyfin_network_discovery_and_search_share_stored_studios():
+    library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
+    library.is_show = True
+    library.is_movie = False
+    shows = [MediaBrowserItem({"Id": "1", "Name": "One", "Type": "Series", "Studios": [{"Name": "HBO"}]}, library), MediaBrowserItem({"Id": "2", "Name": "Two", "Type": "Series", "Studios": [{"Name": "BBC"}]}, library)]
+    library.get_all = lambda: shows
+    assert [tag.title for tag in library.get_tags("network")] == ["BBC", "HBO"]
+    selector = browser_module.compile_selector({"network": "HBO"})
+    assert selector(library._search_metadata(shows[0]))
+    assert not selector(library._search_metadata(shows[1]))
+    assert library.client.session.calls == []

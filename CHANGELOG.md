@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support Jellyfin network dynamic collections using the TV networks stored in series studio metadata.
+
 - Support `delete_collections.less: all` to explicitly ignore collection size and skip Jellyfin/Emby count requests when no numeric size filter is needed.
 
 - Add native Jellyfin/Emby version splitting and stored community, critic, and personal rating sources for mass updates and rating overlays, including TMDb episode lookup.

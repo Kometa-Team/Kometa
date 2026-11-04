@@ -148,3 +148,5 @@ Collection operations refresh the paginated collection listing once, including t
 Reads of known Jellyfin collections before metadata writes also disable user-data aggregation. Those reads retain the broader metadata fields needed to preserve existing values during the update.
 
 Set `delete_collections.less: all` to disable size filtering explicitly. Collection operations omit expensive count fields when `less` is `all` or absent, while retaining configured/managed checks. Numeric thresholds keep their exact meaning and require counts.
+
+Network dynamic collections discover and filter shows using their stored `Studios` values: The Jellyfin TMDb series provider stores TV networks in this field. Results depend on the metadata populated by your chosen provider or local metadata files. No extra per-show external network lookup is performed.
