@@ -191,7 +191,19 @@ class MediaBrowserClient:
             raise Failed(f"{self.server.type_label} Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}")
         non_media = parts[0] == "Items" and len(parts) > 1 and parts[1] in getattr(self, "_non_media_item_ids", set())
         if method not in ("GET", "HEAD") and parts[0] in ("Items", "Videos", "Users", "UserItems", "Library") and not non_media:
-            self._invalidate_persistent_catalogs()
+            image_write = parts[0] == "Items" and len(parts) >= 3 and parts[2] in ("Images", "RemoteImages")
+            user_item_id = parts[1] if parts[0] == "UserItems" and len(parts) == 3 and parts[2] == "UserData" else parts[3] if parts[0] == "Users" and len(parts) == 5 and parts[2] == "Items" and parts[4] == "UserData" else None
+            metadata_write = method == "POST" and item_write and isinstance(json_body, dict)
+            user_write = method == "POST" and user_item_id is not None and isinstance(json_body, dict)
+            if image_write or metadata_write or user_write:
+                item_id = user_item_id if user_write else parts[1]
+                for cache, scope in getattr(self, "_persistent_catalog_caches", {}).values():
+                    if image_write:
+                        cache.delete_native_response(scope, f"item:{item_id}")
+                    else:
+                        cache.patch_native_item(scope, item_id, {"UserData": json_body} if user_write else json_body)
+            else:
+                self._invalidate_persistent_catalogs()
         if response.status_code == 204 or not response.content:
             return None
         if response.content[:1] in (b"{", b"["):

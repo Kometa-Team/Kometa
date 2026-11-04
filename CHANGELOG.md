@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Preserve Jellyfin/Emby catalogs across overlay artwork writes and patch only matching cached items after metadata/user-state writes without extending cache expiry.
+
 - Support `plex_all` season and episode selection on Jellyfin, Emby, and Silo using the cached catalog without fetching media details for every item.
 
 - Skip Jellyfin TV studio dynamic collections with a warning rather than duplicating network collections.

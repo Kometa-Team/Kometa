@@ -1656,7 +1656,7 @@ def test_persistent_browser_cache_is_scoped(tmp_path, monkeypatch, kind, changed
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-@pytest.mark.parametrize("method,path", [("POST", "/Items/one"), ("POST", "/Items/one/Images/Primary"), ("DELETE", "/Videos/one/AlternateSources"), ("POST", "/UserItems/one/UserData"), ("POST", "/Users/user/Items/one/UserData")])
+@pytest.mark.parametrize("method,path", [("POST", "/Items/one"), ("DELETE", "/Videos/one/AlternateSources")])
 def test_browser_writes_invalidate_persistent_catalogs_and_details(tmp_path, monkeypatch, kind, method, path):
     library, _ = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse({}, status_code=204)])
     library.get_all()
@@ -2034,3 +2034,45 @@ def test_episode_duplicate_uses_child_sources_and_reuses_details(kind):
     assert not predicate(library._search_metadata(single))
     assert not predicate(library._search_metadata(MediaBrowserItem({"Id": "other", "Type": "Series"}, library)))
     assert len(session.calls) == 1
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_overlay_writes_preserve_episode_catalog_across_restart(tmp_path, monkeypatch, kind):
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({}, status_code=204), FakeResponse({}, status_code=204)])
+    cache, scope = library._persistent_catalog_cache()
+    show = {"Id": "show", "Type": "Series", "Tags": [], "Overview": "Keep"}
+    episodes = [{"Id": "episode", "Type": "Episode", "SeriesId": "show", "Tags": ["Unchanged"]}]
+    cache.update_native_response(scope, "catalog:Series", [show])
+    cache.update_native_response(scope, "catalog:Series:pages:generation:0:20", {"Items": [show], "TotalRecordCount": 1})
+    cache.update_native_response(scope, "catalog:Episode", episodes)
+    cache.update_native_response(scope, "item:episode", episodes[0])
+    cache.update_native_response(scope, "item:show", show)
+    before = cache.connection.execute("SELECT resource, saved_at FROM silo_response_cache WHERE scope = ?", (scope,)).fetchall()
+    library.client.request("POST", "/Items/show/Images/Primary", data=b"image")
+    assert cache.query_native_response(scope, "item:show") is None
+    library.client.request("POST", "/Items/show", json_body={**show, "Tags": ["Overlay"]})
+    assert cache.query_native_response(scope, "catalog:Series")[0]["Tags"] == ["Overlay"]
+    assert cache.query_native_response(scope, "catalog:Series")[0]["Overview"] == "Keep"
+    assert cache.query_native_response(scope, "catalog:Series:pages:generation:0:20")["Items"][0]["Tags"] == ["Overlay"]
+    assert cache.query_native_response(scope, "catalog:Episode") == episodes
+    assert cache.query_native_response(scope, "item:episode") == episodes[0]
+    after = dict((r["resource"], r["saved_at"]) for r in cache.connection.execute("SELECT resource, saved_at FROM silo_response_cache WHERE scope = ?", (scope,)))
+    assert all(after[r["resource"]] == r["saved_at"] for r in before if r["resource"] in after)
+    cache.connection.close()
+    other, other_session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    assert other.get_all(builder_level="episode")[0].ratingKey == "episode"
+    assert other_session.calls == []
+    other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind,path", [("jellyfin", "/UserItems/one/UserData"), ("emby", "/Users/user/Items/one/UserData")])
+def test_user_state_write_patches_only_matching_cached_item(tmp_path, monkeypatch, kind, path):
+    library, _ = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({}, status_code=204)])
+    cache, scope = library._persistent_catalog_cache()
+    record = {"Id": "one", "UserData": {"Played": False, "Rating": 8}}
+    cache.update_native_response(scope, "catalog:Episode", [record, {"Id": "other"}])
+    cache.update_native_response(scope, "item:one", record)
+    library.client.request("POST", path, json_body={"Played": True})
+    assert cache.query_native_response(scope, "item:one")["UserData"] == {"Played": True, "Rating": 8}
+    assert cache.query_native_response(scope, "catalog:Episode")[1] == {"Id": "other"}
+    cache.connection.close()

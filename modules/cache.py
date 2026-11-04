@@ -1860,6 +1860,33 @@ class Cache:
     update_native_response = update_silo_response
     invalidate_native_responses = invalidate_silo_responses
 
+    def patch_native_item(self, scope, item_id, fields):
+        """Patch existing DTOs without extending their original cache lifetime."""
+        with self.connection as connection:
+            item_type = fields.get("Type")
+            catalog_prefix = f"catalog:{item_type}" if item_type in ("Movie", "Series", "Season", "Episode") else "catalog:"
+            rows = connection.execute(
+                "SELECT resource, payload FROM silo_response_cache WHERE scope = ? AND (resource = ? OR resource = ? OR resource LIKE ? OR (? AND resource LIKE 'episodes:%'))",
+                (scope, f"item:{item_id}", catalog_prefix, f"{catalog_prefix}:%" if item_type in ("Movie", "Series", "Season", "Episode") else "catalog:%", item_type in (None, "Episode")),
+            ).fetchall()
+            for row in rows:
+                try:
+                    payload = json.loads(row["payload"])
+                except (ValueError, TypeError):
+                    continue
+                records = payload if isinstance(payload, list) else payload.get("Items", [payload]) if isinstance(payload, dict) else []
+                changed = False
+                for record in records:
+                    if isinstance(record, dict) and str(record.get("Id")) == str(item_id):
+                        for key, value in fields.items():
+                            if key == "UserData" and isinstance(value, dict):
+                                record[key] = {**(record.get(key) or {}), **value}
+                            else:
+                                record[key] = value
+                        changed = True
+                if changed:
+                    connection.execute("UPDATE silo_response_cache SET payload = ? WHERE scope = ? AND resource = ?", (json.dumps(payload), scope, row["resource"]))
+
     def delete_native_response(self, scope, resource, descendants=False):
         with self.connection as connection:
             if descendants:
