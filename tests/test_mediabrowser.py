@@ -90,7 +90,7 @@ def test_new_jellyfin_collection_is_locked_before_provider_refresh():
 @pytest.mark.parametrize("path", ["/collections/Best of 2016 [boxset]", r"C:\collections\Best of 2016 [boxset]"])
 def test_recovers_provider_renamed_collection_using_original_folder(path):
     record = {"Id": "collection", "Name": "Best of the Best Collection", "Path": path, "ProviderIds": {"Tmdb": "wrong"}, "Overview": "Keep"}
-    session = FakeSession([FakeResponse(record), FakeResponse(None, status_code=204)])
+    session = FakeSession([FakeResponse({"Items": [record], "TotalRecordCount": 1}), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server(), session=session))
     collection = library._wrap_collection(record)
     library._collections = lambda: [collection]
@@ -596,7 +596,9 @@ def test_collection_metadata_discovers_and_uploads_assets(tmp_path, monkeypatch,
         monkeypatch.setattr(module, "logger", FakeLogger())
     record = {"Id": "col-trek", "Name": "Star Trek Stuff", "Type": "BoxSet", "Tags": ["Kometa"]}
     reload_response = {"Items": [record], "TotalRecordCount": 1} if kind == "jellyfin" else record
-    session = FakeSession([FakeResponse(reload_response), FakeResponse(record), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)])
+    session = FakeSession(
+        [FakeResponse(reload_response), FakeResponse(({"Items": [record], "TotalRecordCount": 1} if kind == "jellyfin" else record)), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)]
+    )
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     library.config.Cache = None
     library.collection_images = {}
@@ -761,7 +763,7 @@ def test_local_overlay_search_does_not_guess_missing_metadata(kind):
 @pytest.mark.parametrize("order,display_order", [("release", "PremiereDate"), ("alpha", "SortName"), ("title.asc", "SortName")])
 def test_native_collection_display_order(kind, order, display_order):
     record = {"Id": "col-1", "Name": "Example", "Type": "BoxSet", "Overview": "Keep this"}
-    session = FakeSession([FakeResponse(record), FakeResponse(None, status_code=204)])
+    session = FakeSession([FakeResponse(({"Items": [record], "TotalRecordCount": 1} if kind == "jellyfin" else record)), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     collection = library._wrap_collection(record)
     assert library.collection_order_query(collection, order) is True
@@ -778,7 +780,7 @@ def test_jellyfin_native_sort_runs_through_builder(monkeypatch, field, expected)
     from tests.factories import make_builder
 
     monkeypatch.setattr(builder_module, "logger", FakeLogger())
-    session = FakeSession([FakeResponse({"Id": "col-1", "Name": "Example"}), FakeResponse(None, status_code=204)])
+    session = FakeSession([FakeResponse({"Items": [{"Id": "col-1", "Name": "Example"}], "TotalRecordCount": 1}), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server(), session=session))
     collection = library._wrap_collection({"Id": "col-1", "Name": "Example"})
     make_builder(library=library, obj=collection, custom_sort=[field]).sort_collection()
@@ -1918,3 +1920,19 @@ def test_missing_jellyfin_collection_reload_reports_not_found():
     item = library._wrap_collection({"Id": "gone", "Name": "Gone", "Type": "BoxSet"})
     with pytest.raises(browser_module.util.CollectionNotFound):
         library.reload(item, force=True)
+
+
+def test_jellyfin_collection_metadata_write_avoids_single_item_endpoint():
+    record = {"Id": "box", "Type": "BoxSet", "Name": "Box", "Overview": "Keep", "Tags": ["Kometa"], "Genres": ["Drama"]}
+    session = FakeSession([FakeResponse({"Items": [record], "TotalRecordCount": 1}), FakeResponse({"Items": [record], "TotalRecordCount": 1}), FakeResponse(None, status_code=204)])
+    library = _library(MediaBrowserClient(_server(), session=session))
+    item = library.get_collection("Box")
+    library.client.update_item(item.ratingKey, {"Name": "New"})
+    reads = [call for call in session.calls if call["method"] == "GET"]
+    assert all(call["url"].endswith("/Items") for call in reads)
+    assert all(call["params"]["enableUserData"] == "false" for call in reads)
+    payload = session.calls[-1]["json"]
+    assert payload["Name"] == "New"
+    assert payload["Overview"] == "Keep"
+    assert payload["Tags"] == ["Kometa"]
+    assert payload["Genres"] == ["Drama"]

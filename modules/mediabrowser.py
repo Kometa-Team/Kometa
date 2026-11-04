@@ -201,6 +201,8 @@ class MediaBrowserClient:
                 for record in records:
                     if isinstance(record, dict) and record.get("Type") in ("BoxSet", "Playlist") and record.get("Id"):
                         self.__dict__.setdefault("_non_media_item_ids", set()).add(str(record["Id"]))
+                        if record.get("Type") == "BoxSet":
+                            self.__dict__.setdefault("_collection_item_ids", set()).add(str(record["Id"]))
                 return payload
             except ValueError as error:
                 raise Failed(f"{self.server.type_label} Error: {method} {path} did not return JSON") from error
@@ -263,18 +265,20 @@ class MediaBrowserClient:
                 return rows[:limit] if limit else rows
 
     def get_item(self, item_id):
+        if self.server.type_name == "jellyfin" and str(item_id) in getattr(self, "_collection_item_ids", set()):
+            return self.get_collection_item(item_id, fields=ITEM_FIELDS)
         if self.server.type_name == "emby":
             user_id = self.ensure_user()
             return self.request("GET", f"/Users/{_path_id(user_id)}/Items/{_path_id(item_id)}") or {}
         params = {"userId": self.user_id} if self.user_id else None
         return self.request("GET", f"/Items/{_path_id(item_id)}", params=params) or {}
 
-    def get_collection_item(self, item_id):
+    def get_collection_item(self, item_id, fields=COLLECTION_FIELDS):
         if self.server.type_name != "jellyfin":
             return self.get_item(item_id)
         # The single-item endpoint aggregates playback state for box sets.
         # Use an ID-filtered listing so Jellyfin can skip that expensive work.
-        rows = self.items({"ids": str(item_id), "fields": COLLECTION_FIELDS, "enableUserData": "false"}, limit=1)
+        rows = self.items({"ids": str(item_id), "fields": fields, "enableUserData": "false"}, limit=1)
         if not rows:
             raise util.CollectionNotFound(f"{self.server.type_label} Error: Collection {item_id} not found")
         return rows[0]
@@ -1445,6 +1449,8 @@ class MediaBrowser(Library):
     def _wrap_collection(self, row):
         row = dict(row)
         row["Type"] = "BoxSet"
+        if row.get("Id"):
+            self.client.__dict__.setdefault("_collection_item_ids", set()).add(str(row["Id"]))
         return MediaBrowserCollection(row, self)
 
     def _wrap_playlist(self, row):

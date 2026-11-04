@@ -144,3 +144,5 @@ Collection name lookups use pages of 20 box sets without user-state aggregation,
 Jellyfin collection metadata reloads also use an ID-filtered listing with user data disabled, avoiding expensive box-set playback-state aggregation. Movie and episode reads retain their user data.
 
 Collection operations refresh the paginated collection listing once, including tags and item counts, and evaluate it directly without a request per box set. Collection listing and reload requests use a dedicated metadata field set rather than the general movie/show fields.
+
+Reads of known Jellyfin collections before metadata writes also disable user-data aggregation. Those reads retain the broader metadata fields needed to preserve existing values during the update.

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Route Jellyfin collection reads before metadata writes through the user-data-free listing endpoint as well as collection reloads.
+
 - Use a single fresh paginated Jellyfin/Emby collection listing for collection operations instead of reloading each box set, and request only collection metadata fields.
 
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
