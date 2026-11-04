@@ -93,7 +93,7 @@ psutil==7.2.2
     # via kometa
 pycparser==3.12 ; implementation_name != 'PyPy'
     # via cffi
-pydantic==2.14.1
+pydantic==2.14.2
     # via serializd-py
 pydantic-core==2.50.1
     # via pydantic
