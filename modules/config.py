@@ -2046,13 +2046,17 @@ class ConfigFile:
                                     section_final[op] = {
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
                                         "configured": check_for_attribute(input_dict, "configured", var_type="bool", default_is_none=True, save=False),
-                                        "less": check_for_attribute(
-                                            input_dict,
-                                            "less",
-                                            var_type="int",
-                                            default_is_none=True,
-                                            save=False,
-                                            int_min=1,
+                                        "less": (
+                                            "all"
+                                            if str(input_dict.get("less", "")).lower() == "all"
+                                            else check_for_attribute(
+                                                input_dict,
+                                                "less",
+                                                var_type="int",
+                                                default_is_none=True,
+                                                save=False,
+                                                int_min=1,
+                                            )
                                         ),
                                         "ignore_empty_smart_collections": check_for_attribute(
                                             input_dict,

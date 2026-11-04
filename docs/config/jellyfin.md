@@ -146,3 +146,5 @@ Jellyfin collection metadata reloads also use an ID-filtered listing with user d
 Collection operations refresh the paginated collection listing once, including tags and item counts, and evaluate it directly without a request per box set. Collection listing and reload requests use a dedicated metadata field set rather than the general movie/show fields.
 
 Reads of known Jellyfin collections before metadata writes also disable user-data aggregation. Those reads retain the broader metadata fields needed to preserve existing values during the update.
+
+Set `delete_collections.less: all` to disable size filtering explicitly. Collection operations omit expensive count fields when `less` is `all` or absent, while retaining configured/managed checks. Numeric thresholds keep their exact meaning and require counts.

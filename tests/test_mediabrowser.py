@@ -1936,3 +1936,13 @@ def test_jellyfin_collection_metadata_write_avoids_single_item_endpoint():
     assert payload["Overview"] == "Keep"
     assert payload["Tags"] == ["Kometa"]
     assert payload["Genres"] == ["Drama"]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_listing_can_omit_expensive_counts(kind):
+    session = FakeSession([FakeResponse({"Items": [{"Id": "box", "Name": "Box", "Type": "BoxSet", "Tags": ["Kometa"]}], "TotalRecordCount": 1})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    assert library.get_all_collections(load=True, include_counts=False)[0].tags == ["Kometa"]
+    fields = session.calls[0]["params"]["fields"].split(",")
+    assert "ChildCount" not in fields
+    assert "RecursiveItemCount" not in fields

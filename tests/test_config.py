@@ -1257,3 +1257,18 @@ tmdb:
     assert bool(params["mass_imdb_parental_labels"]) is (kind != "silo")
     assert bool(params["mass_square_art_update"]) is (kind != "silo")
     assert any("not supported" in message for message in config_module.logger.error_messages)
+
+
+@pytest.mark.parametrize("value,expected", [("all", "all"), ("5", 5), ("99999", 99999)])
+def test_delete_collection_size_accepts_all_and_numeric_thresholds(tmp_path, monkeypatch, value, expected):
+    captured = []
+    original = config_module.Plex
+
+    def capture(config, params):
+        captured.append(params["delete_collections"])
+        return original(config, params)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    yaml = BASE_CONFIG.replace("    collection_files: []", f"    collection_files: []\n    operations:\n      delete_collections:\n        less: {value}")
+    make_config(tmp_path, config_yaml=yaml)
+    assert captured[0]["less"] == expected

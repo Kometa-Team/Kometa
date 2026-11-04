@@ -718,6 +718,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     | `managed: false` | Collection must be Unmanaged to be deleted. (collection does not have the `Kometa` label) |
     | `configured: true` | Collection must be Configured to be deleted. (collection is in the config file of the specific Kometa run) |
     | `configured: false` | Collection must be Unconfigured to be deleted. (collection is not in the config file of the specific Kometa run) |
+    | `less: all` | Delete matching collections regardless of size, without requesting item counts. The `managed` and `configured` conditions still apply. |
     | `less: ###` | Collection must contain less than the given number of items to be deleted. `###` is a Number greater than 0. Optional value which if undefined means collections will be deleted regardless of how many items they have. |
     | `ignore_empty_smart_collections: false` | Do not apply less check to empty smart collections. This allows retaining things like smart collections that show movies without subtitles or the like. |
 

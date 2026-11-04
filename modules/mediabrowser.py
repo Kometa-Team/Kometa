@@ -1416,18 +1416,19 @@ class MediaBrowser(Library):
 
         return Plex.split(self, text)  # type: ignore[arg-type]  # split only reads library fields such as is_movie
 
-    def get_all_collections(self, label=None, load=False):
+    def get_all_collections(self, label=None, load=False, include_counts=True):
         if load:
             self.__dict__.pop("_collection_catalog", None)
-        collections = self._collections()
+        collections = self._collections() if include_counts else self._collections(include_counts=False)
         if label is None:
             return collections
         return [collection for collection in collections if str(label) in list(getattr(collection, "tags", None) or [])]
 
-    def _collections(self):
+    def _collections(self, include_counts=True):
         self.require(Capability.GET_ALL_COLLECTIONS)
         if "_collection_catalog" not in self.__dict__:
-            self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": COLLECTION_FIELDS, "enableUserData": "false"})]
+            fields = COLLECTION_FIELDS if include_counts else ",".join(field for field in COLLECTION_FIELDS.split(",") if field not in ("ChildCount", "RecursiveItemCount"))
+            self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": fields, "enableUserData": "false"})]
         return list(self._collection_catalog)
 
     def _playlists(self):

@@ -238,7 +238,7 @@ class Operations:
             return False
 
         less_check = True
-        if less_in is not None:
+        if less_in is not None and less_in != "all":
             col_count = col_in.childCount if col_in.childCount is not None else 0
             less_check = col_count < less_in
             logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
@@ -1867,7 +1867,10 @@ class Operations:
             browser_collections = getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby")
             # Native listings include tags and counts. Refresh once after any
             # membership edits, rather than reloading every collection.
-            all_collections = self.library.get_all_collections(load=True) if browser_collections else self.library.get_all_collections()
+            if browser_collections and less in (None, "all"):
+                all_collections = self.library.get_all_collections(load=True, include_counts=False)
+            else:
+                all_collections = self.library.get_all_collections(load=True) if browser_collections else self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 try:

@@ -1384,3 +1384,27 @@ def test_browser_collection_operations_use_one_fresh_listing(monkeypatch, kind):
     library.get_all_collections.assert_called_once_with(load=True)
     library.reload.assert_not_called()
     library.delete_collection.assert_called_once_with(empty)
+
+
+@pytest.mark.parametrize("managed,configured,expected", [(None, None, True), (False, None, False), (True, False, True), (True, True, False)])
+def test_less_all_preserves_other_deletion_conditions(managed, configured, expected):
+    ops = make_ops([], [])
+    col = SimpleNamespace(title="Unconfigured")
+    assert ops._should_be_deleted(col, ["Kometa"], configured, managed, "all") is expected
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_less_all_collection_operations_skip_count_loading(monkeypatch, kind):
+    monkeypatch.setattr(ops_module, "logger", MagicMock())
+    library = make_mass_edit_library([], items_library_operation=False)
+    library.server = SimpleNamespace(type_name=kind)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.delete_collections = {"managed": None, "configured": None, "less": "all", "ignore_empty_smart_collections": True}
+    col = SimpleNamespace(title="Any size", smart=False)
+    library.get_all_collections.return_value = [col]
+    library.item_labels.return_value = []
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.get_all_collections.assert_called_once_with(load=True, include_counts=False)
+    library.reload.assert_not_called()
+    library.delete_collection.assert_called_once_with(col)

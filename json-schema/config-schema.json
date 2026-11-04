@@ -6802,7 +6802,7 @@
                   "type": "boolean"
                 },
                 "less": {
-                  "type": "integer"
+                  "oneOf": [{"type": "integer", "minimum": 1}, {"const": "all"}]
                 },
                 "ignore_empty_smart_collections": {
                   "type": "boolean"
