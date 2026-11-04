@@ -72,6 +72,9 @@
                 "limit": { "type": "integer", "minimum": 1 },
 
                 "plex_all": { "type": "boolean" },
+                "jellyfin_all": { "type": "boolean" },
+                "emby_all": { "type": "boolean" },
+                "silo_all": { "type": "boolean" },
                 "plex_search": {
                     "oneOf": [
                         { "$ref": "#/definitions/plex-filter-block" },

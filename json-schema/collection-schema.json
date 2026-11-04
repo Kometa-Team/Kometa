@@ -362,6 +362,9 @@
                     ]
                 },
                 "plex_all": { "type": "boolean", "description": "Get every item in the library." },
+                "jellyfin_all": { "type": "boolean" },
+                "emby_all": { "type": "boolean" },
+                "silo_all": { "type": "boolean" },
                 "plex_id": {
                     "description": "Plex metadata ID(s) or full plex:// GUID(s).",
                     "oneOf": [

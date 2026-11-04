@@ -117,6 +117,9 @@
                 "tmdb_person_offset": { "type": "integer", "minimum": 0 },
 
                 "plex_all": { "type": "boolean" },
+                "jellyfin_all": { "type": "boolean" },
+                "emby_all": { "type": "boolean" },
+                "silo_all": { "type": "boolean" },
                 "plex_search": { "$ref": "#/definitions/plex-filter-block" },
                 "plex_watchlist": {
                     "type": "string",

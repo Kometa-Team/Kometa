@@ -1331,6 +1331,8 @@ class Silo(Library):
         logger.info(f"Scanned: {total}/{total}")
 
     def get_rating_keys(self, method, data, is_playlist=False):
+        if method == f"{self.server.type_name}_all":
+            method = "plex_all"
         if method == "plex_search":
             items = self.fetchItems(data[2])
         elif method == "plex_all":

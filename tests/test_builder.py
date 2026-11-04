@@ -2499,3 +2499,19 @@ def test_collection_file_item_roots_preserve_mapping_inheritance(monkeypatch, gr
     builder._resolve_collection_asset_directory(metadata, {})
     assert builder.collection_asset_directory == (inherited if grouped and inherited else ["file items"])
     assert builder.collection_assets_configured is bool(grouped and inherited)
+
+
+@pytest.mark.parametrize("server", ["jellyfin", "emby", "silo"])
+@pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+def test_native_all_builders_share_plex_all_selection(server, level):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name=server)), builder_level=level, builders=[])
+    builder._plex(f"{server}_all", True)
+    assert builder.builders == [("plex_all", level)]
+
+
+@pytest.mark.parametrize("method", ["jellyfin_all", "emby_all", "silo_all"])
+def test_native_all_builder_rejects_wrong_server(method):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name="plex")), builders=[])
+    with pytest.raises(Failed, match="requires a"):
+        builder._plex(method, True)
+    assert builder.builders == []

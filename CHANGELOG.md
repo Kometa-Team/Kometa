@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `jellyfin_all`, `emby_all`, and `silo_all` builders for native all-item selection, retaining `plex_all` compatibility.
+
 - Support Jellyfin/Emby `episode_duplicate` local searches using episode media sources and shared catalog/detail caches.
 
 - Rebuild Jellyfin/Emby episode- and season-scoped smart filters as ordinary collections using cached TV child catalogs.

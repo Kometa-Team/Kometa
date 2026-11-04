@@ -158,6 +158,7 @@ advance_show = [
     "item_delete_episodes",
     "item_season_display",
 ]
+native_all_builders = ["jellyfin_all", "emby_all", "silo_all"]
 all_builders = (
     anidb.builders
     + anilist.builders
@@ -168,6 +169,7 @@ all_builders = (
     + mal.builders
     + mojo.builders
     + plex.builders
+    + native_all_builders
     + stevenlu.builders
     + tautulli.builders
     + tracearr.builders
@@ -805,6 +807,7 @@ parts_collection_valid = (
         "filters",
         "value_filter",
         "plex_all",
+        *native_all_builders,
         "plex_search",
         "plex_id",
         "plex_rating_key",
@@ -901,6 +904,7 @@ playlist_attributes = (
     + custom_sort_builders
     + lidarr.builders
     + ["plex_all", "plex_id", "plex_rating_key"]
+    + native_all_builders
     + tautulli.music_builders
     + summary_details
     + poster_details
@@ -926,6 +930,7 @@ music_attributes = (
         "item_refresh_delay",
         "plex_search",
         "plex_all",
+        *native_all_builders,
         "filters",
     ]
     + details
@@ -2041,7 +2046,7 @@ class CollectionBuilder:
                     self._mal(method_name, method_data)
                 elif method_name in mojo.builders:
                     self._mojo(method_name, method_data)
-                elif method_name in plex.builders or method_final in plex.searches:
+                elif method_name in plex.builders + native_all_builders or method_final in plex.searches:
                     self._plex(method_name, method_data)
                 elif method_name in stevenlu.builders:
                     self._stevenlu(method_name, method_data)
@@ -3799,6 +3804,12 @@ class CollectionBuilder:
             self.builders.append((method_name, final))
 
     def _plex(self, method_name, method_data):
+        if method_name in native_all_builders:
+            expected = method_name.removesuffix("_all")
+            actual = getattr(getattr(self.library, "server", None), "type_name", "plex")
+            if actual != expected:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} requires a {expected} library; this library uses {actual}")
+            method_name = "plex_all"
         if method_name in ["plex_id", "plex_rating_key"]:
             values = util.get_list(method_data, split=False, return_none=False)
             if not values:
