@@ -1869,6 +1869,7 @@ def test_collection_listing_pages_are_lightweight_and_complete(kind):
         assert call["params"]["limit"] == 20
         assert call["params"]["enableUserData"] == "false"
         assert "People" not in call["params"]["fields"]
+        assert "ChildCount" in call["params"]["fields"]
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])

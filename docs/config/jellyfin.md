@@ -142,3 +142,5 @@ See [Native mass metadata operations](native_metadata.md) for supported metadata
 Collection name lookups use pages of 20 box sets without user-state aggregation, and reuse the completed listing during the run. A failed listing stops that collection definition rather than treating the collection as missing and attempting creation.
 
 Jellyfin collection metadata reloads also use an ID-filtered listing with user data disabled, avoiding expensive box-set playback-state aggregation. Movie and episode reads retain their user data.
+
+Collection operations refresh the paginated collection listing once, including tags and item counts, and evaluate it directly without a request per box set. Collection listing and reload requests use a dedicated metadata field set rather than the general movie/show fields.

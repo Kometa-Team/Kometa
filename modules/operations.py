@@ -1864,11 +1864,15 @@ class Operations:
 
             unmanaged_collections = []
             unconfigured_collections = []
-            all_collections = self.library.get_all_collections()
+            browser_collections = getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby")
+            # Native listings include tags and counts. Refresh once after any
+            # membership edits, rather than reloading every collection.
+            all_collections = self.library.get_all_collections(load=True) if browser_collections else self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 try:
-                    col = self.library.reload(col, force=True)
+                    if not browser_collections:
+                        col = self.library.reload(col, force=True)
                 except (CollectionNotFound, NotFound) as e:
                     logger.warning(f"Collection Warning: Skipping {col.title}; collection no longer exists. {e}")
                     continue

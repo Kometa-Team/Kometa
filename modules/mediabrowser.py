@@ -33,6 +33,7 @@ logger = util.logger
 
 LIBRARY_TYPES = {"movies": "Movie", "movie": "Movie", "tvshows": "Show", "tv": "Show"}
 ITEM_TYPES = {"Movie": "movie", "Series": "show", "Season": "season", "Episode": "episode", "BoxSet": "collection", "Playlist": "playlist"}
+COLLECTION_FIELDS = "ProviderIds,Overview,Tags,Genres,Studios,SortName,ImageTags,Path,LockedFields,ChildCount,RecursiveItemCount,Settings"
 ITEM_FIELDS = "ProviderIds,Genres,Studios,ProductionLocations,People,Overview,Tags,DateCreated,ProductionYear,PremiereDate,CommunityRating,CriticRating,OfficialRating,ChildCount,RecursiveItemCount,SortName,ImageTags,LockedFields,Path,OriginalTitle,Taglines,DateLastSaved,Settings"
 PAGE_SIZE = 200
 COLLECTION_BATCH_SIZE = 100
@@ -273,7 +274,7 @@ class MediaBrowserClient:
             return self.get_item(item_id)
         # The single-item endpoint aggregates playback state for box sets.
         # Use an ID-filtered listing so Jellyfin can skip that expensive work.
-        rows = self.items({"ids": str(item_id), "enableUserData": "false"}, limit=1)
+        rows = self.items({"ids": str(item_id), "fields": COLLECTION_FIELDS, "enableUserData": "false"}, limit=1)
         if not rows:
             raise util.CollectionNotFound(f"{self.server.type_label} Error: Collection {item_id} not found")
         return rows[0]
@@ -1422,9 +1423,7 @@ class MediaBrowser(Library):
     def _collections(self):
         self.require(Capability.GET_ALL_COLLECTIONS)
         if "_collection_catalog" not in self.__dict__:
-            self._collection_catalog = [
-                self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": "ProviderIds,Overview,Tags,Genres,Studios,SortName,ImageTags,Path,LockedFields", "enableUserData": "false"})
-            ]
+            self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": COLLECTION_FIELDS, "enableUserData": "false"})]
         return list(self._collection_catalog)
 
     def _playlists(self):

@@ -1364,3 +1364,23 @@ def test_failed_duplicate_split_does_not_prevent_other_splits_or_mapping_refresh
     good.split.assert_called_once()
     library.refresh_item_cache_and_mappings.assert_called_once()
     logger.error.assert_any_call("Bad | Splitting failed: forbidden")
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_browser_collection_operations_use_one_fresh_listing(monkeypatch, kind):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_mass_edit_library([], show_unmanaged=True, items_library_operation=False)
+    library.server = SimpleNamespace(type_name=kind)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.supports.return_value = True
+    library.delete_collections = {"managed": True, "configured": None, "less": 2, "ignore_empty_smart_collections": True}
+    empty = SimpleNamespace(title="Small", smart=False, childCount=1)
+    populated = SimpleNamespace(title="Large", smart=False, childCount=12)
+    library.get_all_collections.return_value = [empty, populated]
+    library.item_labels.return_value = [SimpleNamespace(tag="Kometa")]
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.get_all_collections.assert_called_once_with(load=True)
+    library.reload.assert_not_called()
+    library.delete_collection.assert_called_once_with(empty)

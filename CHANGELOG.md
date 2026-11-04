@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Use a single fresh paginated Jellyfin/Emby collection listing for collection operations instead of reloading each box set, and request only collection metadata fields.
+
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
 
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
