@@ -1080,9 +1080,13 @@ class MediaBrowser(Library):
         if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
             definition = uri_args["local_collection_search"]
             predicate = self.validate_collection_search(definition)
+            scope = definition.get("type")
+            builder_level = {"episode": "episode", "episodes": "episode", "season": "season", "seasons": "season"}.get(scope)
             items = [
                 item
-                for item in self._local_search_items(require_media=self._search_requires_media(definition), require_sources=self._search_requires_sources(definition), require_collections=self._search_requires_collections(definition))
+                for item in self._local_search_items(
+                    builder_level=builder_level, require_media=self._search_requires_media(definition), require_sources=self._search_requires_sources(definition), require_collections=self._search_requires_collections(definition)
+                )
                 if predicate(self._search_metadata(item))
             ]
             field, _, order = definition.get("sort_by", "title.asc").rpartition(".")
@@ -1126,7 +1130,7 @@ class MediaBrowser(Library):
         if "validate" in definition and not isinstance(definition["validate"], bool):
             raise Failed(f"{self.server.type_label} Error: validate must be a boolean")
         scope = definition.get("type")
-        if scope and scope not in (("movie", "movies") if self.is_movie else ("show", "shows", "series")):
+        if scope and scope not in (("movie", "movies") if self.is_movie else ("show", "shows", "series", "episode", "episodes", "season", "seasons")):
             raise Failed(f"{self.server.type_label} Error: smart_filter type {scope} is not supported for this library")
         if definition.get("sort_by", "title.asc") not in [f"{field}.{order}" for field in SORT_FIELDS for order in ("asc", "desc")]:
             raise Failed(f"{self.server.type_label} Error: Unsupported smart_filter sort_by")

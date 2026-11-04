@@ -1978,3 +1978,30 @@ def test_episode_air_date_matches_episode_show_and_season_from_shared_catalog(ki
         assert predicate(library._search_metadata(parent))
     assert library.get_all.call_count == 2
     assert library.client.session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("scope,level", [("episodes", "episode"), ("episode", "episode"), ("seasons", "season"), ("season", "season")])
+def test_local_collection_search_selects_requested_tv_scope(kind, scope, level, monkeypatch):
+    from modules import builder as builder_module
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    library.is_movie = False
+    library.is_show = True
+    library.type = "Show"
+    rows = [MediaBrowserItem({"Id": "old", "Name": "Old", "Type": level.title(), "PremiereDate": "2020-01-01T00:00:00Z"}, library), MediaBrowserItem({"Id": "new", "Name": "New", "Type": level.title(), "PremiereDate": "2026-01-01T00:00:00Z"}, library)]
+    library.get_all = MagicMock(return_value=rows)
+    definition = {"type": scope, "any": {"release.after": "2025-01-01"}, "sort_by": "release.desc", "limit": 1}
+    data = {"smart_filter": definition}
+    builder_module.CollectionBuilder._adapt_local_smart_filter(library, data, {"smart_filter": "smart_filter"})
+    assert [item.ratingKey for item in library.fetchItems(data["plex_search"])] == ["new"]
+    library.get_all.assert_called_once_with(builder_level=level)
+    assert library.client.session.calls == []
+
+
+@pytest.mark.parametrize("scope", ["episodes", "seasons"])
+def test_movie_collection_search_rejects_tv_child_scope(scope):
+    library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
+    with pytest.raises(Failed, match="not supported for this library"):
+        library.validate_collection_search({"type": scope, "any": {"title": "Example"}})

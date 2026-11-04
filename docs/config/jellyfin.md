@@ -152,3 +152,5 @@ Set `delete_collections.less: all` to disable size filtering explicitly. Collect
 Network dynamic collections discover and filter shows using their stored `Studios` values: The Jellyfin TMDb series provider stores TV networks in this field. Results depend on the metadata populated by your chosen provider or local metadata files. No extra per-show external network lookup is performed.
 
 The `episode_air_date` local search field uses episode premiere dates. Show and season searches match their child episode dates using the shared episode catalog cache. Jellyfin TV `studio` dynamic collections are skipped with a warning; use `network` for those stored values. Movie studio dynamic collections remain supported.
+
+TV libraries accept `smart_filter` scopes `episodes` and `seasons` (and singular aliases). Kometa evaluates these against the corresponding cached catalog and rebuilds an ordinary collection on each run; Jellyfin does not maintain a native smart rule. These scopes are rejected for movie libraries.
