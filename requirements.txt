@@ -95,7 +95,7 @@ pycparser==3.12 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.14.1
     # via serializd-py
-pydantic-core==2.50.1
+pydantic-core==2.50.2
     # via pydantic
 pyinstrument==5.1.3
     # via kometa
