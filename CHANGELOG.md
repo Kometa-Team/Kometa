@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Skip Jellyfin TV studio dynamic collections with a warning rather than duplicating network collections.
+
 - Route Jellyfin collection reads before metadata writes through the user-data-free listing endpoint as well as collection reloads.
 
 - Use a single fresh paginated Jellyfin/Emby collection listing for collection operations instead of reloading each box set, and request only collection metadata fields.
@@ -22,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
 
 ### Added
+
+- Support Jellyfin/Emby episode_air_date searches using episode premiere dates and cached episode catalogs for shows and seasons.
 
 - Support Jellyfin network dynamic collections using the TV networks stored in series studio metadata.
 

@@ -1231,6 +1231,7 @@ class MediaBrowser(Library):
                 version["dolby_vision"] = bool(video["DvProfile"])
             versions.append(version)
         return SimpleNamespace(
+            original=item,
             data={
                 "native": item.data,
                 "title": item.title,
@@ -1244,7 +1245,7 @@ class MediaBrowser(Library):
                 "release": item.data.get("PremiereDate"),
                 "added": item.data.get("DateCreated"),
                 **{role: [person.tag for person in getattr(item, f"{role}s", [])] for role in ("actor", "director", "writer", "producer")},
-            }
+            },
         )
 
     def get_rating_keys(self, method, data, is_playlist=False):

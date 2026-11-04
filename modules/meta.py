@@ -891,6 +891,10 @@ class MetadataFile(DataFile):
                         elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents and getattr(getattr(library, "server", None), "type_name", None) not in ("silo", "jellyfin"):
                             raise Failed(f"Config Error: {map_name} type attribute: network only works with the New Plex TV Agent")
                         auto_type = dynamic[methods["type"]].lower()
+                        if auto_type == "studio" and library.is_show and getattr(getattr(library, "server", None), "type_name", None) == "jellyfin":
+                            logger.warning(f"Config Warning: Skipping {map_name} studio dynamic collection: Jellyfin TV studio metadata stores networks; use type: network")
+                            self._skipped_dynamic_collections = True
+                            continue
                         og_exclude = []
                         if "exclude" in self.temp_vars:
                             og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variables", datatype="strlist")
@@ -1551,7 +1555,7 @@ class MetadataFile(DataFile):
 
             if self.file_style == "metadata" and not self.metadata:
                 raise Failed("YAML Error: metadata attribute is required")
-            if self.file_style == "collection" and not self.collections and not self.music_playlists and not getattr(self, "_disabled_collection_definitions", None):
+            if self.file_style == "collection" and not self.collections and not self.music_playlists and not getattr(self, "_disabled_collection_definitions", None) and not getattr(self, "_skipped_dynamic_collections", False):
                 raise Failed("YAML Error: collections, dynamic_collections, or music_playlists attribute is required")
             logger.info("")
             logger.info(f"{self.type_str} Loaded Successfully")

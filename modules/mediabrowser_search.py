@@ -9,7 +9,7 @@ from modules.util import Failed
 
 TEXT_FIELDS = {"summary": "Overview", "original_title": "OriginalTitle", "sort_title": "SortName", "tagline": "Taglines", "show_title": "SeriesName", "album_title": "Album", "type": "Type", "status": "Status", "show_status": "Status"}
 TAG_FIELDS = {"label": "Tags", "artist": "Artists", "album_artist": "AlbumArtists"}
-DATE_FIELDS = {"last_played": "LastPlayedDate", "ended": "EndDate", "updated": "DateLastSaved"}
+DATE_FIELDS = {"episode_air_date": "PremiereDate", "last_played": "LastPlayedDate", "ended": "EndDate", "updated": "DateLastSaved"}
 NUMBER_FIELDS = {
     "year",
     "decade",
@@ -152,6 +152,9 @@ def values(item, field):
         return [entry.get("Name") if isinstance(entry, dict) else entry for entry in raw.get("Tags") or raw.get("TagItems") or []]
     if field in TAG_FIELDS:
         return [entry.get("Name") if isinstance(entry, dict) else entry for entry in _list(raw.get(TAG_FIELDS[field]))]
+    if field == "episode_air_date" and raw.get("Type") in ("Series", "Season"):
+        original = item.original
+        return [episode.data["PremiereDate"] for episode in original.library._filter_episode_children(original) if episode.data.get("PremiereDate")]
     if field in DATE_FIELDS:
         return _list((user if field == "last_played" else raw).get(DATE_FIELDS[field]))
     if field in TRACK_FIELDS:

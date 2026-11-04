@@ -1959,3 +1959,22 @@ def test_jellyfin_network_discovery_and_search_share_stored_studios():
     assert selector(library._search_metadata(shows[0]))
     assert not selector(library._search_metadata(shows[1]))
     assert library.client.session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_episode_air_date_matches_episode_show_and_season_from_shared_catalog(kind):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    episodes = [
+        MediaBrowserItem({"Id": "recent", "Type": "Episode", "SeriesId": "show", "SeasonId": "season", "PremiereDate": "2026-11-02T00:00:00Z"}, library),
+        MediaBrowserItem({"Id": "old", "Type": "Episode", "SeriesId": "other", "SeasonId": "other-season", "PremiereDate": "2020-01-01T00:00:00Z"}, library),
+    ]
+    library.get_all = MagicMock(return_value=episodes)
+    predicate = browser_module.compile_selector({"episode_air_date": 7}, current_time=datetime(2026, 11, 4, tzinfo=timezone.utc))
+    assert predicate(library._search_metadata(episodes[0]))
+    assert not predicate(library._search_metadata(episodes[1]))
+    for item_type, key in (("Series", "show"), ("Season", "season")):
+        parent = MediaBrowserItem({"Id": key, "Type": item_type}, library)
+        assert predicate(library._search_metadata(parent))
+        assert predicate(library._search_metadata(parent))
+    assert library.get_all.call_count == 2
+    assert library.client.session.calls == []

@@ -890,3 +890,16 @@ def test_network_dynamic_collections_allow_silo_and_keep_plex_agent_guard(monkey
             MetadataFile(config, library, "File", "networks.yml", {}, None, "collection")
         assert any("network only works with the New Plex TV Agent" in message for message in logger.error_messages)
         library.get_tags.assert_not_called()
+
+
+def test_jellyfin_tv_studio_dynamic_is_skipped_with_warning(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: {"dynamic_collections": {"Studios": {"type": "studio"}}})
+    library = SimpleNamespace(server=SimpleNamespace(type_name="jellyfin"), agent="jellyfin", type="Show", is_movie=False, is_show=True, is_music=False, collections=[], metadatas=[], get_tags=MagicMock())
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[], Cache=None)
+    metadata_file = MetadataFile(config, library, "File", "studios.yml", {}, None, "collection")
+    library.get_tags.assert_not_called()
+    assert not metadata_file.collections
+    assert not logger.error_messages
+    assert any("use type: network" in message for message in logger.warning_messages)
