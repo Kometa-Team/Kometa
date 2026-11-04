@@ -268,6 +268,16 @@ class MediaBrowserClient:
         params = {"userId": self.user_id} if self.user_id else None
         return self.request("GET", f"/Items/{_path_id(item_id)}", params=params) or {}
 
+    def get_collection_item(self, item_id):
+        if self.server.type_name != "jellyfin":
+            return self.get_item(item_id)
+        # The single-item endpoint aggregates playback state for box sets.
+        # Use an ID-filtered listing so Jellyfin can skip that expensive work.
+        rows = self.items({"ids": str(item_id), "enableUserData": "false"}, limit=1)
+        if not rows:
+            raise util.CollectionNotFound(f"{self.server.type_label} Error: Collection {item_id} not found")
+        return rows[0]
+
     def update_item(self, item_id, fields):
         current = self.get_item(item_id)
         current.update(fields)
@@ -608,7 +618,7 @@ class MediaBrowser(Library):
             item.apply(cached.data)
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
-        item.apply(self._item_detail(item.ratingKey, force=force))
+        item.apply(self.client.get_collection_item(item.ratingKey) if isinstance(item, MediaBrowserCollection) else self._item_detail(item.ratingKey, force=force))
         self.__dict__.setdefault("_media_details_loaded", set()).add(item.ratingKey)
         self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
         return item

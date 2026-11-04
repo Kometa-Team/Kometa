@@ -595,7 +595,8 @@ def test_collection_metadata_discovers_and_uploads_assets(tmp_path, monkeypatch,
     for module in (builder_module, library_module, plex_module):
         monkeypatch.setattr(module, "logger", FakeLogger())
     record = {"Id": "col-trek", "Name": "Star Trek Stuff", "Type": "BoxSet", "Tags": ["Kometa"]}
-    session = FakeSession([FakeResponse(record), FakeResponse(record), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)])
+    reload_response = {"Items": [record], "TotalRecordCount": 1} if kind == "jellyfin" else record
+    session = FakeSession([FakeResponse(reload_response), FakeResponse(record), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     library.config.Cache = None
     library.collection_images = {}
@@ -1886,3 +1887,33 @@ def test_failed_collection_lookup_never_creates_collection(kind, monkeypatch):
         with pytest.raises(Failed, match="Listing timed out"):
             library.alter_collection(["movie-1"], "New")
     create.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_reload_skips_jellyfin_playback_aggregation(kind):
+    record = {"Id": "collection", "Name": "Fresh", "Type": "BoxSet", "Tags": ["Kometa"], "ChildCount": 12, "Overview": "Summary"}
+    response = {"Items": [record], "TotalRecordCount": 1} if kind == "jellyfin" else record
+    session = FakeSession([FakeResponse(response)])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = library._wrap_collection({"Id": "collection", "Name": "Old", "Type": "BoxSet"})
+    library.reload(item, force=True)
+    assert item.title == "Fresh"
+    assert item.data["Tags"] == ["Kometa"]
+    assert item.data["ChildCount"] == 12
+    assert item.summary == "Summary"
+    library.reload(item)
+    assert len(session.calls) == 1
+    if kind == "jellyfin":
+        assert session.calls[0]["url"].endswith("/Items")
+        assert session.calls[0]["params"]["ids"] == "collection"
+        assert session.calls[0]["params"]["enableUserData"] == "false"
+    else:
+        assert session.calls[0]["url"].endswith("/Users/user-1/Items/collection")
+
+
+def test_missing_jellyfin_collection_reload_reports_not_found():
+    session = FakeSession([FakeResponse({"Items": [], "TotalRecordCount": 0})])
+    library = _library(MediaBrowserClient(_server(), session=session))
+    item = library._wrap_collection({"Id": "gone", "Name": "Gone", "Type": "BoxSet"})
+    with pytest.raises(browser_module.util.CollectionNotFound):
+        library.reload(item, force=True)

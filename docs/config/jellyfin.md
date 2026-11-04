@@ -140,3 +140,5 @@ The `duplicate` search selector matches items with multiple media sources (alter
 See [Native mass metadata operations](native_metadata.md) for supported metadata changes, artwork, backups, and explicit unsupported-option behavior.
 
 Collection name lookups use pages of 20 box sets without user-state aggregation, and reuse the completed listing during the run. A failed listing stops that collection definition rather than treating the collection as missing and attempting creation.
+
+Jellyfin collection metadata reloads also use an ID-filtered listing with user data disabled, avoiding expensive box-set playback-state aggregation. Movie and episode reads retain their user data.
