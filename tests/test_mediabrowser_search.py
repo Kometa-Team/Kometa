@@ -12,7 +12,9 @@ from modules.util import Failed
 
 
 def item(**raw):
-    library = SimpleNamespace(server=SimpleNamespace(type_name="jellyfin"), find_poster_url=lambda item: None, _filter_episode_children=lambda parent: [SimpleNamespace(data={"PremiereDate": "2026-11-02T00:00:00Z"})])
+    library = SimpleNamespace(
+        server=SimpleNamespace(type_name="jellyfin"), find_poster_url=lambda item: None, episode_duplicate_values=lambda parent: [True], _filter_episode_children=lambda parent: [SimpleNamespace(data={"PremiereDate": "2026-11-02T00:00:00Z"})]
+    )
     return MediaBrowser._search_metadata(MediaBrowserItem({"_kometa_collections": ["Example collection"], "Id": "1", "Name": "Example", "Type": "Movie", **raw}, library))
 
 

@@ -1313,6 +1313,19 @@ class MediaBrowser(Library):
             compile_selector({name: value})
         return value
 
+    def episode_duplicate_values(self, item):
+        episodes = [item] if item.type == "episode" else self._filter_episode_children(item) if item.type in ("show", "season") else []
+        values = []
+        for episode in episodes:
+            if not isinstance(episode.data.get("MediaSources"), list):
+                # Full details share the same persistent cache as other media
+                # filters; never infer "not duplicate" from a partial catalog.
+                episode.apply(self._item_detail(episode.ratingKey))
+            sources = episode.data.get("MediaSources")
+            if isinstance(sources, list):
+                values.append(len(sources) > 1)
+        return values
+
     def _filter_episode_children(self, item):
         parent_field = "SeasonId" if item.type == "season" else "SeriesId"
         indexes = self.__dict__.setdefault("_filter_episode_indexes", {})

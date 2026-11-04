@@ -2017,3 +2017,20 @@ def test_plex_all_uses_browser_catalog_for_each_tv_level(kind, level):
     assert library.get_rating_keys("plex_all", level) == [("one", "ratingKey"), ("two", "ratingKey")]
     library.get_all.assert_called_once_with(**({"builder_level": level} if level in ("season", "episode") else {}))
     assert library.client.session.calls == []
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_episode_duplicate_uses_child_sources_and_reuses_details(kind):
+    session = FakeSession([FakeResponse({"Id": "dup", "Type": "Episode", "SeriesId": "show", "SeasonId": "season", "MediaSources": [{"Id": "a"}, {"Id": "b"}]})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    duplicate = MediaBrowserItem({"Id": "dup", "Type": "Episode", "SeriesId": "show", "SeasonId": "season"}, library)
+    single = MediaBrowserItem({"Id": "single", "Type": "Episode", "SeriesId": "other", "SeasonId": "other-season", "MediaSources": [{"Id": "one"}]}, library)
+    library.get_all = MagicMock(return_value=[duplicate, single])
+    predicate = browser_module.compile_selector({"episode_duplicate": True})
+    for item_type, key in (("Series", "show"), ("Season", "season"), ("Episode", "dup")):
+        item = duplicate if item_type == "Episode" else MediaBrowserItem({"Id": key, "Type": item_type}, library)
+        assert predicate(library._search_metadata(item))
+        assert predicate(library._search_metadata(item))
+    assert not predicate(library._search_metadata(single))
+    assert not predicate(library._search_metadata(MediaBrowserItem({"Id": "other", "Type": "Series"}, library)))
+    assert len(session.calls) == 1

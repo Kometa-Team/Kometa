@@ -156,3 +156,5 @@ The `episode_air_date` local search field uses episode premiere dates. Show and 
 TV libraries accept `smart_filter` scopes `episodes` and `seasons` (and singular aliases). Kometa evaluates these against the corresponding cached catalog and rebuilds an ordinary collection on each run; Jellyfin does not maintain a native smart rule. These scopes are rejected for movie libraries.
 
 The compatibility builder `plex_all: true` selects all items at the configured movie, show, season, or episode level using the native catalog cache. Selecting all items does not itself load media details for every item; filters and overlays obtain details when needed. Silo supports the same builder levels.
+
+The `episode_duplicate` local search field checks whether episodes have multiple media sources. Show and season searches evaluate their child episodes, reusing the shared episode catalog and detail cache. Missing source data is loaded before checking; partial catalog records are not assumed to be single versions.

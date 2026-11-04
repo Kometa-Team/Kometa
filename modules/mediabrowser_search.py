@@ -43,7 +43,27 @@ NUMBER_FIELDS = {
     "season_number",
     "episode_number",
 }
-BOOLEAN_FIELDS = {"duplicate", "hdr", "has_dolby_vision", "hdr10plus", "interlaced", "atmos", "has_edition", "watched", "unwatched", "unplayed", "progress", "is_favorite", "is_in_progress", "unmatched", "has_subtitles", "is_3d", "is_missing", "is_locked"}
+BOOLEAN_FIELDS = {
+    "episode_duplicate",
+    "duplicate",
+    "hdr",
+    "has_dolby_vision",
+    "hdr10plus",
+    "interlaced",
+    "atmos",
+    "has_edition",
+    "watched",
+    "unwatched",
+    "unplayed",
+    "progress",
+    "is_favorite",
+    "is_in_progress",
+    "unmatched",
+    "has_subtitles",
+    "is_3d",
+    "is_missing",
+    "is_locked",
+}
 TRACK_FIELDS = {
     "video_codec": ("Video", "Codec"),
     "video_profile": ("Video", "Profile"),
@@ -129,6 +149,9 @@ def _max(values):
 def values(item, field):
     if field == "network":
         return common_values(item, "studio")
+    if field == "episode_duplicate":
+        original = item.original
+        return original.library.episode_duplicate_values(original)
     raw = item.data.get("native", {})
     sources = raw.get("MediaSources")
     versions = sources if isinstance(sources, list) and sources else [raw]

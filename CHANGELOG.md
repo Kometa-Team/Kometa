@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support Jellyfin/Emby `episode_duplicate` local searches using episode media sources and shared catalog/detail caches.
+
 - Rebuild Jellyfin/Emby episode- and season-scoped smart filters as ordinary collections using cached TV child catalogs.
 
 - Support Jellyfin/Emby episode_air_date searches using episode premiere dates and cached episode catalogs for shows and seasons.
