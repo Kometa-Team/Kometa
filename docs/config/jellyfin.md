@@ -154,3 +154,5 @@ Network dynamic collections discover and filter shows using their stored `Studio
 The `episode_air_date` local search field uses episode premiere dates. Show and season searches match their child episode dates using the shared episode catalog cache. Jellyfin TV `studio` dynamic collections are skipped with a warning; use `network` for those stored values. Movie studio dynamic collections remain supported.
 
 TV libraries accept `smart_filter` scopes `episodes` and `seasons` (and singular aliases). Kometa evaluates these against the corresponding cached catalog and rebuilds an ordinary collection on each run; Jellyfin does not maintain a native smart rule. These scopes are rejected for movie libraries.
+
+The compatibility builder `plex_all: true` selects all items at the configured movie, show, season, or episode level using the native catalog cache. Selecting all items does not itself load media details for every item; filters and overlays obtain details when needed. Silo supports the same builder levels.

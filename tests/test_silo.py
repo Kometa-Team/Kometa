@@ -932,7 +932,7 @@ def test_silo_person_smart_filter_resolves_tmdb_names(role):
     assert definition["any"][role] == "tmdb"
 
 
-@pytest.mark.parametrize("method,data", [("plex_collectionless", {}), ("plex_all", "episode")])
+@pytest.mark.parametrize("method,data", [("plex_collectionless", {}), ("plex_all", "artist")])
 def test_unsupported_builders_raise_validation_errors_without_api_requests(method, data):
     session = FakeSession([])
     library = _library(SiloClient(_server(), session=session))
@@ -1933,3 +1933,14 @@ def test_episode_search_scope_is_rejected_for_movie_library():
     library = _library(MagicMock())
     with pytest.raises(Failed, match="does not match this library"):
         library.validate_collection_search({"type": "episodes", "any": {"episode_air_date": 7}})
+
+
+@pytest.mark.parametrize("level", ["item", "show", "season", "episode"])
+def test_plex_all_uses_silo_catalog_for_each_tv_level(level):
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    library.is_show = True
+    library.is_movie = False
+    library.get_all = MagicMock(return_value=[SimpleNamespace(ratingKey="one"), SimpleNamespace(ratingKey="two")])
+    assert library.get_rating_keys("plex_all", level) == [("one", "ratingKey"), ("two", "ratingKey")]
+    library.get_all.assert_called_once_with(**({"builder_level": level} if level in ("season", "episode") else {}))
+    assert library.client.session.calls == []

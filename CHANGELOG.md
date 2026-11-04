@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Support `plex_all` season and episode selection on Jellyfin, Emby, and Silo using the cached catalog without fetching media details for every item.
+
 - Skip Jellyfin TV studio dynamic collections with a warning rather than duplicating network collections.
 
 - Route Jellyfin collection reads before metadata writes through the user-data-free listing endpoint as well as collection reloads.

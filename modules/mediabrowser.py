@@ -1255,8 +1255,10 @@ class MediaBrowser(Library):
     def get_rating_keys(self, method, data, is_playlist=False):
         if method == "plex_search":
             items = self.fetchItems(data[2])
-        elif method == "plex_all" and data in ("movie", "show", "item"):
-            items = list(self._local_search_items())
+        elif method == "plex_all":
+            if data not in ("movie", "show", "item", "season", "episode") or data in ("season", "episode") and not self.is_show:
+                raise Failed(f"{self.server.type_label} Error: Local builder plex_all level {data} is not supported for this library")
+            items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
         else:
             raise Failed(f"{self.server.type_label} Error: Unsupported local builder: {method}")
         return [(item.ratingKey, "ratingKey") for item in items]

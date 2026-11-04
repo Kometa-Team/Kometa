@@ -2005,3 +2005,15 @@ def test_movie_collection_search_rejects_tv_child_scope(scope):
     library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
     with pytest.raises(Failed, match="not supported for this library"):
         library.validate_collection_search({"type": scope, "any": {"title": "Example"}})
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("level", ["item", "show", "season", "episode"])
+def test_plex_all_uses_browser_catalog_for_each_tv_level(kind, level):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    library.is_show = True
+    library.is_movie = False
+    library.get_all = MagicMock(return_value=[SimpleNamespace(ratingKey="one"), SimpleNamespace(ratingKey="two")])
+    assert library.get_rating_keys("plex_all", level) == [("one", "ratingKey"), ("two", "ratingKey")]
+    library.get_all.assert_called_once_with(**({"builder_level": level} if level in ("season", "episode") else {}))
+    assert library.client.session.calls == []

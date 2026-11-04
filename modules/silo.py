@@ -1334,9 +1334,9 @@ class Silo(Library):
         if method == "plex_search":
             items = self.fetchItems(data[2])
         elif method == "plex_all":
-            if data not in ("movie", "show", "item"):
-                raise BuilderValidationError(f"Silo Error: Local overlay selection for {data} is not supported")
-            items = list(self._local_search_items())
+            if data not in ("movie", "show", "item", "season", "episode") or data in ("season", "episode") and not self.is_show:
+                raise BuilderValidationError(f"Silo Error: Local builder plex_all level {data} is not supported for this library")
+            items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
         else:
             raise BuilderValidationError(f"Silo Error: Builder {method} is not supported")
         return [(item.ratingKey, "ratingKey") for item in items]
