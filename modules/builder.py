@@ -1293,7 +1293,9 @@ class CollectionBuilder:
 
         try:
             self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
-        except Failed:
+        except Failed as error:
+            if not self.playlist and getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby") and not isinstance(error, util.CollectionNotFound):
+                raise BuilderValidationError(f"Collection Error: Could not determine whether '{self.name}' exists: {error}") from error
             self.obj = None
 
         self.only_run_on_create = False

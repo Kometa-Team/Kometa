@@ -138,3 +138,5 @@ Supported `plex_search` overlay expressions are evaluated locally against item a
 The `duplicate` search selector matches items with multiple media sources (alternate versions) on Jellyfin and Emby. Kometa loads media-source details as needed. Unknown source counts match neither `duplicate: true` nor `duplicate: false`; separate catalog entries are not detected as duplicates.
 
 See [Native mass metadata operations](native_metadata.md) for supported metadata changes, artwork, backups, and explicit unsupported-option behavior.
+
+Collection name lookups use pages of 20 box sets without user-state aggregation, and reuse the completed listing during the run. A failed listing stops that collection definition rather than treating the collection as missing and attempting creation.

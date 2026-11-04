@@ -1853,3 +1853,36 @@ def test_expired_partial_catalog_starts_a_fresh_page_generation(tmp_path, monkey
     assert [item.ratingKey for item in other.get_all(builder_level="episode")] == ["fresh"]
     assert session.calls[0]["params"]["startIndex"] == 0
     other.config.Cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_listing_pages_are_lightweight_and_complete(kind):
+    rows = [{"Id": str(i), "Name": f"Collection {i}", "Type": "BoxSet"} for i in range(45)]
+    session = FakeSession([FakeResponse({"Items": rows[start : start + 20], "TotalRecordCount": 45}) for start in (0, 20, 40)])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    assert library.get_collection("Collection 44").ratingKey == "44"
+    assert len(library.get_all_collections()) == 45
+    assert len(session.calls) == 3
+    for call, start in zip(session.calls, (0, 20, 40)):
+        assert call["params"]["startIndex"] == start
+        assert call["params"]["limit"] == 20
+        assert call["params"]["enableUserData"] == "false"
+        assert "People" not in call["params"]["fields"]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_failed_collection_lookup_never_creates_collection(kind, monkeypatch):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+
+    def failed_lookup(*args, **kwargs):
+        raise Failed("Listing timed out")
+
+    monkeypatch.setattr(library, "get_collection", failed_lookup)
+    create = MagicMock()
+    monkeypatch.setattr(library.client, "create_collection", create)
+    with pytest.raises(Failed, match="Listing timed out"):
+        library.create_blank_collection("New")
+    if kind == "emby":
+        with pytest.raises(Failed, match="Listing timed out"):
+            library.alter_collection(["movie-1"], "New")
+    create.assert_not_called()

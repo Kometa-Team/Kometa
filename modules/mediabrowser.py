@@ -941,7 +941,7 @@ class MediaBrowser(Library):
         if not matches:
             if debug:
                 logger.debug(f"Looking for: {data}")
-            raise Failed(f"{self._server().type_label} Error: Collection {data} not found")
+            raise util.CollectionNotFound(f"{self._server().type_label} Error: Collection {data} not found")
         if len(matches) > 1:
             logger.warning(f"{self._server().type_label} Warning: Multiple collections found with title '{title}', using the first exact match")
         return matches[0]
@@ -966,7 +966,7 @@ class MediaBrowser(Library):
         self.require(Capability.CREATE_COLLECTION)
         try:
             return self.get_collection(title, debug=False)
-        except Failed:
+        except util.CollectionNotFound:
             pass
         if self.server.type_name == "emby":
             raise Failed(
@@ -990,7 +990,7 @@ class MediaBrowser(Library):
         if add and isinstance(collection, str) and self.server.type_name == "emby":
             try:
                 target = self.get_collection(collection, debug=False)
-            except Failed:
+            except util.CollectionNotFound:
                 self.require(Capability.CREATE_COLLECTION)
                 # Emby creates the boxset with its initial members, without a
                 # movie-library parent. These IDs must not be added twice.
@@ -1412,7 +1412,9 @@ class MediaBrowser(Library):
     def _collections(self):
         self.require(Capability.GET_ALL_COLLECTIONS)
         if "_collection_catalog" not in self.__dict__:
-            self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true"})]
+            self._collection_catalog = [
+                self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": "ProviderIds,Overview,Tags,Genres,Studios,SortName,ImageTags,Path,LockedFields", "enableUserData": "false"})
+            ]
         return list(self._collection_catalog)
 
     def _playlists(self):
