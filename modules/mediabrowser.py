@@ -156,7 +156,7 @@ class MediaBrowserClient:
         retry_safe = retry_safe or method in ("GET", "HEAD") or item_write or membership_write or recover is not None
         connection_failed = False
         request_log = logger.debug if getattr(logger, "log_requests", False) is True else logger.trace
-        diagnostic_params = {key: value for key, value in (params or {}).items() if key in ("parentId", "includeItemTypes", "startIndex", "limit", "recursive", "fields")}
+        diagnostic_params = {key: value for key, value in (params or {}).items() if key in ("parentId", "includeItemTypes", "startIndex", "limit", "recursive", "fields", "tags", "enableUserData")}
         for attempt in range(3):
             started = time.monotonic()
             request_log(f"{self.server.type_label} Request: {method} {path} | attempt {attempt + 1}/3 | timeout {self.server.timeout}s | {diagnostic_params}")

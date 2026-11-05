@@ -160,3 +160,5 @@ The compatibility builder `plex_all: true` selects all items at the configured m
 The `episode_duplicate` local search field checks whether episodes have multiple media sources. Show and season searches evaluate their child episodes, reusing the shared episode catalog and detail cache. Missing source data is loaded before checking; partial catalog records are not assumed to be single versions.
 
 Use `jellyfin_all: true`, `emby_all: true`, or `silo_all: true` for the corresponding server. These builders mirror `plex_all: true` at movie, show, season, and episode levels, including overlays. Each native name requires its matching server type; `plex_all` remains compatible across servers.
+
+Overlay cleanup checks existing overlay tags and local backup records against the cached catalog at each show, season, or episode level. Warm catalogs do not trigger a separate server tag search. Request diagnostics include tag filters and the user-data flag when a server request is required.

@@ -887,7 +887,7 @@ def test_emby_removes_untagged_overlay_using_existing_backup(tmp_path, monkeypat
     logger = FakeLogger()
     monkeypatch.setattr(overlays_module, "logger", logger)
     record = {"Id": "558", "Name": "Example", "Type": "Movie", "Tags": [], "TagItems": []}
-    session = FakeSession([FakeResponse({"Items": [], "TotalRecordCount": 0}), FakeResponse(None, status_code=204), FakeResponse(record), FakeResponse(None, status_code=204)])
+    session = FakeSession([FakeResponse(None, status_code=204), FakeResponse(record), FakeResponse(None, status_code=204)])
     library = _library(MediaBrowserClient(_server("emby"), session=session), kind="emby")
     library.overlay_backup = str(tmp_path / "backup")
     library.overlay_folder = str(tmp_path)
@@ -907,7 +907,7 @@ def test_emby_removes_untagged_overlay_using_existing_backup(tmp_path, monkeypat
     engine.library = library
     engine.cache = None
     engine.run_overlays()
-    assert base64.b64decode(session.calls[1]["data"], validate=True) == original
+    assert base64.b64decode(session.calls[0]["data"], validate=True) == original
     assert session.calls[-1]["json"]["TagItems"] == []
     assert not backup.exists()
     assert logger.error_messages == []
@@ -2076,3 +2076,45 @@ def test_user_state_write_patches_only_matching_cached_item(tmp_path, monkeypatc
     assert cache.query_native_response(scope, "item:one")["UserData"] == {"Played": True, "Rating": 8}
     assert cache.query_native_response(scope, "catalog:Episode")[1] == {"Id": "other"}
     cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("level,native_type", [(None, "Series"), ("season", "Season"), ("episode", "Episode")])
+def test_overlay_cleanup_uses_cached_tags_and_backup_records(tmp_path, monkeypatch, kind, level, native_type):
+    from modules.overlays import Overlays
+
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    library.is_show = True
+    library.is_movie = False
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(
+        scope,
+        f"catalog:{native_type}",
+        [
+            {"Id": "tagged", "Type": native_type, "Tags": ["Overlay"]},
+            {"Id": "backup", "Type": native_type},
+            {"Id": "both", "Type": native_type, "Tags": ["Overlay"]},
+            {"Id": "legacy", "Type": native_type, "Tags": ["Old Overlay"]},
+            {"Id": "untouched", "Type": native_type},
+        ],
+    )
+    overlays = Overlays.__new__(Overlays)
+    overlays.library = library
+    overlays._overlay_backup_extensions = {"backup": "png", "both": "jpg"}
+    assert [item.ratingKey for item in overlays.get_overlay_items(libtype=level)] == ["tagged", "backup", "both"]
+    assert [item.ratingKey for item in overlays.get_overlay_items(libtype=level, ignore=["tagged"])] == ["backup", "both"]
+    assert [item.ratingKey for item in overlays.get_overlay_items(label="Old Overlay", libtype=level)] == ["legacy"]
+    assert session.calls == []
+    cache.connection.close()
+
+
+def test_native_request_logging_includes_tag_filter(monkeypatch):
+    logger = MagicMock()
+    logger.log_requests = True
+    monkeypatch.setattr(browser_module, "logger", logger)
+    client = MediaBrowserClient(_server(), session=FakeSession([FakeResponse({"Items": [], "TotalRecordCount": 0})]))
+    client.items({"tags": "Overlay", "enableUserData": "false"})
+    start = logger.debug.call_args_list[0].args[0]
+    assert "'tags': 'Overlay'" in start
+    assert "'enableUserData': 'false'" in start
+    assert "userId" not in start

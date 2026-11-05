@@ -664,13 +664,13 @@ class Overlays:
             backups = self._overlay_backup_extensions
             items = [item for item in self.library.get_all(builder_level=libtype) if str(item.ratingKey) in backups]
             return [item for item in items if not ignore or item.ratingKey not in ignore]
-        items = self.library.search(label=label, libtype=libtype)
-        if label == "Overlay" and getattr(self.library, "overlay_backup_fallback", False) is True:
-            known = {item.ratingKey for item in items}
-            for item in self.library.get_all(builder_level=libtype):
-                if str(item.ratingKey) in self._overlay_backup_extensions and item.ratingKey not in known:
-                    items.append(item)
-                    known.add(item.ratingKey)
+        if getattr(self.library, "overlay_backup_fallback", False) is True:
+            # Native catalogs already carry tags. Avoid another paginated
+            # server search before applying overlays at each builder level.
+            backups = self._overlay_backup_extensions if label == "Overlay" else {}
+            items = [item for item in self.library.get_all(builder_level=libtype) if any(str(tag.tag).casefold() == str(label).casefold() for tag in self.library.item_labels(item)) or str(item.ratingKey) in backups]
+        else:
+            items = self.library.search(label=label, libtype=libtype)
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
     def remove_overlay(self, item, item_title, label, locations):

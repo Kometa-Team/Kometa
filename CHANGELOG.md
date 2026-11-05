@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reuse Jellyfin/Emby cached catalogs for overlay cleanup tag and backup checks instead of repeating server searches; include tag filters in request diagnostics.
+
 - Preserve Jellyfin/Emby catalogs across overlay artwork writes and patch only matching cached items after metadata/user-state writes without extending cache expiry.
 
 - Support `plex_all` season and episode selection on Jellyfin, Emby, and Silo using the cached catalog without fetching media details for every item.
