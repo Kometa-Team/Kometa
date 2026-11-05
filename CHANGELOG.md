@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Render native episode overlays on the landscape canvas instead of stretching episode artwork into portrait dimensions.
+
 - Map Jellyfin/Emby runtime ticks to milliseconds for runtime text overlays on movies, shows, seasons, and episodes.
 
 - Reuse Jellyfin/Emby cached catalogs for overlay cleanup tag and backup checks instead of repeating server searches; include tag filters in request diagnostics.

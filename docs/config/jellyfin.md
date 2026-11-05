@@ -164,3 +164,5 @@ Use `jellyfin_all: true`, `emby_all: true`, or `silo_all: true` for the correspo
 Overlay cleanup checks existing overlay tags and local backup records against the cached catalog at each show, season, or episode level. Warm catalogs do not trigger a separate server tag search. Request diagnostics include tag filters and the user-data flag when a server request is required.
 
 Runtime text overlays use the stored `RunTimeTicks` value converted to milliseconds, supporting `<<runtime>>`, `<<runtimeH>>`, and `<<runtimeM>>` without an additional request when the catalog already supplies runtime.
+
+Episode overlays use a 1920 × 1080 landscape canvas. If episode images were previously rendered with portrait dimensions, enable `reapply_overlays: true` for one run to rebuild them from their original backups.

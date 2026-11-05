@@ -2140,3 +2140,18 @@ def test_native_runtime_preserves_missing_and_zero(ticks, expected):
     library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
     item = MediaBrowserItem({"Id": "one", "Type": "Episode", "RunTimeTicks": ticks}, library)
     assert item.duration == expected
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_native_episode_overlay_canvas_preserves_landscape_aspect(kind):
+    from PIL import Image
+
+    from modules.overlay import get_canvas_size
+
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    episode = MediaBrowserItem({"Id": "one", "Type": "Episode"}, library)
+    canvas = get_canvas_size(episode)
+    original = Image.new("RGB", (1280, 720))
+    rendered = original.resize(canvas)
+    assert rendered.size == (1920, 1080)
+    assert rendered.width / rendered.height == original.width / original.height

@@ -154,9 +154,9 @@ def get_text_variables(text, level):
 
 
 def get_canvas_size(item):
-    if isinstance(item, Episode):
+    if isinstance(item, Episode) or getattr(item, "type", None) == "episode":
         return landscape_dim
-    elif isinstance(item, Album):
+    elif isinstance(item, Album) or getattr(item, "type", None) == "album":
         return square_dim
     else:
         return portrait_dim
@@ -598,10 +598,4 @@ class Overlay:
         return get_cord(ho, canvas_box[0], box[0], ha), get_cord(vo, canvas_box[1], box[1], va)
 
     def get_canvas(self, item):
-        if isinstance(item, Episode):
-            canvas_size = landscape_dim
-        elif isinstance(item, Album):
-            canvas_size = square_dim
-        else:
-            canvas_size = portrait_dim
-        return self.get_backdrop(canvas_size, box=self.backdrop_box, text=self.backdrop_text)
+        return self.get_backdrop(get_canvas_size(item), box=self.backdrop_box, text=self.backdrop_text)
