@@ -162,3 +162,5 @@ The `episode_duplicate` local search field checks whether episodes have multiple
 Use `jellyfin_all: true`, `emby_all: true`, or `silo_all: true` for the corresponding server. These builders mirror `plex_all: true` at movie, show, season, and episode levels, including overlays. Each native name requires its matching server type; `plex_all` remains compatible across servers.
 
 Overlay cleanup checks existing overlay tags and local backup records against the cached catalog at each show, season, or episode level. Warm catalogs do not trigger a separate server tag search. Request diagnostics include tag filters and the user-data flag when a server request is required.
+
+Runtime text overlays use the stored `RunTimeTicks` value converted to milliseconds, supporting `<<runtime>>`, `<<runtimeH>>`, and `<<runtimeM>>` without an additional request when the catalog already supplies runtime.

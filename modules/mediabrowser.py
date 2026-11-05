@@ -408,6 +408,8 @@ class MediaBrowserItem(NativeItemMetadata):
         self.key = self.ratingKey
         self.title = self.data.get("Name") or ""
         self.year = self.data.get("ProductionYear")
+        runtime_ticks = self.data.get("RunTimeTicks")
+        self.duration = runtime_ticks // 10000 if isinstance(runtime_ticks, (int, float)) else None
         raw_type = str(self.data.get("Type") or "")
         self.type = ITEM_TYPES.get(raw_type, raw_type.lower())
         self.guid = f"{self.library.server.type_name}://{self.ratingKey}"

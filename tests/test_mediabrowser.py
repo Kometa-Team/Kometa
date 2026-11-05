@@ -2118,3 +2118,25 @@ def test_native_request_logging_includes_tag_filter(monkeypatch):
     assert "'tags': 'Overlay'" in start
     assert "'enableUserData': 'false'" in start
     assert "userId" not in start
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("native_type", ["Movie", "Series", "Season", "Episode"])
+def test_native_runtime_exposes_overlay_milliseconds(kind, native_type):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    item = MediaBrowserItem({"Id": "one", "Type": native_type, "RunTimeTicks": 7380 * 10000000}, library)
+    assert item.duration == 7380000
+    assert int((item.duration / 60000) // 60) == 2
+    assert int((item.duration / 60000) % 60) == 3
+    item.apply({"RunTimeTicks": 60 * 10000000})
+    assert item.duration == 60000
+    item.apply({"RunTimeTicks": None})
+    assert item.duration is None
+    assert library.client.session.calls == []
+
+
+@pytest.mark.parametrize("ticks,expected", [(None, None), (0, 0)])
+def test_native_runtime_preserves_missing_and_zero(ticks, expected):
+    library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
+    item = MediaBrowserItem({"Id": "one", "Type": "Episode", "RunTimeTicks": ticks}, library)
+    assert item.duration == expected
