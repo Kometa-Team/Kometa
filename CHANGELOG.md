@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Accept the shared operations reload element-exclusion argument on Jellyfin, Emby, and Silo; Plex XML exclusions do not alter native JSON reads.
+
 - Render native episode overlays on the landscape canvas instead of stretching episode artwork into portrait dimensions.
 
 - Map Jellyfin/Emby runtime ticks to milliseconds for runtime text overlays on movies, shows, seasons, and episodes.

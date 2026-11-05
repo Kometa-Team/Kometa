@@ -1944,3 +1944,13 @@ def test_plex_all_uses_silo_catalog_for_each_tv_level(level):
     assert library.get_rating_keys("plex_all", level) == [("one", "ratingKey"), ("two", "ratingKey")]
     library.get_all.assert_called_once_with(**({"builder_level": level} if level in ("season", "episode") else {}))
     assert library.client.session.calls == []
+
+
+def test_silo_reload_accepts_shared_operation_element_exclusions():
+    session = FakeSession([FakeResponse({"content_id": "series-1", "type": "series", "title": "Fresh", "versions": []})])
+    library = _library(SiloClient(_server(), session=session))
+    item = SiloItem({"content_id": "series-1", "type": "series", "title": "Old"}, library)
+    library.reload(item, exclude_elements=["Media", "Guids"])
+    assert item.title == "Fresh"
+    library.reload(item, exclude_elements=["Media"])
+    assert len(session.calls) == 1

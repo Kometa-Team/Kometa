@@ -631,7 +631,8 @@ class MediaBrowser(Library):
         logger.info(f"{text} | Set from {source}")
         return "Reset", source, "Updated"
 
-    def reload(self, item, force=False):
+    def reload(self, item, force=False, exclude_elements=None):
+        # Plex XML element exclusions do not apply to native JSON item reads.
         cached = getattr(self, "_search_details", {}).get(item.ratingKey)
         if cached is not None and not force:
             item.apply(cached.data)

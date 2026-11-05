@@ -577,7 +577,8 @@ class Silo(Library):
         self._apply_artwork(item, "logo", self._public_image_url(image, url=url, kind="logo"))
         return True
 
-    def reload(self, item, force=False):
+    def reload(self, item, force=False, exclude_elements=None):
+        # Plex XML element exclusions do not apply to native JSON item reads.
         if isinstance(item, SiloCollection):
             data, etag = self.client.get_collection(item.id)
             item.apply(data, etag=etag)

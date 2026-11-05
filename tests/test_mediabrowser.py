@@ -930,7 +930,7 @@ def test_forced_reload_does_not_queue_server_metadata_refresh(kind):
     library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
     item = MediaBrowserItem({"Id": "558", "Name": "Old", "Type": "Movie"}, library)
     library._search_details = {item.ratingKey: item}
-    library.bulk_reload([item], force=True)
+    library.reload(item, force=True, exclude_elements=["Media", "Guids"])
     assert item.title == "Fresh"
     assert [call["method"] for call in session.calls] == ["GET"]
     assert library.reload(item).title == "Fresh"
