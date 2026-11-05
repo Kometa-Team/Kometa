@@ -103,7 +103,7 @@ pylast==7.2.0
     # via kometa
 pyparsing==3.3.3
     # via cloudscraper
-python-dateutil==3.0.0
+python-dateutil==4.0.0
     # via kometa
 python-dotenv==1.2.4
     # via kometa
