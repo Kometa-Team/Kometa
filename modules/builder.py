@@ -3793,14 +3793,19 @@ class CollectionBuilder:
                     default=10,
                     parent=method_name,
                 ),
-                "list_minimum": util.parse(
-                    self.Type,
-                    "list_minimum",
-                    dict_data,
-                    datatype="int",
-                    methods=dict_methods,
-                    default=0,
-                    parent=method_name,
+                "list_minimum": (
+                    util.parse(
+                        self.Type,
+                        "list_minimum",
+                        dict_data,
+                        datatype="int",
+                        methods=dict_methods,
+                        minimum=0,
+                        default=0,
+                        parent=method_name,
+                    )
+                    if "list_minimum" in dict_methods
+                    else 0
                 ),
                 "builder_level": ("track" if self.playlist else self.builder_level) if self.library.is_music else None,
             }
