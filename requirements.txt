@@ -79,7 +79,7 @@ markdown==3.11.2
     # via apprise
 num2words==0.5.14
     # via kometa
-oauthlib==4.0.0
+oauthlib==4.0.1
     # via requests-oauthlib
 packaging==26.3
     # via kometa
