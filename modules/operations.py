@@ -4,6 +4,7 @@ import os
 import random
 import re
 from collections import Counter
+from contextlib import nullcontext
 from datetime import datetime, timezone
 
 from plexapi.exceptions import NotFound
@@ -1228,7 +1229,7 @@ class Operations:
                                     continue
 
                 if len(item_edits) > 0:
-                    logger.info(f"{item_edits[1:]}")
+                    logger.info(item_edits[1:].replace("(Batched)", "(Queued)") if native else item_edits[1:])
                 else:
                     logger.info("No Item Edits")
 
@@ -1639,7 +1640,7 @@ class Operations:
                                             continue
 
                         if len(item_edits) > 0:
-                            logger.info(f"{item_edits[1:]}")
+                            logger.info(item_edits[1:].replace("(Batched)", "(Queued)") if native else item_edits[1:])
                         else:
                             logger.info("No Item Edits")
 
@@ -1665,7 +1666,8 @@ class Operations:
                     update_attr = update_value if display_attr is None else name_display[display_attr] if display_attr in name_display else display_attr.capitalize()
                     if native:
                         update_items = rating_keys if is_episode else [operation_items[key] for key in rating_keys if key in operation_items]
-                        logger.info(f"{self.library.server.type_label} {update_attr} Update ({j}/{_size}): {len(update_items)} items")
+                        action = "Queued" if isinstance(getattr(getattr(self.library, "client", None), "_metadata_write_queue", None), dict) else "Update"
+                        logger.info(f"{self.library.server.type_label} {update_attr} {action} ({j}/{_size}): {len(update_items)} items")
                         for target in update_items:
                             try:
                                 apply_edit(
@@ -1769,33 +1771,35 @@ class Operations:
                         if not edit_dict[value_key]:
                             del edit_dict[value_key]
 
-            flush_combined_edits()
+            native_batch = getattr(type(self.library), "batch_metadata_updates", None) if native else None
+            with native_batch(self.library) if callable(native_batch) else nullcontext():
+                flush_combined_edits()
 
-            if native:
-                plex_update_in_batches(native_clear_edits, out_type="clear")
-                plex_update_in_batches(native_episode_clear_edits, out_type="clear", is_episode=True)
-            if native:
-                plex_update_in_batches(original_title_edits, "originalTitle")
-            for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
-                for tag_operation, batch_edits in edit_dict.items():
-                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
-            for item_attr, rt_edits in rating_edits.items():
-                plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
-            plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
-            plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
-            plex_update_in_batches(title_edits, display_attr="title", evict_cache=True)
-            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
-            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
-            plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
-            plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
-            plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
-            plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
-            for item_attr, ep_edits in ep_rating_edits.items():
-                plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
+                if native:
+                    plex_update_in_batches(native_clear_edits, out_type="clear")
+                    plex_update_in_batches(native_episode_clear_edits, out_type="clear", is_episode=True)
+                if native:
+                    plex_update_in_batches(original_title_edits, "originalTitle")
+                for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
+                    for tag_operation, batch_edits in edit_dict.items():
+                        plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
+                for item_attr, rt_edits in rating_edits.items():
+                    plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
+                plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
+                plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
+                plex_update_in_batches(title_edits, display_attr="title", evict_cache=True)
+                plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
+                plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
+                plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
+                plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
+                plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
+                plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
+                for item_attr, ep_edits in ep_rating_edits.items():
+                    plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
             for rating_key in cache_evictions:
                 self.library.cached_items.pop(rating_key, None)
 

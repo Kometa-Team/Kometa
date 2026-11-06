@@ -2155,3 +2155,77 @@ def test_native_episode_overlay_canvas_preserves_landscape_aspect(kind):
     rendered = original.resize(canvas)
     assert rendered.size == (1920, 1080)
     assert rendered.width / rendered.height == original.width / original.height
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_metadata_batch_combines_fields_and_preserves_loaded_values_without_get(kind, monkeypatch):
+    from modules.native_metadata import apply_edit
+
+    logger = MagicMock()
+    monkeypatch.setattr(browser_module, "logger", logger)
+    session = FakeSession([FakeResponse(None, status_code=204), FakeResponse(None, status_code=204)])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    item = MediaBrowserItem({"Id": "episode", "Type": "Episode", "Name": "Episode", "Overview": "Keep", "Genres": ["Drama"], "Tags": ["Existing"], "UserData": {"Played": True}}, library)
+    with library.batch_metadata_updates():
+        apply_edit(library, item, fields={"audienceRating": 7.5})
+        apply_edit(library, item, fields={"rating": 8.2})
+        apply_edit(library, item, tags={"label": (["Added"], [])})
+        apply_edit(library, item, fields={"userRating": 9})
+        assert session.calls == []
+    assert len(session.calls) == 2
+    assert all(call["method"] == "POST" for call in session.calls)
+    metadata = session.calls[0]["json"]
+    assert metadata["CommunityRating"] == 7.5
+    assert metadata["CriticRating"] == 82
+    assert metadata["Tags"] == ["Existing", "Added"]
+    assert metadata["Overview"] == "Keep"
+    assert metadata["Genres"] == ["Drama"]
+    assert session.calls[1]["json"] == {"Played": True, "Rating": 9.0}
+    assert any("1/1 items" in call.args[0] for call in logger.info.call_args_list)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_metadata_batch_patches_catalog_once_per_hundred_successful_items(tmp_path, monkeypatch, kind):
+    from modules.native_metadata import apply_edit
+
+    count = 201
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse(None, status_code=204) for _ in range(count)])
+    cache, scope = library._persistent_catalog_cache()
+    records = [{"Id": str(i), "Type": "Episode", "Name": f"Episode {i}", "CommunityRating": 1, "CriticRating": 10} for i in range(count)]
+    cache.update_native_response(scope, "catalog:Episode", records)
+    patch = MagicMock(wraps=cache.patch_native_items)
+    monkeypatch.setattr(cache, "patch_native_items", patch)
+    with library.batch_metadata_updates():
+        for record in records:
+            item = MediaBrowserItem(record, library)
+            apply_edit(library, item, fields={"audienceRating": 8})
+            apply_edit(library, item, fields={"rating": 9})
+    assert len(session.calls) == count
+    assert all(call["method"] == "POST" for call in session.calls)
+    assert [len(call.args[1]) for call in patch.call_args_list] == [100, 100, 1]
+    saved = cache.query_native_response(scope, "catalog:Episode")
+    assert all(row["CommunityRating"] == 8 and row["CriticRating"] == 90 for row in saved)
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_metadata_batch_failure_does_not_patch_failed_item_and_continues(tmp_path, monkeypatch, kind):
+    from modules.native_metadata import apply_edit
+
+    logger = MagicMock()
+    monkeypatch.setattr(browser_module, "logger", logger)
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({}, status_code=400), FakeResponse(None, status_code=204)])
+    cache, scope = library._persistent_catalog_cache()
+    records = [{"Id": "bad", "Name": "Bad", "Type": "Episode", "CommunityRating": 1}, {"Id": "good", "Name": "Good", "Type": "Episode", "CommunityRating": 1}]
+    cache.update_native_response(scope, "catalog:Episode", records)
+    with library.batch_metadata_updates():
+        for record in records:
+            apply_edit(library, MediaBrowserItem(record, library), fields={"audienceRating": 8})
+    saved = cache.query_native_response(scope, "catalog:Episode")
+    assert saved[0]["CommunityRating"] == 1
+    assert saved[1]["CommunityRating"] == 8
+    assert len(session.calls) == 2
+    assert any("2/2 items" in call.args[0] and "1 failed requests" in call.args[0] for call in logger.info.call_args_list)
+    assert library.client._metadata_write_queue is None
+    assert library.client._pending_cache_patches is None
+    cache.connection.close()

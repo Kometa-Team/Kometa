@@ -1861,13 +1861,27 @@ class Cache:
     invalidate_native_responses = invalidate_silo_responses
 
     def patch_native_item(self, scope, item_id, fields):
-        """Patch existing DTOs without extending their original cache lifetime."""
+        self.patch_native_items(scope, {str(item_id): fields})
+
+    def patch_native_items(self, scope, updates):
+        """Patch a batch in one pass over each saved catalog, retaining expiry."""
+        updates = {str(key): value for key, value in updates.items()}
+        if not updates:
+            return
+        placeholders = ",".join("?" for _ in updates)
+        item_types = {fields.get("Type") for fields in updates.values()}
+        catalog_params = []
+        if item_types <= {"Movie", "Series", "Season", "Episode"}:
+            catalog_where = " OR ".join("resource = ? OR resource LIKE ?" for _ in item_types)
+            for item_type in sorted(item_types):
+                catalog_params.extend((f"catalog:{item_type}", f"catalog:{item_type}:%"))
+        else:
+            catalog_where = "resource LIKE 'catalog:%'"
+        children_where = " OR resource LIKE 'episodes:%'" if None in item_types or "Episode" in item_types else ""
         with self.connection as connection:
-            item_type = fields.get("Type")
-            catalog_prefix = f"catalog:{item_type}" if item_type in ("Movie", "Series", "Season", "Episode") else "catalog:"
             rows = connection.execute(
-                "SELECT resource, payload FROM silo_response_cache WHERE scope = ? AND (resource = ? OR resource = ? OR resource LIKE ? OR (? AND resource LIKE 'episodes:%'))",
-                (scope, f"item:{item_id}", catalog_prefix, f"{catalog_prefix}:%" if item_type in ("Movie", "Series", "Season", "Episode") else "catalog:%", item_type in (None, "Episode")),
+                f"SELECT resource, payload FROM silo_response_cache WHERE scope = ? AND (resource IN ({placeholders}) OR {catalog_where}{children_where})",
+                (scope, *(f"item:{key}" for key in updates), *catalog_params),
             ).fetchall()
             for row in rows:
                 try:
@@ -1877,12 +1891,10 @@ class Cache:
                 records = payload if isinstance(payload, list) else payload.get("Items", [payload]) if isinstance(payload, dict) else []
                 changed = False
                 for record in records:
-                    if isinstance(record, dict) and str(record.get("Id")) == str(item_id):
+                    fields = updates.get(str(record.get("Id"))) if isinstance(record, dict) else None
+                    if fields is not None:
                         for key, value in fields.items():
-                            if key == "UserData" and isinstance(value, dict):
-                                record[key] = {**(record.get(key) or {}), **value}
-                            else:
-                                record[key] = value
+                            record[key] = {**(record.get(key) or {}), **value} if key == "UserData" and isinstance(value, dict) else value
                         changed = True
                 if changed:
                     connection.execute("UPDATE silo_response_cache SET payload = ? WHERE scope = ? AND resource = ?", (json.dumps(payload), scope, row["resource"]))

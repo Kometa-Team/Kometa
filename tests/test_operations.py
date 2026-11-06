@@ -1408,3 +1408,26 @@ def test_less_all_collection_operations_skip_count_loading(monkeypatch, kind):
     library.get_all_collections.assert_called_once_with(load=True, include_counts=False)
     library.reload.assert_not_called()
     library.delete_collection.assert_called_once_with(col)
+
+
+def test_browser_operation_flush_combines_requests_across_attribute_groups(monkeypatch):
+    from modules.mediabrowser import MediaBrowserClient, MediaBrowserItem
+    from tests.test_mediabrowser import FakeResponse, FakeSession, _library, _server
+
+    monkeypatch.setattr(ops_module, "logger", MagicMock())
+    session = FakeSession([FakeResponse(None, status_code=204)])
+    client = MediaBrowserClient(_server(), session=session)
+    native_library = _library(client)
+    item = MediaBrowserItem({"Id": "one", "Name": "Movie", "Type": "Movie", "CommunityRating": 1, "CriticRating": 10, "Overview": "Keep", "Tags": []}, native_library)
+    library = make_mass_edit_library([item], mass_critic_rating_update=["7.5"], mass_audience_rating_update=["8.0"], mass_content_rating_update=["PG-13"])
+    library.server = native_library.server
+    library.client = client
+    library.is_show = False
+    monkeypatch.setattr(type(library), "batch_metadata_updates", lambda self: self.client.batch_metadata_updates(), raising=False)
+    Operations(config=MagicMock(), library=library).run_operations()
+    assert len(session.calls) == 1
+    assert session.calls[0]["method"] == "POST"
+    assert session.calls[0]["json"]["CommunityRating"] == 8.0
+    assert session.calls[0]["json"]["CriticRating"] == 75
+    assert session.calls[0]["json"]["OfficialRating"] == "PG-13"
+    assert session.calls[0]["json"]["Overview"] == "Keep"

@@ -14,6 +14,7 @@ import time
 import unicodedata
 import uuid
 from collections.abc import Iterable
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from urllib.parse import quote
@@ -201,7 +202,16 @@ class MediaBrowserClient:
                     if image_write:
                         cache.delete_native_response(scope, f"item:{item_id}")
                     else:
-                        cache.patch_native_item(scope, item_id, {"UserData": json_body} if user_write else json_body)
+                        patch = {"UserData": json_body} if user_write else json_body
+                        pending = getattr(self, "_pending_cache_patches", None)
+                        if pending is None:
+                            cache.patch_native_item(scope, item_id, patch)
+                        else:
+                            entry = pending.setdefault((id(cache), scope), (cache, {}))[1]
+                            previous = entry.setdefault(str(item_id), {})
+                            if "UserData" in patch:
+                                patch = {**patch, "UserData": {**(previous.get("UserData") or {}), **patch["UserData"]}}
+                            previous.update(patch)
             else:
                 self._invalidate_persistent_catalogs()
         if response.status_code == 204 or not response.content:
@@ -295,17 +305,34 @@ class MediaBrowserClient:
             raise util.CollectionNotFound(f"{self.server.type_label} Error: Collection {item_id} not found")
         return rows[0]
 
-    def update_item(self, item_id, fields):
+    def update_item(self, item_id, fields, current=None):
+        queue = getattr(self, "_metadata_write_queue", None)
+        if queue is not None:
+            entry = queue.setdefault(str(item_id), {})
+            current = {**(entry.get("metadata") or current or self.get_item(item_id)), **fields}
+            current["Id"] = str(item_id)
+            entry["metadata"] = current
+            return current
         current = self.get_item(item_id)
         current.update(fields)
         current["Id"] = str(item_id)
         self.request("POST", f"/Items/{_path_id(item_id)}", json_body=current)
         return current
 
-    def update_user_data(self, item_id, fields):
+    def update_user_data(self, item_id, fields, current=None):
         self.ensure_user()
         if self.server.type_name == "jellyfin" and "Rating" in fields and fields["Rating"] is None:
             raise Failed("Jellyfin Error: Clearing numeric personal ratings is not supported; the server ignores null Rating values")
+        queue = getattr(self, "_metadata_write_queue", None)
+        if queue is not None:
+            entry = queue.setdefault(str(item_id), {})
+            if current is None:
+                current = entry.get("metadata", {}).get("UserData")
+                if current is None:
+                    current = self.get_item(item_id).get("UserData") or {}
+            current = {**(entry.get("user") or current), **fields}
+            entry["user"] = current
+            return current
         current = dict((self.get_item(item_id).get("UserData") or {}))
         current.update(fields)
         if self.server.type_name == "emby":
@@ -313,6 +340,57 @@ class MediaBrowserClient:
         else:
             self.request("POST", f"/UserItems/{_path_id(item_id)}/UserData", params={"userId": self.user_id}, json_body=current)
         return current
+
+    def _flush_cache_patches(self):
+        pending = self._pending_cache_patches
+        self._pending_cache_patches = {}
+        for (_cache_id, scope), (cache, updates) in pending.items():
+            cache.patch_native_items(scope, updates)
+
+    @contextmanager
+    def batch_metadata_updates(self):
+        if getattr(self, "_metadata_write_queue", None) is not None:
+            raise Failed(f"{self.server.type_label} Error: Metadata update batch is already active")
+        self._metadata_write_queue = {}
+        try:
+            yield
+            queue = self._metadata_write_queue
+            self._metadata_write_queue = None
+            self._pending_cache_patches = {}
+            total = len(queue)
+            started = last_progress = time.monotonic()
+            failures = 0
+            logger.info(f"{self.server.type_label} Metadata Updates: applying {total} items sequentially (combined fields per item)")
+            try:
+                for index, (item_id, edits) in enumerate(queue.items(), 1):
+                    for kind in ("metadata", "user"):
+                        if kind not in edits:
+                            continue
+                        payload = edits[kind]
+                        try:
+                            if kind == "metadata":
+                                self.request("POST", f"/Items/{_path_id(item_id)}", json_body=payload)
+                            elif self.server.type_name == "emby":
+                                self.request("POST", f"/Users/{_path_id(self.ensure_user())}/Items/{_path_id(item_id)}/UserData", json_body=payload)
+                            else:
+                                self.request("POST", f"/UserItems/{_path_id(item_id)}/UserData", params={"userId": self.ensure_user()}, json_body=payload)
+                        except Failed as error:
+                            failures += 1
+                            logger.error(f"{self.server.type_label} Metadata Error: {item_id}: {error}")
+                    now = time.monotonic()
+                    if index % 100 == 0 or index == total:
+                        self._flush_cache_patches()
+                    if index % 100 == 0 or now - last_progress >= 10 or index == total:
+                        elapsed = now - started
+                        logger.info(f"{self.server.type_label} Metadata Updates: {index}/{total} items | {elapsed:.1f}s | {failures} failed requests")
+                        last_progress = now
+            finally:
+                try:
+                    self._flush_cache_patches()
+                finally:
+                    self._pending_cache_patches = None
+        finally:
+            self._metadata_write_queue = None
 
     def split_versions(self, item_id):
         self.request("DELETE", f"/Videos/{_path_id(item_id)}/AlternateSources", retry_safe=True)
@@ -630,6 +708,9 @@ class MediaBrowser(Library):
         self._apply_image(item, kind, candidate)
         logger.info(f"{text} | Set from {source}")
         return "Reset", source, "Updated"
+
+    def batch_metadata_updates(self):
+        return self.client.batch_metadata_updates()
 
     def reload(self, item, force=False, exclude_elements=None):
         # Plex XML element exclusions do not apply to native JSON item reads.

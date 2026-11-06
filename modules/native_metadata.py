@@ -154,10 +154,12 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
     if browser:
         if fields and locks != list(item.data.get("LockedFields") or []):
             payload["LockedFields"] = locks
+        queued = isinstance(getattr(library.client, "_metadata_write_queue", None), dict)
         if payload:
-            item.apply(library.client.update_item(item.ratingKey, payload))
+            item.apply(library.client.update_item(item.ratingKey, payload, current=item.data) if queued else library.client.update_item(item.ratingKey, payload))
         if user is not ...:
-            result = library.client.update_user_data(item.ratingKey, {"Rating": None if user is None else float(user)})
+            user_fields = {"Rating": None if user is None else float(user)}
+            result = library.client.update_user_data(item.ratingKey, user_fields, current=item.data.get("UserData") or {}) if queued else library.client.update_user_data(item.ratingKey, user_fields)
             item.data["UserData"] = result
             item.apply({})
     else:

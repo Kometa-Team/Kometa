@@ -166,3 +166,5 @@ Overlay cleanup checks existing overlay tags and local backup records against th
 Runtime text overlays use the stored `RunTimeTicks` value converted to milliseconds, supporting `<<runtime>>`, `<<runtimeH>>`, and `<<runtimeM>>` without an additional request when the catalog already supplies runtime.
 
 Episode overlays use a 1920 × 1080 landscape canvas. If episode images were previously rendered with portrait dimensions, enable `reapply_overlays: true` for one run to rebuild them from their original backups.
+
+During operation metadata updates, Jellyfin/Emby changes are queued by item, then combined into one metadata request per item using the already loaded record. Personal ratings use a separate user-data request. Server writes remain sequential. Progress is reported every 100 items or about 10 seconds between completed requests, with elapsed time and failure counts. Successful local cache patches are flushed every 100 items and at completion, rather than rewriting the catalog for each attribute; only successful writes are patched and original cache expiration is retained.

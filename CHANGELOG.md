@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Combine pending Jellyfin/Emby operation metadata changes into one request per item using loaded item data, batch local cache patches in groups of 100, and report write progress and failures. Personal ratings retain their separate endpoint.
+
 - Accept the shared operations reload element-exclusion argument on Jellyfin, Emby, and Silo; Plex XML exclusions do not alter native JSON reads.
 
 - Render native episode overlays on the landscape canvas instead of stretching episode artwork into portrait dimensions.
