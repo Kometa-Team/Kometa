@@ -150,6 +150,53 @@ class TestSerializdWatchedSync:
 
 
 class TestTMDbEpisodeCache:
+    @pytest.mark.parametrize(("show_id", "season", "episode"), [(209867, 1, 29), (209867, 2, 1), (999, 1, 1)])
+    def test_episode_moves_to_current_position_without_affecting_other_entries(self, tmp_path, show_id, season, episode):
+        cache = make_cache(tmp_path)
+        original = make_tmdb_episode()
+        cache.update_tmdb_episode(False, original, "en", 30)
+        cache.update_tmdb_episode(False, original, "fr", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_id=999, episode_number=30), "en", 30)
+
+        moved = make_tmdb_episode(show_id=show_id, season_number=season, episode_number=episode)
+        cache.update_tmdb_episode(False, moved, "en", 30)
+
+        assert cache.query_tmdb_episode(209867, 1, 28, "en", 30) == ({}, None)
+        positional, _ = cache.query_tmdb_episode(show_id, season, episode, "en", 30)
+        direct, _ = cache.query_tmdb_episode_by_id(original.episode_id, "en", 30)
+        assert positional == direct
+        assert (direct["tmdb_id"], direct["season_number"], direct["episode_number"]) == (show_id, season, episode)
+        french, _ = cache.query_tmdb_episode_by_id(original.episode_id, "fr", 30)
+        assert (french["tmdb_id"], french["season_number"], french["episode_number"]) == (209867, 1, 28)
+        assert cache.query_tmdb_episode_by_id(999, "en", 30)[0]["episode_number"] == 30
+
+    def test_moved_episode_replaces_occupied_position_without_inheriting_external_ids(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(), "en", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_id=123, episode_number=29, imdb_id="tt123", tvdb_id=456), "en", 30)
+
+        cache.update_tmdb_episode(False, make_tmdb_episode(episode_number=29), "en", 30)
+
+        assert cache.query_tmdb_episode(209867, 1, 28, "en", 30) == ({}, None)
+        assert cache.query_tmdb_episode_by_id(123, "en", 30) == ({}, None)
+        current, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+        assert current["episode_number"] == 29
+        assert current["imdb_id"] == ""
+        assert current["tvdb_id"] is None
+
+    def test_failed_move_rolls_back_stale_entry_removal(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(), "en", 30)
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("CREATE TRIGGER fail_episode_update BEFORE UPDATE ON tmdb_episode_data2 BEGIN SELECT RAISE(ABORT, 'test write failure'); END")
+
+        with pytest.raises(sqlite3.IntegrityError, match="test write failure"):
+            cache.update_tmdb_episode(False, make_tmdb_episode(episode_number=29), "en", 30)
+
+        original, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+        assert original["episode_number"] == 28
+        assert cache.query_tmdb_episode(209867, 1, 29, "en", 30) == ({}, None)
+
     def test_episode_is_queryable_by_position_and_direct_id(self, tmp_path):
         cache = make_cache(tmp_path)
         episode = make_tmdb_episode()
@@ -243,6 +290,74 @@ class TestTMDbEpisodeCache:
 # ═══════════════════════════════════════════════════════════════════════
 # _query_map / _update_map (core internals)
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTVDbCache:
+    @staticmethod
+    def entry(is_movie, title=None):
+        return SimpleNamespace(
+            tvdb_id=81189,
+            is_movie=is_movie,
+            title=title or ("Scoutman" if is_movie else "Breaking Bad"),
+            status="Ended",
+            summary="Summary",
+            poster_url="poster",
+            background_url="background",
+            logo_url="logo",
+            icon_url="icon",
+            release_date=datetime(2001, 10, 27),
+            genres=["Drama"],
+        )
+
+    @pytest.mark.parametrize("first_is_movie", [False, True])
+    def test_movie_and_show_with_same_id_are_cached_independently(self, tmp_path, first_is_movie):
+        cache = make_cache(tmp_path)
+        cache.update_tvdb(False, self.entry(first_is_movie), 30)
+        cache.update_tvdb(False, self.entry(not first_is_movie), 30)
+        cache.update_tvdb(False, self.entry(first_is_movie, title="Updated"), 30)
+
+        first, expired = cache.query_tvdb(81189, first_is_movie, 30)
+        other, other_expired = cache.query_tvdb(81189, not first_is_movie, 30)
+        assert first["title"] == "Updated"
+        assert other["title"] == self.entry(not first_is_movie).title
+        assert first["type"] != other["type"]
+        assert expired is False and other_expired is False
+
+    @pytest.mark.parametrize("age", [0, 31])
+    def test_migrates_legacy_rows_preserving_data_and_expiration(self, tmp_path, age):
+        insertion_date = (datetime.now() - timedelta(days=age)).strftime("%Y-%m-%d")
+        with sqlite3.connect(tmp_path / "config.cache") as connection:
+            connection.execute("""CREATE TABLE tvdb_data5 (
+                key INTEGER PRIMARY KEY, tvdb_id INTEGER UNIQUE, type TEXT, title TEXT,
+                status TEXT, summary TEXT, poster_url TEXT, background_url TEXT, logo_url TEXT,
+                icon_url TEXT, release_date TEXT, genres TEXT, expiration_date TEXT)""")
+            connection.execute(
+                "INSERT INTO tvdb_data5 (tvdb_id, type, title, status, summary, poster_url, background_url, logo_url, icon_url, release_date, genres, expiration_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (81189, "show", "Breaking Bad", "Ended", "Summary", "poster", "background", "logo", "icon", "2008-01-20", "Drama|Crime", insertion_date),
+            )
+
+        cache = make_cache(tmp_path)
+        data, expired = cache.query_tvdb(81189, False, 30)
+        assert data == {
+            "tvdb_id": 81189,
+            "type": "show",
+            "title": "Breaking Bad",
+            "status": "Ended",
+            "summary": "Summary",
+            "poster_url": "poster",
+            "background_url": "background",
+            "logo_url": "logo",
+            "icon_url": "icon",
+            "release_date": datetime(2008, 1, 20),
+            "genres": "Drama|Crime",
+        }
+        assert expired is (age > 30)
+        assert not table_exists(cache, "tvdb_data5")
+        cache.update_tvdb(False, self.entry(True), 30)
+
+        reopened = make_cache(tmp_path)
+        assert reopened.query_tvdb(81189, False, 30) == (data, expired)
+        assert reopened.query_tvdb(81189, True, 30)[0]["title"] == "Scoutman"
 
 
 class TestQueryMap:
@@ -1403,6 +1518,42 @@ def _select_count(cache, fn):
 
 
 class TestQueryMapMemoization:
+    @pytest.mark.parametrize("query_id", [101, "101"])
+    def test_remapping_invalidates_previous_reverse_lookup(self, tmp_path, query_id):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 101)
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False, media_type="movie")[0] == "tt1"
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False)[0] == "tt1"
+
+        cache.update_imdb_to_tmdb_map("show", False, "tt1", 202)
+
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False, media_type="movie") == (None, None)
+        assert cache.query_imdb_to_tmdb_map(query_id, imdb=False) == (None, None)
+        assert cache.query_imdb_to_tmdb_map(202, imdb=False, media_type="show")[0] == "tt1"
+        assert cache.query_imdb_to_tmdb_map("tt1", media_type="show")[0] == 202
+
+    @pytest.mark.parametrize(("cached_id", "written_id"), [(101, "101"), ("101", 101)])
+    def test_write_invalidates_reverse_miss_across_numeric_id_representations(self, tmp_path, cached_id, written_id):
+        cache = make_cache(tmp_path)
+        assert cache.query_imdb_to_tmdb_map(cached_id, imdb=False) == (None, None)
+
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", written_id)
+
+        assert cache.query_imdb_to_tmdb_map(cached_id, imdb=False)[0] == "tt1"
+
+    def test_remapping_preserves_unrelated_memoized_lookups(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 101)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt2", 202)
+        cache.query_imdb_to_tmdb_map(101, imdb=False)
+        cache.query_imdb_to_tmdb_map(202, imdb=False)
+        cache.update_imdb_to_tmdb_map("movie", False, "tt1", 303)
+
+        result, selects = _select_count(cache, lambda: cache.query_imdb_to_tmdb_map(202, imdb=False))
+
+        assert result[0] == "tt2"
+        assert selects == 0
+
     def test_repeat_lookup_does_not_hit_sqlite_again(self, tmp_path):
         cache = make_cache(tmp_path)
         cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "100", "tvdb_id", "200", False)

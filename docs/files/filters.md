@@ -342,6 +342,19 @@ Multiple values can be a YAML list or comma-separated string. Count modifiers co
 | `writer` | Writer | Movies, Episodes |
 | `year` | Year<br>[Current year](#external-metadata-and-missing-items). | Movies, Shows, Seasons, Episodes, Albums, Tracks |
 
+!!! note "Missing collections in exclusions"
+
+    In `filters`, `collection.not` warns and ignores collection names that do not
+    exist in the current Plex library. If none of the named collections exists,
+    this filter excludes nothing. Names that do exist are still excluded, and
+    other filters in the same definition still apply. This allows an overlay to
+    continue working after an excluded seasonal collection has been deleted,
+    without setting `validate: false`.
+
+    Missing names in positive `collection` filters still fail validation by
+    default. This behavior does not change collection searches under `plex_search`
+    or Plex smart filters.
+
 ### Special filters {#special-filters}
 
 These filters use their own input forms. Child thresholds and external-metadata rules are explained after the tables.

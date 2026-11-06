@@ -689,6 +689,7 @@ custom_sort_builders = [
     "tmdb_on_the_air",
     "trakt_list",
     "mdblist_streaming",
+    "mdblist_watchlist",
     "floppy_list",
     "floppy_list_details",
     "floppy_tracked",
@@ -729,6 +730,7 @@ custom_sort_builders = [
     "tracearr_watched_media",
     *tautulli.builders,
     "mdblist_list",
+    "mdblist_watchlist",
     "letterboxd_list",
     *letterboxd.semantic_builders,
     "icheckmovies_list",
@@ -832,6 +834,7 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "mdblist_watchlist",
         "flicklist_list",
         "flicklist_list_details",
         "flicklist_user_lists",
@@ -3758,6 +3761,8 @@ class CollectionBuilder:
     def _mdblist(self, method_name, method_data):
         if method_name == "mdblist_streaming":
             self.builders.append((method_name, self.config.MDBList.validate_mdblist_streaming(self.Type, method_data)))
+        elif method_name == "mdblist_watchlist":
+            self.builders.append((method_name, self.config.MDBList.validate_mdblist_watchlist(self.Type, method_data)))
         else:
             for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
                 self.builders.append((method_name, mdb_dict))
@@ -3788,14 +3793,19 @@ class CollectionBuilder:
                     default=10,
                     parent=method_name,
                 ),
-                "list_minimum": util.parse(
-                    self.Type,
-                    "list_minimum",
-                    dict_data,
-                    datatype="int",
-                    methods=dict_methods,
-                    default=0,
-                    parent=method_name,
+                "list_minimum": (
+                    util.parse(
+                        self.Type,
+                        "list_minimum",
+                        dict_data,
+                        datatype="int",
+                        methods=dict_methods,
+                        minimum=0,
+                        default=0,
+                        parent=method_name,
+                    )
+                    if "list_minimum" in dict_methods
+                    else 0
                 ),
                 "builder_level": ("track" if self.playlist else self.builder_level) if self.library.is_music else None,
             }
@@ -5163,6 +5173,9 @@ class CollectionBuilder:
                             valid_list.append(actor_id)
                 if not actor_id:
                     error = f"Plex Error: {attribute}: {fvalue} not found"
+                    if attribute == "collection" and modifier == ".not" and not plex_search:
+                        logger.warning(f"Plex Warning: collection: {fvalue} not found; ignoring this collection exclusion")
+                        continue
                     if self.details["show_options"]:
                         error += f"\nOptions: {names}"
                     if validate:
@@ -5437,7 +5450,7 @@ class CollectionBuilder:
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
                         or_result = False
                 if imdb_f:
-                    if not imdb_info and self.check_imdb_filters(imdb_info, imdb_f) is False:
+                    if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
                 if or_result:
                     final_return = True

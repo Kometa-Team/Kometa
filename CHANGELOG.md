@@ -7,19 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Suppress unverified HTTPS warnings for the configured Plex host when its SSL verification is disabled, while preserving warnings for other hosts. #3743
+- Avoid warnings when Tautulli builders omit the optional `list_minimum` or explicitly set it to its default of `0`.
+- Warn and ignore missing collection names in `collection.not` post-filters instead of rejecting the definition, allowing overlays to continue after an excluded collection is deleted.
+- Preserve IMDb show mappings when TMDb cannot provide a TVDb ID, allowing metadata files to match those shows by IMDb ID. #3820
+- Avoid warning about a missing optional `sort_by` when Letterboxd user-page builders use the default sort. #3814
+- Reject items without a release or first-air date when applying numeric `tmdb_year` filters instead of aborting missing-item processing. #3815
+- Apply IMDb keyword filters to missing movies and shows before reporting them or sending them to Radarr/Sonarr. #3816
+
+### Added
+
+- Added `mdblist_watchlist` builder to create collections based on watchlist
+
+## [v2.5.4] - 2026-10-31
+
 ### Docs
 
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
+- Add Release Notes to Kometa website, available under `Useful Links` section of navigation
+
+### Removed
+
+- Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 
 ### Added
 
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
-- Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
-- Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
 - Add library schedule modes for full, added, changed, alphabetical, and explicitly selected items, plus a `--mode` / `KOMETA_MODE` override for a run.
-- Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 - Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
@@ -33,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Suppress unverified HTTPS warnings for the configured Plex host when its SSL verification is disabled, while preserving warnings for other hosts. #3743
+- Fix TMDb episode cache writes failing after an episode is renumbered or moved; replace stale positions atomically without retaining external IDs from a different episode. #3801
 - Ignore the unsupported `kometa_poster` and `pmm_poster` attributes with a clear error directing users to supported poster options, instead of attempting legacy poster rendering. #3796
 - Fetch complete MDBList digital release dates for `mdb_digital` date operations when batch or older cached results omit them, and cache confirmed missing dates to avoid repeated lookups. #3798
 - Fix `lidarr_taglist` and `lidarr_remove_by_tag` ignoring tags that do not exist in Lidarr: a misspelled `lidarr_taglist` tag selected every Lidarr artist, and `lidarr_remove_by_tag: kometa, temp` removed every `kometa` artist when `temp` did not exist. Both now match nothing and log the missing tags.
@@ -42,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Invalidate stale MDBList cache entries that could apply incorrectly scaled Letterboxd ratings to Plex. #3771
 - Exclude documentation-only `zensical.toml` from Docker source integrity checks to avoid reporting unmodified images as modified.
 - Show the source integrity summary after collection and playlist summaries, before the end-of-run errors and warnings introduction.
+- Cache TVDb movies and shows independently when they share a numeric ID, migrating existing entries without discarding metadata or resetting expiration. #3804
 - Fix cached MDBList entries never returning the MyAnimeList rating: `query_mdb()` rebuilt that rating with the source label `myanimelist_rating`, which `MDbObj` does not recognize, so `mdb_myanimelist` in `mass_*_rating_update` operations, `<<mdb_myanimelist_rating>>` overlay text and `value_filter` only worked on a fresh MDBList fetch. #3773
 - Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
@@ -53,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Validate People-Images poster URLs before selection so missing images allow an available TMDb poster to be selected; cache validation misses for the current run and distinguish temporary validation failures from confirmed missing images. #3715
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
+- Invalidate obsolete reverse ID lookups when provider mappings change, including equivalent numeric and text IDs, so cached reads agree with the corrected mapping during the same run. #3803
 - Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
 - Cache IMDb genres locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /genre` and reuses them until `cache_expiration`; later genre lookups read the cache, and misses are batched instead of requested one title at a time.
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
@@ -531,8 +551,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...HEAD
-[v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.3
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.4...HEAD
+[v2.5.4]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...v2.5.4
+[v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.2...v2.5.3
 [v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...v2.5.2
 [v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
