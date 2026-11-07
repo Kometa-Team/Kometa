@@ -1,0 +1,60 @@
+[
+  {
+    "data": [
+      {
+        "media_id": "550e8400-e29b-41d4-a716-446655440005",
+        "media_type": "movie",
+        "title": "Inception",
+        "year": 2010,
+        "imdb_id": "tt1375666",
+        "tmdb_id": 27205,
+        "tvdb_id": null,
+        "show_media_id": null,
+        "show_title": null,
+        "show_imdb_id": null,
+        "show_tmdb_id": null,
+        "show_tvdb_id": null,
+        "season_number": null,
+        "episode_number": null,
+        "watched_state": "watched",
+        "plays": 1,
+        "last_watched_day": "2026-10-25",
+        "episodes_watched": null,
+        "episode_count": null
+      }
+    ],
+    "meta": {
+      "nextCursor": "watched-media-page-2",
+      "pageSize": 1000
+    }
+  },
+  {
+    "data": [
+      {
+        "media_id": "550e8400-e29b-41d4-a716-446655440006",
+        "media_type": "episode",
+        "title": "Pilot",
+        "year": 2010,
+        "imdb_id": null,
+        "tmdb_id": null,
+        "tvdb_id": null,
+        "show_media_id": "550e8400-e29b-41d4-a716-446655440007",
+        "show_title": "Example Show",
+        "show_imdb_id": null,
+        "show_tmdb_id": null,
+        "show_tvdb_id": 12345,
+        "season_number": 1,
+        "episode_number": 1,
+        "watched_state": "watched",
+        "plays": 1,
+        "last_watched_day": "2026-10-25",
+        "episodes_watched": null,
+        "episode_count": null
+      }
+    ],
+    "meta": {
+      "nextCursor": null,
+      "pageSize": 1000
+    }
+  }
+]
