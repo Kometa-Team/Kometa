@@ -467,6 +467,7 @@ class Letterboxd:
         return items
 
     def _tmdb(self, slug_path, language):
+        tmdb_type = "unknown"
         try:
             movie = self._movie_cls(self._slug_path(slug_path).strip("/").split("/")[1])
         except Exception as e:
@@ -488,8 +489,9 @@ class Letterboxd:
                         return tmdb_id
                     else:
                         logger.warning(f"Letterboxd Warning: TMDb link for {slug_path} is for a TV show, not a movie; ignoring TMDb ID {tmdb_id} from link.")
+                        return None
 
-        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)} item is type {tmdb_type if 'tmdb_type' in locals() else 'unknown'} with tmdb_id {tmdb_id if 'tmdb_id' in locals() else 'unknown'}.")
+        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)} item is type {tmdb_type} with tmdb_id {tmdb_id}.")
 
     @staticmethod
     def _coerce_year(value):
@@ -913,6 +915,8 @@ class Letterboxd:
                     logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                     try:
                         tmdb_id = self._tmdb(slug, language)
+                        if tmdb_id is None:
+                            continue
                     except Failed as e:
                         logger.error(e)
                         continue
@@ -953,6 +957,8 @@ class Letterboxd:
                 logger.ghost(f"Finding TMDb ID {i}/{len(items)}")
                 try:
                     tmdb_id = self._tmdb(slug, language)
+                    if tmdb_id is None:
+                        continue
                 except Failed as e:
                     logger.error(e)
                     continue
