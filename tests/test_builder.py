@@ -25,6 +25,22 @@ from tests.factories import make_builder
 # ═══════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.parametrize("method_name", ["tautulli_popular", "tautulli_top", "tautulli_watched"])
+@pytest.mark.parametrize("minimum, expected, warns", [(None, 0, False), (0, 0, False), (2, 2, False), (-1, 0, True), ("invalid", 0, True)])
+def test_tautulli_list_minimum_defaults_and_validation(monkeypatch, method_name, minimum, expected, warns):
+    logger = MagicMock()
+    monkeypatch.setattr(builder_module.util, "logger", logger)
+    builder = make_builder(Type="Collection", builders=[], library=SimpleNamespace(is_music=False, Tautulli=SimpleNamespace(has_section=True)))
+    data = {"list_days": 30, "list_size": 10}
+    if minimum is not None:
+        data["LIST_MINIMUM"] = minimum
+
+    builder._tautulli(method_name, data)
+
+    assert builder.builders[0][1]["list_minimum"] == expected
+    assert logger.warning.called == warns
+
+
 class FakeShowLibrary:
     def __init__(self):
         self.plex_map = {}
