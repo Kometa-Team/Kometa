@@ -72,6 +72,8 @@ The location types are outlined as follows:
 
     <div id="folder" />Used to run all files located in a directory which is located within the system that Kometa is being run from.
 
+    YAML files (`.yml` and `.yaml`) are processed together in alphabetical filename order, ignoring case. Subdirectories are not searched.
+
     Folder locations need to be accessible to Kometa at those paths; this is typically only something you need to consider when using Docker.
 
     ???+ example "Example"

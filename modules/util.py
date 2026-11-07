@@ -678,7 +678,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
                     yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
                     if yml_files:
-                        current.extend([("File", yml) for yml in yml_files])
+                        current.extend(("File", yml) for yml in sorted(yml_files, key=lambda path: (path.casefold(), path)))
                     else:
                         logger.error(f"{err_type} Error: No YAML (.yml,.yaml) files found in {file['folder']}")
 
