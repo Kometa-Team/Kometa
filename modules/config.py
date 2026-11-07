@@ -661,7 +661,11 @@ class ConfigFile:
                     message = f"no {text} found and the default path {default} could not be found"
                 default = None
             if default is not None or default_is_none:
-                message = message + f" using {default} as default"
+                if default and attribute in {"token", "apikey", "api_key", "client_secret", "password"}:
+                    logger.secret(default)
+                    message = message + " using (redacted) as default"
+                else:
+                    message = message + f" using {default} as default"
             message = message + endline
             if req_default and default is None:
                 raise Failed(f"Config Error: {attribute} attribute must be set under {parent} globally or under this specific Library")
