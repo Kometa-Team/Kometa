@@ -38,6 +38,21 @@ plex:
 """
 
 
+@pytest.mark.parametrize("service", ["sonarr", "radarr"])
+def test_library_connection_fallback_redacts_token_before_warning(tmp_path, service):
+    token = "inherited-arr-api-key"
+    config_yaml = BASE_CONFIG.replace("    collection_files: []", f"    collection_files: []\n    {service}:\n      root_folder_path: /data/media")
+    config_yaml += f"\n{service}:\n  url: http://arr:8989\n  token: {token}\n"
+
+    make_config(tmp_path, config_yaml=config_yaml)
+
+    logger = config_module.logger
+    assert token in logger.secrets
+    assert any(f"{service} sub-attribute token" in message and "(redacted)" in message for message in logger.warning_messages)
+    assert all(token not in message for message in logger.warning_messages)
+    assert "1" not in logger.secrets
+
+
 def _default_attrs(config_path: str) -> dict:
     return {
         "config_file": config_path,

@@ -338,6 +338,34 @@ def test_collection_asset_directory_rejects_invalid_values(value):
         asset_directory_paths(value)
 
 
+@pytest.mark.parametrize("method", ["collection_files", "metadata_files", "overlay_files", "playlist_files"])
+def test_folder_files_are_alphabetical_across_yaml_extensions(tmp_path, monkeypatch, method):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(util, "logger", FakeLogger())
+    paths = {name: str(tmp_path / name) for name in ["zebra.yml", "Bravo.yml", "alpha.yaml", "bravo.yml"]}
+    monkeypatch.setattr(util, "glob_filter", lambda pattern: [paths["zebra.yml"], paths["bravo.yml"], paths["Bravo.yml"]] if pattern.endswith("*.yml") else [paths["alpha.yaml"]])
+
+    files, _ = util.load_files([{"folder": str(tmp_path)}], method)
+
+    assert [file[1] for file in files] == [paths[name] for name in ["alpha.yaml", "Bravo.yml", "bravo.yml", "zebra.yml"]]
+
+
+def test_explicit_file_entries_keep_configured_order(tmp_path, monkeypatch):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(util, "logger", FakeLogger())
+    paths = [tmp_path / "zebra.yml", tmp_path / "alpha.yaml"]
+    for path in paths:
+        path.write_text("collections: {}")
+
+    files, _ = util.load_files([{"file": str(path)} for path in paths], "collection_files")
+
+    assert [file[1] for file in files] == [str(path) for path in paths]
+
+
 def test_collection_file_assets_are_carried_separately(tmp_path, monkeypatch):
     from modules import util
     from tests.conftest import FakeLogger
