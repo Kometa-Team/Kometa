@@ -1212,9 +1212,7 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                         raise
                     except Failed as e:
                         list_export_ready = False
-                        if builder.ignore_blank_results:
-                            logger.warning(e)
-                        elif builder.obj:
+                        if builder.ignore_blank_results and not builder.obj:
                             logger.warning(e)
                         else:
                             raise Failed(e)
