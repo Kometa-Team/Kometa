@@ -41,7 +41,7 @@ These options apply to the history builders; `tracearr_watched_media` has its ow
 | `list_days` | Number of days to look back | `30` |
 | `list_size` | Maximum items to add | `10` |
 | `list_minimum` | Minimum activity, measured as below | `0` |
-| `user` | Identity UUID, Tracearr username, Plex account ID, media-server user ID, or linked account username | No user filter |
+| `user` | Identity UUID, Tracearr display name or username, Plex account ID, media-server user ID, or linked account username | No user filter |
 | `watched` | Completed-watch state filter | No filter |
 | `minimum_progress` | Completion percentage, 0-100 | `1` for in-progress |
 | `maximum_progress` | Completion percentage, 0-100 | `84` for in-progress |
@@ -112,7 +112,8 @@ it returns shows only.
 
 `tracearr_watched_media` selects distinct media records, rather than a chart
 ranked by completed sessions. It requires the watched-media capability available
-in newer Tracearr v2 versions; early v2 versions may not provide it.
+in newer Public API v2 implementations; early implementations may not provide it.
+Tracearr application 3.x still uses Public API v2.
 
 | Attribute | Purpose | Default |
 |:----------|:--------|:--------|

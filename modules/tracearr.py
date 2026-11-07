@@ -401,7 +401,7 @@ class Tracearr:
         folded = user_value.casefold()
         matches = []
         for identity in users_cache:
-            values = [identity.get("id"), identity.get("username"), identity.get("plex_account_id")]
+            values = [identity.get("id"), identity.get("username"), identity.get("identity_name"), identity.get("plex_account_id")]
             for account in identity.get("accounts") or []:
                 values.extend([account.get("external_user_id"), account.get("username")])
             if any(str(value).casefold() == folded for value in values if value is not None):
@@ -410,9 +410,9 @@ class Tracearr:
         if len(unique_matches) == 1:
             return next(iter(unique_matches))
         if not unique_matches:
-            options = ", ".join(sorted(str(identity.get("username")) for identity in users_cache if identity.get("username"))) or "None"
+            options = ", ".join(sorted(f"{identity.get('identity_name') or identity.get('username')} ({identity['id']})" for identity in users_cache if identity.get("id"))) or "None"
             raise Failed(f"Tracearr Error: user '{user_value}' not found. Options: {options}")
-        options = ", ".join(sorted(f"{identity.get('username')} ({identity_id})" for identity_id, identity in unique_matches.items()))
+        options = ", ".join(sorted(f"{identity.get('identity_name') or identity.get('username')} ({identity_id})" for identity_id, identity in unique_matches.items()))
         raise Failed(f"Tracearr Error: user '{user_value}' is ambiguous. Matches: {options}")
 
     def _filter_history(self, items, data, user_id, library_ids=None):

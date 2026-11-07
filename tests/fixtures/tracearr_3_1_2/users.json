@@ -1,0 +1,43 @@
+[
+  {
+    "data": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440001",
+        "username": "alice",
+        "identity_name": "Alice Smith",
+        "email": null,
+        "plex_account_id": "1234567",
+        "accounts": [
+          {
+            "server_id": "550e8400-e29b-41d4-a716-446655440000",
+            "server_type": "plex",
+            "server_user_id": "550e8400-e29b-41d4-a716-446655440002",
+            "external_user_id": "42",
+            "username": "alice-plex",
+            "removed_at": null
+          }
+        ]
+      }
+    ],
+    "meta": {
+      "nextCursor": "users-page-2",
+      "pageSize": 100
+    }
+  },
+  {
+    "data": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440003",
+        "username": "bob",
+        "identity_name": null,
+        "email": null,
+        "plex_account_id": null,
+        "accounts": []
+      }
+    ],
+    "meta": {
+      "nextCursor": null,
+      "pageSize": 100
+    }
+  }
+]

@@ -9,21 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Skip Letterboxd TV entries with a single warning instead of also logging a failed movie lookup as an error. #3836
-- Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
-- Abort existing collection processing when a builder fails to fetch its items, preserving membership instead of syncing incomplete results. #3838
-- Redact sensitive fallback defaults before logging library connection warnings, preventing inherited Sonarr/Radarr API keys from appearing in logs. #3839
-- Process YAML files from `folder` sources in alphabetical filename order, ignoring case, instead of filesystem order.
 - Avoid warnings when Tautulli builders omit the optional `list_minimum` or explicitly set it to its default of `0`.
 - Warn and ignore missing collection names in `collection.not` post-filters instead of rejecting the definition, allowing overlays to continue after an excluded collection is deleted.
 - Preserve IMDb show mappings when TMDb cannot provide a TVDb ID, allowing metadata files to match those shows by IMDb ID. #3820
 - Avoid warning about a missing optional `sort_by` when Letterboxd user-page builders use the default sort. #3814
 - Reject items without a release or first-air date when applying numeric `tmdb_year` filters instead of aborting missing-item processing. #3815
 - Apply IMDb keyword filters to missing movies and shows before reporting them or sending them to Radarr/Sonarr. #3816
+- Process YAML files from `folder` sources in alphabetical filename order, ignoring case, instead of filesystem order.
+- Redact sensitive fallback defaults before logging library connection warnings, preventing inherited Sonarr/Radarr API keys from appearing in logs. #3839
+- Abort existing collection processing when a builder fails to fetch its items, preserving membership instead of syncing incomplete results. #3838
+- Skip Letterboxd TV entries with a single warning instead of also logging a failed movie lookup as an error. #3836
+- Accept Tracearr display names in builder `user` options, report identity UUIDs for ambiguous names, and validate Public API v2 response handling against the Tracearr 3.1.2 contract.
 
 ### Added
 
 - Added `mdblist_watchlist` builder to create collections based on watchlist
+- Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
 ## [v2.5.4] - 2026-10-31
 
