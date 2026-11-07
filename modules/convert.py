@@ -295,6 +295,13 @@ class Convert:
 
     def scan_guid(self, guid_str):
         guid = urlparse(guid_str)
+        if guid.scheme == "tv.plex.agents.nfo.movie" and guid.netloc == "movie":
+            tmdb_match = re.fullmatch(r"/tmdb_([0-9]+)", guid.path)
+            if tmdb_match and int(tmdb_match.group(1)) > 0:
+                return "themoviedb", tmdb_match.group(1)
+            imdb_match = re.fullmatch(r"/imdb_(tt[0-9]+)", guid.path)
+            if imdb_match:
+                return "imdb", imdb_match.group(1)
         return guid.scheme.split(".")[-1], guid.netloc
 
     @staticmethod

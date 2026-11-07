@@ -28,6 +28,41 @@ def _module_ast() -> ast.Module:
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
 
 
+@pytest.mark.parametrize("ignore_blank_results", [False, True])
+@pytest.mark.parametrize("prefetched", [False, True])
+def test_failed_builder_aborts_existing_collection_before_sync(ignore_blank_results, prefetched):
+    from modules import util
+
+    builder = SimpleNamespace(builders=[("letterboxd_list", {})], obj=object(), ignore_blank_results=ignore_blank_results, gather_ids=MagicMock(side_effect=util.Failed("IP or VPN Blocked")), filter_and_save_items=MagicMock())
+    pending = MagicMock()
+    pending.result.side_effect = util.Failed("IP or VPN Blocked")
+    namespace = {"builder": builder, "prefetched": [pending if prefetched else None], "logger": MagicMock(), "list_export_ready": True}
+    for name in ["Failed", "BuilderValidationError", "OverlayError", "MappingConvertError", "ServiceError"]:
+        namespace[name] = getattr(util, name)
+    loop = next(node for node in ast.walk(_module_ast()) if isinstance(node, ast.For) and ast.unparse(node.iter) == "enumerate(builder.builders)")
+
+    with pytest.raises(util.Failed, match="IP or VPN Blocked"):
+        exec(compile(ast.Module(body=[loop], type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+
+    builder.filter_and_save_items.assert_not_called()
+    assert namespace["list_export_ready"] is False
+
+
+def test_successful_empty_builder_result_still_reaches_filtering():
+    from modules import util
+
+    builder = SimpleNamespace(builders=[("letterboxd_list", {})], obj=object(), ignore_blank_results=False, gather_ids=MagicMock(return_value=[]), filter_and_save_items=MagicMock())
+    namespace = {"builder": builder, "prefetched": [None], "logger": MagicMock(), "list_export_ready": True}
+    for name in ["Failed", "BuilderValidationError", "OverlayError", "MappingConvertError", "ServiceError"]:
+        namespace[name] = getattr(util, name)
+    loop = next(node for node in ast.walk(_module_ast()) if isinstance(node, ast.For) and ast.unparse(node.iter) == "enumerate(builder.builders)")
+
+    exec(compile(ast.Module(body=[loop], type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+
+    builder.filter_and_save_items.assert_called_once_with([])
+    assert namespace["list_export_ready"] is True
+
+
 def _process_pool_context(multiprocessing):
     """Load the context-selection helper without importing kometa.py."""
     for node in _module_ast().body:
