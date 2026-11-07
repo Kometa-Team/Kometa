@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Abort existing collection processing when a builder fails to fetch its items, preserving membership instead of syncing incomplete results. #3838
 - Redact sensitive fallback defaults before logging library connection warnings, preventing inherited Sonarr/Radarr API keys from appearing in logs. #3839
 - Process YAML files from `folder` sources in alphabetical filename order, ignoring case, instead of filesystem order.
 - Avoid warnings when Tautulli builders omit the optional `list_minimum` or explicitly set it to its default of `0`.
