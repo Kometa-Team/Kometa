@@ -156,6 +156,84 @@ def test_dynamic_tmdb_attribute_discovery_ignores_notfound(auto_type, library_ty
     tmdb_client.get_item.assert_called_once_with(item, 1450305, None, None, is_movie=is_movie, ignore_not_found=True)
 
 
+@pytest.mark.parametrize("auto_type", ["actor", "director", "writer", "producer", "decade", "tmdb_collection", "original_language", "origin_country"])
+@pytest.mark.parametrize("scope", [None, set(), {1}])
+@pytest.mark.parametrize("configured_names_only", [False, True])
+def test_dynamic_discovery_uses_full_library(monkeypatch, auto_type, scope, configured_names_only):
+    from modules.plex import Plex
+
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    dynamic = {"type": auto_type, "sync": True}
+    if auto_type in ["actor", "director", "writer", "producer"]:
+        dynamic["data"] = {"depth": 1, "minimum": 2, "limit": 1}
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: {"dynamic_collections": {"Discovery": dynamic}})
+    person = SimpleNamespace(id=10, tag="Shared Person")
+    items = [SimpleNamespace(ratingKey=key, title=f"Item {key}", year=1991, **{f"{auto_type}s": [person]}) for key in [1, 2]]
+    is_show = auto_type in ["decade", "origin_country"]
+    library = SimpleNamespace(
+        original_mapping_name="Library",
+        type="Show" if is_show else "Movie",
+        is_movie=not is_show,
+        is_show=is_show,
+        is_music=False,
+        agent="tv.plex.agents.series" if is_show else "tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        _all_items=items,
+        has_schedule_scope=scope is not None,
+        scheduled_item_keys=scope or set(),
+        reload=lambda item: item,
+        get_ids=lambda item: (item.ratingKey, None, None),
+        get_all_collections=MagicMock(return_value=[]),
+        delete_collection=MagicMock(),
+    )
+    library.get_all = lambda **kwargs: Plex.get_all(library, **kwargs)
+    tmdb_client = MagicMock()
+    tmdb_client.get_item.return_value = SimpleNamespace(
+        collection_id=10,
+        collection_name="Shared Franchise",
+        language_iso="en",
+        language_name="English",
+        countries=[SimpleNamespace(iso_3166_1="US", name="United States")],
+    )
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[], TMDb=tmdb_client, Cache=None)
+
+    if configured_names_only:
+        from modules.library import Library
+
+        # The file is configured but scheduled out: only the protective name scan runs.
+        library.config = config
+        library.configured_collection_files = [("File", "test.yml", {}, None)]
+        library.scanned_collection_files = []
+        library.configured_collection_metadata_files = []
+        library.collection_names = []
+        library.scan_configured_collection_names = lambda: Library.scan_configured_collection_names(library)
+        Library.scan_files(library, False, False, True, False)
+        metadata = library.configured_collection_metadata_files[0]
+    else:
+        metadata = MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    expected = {
+        "actor": "Shared Person",
+        "director": "Shared Person",
+        "writer": "Shared Person",
+        "producer": "Shared Person",
+        "decade": "Best shows of the 1990s",
+        "tmdb_collection": "Shared Franchise",
+        "original_language": "English movies",
+        "origin_country": "United States shows",
+    }
+    assert list(metadata.collections) == [expected[auto_type]]
+    assert logger.error_messages == []
+    assert library.scheduled_item_keys == (scope or set())
+    assert library.get_all() == (items if scope is None else [item for item in items if item.ratingKey in scope])
+    library.delete_collection.assert_not_called()
+    if configured_names_only:
+        library.get_all_collections.assert_not_called()
+        assert library.collection_names == [expected[auto_type]]
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # update_theme
 # ═══════════════════════════════════════════════════════════════════════
