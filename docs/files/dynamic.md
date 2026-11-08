@@ -53,6 +53,8 @@ considerable user input and repetition (such as creating a collection for every 
 Each dynamic collection definition creates a set of collection definitions based on some given criteria and uses either 
 the built-in default template or a user defined custom template to dynamically create collection definitions.
 
+Library-based dynamic key discovery always uses the whole library, including when a library schedule mode selects only some items for processing. For people collections, `minimum` and `limit` therefore use credits across the whole library. Collection file schedules still control whether those collections run.
+
 #### Collection naming
 
 By default, the collections generated will be named for the thing being used to create them; things like genres,

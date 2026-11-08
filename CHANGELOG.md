@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Abort existing collection processing when a builder fails to fetch its items, preserving membership instead of syncing incomplete results. #3838
 - Skip Letterboxd TV entries with a single warning instead of also logging a failed movie lookup as an error. #3836
 - Accept Tracearr display names in builder `user` options, report identity UUIDs for ambiguous names, and validate Public API v2 response handling against the Tracearr 3.1.2 contract.
+- Discover dynamic collection keys across the full library on scoped schedule runs, avoiding empty actor discovery even when collection files are scheduled out. #3846
 
 ### Added
 
