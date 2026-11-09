@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `mdblist_watchlist` builder to create collections based on watchlist
 - Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
+### Changed
+- Restrict `items(plex:<ratingKey>|...)` schedule scopes to the listed Plex items during library operations and overlay updates when the list of items exclusively contains Plex raitng keys. This allows, for instance, targeting individual episodes for overlay updates when `builder_level: episode` is used in an overlays file without having to fetch and process all episodes across all shows. Behavior remains the same when other types of IDs are used (TMDb, TVDb, IMDb).
+
 ## [v2.5.4] - 2026-10-31
 
 ### Docs

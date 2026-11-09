@@ -520,7 +520,7 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.refresh_item_cache_and_mappings.assert_not_called()
-        library.get_all.assert_called_once_with()
+        library.get_all.assert_called_once_with(target_keys=None)
 
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")

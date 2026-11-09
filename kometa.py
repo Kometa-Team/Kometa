@@ -3,6 +3,7 @@ import hashlib
 import multiprocessing
 import os
 import platform
+import re
 import sys
 import sysconfig
 import time
@@ -1002,7 +1003,18 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                     library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
-                temp_items = library.cache_items()
+                target_keys = None
+                if library.has_schedule_scope and library.schedule_mode.startswith("items(") and library.schedule_mode.endswith(")"):
+                    identifiers = set()
+                    for value in library.schedule_mode[6:-1].split("|"):
+                        id_type, separator, item_id = value.strip().lower().partition(":")
+                        if not separator or not ((id_type in {"tmdb", "tvdb", "plex"} and re.fullmatch(r"[0-9]+", item_id) and int(item_id) > 0) or (id_type == "imdb" and re.fullmatch(r"tt[0-9]+", item_id))):
+                            raise Failed(f"Config Error: schedule mode {library.schedule_mode} invalid; expected items(tmdb:<id>|tvdb:<id>|imdb:<id>|plex:<ratingKey>)")
+                        identifiers.add((id_type, item_id if id_type == "imdb" else str(int(item_id))))
+                    if all(id_type == "plex" for id_type, _ in identifiers):
+                        target_keys = set([int(item_id) for _, item_id in identifiers])
+
+                temp_items = library.cache_items(target_keys=target_keys)
                 library.scheduled_item_keys = library._schedule_item_keys(temp_items)
                 if library.has_schedule_scope:
                     temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
@@ -1010,7 +1022,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 if config.Cache:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
-                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
+                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items(target_keys=target_keys)])
                     if library.schedule_mode == "diff" and library.is_show and library.xml_library_id is not None:
                         config.Cache.update_xml_updated_at(library.xml_library_id, library.xml_updates)
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
@@ -1122,9 +1134,9 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.error(e)
                     library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
+                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))

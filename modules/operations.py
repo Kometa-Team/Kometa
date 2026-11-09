@@ -251,7 +251,7 @@ class Operations:
         return all((less_check, managed_check, configured_check))
 
     @timings.timed("operations")
-    def run_operations(self):
+    def run_operations(self, target_keys=None):
         operation_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Operations")
@@ -326,7 +326,7 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-            items = refreshed_items if refreshed_items is not None else self.library.get_all()
+            items = refreshed_items if refreshed_items is not None else self.library.get_all(target_keys=target_keys)
             total_items = len(items)
             self._prefetch_mdblist(items)
 
@@ -381,7 +381,7 @@ class Operations:
                     continue
 
                 if self.library.assets_for_all and self.library.asset_directory:
-                    self.library.find_and_upload_assets(item, current_labels)
+                    self.library.find_and_upload_assets(item, current_labels, targeted_update=target_keys is not None)
 
                 locked_fields = [f.name for f in item.fields if f.locked]
 
@@ -413,7 +413,7 @@ class Operations:
                                 item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
-                if item.locations:
+                if getattr(item, "locations", False):
                     path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)

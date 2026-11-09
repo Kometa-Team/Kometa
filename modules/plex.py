@@ -22,7 +22,7 @@ from modules import builder, timings, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
-from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError
+from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError, filter_items
 
 logger = util.logger
 
@@ -1126,10 +1126,16 @@ class Plex(Library):
             return self.PlexServer.fetchItem(data)
 
     @PLEX_RETRY
-    def fetchItems(self, uri_args):
+    def fetchItems(self, uri_args, target_keys=None):
+        if target_keys:
+            keys_str = ",".join(str(k) for k in target_keys)
+            key = f"/library/sections/{self.Plex.key}/all{uri_args if uri_args else ''}{'&' if uri_args else '?'}id={keys_str}&includeGuids=1"
+            items = self.Plex.fetchItems(key)
+            return items
+
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
-    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False, target_keys=None):
         cache_top_level = builder_level in [None, "show", "artist", "movie"]
         if load and cache_top_level:
             self._all_items = []
@@ -1137,6 +1143,25 @@ class Plex(Library):
             if not ignore_schedule_scope and getattr(self, "has_schedule_scope", False):
                 return [item for item in self._all_items if item.ratingKey in self.scheduled_item_keys]
             return self._all_items
+
+        if target_keys:
+            logger.info(f"Directly fetching {len(target_keys)} target item(s) from Library: {self.name}")
+
+            keys_str = ",".join(str(k) for k in target_keys)
+            key = f"/library/metadata/{keys_str}?includeGuids=1"
+
+            try:
+                data = self.Plex._server.query(key)
+                raw_results = self.Plex.findItems(data, initpath=key)
+
+                results = filter_items(raw_results, self.Plex, builder_level)
+
+                if cache_top_level:
+                    self._all_items = results
+                return results
+            except Exception as e:
+                logger.error(f"Failed direct fetch for keys {keys_str}: {e}")
+
         builder_type = builder_level if builder_level else self.Plex.TYPE
         if not builder_level:
             builder_level = self.type
@@ -2202,7 +2227,7 @@ class Plex(Library):
                 ids.extend([(t_id, "tmdb") for t_id in tmdb_id])
         return ids
 
-    def get_rating_keys(self, method, data, is_playlist=False, display=True):
+    def get_rating_keys(self, method, data, is_playlist=False, display=True, target_keys=None):
         items = []
         if method == "plex_rating_key":
             return [(rating_key, "ratingKey") for rating_key in data]
@@ -2212,18 +2237,23 @@ class Plex(Library):
             if getattr(self, "has_schedule_scope", False) and self.is_show and data in ["season", "episode"]:
                 logger.info(f"Processing Plex {data.capitalize()}s from Scheduled Shows")
                 method_name = f"{data}s"
-                for show in self.get_all():
-                    items.extend(self.cached_item_subitems(show, method_name))
+                for item in self.get_all(target_keys=target_keys):
+                    if isinstance(item, Show):
+                        items.extend(self.cached_item_subitems(item, method_name))
+                    elif isinstance(item, Season) and data == "season":
+                        items.append(item)
+                    elif isinstance(item, Episode) and data == "episode":
+                        items.append(item)
             else:
                 logger.info(f"Processing Plex All {data.capitalize()}s")
-                items = self.get_all(builder_level=data)
+                items = self.get_all(builder_level=data, target_keys=target_keys)
         elif method == "plex_watchlist":
             logger.info("Processing Plex Watchlist")
             return self.get_watchlist(sort=data, is_playlist=is_playlist)
         elif method == "plex_pilots":
             logger.info(f"Processing Plex Pilot {data.capitalize()}s")
             items = []
-            for item in self.get_all():
+            for item in self.get_all(target_keys=target_keys):
                 try:
                     items.append(item.episode(season=1, episode=1))
                 except NotFound:
@@ -2232,7 +2262,7 @@ class Plex(Library):
             if display:
                 logger.info(f"Processing {data[1]}")
             logger.trace(data[2])
-            items = self.fetchItems(data[2])
+            items = self.fetchItems(data[2], target_keys=target_keys)
         elif method == "plex_collectionless":
             good_collections = []
             logger.info("Processing Plex Collectionless")
@@ -2263,7 +2293,7 @@ class Plex(Library):
             for col in good_collections:
                 for member in self.get_collection_items(col, False):
                     protected_keys.add(member.ratingKey)  # type: ignore[union-attr]
-            all_items = self.get_all()
+            all_items = self.get_all(target_keys=target_keys)
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                 if item.ratingKey not in protected_keys:
@@ -2271,8 +2301,11 @@ class Plex(Library):
             logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
-        if not items:
+        if not items and not target_keys:
             raise Failed("Plex Error: No Items found in Plex")
+        elif not items:
+            logger.info("No target item matches search criteria")
+            return []
         return [(item.ratingKey, "ratingKey") for item in items]  # type: ignore[union-attr]
 
     def get_collection_items(self, collection, smart_label_collection):
@@ -2487,7 +2520,7 @@ class Plex(Library):
                 updated = True
         return asset_location, folder_name, updated
 
-    def find_and_upload_assets(self, item, current_labels, asset_directory=None):
+    def find_and_upload_assets(self, item, current_labels, asset_directory=None, targeted_update=False):
         item_dir = None
         name = None
         configured_asset_directories = self.asset_directories(item) if asset_directory is None else asset_directory
@@ -2505,7 +2538,7 @@ class Plex(Library):
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
-        if isinstance(item, Show) and ((self.asset_folders and item_dir) or not self.asset_folders):
+        if isinstance(item, Show) and ((self.asset_folders and item_dir) or not self.asset_folders) and not targeted_update:
             missing_seasons = ""
             missing_episodes = ""
             found_season = False
@@ -3409,7 +3442,10 @@ class Plex(Library):
             if filter_attr in ["resolution", "audio_language", "subtitle_language"]:
                 for media in item.media:
                     if filter_attr == "resolution":
-                        attrs.append(media.videoResolution)
+                        res = str(media.videoResolution) if media.videoResolution else ""
+                        if res.isdigit():
+                            res = f"{res}p"
+                        attrs.append(res)
                     for part in media.parts:
                         if filter_attr == "audio_language":
                             for a in part.audioStreams():

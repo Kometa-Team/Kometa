@@ -342,6 +342,8 @@ class Convert:
                                 tmdb_id.append(int(url_parsed.netloc))
                         except ValueError:
                             pass
+                except AttributeError:
+                    raise MappingConvertError("Mapping Error: No External GUIDs found")
                 except ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
