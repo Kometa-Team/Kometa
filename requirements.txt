@@ -147,7 +147,7 @@ setuptools==84.2.1
     #   tmdbapis
 smmap==5.0.3
     # via gitdb
-soupsieve==3.0.4
+soupsieve==4.0.1
     # via beautifulsoup4
 tenacity==9.2.1
     # via kometa
