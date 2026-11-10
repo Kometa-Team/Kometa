@@ -123,6 +123,9 @@ This is where you need the `config.yml` that you created with the walkthrough ea
 
 At this point, Kometa is waiting until 5AM to wake up and process the config file.
 
+!!! warning "Updating Kometa"
+
+    To update, stop the container, delete it, pull the new image and create the container again with your config folder mounted at `/config`. Do not update a container in place or copy an old container's Entrypoint or PATH into the new one: they are saved with the container, and an old Entrypoint can stop a newer image from starting with a `No module named 'packaging'` error.
 
 </div>
 
@@ -246,5 +249,9 @@ At this point, Kometa is waiting until 5AM to wake up and process the config fil
     9. Select "Apply" to save the "Advanced Settings," select "Next" to go to the Summary, and select "Done" to finish and create the container.
 
         ![](../../assets/images/kometa/install/synology/dsm6-05.png)
+
+!!! warning "Updating Kometa"
+
+    To update, stop the container, delete it, pull the new image and create the container again with your config folder mounted at `/config`. Do not update a container in place or copy an old container's Entrypoint or PATH into the new one: they are saved with the container, and an old Entrypoint can stop a newer image from starting with a `No module named 'packaging'` error.
 
 </div>

@@ -43,7 +43,7 @@ docker run --rm -it -v "FULL_PATH_TO_CONFIG:/config:rw" kometateam/kometa
 docker run -d --name kometa --restart unless-stopped -v "FULL_PATH_TO_CONFIG:/config:rw" kometateam/kometa
 ```
 
-Use `docker logs -f kometa` to follow its output and `docker stop kometa` to stop it. Use `docker start kometa` to start it again. To change its settings or image, stop it and run `docker rm kometa` before recreating it with the updated command; keep the same configuration mount.
+Use `docker logs -f kometa` to follow its output and `docker stop kometa` to stop it. Use `docker start kometa` to start it again. To change its settings or image, stop it and run `docker rm kometa` before recreating it with the updated command; keep the same configuration mount. Do not copy the old container's entrypoint or `PATH` into the new one, because an old entrypoint can stop a newer image from starting.
 
 **Run daily at 17:00 in the background:**
 

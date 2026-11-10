@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `mdblist_watchlist` builder to create collections based on watchlist
 - Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
+### Docs
+
+- Tell Docker users to recreate the container when updating instead of updating it in place or copying an old container's Entrypoint or PATH, which can stop a newer image starting with `ModuleNotFoundError: No module named 'packaging'`. #3692
+
 ## [v2.5.4] - 2026-10-31
 
 ### Docs
