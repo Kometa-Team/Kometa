@@ -96,8 +96,8 @@ jobs:
     needs: [guard, validate]
     # docker/Dockerfile.base is otherwise built only by docker-base.yml's weekly schedule, which
     # checks out nightly -- so a change to it, or to the files it installs from, would not
-    # be exercised until after merge. Build only, never pushed; docker-build still consumes
-    # the published base image.
+    # be exercised until after merge. Build only, never pushed; docker-build builds the PR image
+    # on the PR's own base (docker-bake.hcl) when the base inputs change.
     if: needs.validate.outputs.base == 'true'
     permissions:
       contents: read
@@ -207,16 +207,16 @@ jobs:
 
       - name: Build and Push
         id: docker_build
+        env:
+          # A PR that changes the base inputs is built on its own base (never pushed); any other PR uses the published :base.
+          BAKE_TARGET: ${{ needs.validate.outputs.base == 'true' && 'app-pr-base' || 'app' }}
+          IMAGE_TAG: kometateam/kometa:${{ steps.build-vars.outputs.tag-name }}
+          BRANCH_NAME: ${{ steps.build-vars.outputs.tag-name }}
         run: |
-          docker buildx build \
-            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
-            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
-            --build-arg BRANCH_NAME=${{ steps.build-vars.outputs.tag-name }} \
-            --file ./Dockerfile \
-            --platform linux/amd64,linux/arm64 \
-            --tag kometateam/kometa:${{ steps.build-vars.outputs.tag-name }} \
-            --push \
-            .
+          KOMETA_GIT_SHA="$(git rev-parse HEAD)"
+          KOMETA_VERSION="$(tr -d '\r\n' < VERSION)"
+          export KOMETA_GIT_SHA KOMETA_VERSION
+          docker buildx bake --file docker-bake.hcl --set "${BAKE_TARGET}.output=type=registry" "${BAKE_TARGET}"
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
