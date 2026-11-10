@@ -111,3 +111,13 @@ standard by adding this to the top of the file:
 That file then participates in pyright's strict mode regardless of the
 project-wide `typeCheckingMode = "basic"` setting. The baseline still
 applies, but you've raised the floor for that one file.
+
+## `verify_runtime_dependencies.py` — stale base image guard
+
+The Docker app image is built `FROM` a separate base image that holds the virtual environment. If the base is older than the source copied on top of it, the image starts with new code and old dependencies. This script compares every pinned entry in `requirements.txt` (the `uv export` of `uv.lock`) with what is installed, skips entries whose environment marker does not apply, and checks the git-pinned package by its installed commit.
+
+```bash
+python scripts/verify_runtime_dependencies.py requirements.txt
+```
+
+It exits 0 when everything matches, 1 with one line per mismatch, and 2 on bad usage. The `Dockerfile` runs it after the source copy, so a build on a stale base fails instead of publishing. Run it with the interpreter that holds the dependencies (`/.venv/bin/python3` in the image).
