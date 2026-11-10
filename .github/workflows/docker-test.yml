@@ -6,6 +6,8 @@ on:
     paths:
       - Dockerfile
       - requirements.txt
+      - docker/Dockerfile.base
+      - docker-bake.hcl
       - .github/workflows/docker-test.yml
       - .github/workflows/docker-nightly.yml
   workflow_dispatch:
@@ -46,6 +48,8 @@ jobs:
 
       - name: Check Out Repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
 
       - name: Set up QEMU
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
@@ -61,19 +65,25 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.20.0
 
+      - name: Detect base image changes
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changes
+        run: git diff --name-only HEAD^1 HEAD | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
+
       - name: Build Docker Image
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
         id: docker_build
+        env:
+          # A PR that changes the base inputs is tested on its own base; manual runs and other PRs use the published :base.
+          BAKE_TARGET: ${{ steps.changes.outputs.base == 'true' && 'app-pr-base' || 'app' }}
+          IMAGE_TAG: kometa-test:${{ matrix.cache-scope }}
+          IMAGE_PLATFORMS: ${{ matrix.platform }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
-          docker buildx build \
-            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
-            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
-            --build-arg BRANCH_NAME=${{ github.ref_name }} \
-            --file ./Dockerfile \
-            --platform ${{ matrix.platform }} \
-            --tag kometa-test:${{ matrix.cache-scope }} \
-            --load \
-            .
+          KOMETA_GIT_SHA="$(git rev-parse HEAD)"
+          KOMETA_VERSION="$(tr -d '\r\n' < VERSION)"
+          export KOMETA_GIT_SHA KOMETA_VERSION
+          docker buildx bake --file docker-bake.hcl --set "${BAKE_TARGET}.output=type=docker" "${BAKE_TARGET}"
 
       - name: Verify venv entrypoint and startup with overridden PATH
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}

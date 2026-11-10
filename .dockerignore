@@ -22,6 +22,7 @@ venv
 .readthedocs.yml
 CHANGELOG.md
 Dockerfile
+docker-bake.hcl
 LICENSE
 README.md
 test.py
