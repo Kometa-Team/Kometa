@@ -75,6 +75,20 @@ jobs:
             --load \
             .
 
+      - name: Verify the entrypoint passes options through to Kometa
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        run: |
+          # tini consumes the "--" in the entrypoint; if it did not, --help would reach tini or be read by Kometa as a positional.
+          help_output=$(docker run --rm kometa-test:${{ matrix.cache-scope }} --help 2>&1)
+          printf '%s\n' "$help_output"
+          if ! grep -Fq "usage: kometa.py" <<< "$help_output"; then
+            echo "ERROR: --help did not reach Kometa's argument parser"
+            exit 1
+          fi
+          if grep -Fq "tini (tini version" <<< "$help_output"; then
+            echo "ERROR: --help was handled by tini"
+            exit 1
+          fi
       - name: Verify venv entrypoint and startup with overridden PATH
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
         run: |
