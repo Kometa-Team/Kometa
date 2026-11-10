@@ -39,5 +39,8 @@ if valid_commit and valid_version:
     hint.write_text(commit + "\n")
 PY
 
+# Fail the build when installed packages differ from requirements.txt, so a stale base image cannot ship with newer source.
+RUN /.venv/bin/python3 scripts/verify_runtime_dependencies.py requirements.txt
+
 VOLUME /config
 ENTRYPOINT ["/tini", "-s", "/.venv/bin/python3", "kometa.py", "--"]
