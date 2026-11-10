@@ -37,9 +37,7 @@ jobs:
       - name: List changed files
         id: list-changes
         env:
-          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           NIGHTLY_IMAGE: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
-          FALLBACK_MODE: ${{ vars.NIGHTLY_REVISION_FALLBACK || 'rebuild' }}
         # Diffs everything on nightly not yet in the published image, not just this merge, so a dropped or failed run is built by the next one; file names go through stdin, never into shell source.
         shell: bash
         run: bash .github/scripts/changes-since-last-build.sh | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
@@ -84,9 +82,7 @@ jobs:
       - name: Classify changes on the checkout being bumped
         id: classify
         env:
-          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
           NIGHTLY_IMAGE: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
-          FALLBACK_MODE: ${{ vars.NIGHTLY_REVISION_FALLBACK || 'rebuild' }}
         # Recomputed here because a merge can land between verify-changes and this checkout, and the image is built from this checkout.
         shell: bash
         run: bash .github/scripts/changes-since-last-build.sh | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
