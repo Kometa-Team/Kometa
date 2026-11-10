@@ -30,7 +30,7 @@ tomli==2.5.0
     # via zensical
 wcmatch==12.0.1
     # via kometa-docs-include
-zensical==0.1.0
+zensical==0.1.1
     # via kometa-docs-include
-zensical-ui==0.0.41
+zensical-ui==0.0.42
     # via zensical
