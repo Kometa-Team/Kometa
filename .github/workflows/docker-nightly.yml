@@ -13,8 +13,28 @@ concurrency:
 
 jobs:
 
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.nightly-tip.outputs.sha }}
+    steps:
+
+      # Resolved once so every architecture leg builds the same commit even if nightly moves while the legs run.
+      - name: Resolve the nightly tip
+        id: nightly-tip
+        run: |
+          sha=$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/nightly | cut -f1)
+          if ! [[ "$sha" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Could not resolve the nightly tip: '$sha'" >&2
+            exit 1
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
   docker-build-nightly:
     runs-on: ubuntu-latest
+    needs: [ resolve ]
     strategy:
       fail-fast: false
       matrix:
@@ -33,7 +53,7 @@ jobs:
       - name: Check Out Repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: nightly
+          ref: ${{ needs.resolve.outputs.sha }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
@@ -68,8 +88,32 @@ jobs:
 
   docker-publish-nightly:
     runs-on: ubuntu-latest
-    needs: [ docker-build-nightly ]
+    needs: [ resolve, docker-build-nightly ]
+    permissions:
+      contents: read
+    outputs:
+      published: ${{ steps.freshness.outputs.publish }}
     steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: nightly
+
+      # A newer merge publishes its own :nightly through increment-build.yml; overwriting it with this older build would roll the tag back.
+      - name: Skip publishing when nightly has moved on
+        id: freshness
+        env:
+          BUILT_SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          changes=$(git diff --name-only "${BUILT_SHA}" HEAD | bash .github/scripts/classify-changes.sh 2>/dev/null)
+          if grep -qx 'build=true' <<< "$changes"; then
+            echo "::notice::nightly moved on from ${BUILT_SHA} with image-affecting changes; leaving :nightly to the newer build"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Login to Docker Hub
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
@@ -85,6 +129,7 @@ jobs:
             image=moby/buildkit:v0.20.0
 
       - name: Publish Multi-Arch Tag
+        if: steps.freshness.outputs.publish == 'true'
         run: |
           docker buildx imagetools create \
             -t ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly \
@@ -94,13 +139,13 @@ jobs:
 
   docker-nightly-notification:
     runs-on: ubuntu-latest
-    needs: [ docker-build-nightly, docker-publish-nightly ]
+    needs: [ resolve, docker-build-nightly, docker-publish-nightly ]
     if: always()
     steps:
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
-        if: ${{ needs.docker-build-nightly.result == 'success' && needs.docker-publish-nightly.result == 'success' }}
+        if: ${{ needs.docker-build-nightly.result == 'success' && needs.docker-publish-nightly.result == 'success' && needs.docker-publish-nightly.outputs.published == 'true' }}
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           title: "${{ vars.NAME }} nightly: ${{ vars.TEXT_SUCCESS }}"
@@ -113,7 +158,7 @@ jobs:
 
       - name: Discord Failure Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
-        if: ${{ needs.docker-build-nightly.result == 'failure' || needs.docker-publish-nightly.result == 'failure' }}
+        if: ${{ needs.resolve.result == 'failure' || needs.docker-build-nightly.result == 'failure' || needs.docker-publish-nightly.result == 'failure' }}
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
