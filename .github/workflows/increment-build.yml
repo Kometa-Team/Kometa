@@ -5,6 +5,7 @@ on:
     branches: [nightly]
     types: [closed]
 
+# GitHub keeps one pending run per group and cancels older pending ones, so each run diffs everything not yet in the published nightly image to cover a dropped one.
 concurrency:
   group: increment-build-nightly
   cancel-in-progress: false
@@ -26,13 +27,20 @@ jobs:
           fetch-depth: 0
           ref: nightly
 
+      - name: Login to Docker Hub
+        # Authenticated so reading the published image's revision is not held to the anonymous pull limit.
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
       - name: List changed files
         id: list-changes
         env:
-          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-        # Diffs the actual merge commit's own parents -- correct even if something else lands on nightly before this job runs; file names go through stdin, never into shell source.
+          NIGHTLY_IMAGE: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
+        # Diffs everything on nightly not yet in the published image, not just this merge, so a dropped or failed run is built by the next one; file names go through stdin, never into shell source.
         shell: bash
-        run: git diff --name-only "${MERGE_SHA}^1" "${MERGE_SHA}" | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
+        run: bash .github/scripts/changes-since-last-build.sh | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
 
   increment-build:
     runs-on: ubuntu-latest
@@ -46,6 +54,8 @@ jobs:
       commit-short: ${{ steps.update-version.outputs.commit-short }}
       pr-tag: ${{ steps.update-version.outputs.pr-tag }}
       bump-commit-hash: ${{ steps.update-version.outputs.bump-commit-hash }}
+      base: ${{ steps.classify.outputs.base }}
+      deps: ${{ steps.classify.outputs.deps }}
     steps:
 
       - name: Create App Token
@@ -61,6 +71,21 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           ref: nightly
           fetch-depth: 0
+
+      - name: Login to Docker Hub
+        # Authenticated so reading the published image's revision is not held to the anonymous pull limit.
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Classify changes on the checkout being bumped
+        id: classify
+        env:
+          NIGHTLY_IMAGE: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
+        # Recomputed here because a merge can land between verify-changes and this checkout, and the image is built from this checkout.
+        shell: bash
+        run: bash .github/scripts/changes-since-last-build.sh | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
 
       - name: Setup Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -79,7 +104,7 @@ jobs:
 
       - name: Sync Dependency Exports
         # Regenerates requirements.txt, docs/requirements.txt and docker/uv-bootstrap.txt from uv.lock/pyproject.toml so they never drift after a merge.
-        if: needs.verify-changes.outputs.deps == 'true'
+        if: steps.classify.outputs.deps == 'true'
         run: |
           pip install --require-hashes -r docker/uv-bootstrap.txt
           uv export --format requirements-txt --only-group bootstrap --no-emit-project -o docker/uv-bootstrap.txt
@@ -119,7 +144,8 @@ jobs:
             echo "build-value=${build_value}" >> $GITHUB_OUTPUT
             echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
             # Captured before the bump commit -- points at the real merge commit, which stays reachable on nightly since nothing amends it away.
-            echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+            checkout_sha=$(git rev-parse HEAD)
+            echo "commit-hash=${checkout_sha}" >> $GITHUB_OUTPUT
             echo "commit-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
             echo "$new_value" > "VERSION"
@@ -133,15 +159,15 @@ jobs:
             git add requirements.txt
             git add docs/requirements.txt
             git add docker/uv-bootstrap.txt
-            # Normal follow-up commit + fast-forward push, no amend/force -- concurrency group above serializes runs so merges can't race each other.
+            # Normal follow-up commit, no amend/force; push-bump.sh rebases onto nightly only when what landed meanwhile cannot change the images.
             git commit -m "${new_msg}"
-            git push origin nightly
+            bash .github/scripts/push-bump.sh "${checkout_sha}"
             echo "bump-commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   docker-build-base:
     runs-on: ubuntu-latest
-    needs: [ increment-build, verify-changes ]
-    if: needs.verify-changes.outputs.base == 'true'
+    needs: [ increment-build ]
+    if: needs.increment-build.outputs.base == 'true'
     steps:
 
       - name: Check Out Repo
@@ -235,7 +261,7 @@ jobs:
             BRANCH_NAME=nightly
             KOMETA_GIT_SHA=${{ steps.source-version.outputs.commit }}
             KOMETA_VERSION=${{ steps.source-version.outputs.version }}
-            BASE_TAG=${{ needs.verify-changes.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}
+            BASE_TAG=${{ needs.increment-build.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
@@ -267,3 +293,18 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.DOCKER_NAME }}
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
+
+  release-develop:
+    needs: [ increment-build, docker-build-base, docker-build-nightly ]
+    # Develop only after the bump is on nightly and its base (if rebuilt) and nightly images are published, so develop never builds on a stale :base.
+    if: >-
+      always() &&
+      needs.increment-build.result == 'success' &&
+      (needs.docker-build-base.result == 'success' || needs.docker-build-base.result == 'skipped') &&
+      needs.docker-build-nightly.result == 'success'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/release-develop.yml
+    with:
+      sha: ${{ needs.increment-build.outputs.bump-commit-hash }}
+    secrets: inherit
