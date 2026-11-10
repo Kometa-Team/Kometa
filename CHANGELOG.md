@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip Letterboxd TV entries with a single warning instead of also logging a failed movie lookup as an error. #3836
 - Accept Tracearr display names in builder `user` options, report identity UUIDs for ambiguous names, and validate Public API v2 response handling against the Tracearr 3.1.2 contract.
 - Discover dynamic collection keys across the full library on scoped schedule runs, avoiding empty actor discovery even when collection files are scheduled out. #3846
+- Let Docker containers recreated from an older image keep starting after an update instead of failing with `ModuleNotFoundError: No module named 'packaging'`. #3692
 
 ### Added
 
@@ -29,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Allow `items(plex:<ratingKey>|...)` schedule scopes to target individual Plex items, including seasons and episodes, during library operations and overlay updates. Behavior remains the same when other ID types are used (TMDb, TVDb, IMDb).
+
+### Docs
+
+- Tell Docker users to recreate the container when updating instead of updating it in place or copying an old container's Entrypoint or PATH, which can stop a newer image starting with `ModuleNotFoundError: No module named 'packaging'`. #3692
 
 ## [v2.5.4] - 2026-10-31
 

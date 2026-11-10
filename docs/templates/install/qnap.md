@@ -92,6 +92,9 @@
 
 13. Select Finish
 
+!!! warning "Updating Kometa"
+
+    To update, stop the container, delete it, pull the new image and create the container again with your config folder mounted at `/config`. Do not update a container in place or copy an old container's Entrypoint or PATH into the new one: they are saved with the container, and an old Entrypoint can stop a newer image from starting with a `No module named 'packaging'` error.
 
 </div>
 
@@ -157,5 +160,9 @@
     When finished, click "Create".
 
     ![](../../assets/images/kometa/install/qnap/qnap7.png)
+
+!!! warning "Updating Kometa"
+
+    To update, stop the container, delete it, pull the new image and create the container again with your config folder mounted at `/config`. Do not update a container in place or copy an old container's Entrypoint or PATH into the new one: they are saved with the container, and an old Entrypoint can stop a newer image from starting with a `No module named 'packaging'` error.
 
 </div>

@@ -6,6 +6,8 @@ on:
     paths:
       - Dockerfile
       - requirements.txt
+      - docker/Dockerfile.base
+      - docker-bake.hcl
       - .github/workflows/docker-test.yml
       - .github/workflows/docker-nightly.yml
   workflow_dispatch:
@@ -46,6 +48,8 @@ jobs:
 
       - name: Check Out Repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 2
 
       - name: Set up QEMU
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
@@ -61,20 +65,40 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.20.0
 
+      - name: Detect base image changes
+        if: ${{ github.event_name == 'pull_request' }}
+        id: changes
+        run: git diff --name-only HEAD^1 HEAD | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
+
       - name: Build Docker Image
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
         id: docker_build
+        env:
+          # A PR that changes the base inputs is tested on its own base; manual runs and other PRs use the published :base.
+          BAKE_TARGET: ${{ steps.changes.outputs.base == 'true' && 'app-pr-base' || 'app' }}
+          IMAGE_TAG: kometa-test:${{ matrix.cache-scope }}
+          IMAGE_PLATFORMS: ${{ matrix.platform }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
-          docker buildx build \
-            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
-            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
-            --build-arg BRANCH_NAME=${{ github.ref_name }} \
-            --file ./Dockerfile \
-            --platform ${{ matrix.platform }} \
-            --tag kometa-test:${{ matrix.cache-scope }} \
-            --load \
-            .
+          KOMETA_GIT_SHA="$(git rev-parse HEAD)"
+          KOMETA_VERSION="$(tr -d '\r\n' < VERSION)"
+          export KOMETA_GIT_SHA KOMETA_VERSION
+          docker buildx bake --file docker-bake.hcl --set "${BAKE_TARGET}.output=type=docker" "${BAKE_TARGET}"
 
+      - name: Verify the entrypoint passes options through to Kometa
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        run: |
+          # tini consumes the "--" in the entrypoint; if it did not, --help would reach tini or be read by Kometa as a positional.
+          help_output=$(docker run --rm kometa-test:${{ matrix.cache-scope }} --help 2>&1)
+          printf '%s\n' "$help_output"
+          if ! grep -Fq "usage: kometa.py" <<< "$help_output"; then
+            echo "ERROR: --help did not reach Kometa's argument parser"
+            exit 1
+          fi
+          if grep -Fq "tini (tini version" <<< "$help_output"; then
+            echo "ERROR: --help was handled by tini"
+            exit 1
+          fi
       - name: Verify venv entrypoint and startup with overridden PATH
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
         run: |
@@ -95,5 +119,21 @@ jobs:
           printf '%s\n' "$startup_output"
           if ! grep -Fq "Config Error: Configuration file (config.yml) not found at /tmp/kometa-entrypoint-test.yml" <<< "$startup_output"; then
             echo "ERROR: the configured entrypoint did not reach the expected missing-config error"
+            exit 1
+          fi
+
+      - name: Verify a stale python3 entrypoint still imports the venv packages
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        run: |
+          # Mimics a container kept from an older image: saved entrypoint runs system python3, PATH has no /.venv/bin.
+          stale_output=$(docker run --rm \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            --env KOMETA_CONFIG=/tmp/kometa-entrypoint-test.yml \
+            --entrypoint /tini \
+            kometa-test:${{ matrix.cache-scope }} \
+            -s python3 kometa.py -- 2>&1)
+          printf '%s\n' "$stale_output"
+          if ! grep -Fq "Config Error: Configuration file (config.yml) not found at /tmp/kometa-entrypoint-test.yml" <<< "$stale_output"; then
+            echo "ERROR: a stale python3 entrypoint did not reach the expected missing-config error"
             exit 1
           fi
