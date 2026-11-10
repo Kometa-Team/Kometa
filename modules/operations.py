@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from plexapi.exceptions import NotFound
-from plexapi.video import Movie, Show
+from plexapi.video import Episode, Movie, Season, Show
 
 from modules import anidb, plex, timings, tvdb, util
 from modules.request import urlparse
@@ -498,13 +498,14 @@ class Operations:
                 if self.library.sync_watchlist_to_serializd:
                     if not self.library.is_show:
                         logger.warning("Serializd Warning: sync_watchlist_to_serializd is only available for show libraries")
-                    elif not self.config.Serializd:
-                        logger.error("Serializd Error: sync_watchlist_to_serializd requires Serializd authentication")
-                    else:
-                        try:
-                            self._sync_serializd_watched(item, serializd_tmdb_id)
-                        except Failed as err:
-                            logger.error(err)
+                    elif not isinstance(item, (Season, Episode)):
+                        if not self.config.Serializd:
+                            logger.error("Serializd Error: sync_watchlist_to_serializd requires Serializd authentication")
+                        else:
+                            try:
+                                self._sync_serializd_watched(item, serializd_tmdb_id)
+                            except Failed as err:
+                                logger.error(err)
 
                 _tmdb_release_dates_obj = None
 
@@ -1355,11 +1356,15 @@ class Operations:
                         else:
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Square Art", "Item")
 
-                    if self.library.is_show and (
-                        _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
-                        or _show_level_image_update_enabled(self.library.mass_poster_update, "episodes")
-                        or _show_level_image_update_enabled(self.library.mass_background_update, "seasons")
-                        or _show_level_image_update_enabled(self.library.mass_background_update, "episodes")
+                    if (
+                        self.library.is_show
+                        and not isinstance(item, (Season, Episode))
+                        and (
+                            _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
+                            or _show_level_image_update_enabled(self.library.mass_poster_update, "episodes")
+                            or _show_level_image_update_enabled(self.library.mass_background_update, "seasons")
+                            or _show_level_image_update_enabled(self.library.mass_background_update, "episodes")
+                        )
                     ):
                         # Determine if any language override applies for season/episode TMDb fetches
                         _image_lang = None
@@ -1450,7 +1455,11 @@ class Operations:
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
-                    for ep in self.library.cached_item_subitems(item, "episodes"):
+                    if isinstance(item, Episode):
+                        episode_items = [item]
+                    else:
+                        episode_items = self.library.cached_item_subitems(item, "episodes")
+                    for ep in episode_items:
                         ep = self.library.reload(ep)
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")

@@ -1019,10 +1019,10 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 if library.has_schedule_scope:
                     temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
                     logger.info(f"Library Schedule Mode: {library.schedule_mode} ({len(temp_items)} items in scope)")
-                if config.Cache:
+                if config.Cache and target_keys is None:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
-                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items(target_keys=target_keys)])
+                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
                     if library.schedule_mode == "diff" and library.is_show and library.xml_library_id is not None:
                         config.Cache.update_xml_updated_at(library.xml_library_id, library.xml_updates)
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0

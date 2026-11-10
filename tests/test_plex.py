@@ -103,6 +103,36 @@ class TestMDBListPrefetch:
         config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
+class TestGetAll:
+    def test_targeted_fetch_precedes_cache_and_does_not_replace_top_level_cache(self, monkeypatch):
+        import modules.plex as plex_module
+
+        cached_item = SimpleNamespace(ratingKey=10)
+        target_item = SimpleNamespace(ratingKey=42)
+        plex = make_plex(_all_items=[cached_item])
+        plex.name = "Shows"
+        plex.Plex.key = 1
+        plex.Plex.findItems.return_value = [target_item]
+        plex.Plex._server.query.return_value = MagicMock()
+        monkeypatch.setattr(plex_module, "filter_items", lambda items, *_args, **_kwargs: items)
+
+        assert plex.get_all(target_keys={42}) == [target_item]
+
+        plex.Plex._server.query.assert_called_once_with("/library/metadata/42?includeGuids=1")
+        assert plex._all_items == [cached_item]
+
+    def test_targeted_fetch_failure_does_not_fall_back_to_full_library(self):
+        plex = make_plex()
+        plex.name = "Shows"
+        plex.Plex.key = 1
+        plex.Plex._server.query.side_effect = BadRequest("target fetch failed")
+
+        with pytest.raises(BadRequest, match="target fetch failed"):
+            plex.get_all(target_keys={42})
+
+        plex.Plex._server.query.assert_called_once_with("/library/metadata/42?includeGuids=1")
+
+
 class TestUploadTheme:
     def test_uploads_theme_from_url(self):
         plex = make_plex()

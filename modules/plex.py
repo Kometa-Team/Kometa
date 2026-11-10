@@ -1139,10 +1139,6 @@ class Plex(Library):
         cache_top_level = builder_level in [None, "show", "artist", "movie"]
         if load and cache_top_level:
             self._all_items = []
-        if self._all_items and cache_top_level:
-            if not ignore_schedule_scope and getattr(self, "has_schedule_scope", False):
-                return [item for item in self._all_items if item.ratingKey in self.scheduled_item_keys]
-            return self._all_items
 
         if target_keys:
             logger.info(f"Directly fetching {len(target_keys)} target item(s) from Library: {self.name}")
@@ -1150,17 +1146,15 @@ class Plex(Library):
             keys_str = ",".join(str(k) for k in target_keys)
             key = f"/library/metadata/{keys_str}?includeGuids=1"
 
-            try:
-                data = self.Plex._server.query(key)
-                raw_results = self.Plex.findItems(data, initpath=key)
+            data = self.Plex._server.query(key)
+            results = self.Plex.findItems(data, initpath=key)
 
-                results = filter_items(raw_results, self.Plex, builder_level)
+            return filter_items(results, self.Plex, builder_level)
 
-                if cache_top_level:
-                    self._all_items = results
-                return results
-            except Exception as e:
-                logger.error(f"Failed direct fetch for keys {keys_str}: {e}")
+        if self._all_items and cache_top_level:
+            if not ignore_schedule_scope and getattr(self, "has_schedule_scope", False):
+                return [item for item in self._all_items if item.ratingKey in self.scheduled_item_keys]
+            return self._all_items
 
         builder_type = builder_level if builder_level else self.Plex.TYPE
         if not builder_level:
@@ -2301,7 +2295,7 @@ class Plex(Library):
             logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
-        if not items and not target_keys:
+        if not items and target_keys is None:
             raise Failed("Plex Error: No Items found in Plex")
         elif not items:
             logger.info("No target item matches search criteria")
