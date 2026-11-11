@@ -181,7 +181,7 @@ def test_font_size_is_pixels_independent_of_canvas_width(width):
         assert compose.call_args.kwargs["font_size"] == 10
 
 
-@pytest.mark.parametrize("builders,filename", [(["imdb_chart"], "IMDb.png"), (["tmdb_trending_daily"], "TMDb.png"), (["plex_search"], "Plex.png"), (["smart_filter", "imdb_chart"], "IMDb.png"), (["tautulli_popular"], "Tautulli.png")])
+@pytest.mark.parametrize("builders,filename", [(["imdb_chart"], "IMDb.png"), (["tmdb_trending_daily"], "TMDb.png"), (["plex_search"], "Plex.png"), (["plex_all"], "Plex.png"), (["smart_filter", "imdb_chart"], "IMDb.png"), (["tautulli_popular"], "Tautulli.png")])
 def test_default_builder_logo_mapping(builders, filename):
     from modules.poster import default_builder_logo
 
@@ -191,7 +191,7 @@ def test_default_builder_logo_mapping(builders, filename):
 def test_unmapped_builder_does_not_get_logo():
     from modules.poster import default_builder_logo
 
-    assert default_builder_logo(["plex_all", "label"]) is None
+    assert default_builder_logo(["label"]) is None
 
 
 @pytest.mark.parametrize("data", [True, {}, {"text": "Chart"}])
