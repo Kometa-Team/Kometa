@@ -12,7 +12,7 @@ ENV UV_PYTHON_DOWNLOADS=never
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# uv is pip-installed from hash-pinned docker/uv-bootstrap.txt (the uv image has no linux/arm/v7) and removed in the same RUN, so it never ships.
+# uv is pip-installed from hash-pinned docker/uv-bootstrap.txt and removed in the same RUN, so it never ships.
 # CI validates uv.lock with `uv lock --check`. Use --frozen here: --locked
 # checks local docs-package metadata even with the docs group excluded, but
 # this runtime image intentionally has no documentation sources.

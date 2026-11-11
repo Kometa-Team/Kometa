@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `mdblist_watchlist` builder to create collections based on watchlist
 - Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
+### Removed
+
+- `linux/arm/v7` (32-bit ARM) Docker images are no longer published. `v2.5.4` is the final release with `armv7` images; 32-bit ARM users should pin `kometateam/kometa:v2.5.4`.
 ### Changed
 - Allow `items(plex:<ratingKey>|...)` schedule scopes to target individual Plex items, including seasons and episodes, during library operations and overlay updates. Behavior remains the same when other ID types are used (TMDb, TVDb, IMDb).
 
