@@ -21,7 +21,6 @@ on:
           - all
           - linux/amd64
           - linux/arm64
-          - linux/arm/v7
 
 jobs:
 
@@ -41,9 +40,6 @@ jobs:
           - platform: linux/arm64
             cache-scope: docker-test-arm64
             nightly-cache-scope: docker-nightly-arm64
-          - platform: linux/arm/v7
-            cache-scope: docker-test-armv7
-            nightly-cache-scope: docker-nightly-armv7
     steps:
 
       - name: Check Out Repo

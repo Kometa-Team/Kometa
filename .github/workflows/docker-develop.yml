@@ -41,7 +41,7 @@ jobs:
             --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
             --build-arg BRANCH_NAME=develop \
             --file ./Dockerfile \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
+            --platform linux/amd64,linux/arm64 \
             --tag ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:develop \
             --cache-from type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-develop \
             --cache-to type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-develop,mode=min \

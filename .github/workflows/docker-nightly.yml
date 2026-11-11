@@ -45,9 +45,6 @@ jobs:
           - platform: linux/arm64
             tag-suffix: arm64
             cache-scope: docker-nightly-arm64
-          - platform: linux/arm/v7
-            tag-suffix: armv7
-            cache-scope: docker-nightly-armv7
     steps:
 
       - name: Check Out Repo
@@ -134,8 +131,7 @@ jobs:
           docker buildx imagetools create \
             -t ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly \
             ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-amd64 \
-            ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-arm64 \
-            ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-armv7
+            ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-arm64
 
   docker-nightly-notification:
     runs-on: ubuntu-latest
