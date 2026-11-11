@@ -8,12 +8,15 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
-from typing import TYPE_CHECKING, Literal, overload
+from typing import TYPE_CHECKING, List, Literal, Optional, Union, overload
 
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
-from plexapi.audio import Album, Track
-from plexapi.video import Episode, Movie, Season
+from plexapi.audio import Album, Artist, Track
+from plexapi.collection import Collection
+from plexapi.library import LibrarySection
+from plexapi.playlist import Playlist
+from plexapi.video import Episode, Movie, Season, Show
 from tenacity import retry_if_exception
 from tenacity.wait import wait_base
 
@@ -542,6 +545,76 @@ def item_title(item):
         return f"{item.grandparentTitle} - {item.title}"
     else:
         return item.title
+
+
+type_to_class_map = {"movie": Movie, "show": Show, "episode": Episode, "season": Season, "artist": Artist, "album": Album, "track": Track, "collection": Collection, "playlist": Playlist}
+
+
+def filter_items(items: List[Union[Season, Show, Episode, Movie, Album, Track, Artist, Collection, Playlist]], library: Optional[LibrarySection] = None, item_type: Optional[str] = None) -> List:
+    results = []
+    accepted = []
+    discarded = []
+
+    for i, item in enumerate(items, 1):
+        if isinstance(item, Movie) and item.year:
+            item_title = f"{item.title} ({item.year})"
+        elif isinstance(item, Season):
+            item_title = f"{item.parentTitle} {item.title}"
+        elif isinstance(item, Episode):
+            item_title = f"{item.grandparentTitle} {item.seasonEpisode.upper()} {item.title}"
+        elif isinstance(item, Album):
+            item_title = f"{item.parentTitle}: {item.title}"
+        elif isinstance(item, Track):
+            item_title = f"{item.grandparentTitle}: {item.title}"
+        elif isinstance(item, Collection) and "Collection" not in item.title:
+            item_title = f"{item.title} (Collection)"
+        else:
+            item_title = item.title
+
+        if library and item.librarySectionID != library.key:
+            discarded.append(f"{item_title} | ratingKey: {item.ratingKey} | Item belongs to library {item.librarySectionTitle}")
+            continue
+
+        expected_type = type_to_class_map.get(item_type, None) if item_type else None
+        if expected_type and not isinstance(item, expected_type):
+            discarded.append(f"{item_title} | ratingKey: {item.ratingKey} | Item is not a {item_type}")
+            continue
+
+        results.append(item)
+
+        rkey_label = f" | ratingKey: {item.ratingKey}"
+        tmdb_label = ""
+        tvdb_label = ""
+        imdb_label = ""
+        guids = getattr(item, "guids", None)
+
+        if guids:
+            tmdb_id = next((guid.id for guid in guids if "tmdb://" in guid.id), None)
+            tmdb_label = f' | {tmdb_id.replace("tmdb://", "TMDb ID: ")}' if tmdb_id else ""
+            tvdb_id = next((guid.id for guid in guids if "tvdb://" in guid.id), None)
+            tvdb_label = f' | {tvdb_id.replace("tvdb://", "TVDb ID: ")}' if tvdb_id else ""
+            imdb_id = next((guid.id for guid in guids if guid.id.startswith("imdb://")), None)
+            imdb_label = f' | {imdb_id.replace("imdb://", "IMDb ID: ")}' if imdb_id else ""
+
+        accepted.append(f"{item_title}{rkey_label}{tmdb_label}{tvdb_label}{imdb_label}")
+
+    if discarded:
+        logger.debug("")
+        logger.debug(f"Discarded {len(discarded)} item{'' if len(discarded) == 1 else 's'} for the following reasons")
+        for i, message in enumerate(discarded, 1):
+            logger.debug(f"({i}/{len(discarded)}) {message}")
+
+    if accepted:
+        logger.info("")
+        logger.info(f"Successfully loaded {len(accepted)} item{'' if len(accepted) == 1 else 's'} from {library.title if library else 'this library'}")
+        for i, message in enumerate(accepted, 1):
+            logger.info(f"({i}/{len(accepted)}) {message}")
+        logger.info("")
+    else:
+        logger.info("")
+        logger.info(f"None of the target items are present in {library.title if library else 'this library'}")
+
+    return results
 
 
 def item_set(item, item_id):

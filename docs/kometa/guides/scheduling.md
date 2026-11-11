@@ -561,7 +561,7 @@ libraries:
         mode: full
 ```
 
-Use `tmdb:<id>` for movies, `tvdb:<id>` for shows, `imdb:tt<id>` for either, or `plex:<ratingKey>` for a top-level item. TMDb show IDs are converted to TVDb IDs in show libraries. Plex rating keys can also select a top-level music artist. IDs that do not match an item select nothing; they do not expand the run to the full library.
+Use `tmdb:<id>` for movies, `tvdb:<id>` for shows, `imdb:tt<id>` for either, or `plex:<ratingKey>` for a top-level item. TMDb show IDs are converted to TVDb IDs in show libraries. Plex rating keys can also select a top-level music artist. IDs that do not match an item select nothing; they do not expand the run to the full library. You can target non-top-level Plex items (like individual seasons or episodes) by passing a list composed exclusively of Plex rating keys.
 
 > In a music library, use Plex rating keys. Provider IDs select movies and shows, not music artists.
 

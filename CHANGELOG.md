@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Suppress unverified HTTPS warnings for the configured Plex host when its SSL verification is disabled, while preserving warnings for other hosts. #3743
 - Avoid warnings when Tautulli builders omit the optional `list_minimum` or explicitly set it to its default of `0`.
 - Warn and ignore missing collection names in `collection.not` post-filters instead of rejecting the definition, allowing overlays to continue after an excluded collection is deleted.
 - Preserve IMDb show mappings when TMDb cannot provide a TVDb ID, allowing metadata files to match those shows by IMDb ID. #3820
@@ -31,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - `linux/arm/v7` (32-bit ARM) Docker images are no longer published. `v2.5.4` is the final release with `armv7` images; 32-bit ARM users should pin `kometateam/kometa:v2.5.4`.
+### Changed
+- Allow `items(plex:<ratingKey>|...)` schedule scopes to target individual Plex items, including seasons and episodes, during library operations and overlay updates. Behavior remains the same when other ID types are used (TMDb, TVDb, IMDb).
 
 ### Docs
 

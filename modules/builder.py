@@ -4265,7 +4265,7 @@ class CollectionBuilder:
             self.value_filters.append((variable_name, comparator, threshold))
 
     @timings.timed("gather_ids", source_arg=0)
-    def gather_ids(self, method, value):
+    def gather_ids(self, method, value, target_keys=None):
         expired = None
         list_key = None
         cache_method = ""
@@ -4280,7 +4280,7 @@ class CollectionBuilder:
         # Experiment C: serializes gather_ids calls per service - tmdbapis' shared _api.response isn't thread-safe, assume others are too until audited.
         with self.config.get_service_lock(_service_lock_key(method)):
             if "plex" in method:
-                ids = self.library.get_rating_keys(method, value, self.playlist)
+                ids = self.library.get_rating_keys(method, value, self.playlist, target_keys=target_keys)
             elif "tautulli" in method:
                 ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
             elif "tracearr" in method:
