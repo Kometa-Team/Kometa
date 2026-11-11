@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.5] - 2026-11-11
+
+### Removed
+
+- `linux/arm/v7` (32-bit ARM) Docker images are no longer published. `v2.5.4` is the final release with `armv7` images; 32-bit ARM users should pin `kometateam/kometa:v2.5.4`.
+
 ### Fixed
 
 - Suppress unverified HTTPS warnings for the configured Plex host when its SSL verification is disabled, while preserving warnings for other hosts. #3743
@@ -29,9 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `mdblist_watchlist` builder to create collections based on watchlist
 - Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
-### Removed
-
-- `linux/arm/v7` (32-bit ARM) Docker images are no longer published. `v2.5.4` is the final release with `armv7` images; 32-bit ARM users should pin `kometateam/kometa:v2.5.4`.
 ### Changed
 - Allow `items(plex:<ratingKey>|...)` schedule scopes to target individual Plex items, including seasons and episodes, during library operations and overlay updates. Behavior remains the same when other ID types are used (TMDb, TVDb, IMDb).
 
@@ -569,7 +572,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.4...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.5...HEAD
+[v2.5.5]: https://github.com/Kometa-Team/Kometa/compare/v2.5.4...v2.5.5
 [v2.5.4]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...v2.5.4
 [v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.2...v2.5.3
 [v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...v2.5.2
