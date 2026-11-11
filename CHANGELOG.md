@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `mdblist_watchlist` builder to create collections based on watchlist
 - Recognize TMDb and IMDb identifiers embedded in Plex NFO Movie agent GUIDs when mapping movie libraries. #3837
 
+### Changed
+- Allow `items(plex:<ratingKey>|...)` schedule scopes to target individual Plex items, including seasons and episodes, during library operations and overlay updates. Behavior remains the same when other ID types are used (TMDb, TVDb, IMDb).
+
 ### Docs
 
 - Tell Docker users to recreate the container when updating instead of updating it in place or copying an old container's Entrypoint or PATH, which can stop a newer image starting with `ModuleNotFoundError: No module named 'packaging'`. #3692

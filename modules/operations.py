@@ -7,7 +7,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 from plexapi.exceptions import NotFound
-from plexapi.video import Movie, Show
+from plexapi.video import Episode, Movie, Season, Show
 
 from modules import anidb, plex, timings, tvdb, util
 from modules.request import urlparse
@@ -251,7 +251,7 @@ class Operations:
         return all((less_check, managed_check, configured_check))
 
     @timings.timed("operations")
-    def run_operations(self):
+    def run_operations(self, target_keys=None):
         operation_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Operations")
@@ -326,7 +326,7 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-            items = refreshed_items if refreshed_items is not None else self.library.get_all()
+            items = refreshed_items if refreshed_items is not None else self.library.get_all(target_keys=target_keys)
             total_items = len(items)
             self._prefetch_mdblist(items)
 
@@ -381,7 +381,7 @@ class Operations:
                     continue
 
                 if self.library.assets_for_all and self.library.asset_directory:
-                    self.library.find_and_upload_assets(item, current_labels)
+                    self.library.find_and_upload_assets(item, current_labels, targeted_update=target_keys is not None)
 
                 locked_fields = [f.name for f in item.fields if f.locked]
 
@@ -413,7 +413,7 @@ class Operations:
                                 item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
-                if item.locations:
+                if getattr(item, "locations", False):
                     path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
@@ -498,13 +498,14 @@ class Operations:
                 if self.library.sync_watchlist_to_serializd:
                     if not self.library.is_show:
                         logger.warning("Serializd Warning: sync_watchlist_to_serializd is only available for show libraries")
-                    elif not self.config.Serializd:
-                        logger.error("Serializd Error: sync_watchlist_to_serializd requires Serializd authentication")
-                    else:
-                        try:
-                            self._sync_serializd_watched(item, serializd_tmdb_id)
-                        except Failed as err:
-                            logger.error(err)
+                    elif not isinstance(item, (Season, Episode)):
+                        if not self.config.Serializd:
+                            logger.error("Serializd Error: sync_watchlist_to_serializd requires Serializd authentication")
+                        else:
+                            try:
+                                self._sync_serializd_watched(item, serializd_tmdb_id)
+                            except Failed as err:
+                                logger.error(err)
 
                 _tmdb_release_dates_obj = None
 
@@ -1355,11 +1356,15 @@ class Operations:
                         else:
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Square Art", "Item")
 
-                    if self.library.is_show and (
-                        _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
-                        or _show_level_image_update_enabled(self.library.mass_poster_update, "episodes")
-                        or _show_level_image_update_enabled(self.library.mass_background_update, "seasons")
-                        or _show_level_image_update_enabled(self.library.mass_background_update, "episodes")
+                    if (
+                        self.library.is_show
+                        and not isinstance(item, (Season, Episode))
+                        and (
+                            _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
+                            or _show_level_image_update_enabled(self.library.mass_poster_update, "episodes")
+                            or _show_level_image_update_enabled(self.library.mass_background_update, "seasons")
+                            or _show_level_image_update_enabled(self.library.mass_background_update, "episodes")
+                        )
                     ):
                         # Determine if any language override applies for season/episode TMDb fetches
                         _image_lang = None
@@ -1450,7 +1455,11 @@ class Operations:
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
-                    for ep in self.library.cached_item_subitems(item, "episodes"):
+                    if isinstance(item, Episode):
+                        episode_items = [item]
+                    else:
+                        episode_items = self.library.cached_item_subitems(item, "episodes")
+                    for ep in episode_items:
                         ep = self.library.reload(ep)
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")

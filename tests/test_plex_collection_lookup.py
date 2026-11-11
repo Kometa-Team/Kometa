@@ -47,6 +47,7 @@ def _load_plex(monkeypatch):
     fake_util.OverlayError = Exception
     fake_util.PlexImageUploadError = Exception
     fake_util.ServiceError = Exception
+    fake_util.filter_items = lambda items, *_args, **_kwargs: items
     monkeypatch.setitem(sys.modules, "modules.util", fake_util)
 
     fake_library = types.ModuleType("modules.library")

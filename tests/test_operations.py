@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.video import Episode, Season
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
 import modules.operations as ops_module
@@ -520,7 +521,7 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.refresh_item_cache_and_mappings.assert_not_called()
-        library.get_all.assert_called_once_with()
+        library.get_all.assert_called_once_with(target_keys=None)
 
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")
@@ -539,6 +540,37 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.reload.assert_called_once_with(item)
+
+    @pytest.mark.parametrize(
+        "item_type,expected_cached_episode_lookup",
+        [(Episode, False), (Season, True)],
+    )
+    def test_nested_show_targets_do_not_assume_every_item_is_a_show(self, item_type, expected_cached_episode_lookup):
+        item = MagicMock(spec=item_type)
+        item.ratingKey = 1
+        item.title = "Targeted Item"
+        item.fields = []
+        item.locations = []
+        library = make_title_test_library([item])
+        library.is_movie = False
+        library.is_show = True
+        library.sync_watchlist_to_serializd = True
+        library.mass_episode_audience_rating_update = []
+        library.mass_episode_critic_rating_update = []
+        library.mass_episode_user_rating_update = []
+        library.mass_poster_update = {"source": "plex", "ignore_locked": False, "ignore_overlays": False, "episodes": True, "seasons": True} if item_type is Episode else False
+        library.poster_update.return_value = None
+        library.get_item_display_title.return_value = "Targeted Item"
+        library.find_item_assets.return_value = (None, None, None, None, None, None)
+        library.cached_item_subitems.return_value = []
+        library.config = MagicMock()
+
+        Operations(config=library.config, library=library).run_operations(target_keys={1})
+
+        if expected_cached_episode_lookup:
+            library.cached_item_subitems.assert_called_once_with(item, "episodes")
+        else:
+            library.cached_item_subitems.assert_not_called()
 
     def test_batches_by_distinct_new_title(self):
         """Two items with different target titles - one editField call per distinct value."""
