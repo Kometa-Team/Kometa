@@ -150,6 +150,7 @@ class Library(ABC):
         self.reapply_overlays = params["reapply_overlays"]
         self.reset_overlays = params["reset_overlays"]
         self.mass_collection_mode = params["mass_collection_mode"]
+        self.mass_collection_poster_update = params.get("mass_collection_poster_update")
         self.metadata_backup = params["metadata_backup"]
         self.genre_mapper = params["genre_mapper"]
         self.content_rating_mapper = params["content_rating_mapper"]
@@ -205,6 +206,7 @@ class Library(ABC):
             if self.items_library_operation
             or self.delete_collections
             or self.mass_collection_mode
+            or self.mass_collection_poster_update
             or self.radarr_remove_by_tag
             or self.sonarr_remove_by_tag
             or self.lidarr_remove_by_tag
@@ -491,6 +493,7 @@ class Library(ABC):
             if prioritize_assets and "asset_directory" in images:
                 return images["asset_directory"]
             for attr in [
+                "kometa_poster",
                 "style_data",
                 f"url_{image_type}",
                 f"file_{image_type}",
@@ -532,7 +535,7 @@ class Library(ABC):
                                 )
                             except Failed as e:
                                 logger.error(e)
-                    if attr in ["asset_directory", f"pmm_{image_type}"]:
+                    if attr in ["asset_directory", "kometa_poster", f"pmm_{image_type}"]:
                         return images[attr]
                     return ImageData(attr, images[attr], image_type=image_type, is_url=attr != f"file_{image_type}")
 

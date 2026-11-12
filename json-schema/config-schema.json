@@ -272,6 +272,134 @@
         }
       }
     },
+    "mass-metadata-collections": {
+      "anyOf": [
+        {"type": "string", "enum": ["kometa", "kometa_poster"]},
+        {
+          "$ref": "#/definitions/mass-metadata-scheduled-collection-mode"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": {
+              "$ref": "#/definitions/schedule"
+            },
+            "source": {
+              "type": "string",
+              "enum": [
+                "kometa_poster",
+                "kometa"
+              ]
+            },
+            "ignore_locked": {
+              "type": "boolean"
+            },
+            "ignore_overlays": {
+              "type": "boolean"
+            },
+            "text": {
+              "type": "string",
+              "default": "<<collection_name>>"
+            },
+            "decoration": {
+              "type": "string",
+              "description": "Comma-separated bold, italic, upper, lower, title, sentence, small_caps, underline, strike, outline or shadow decorations."
+            },
+            "image": {
+              "type": ["string", "null"]
+            },
+            "font": {
+              "type": "string"
+            },
+            "style": {
+              "type": "string"
+            },
+            "color": {
+              "type": "string"
+            },
+            "text_color": {
+              "type": "string"
+            },
+            "fade": {
+              "type": "string",
+              "enum": [
+                "top",
+                "bottom",
+                "middle"
+              ]
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "seed": {
+              "type": "integer"
+            },
+            "outline_color": {"type": "string", "default": "#000000"},
+            "shadow_color": {"type": "string", "default": "#000000"},
+            "outline_width": {"type": "integer", "minimum": 0, "maximum": 100, "default": 2},
+            "shadow_offset": {"type": "integer", "minimum": 0, "maximum": 100, "default": 4},
+            "border_width": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "border_color": {
+              "type": ["string", "array"],
+              "items": {"type": "string"},
+              "minItems": 1,
+              "default": "#FFFFFF"
+            },
+            "font_size": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 120
+            },
+            "text_width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "image_width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "image_height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 1
+            },
+            "image_text_gap": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 1
+            },
+            "top_margin": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 1
+            },
+            "bottom_margin": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 1
+            },
+            "mode": {
+              "$ref": "#/definitions/mass-metadata-scheduled-collection-mode"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "source"
+          ]
+        }
+      ]
+    },
     "mass-metadata-image": {
       "oneOf": [
         {
@@ -5278,7 +5406,7 @@
                   ]
                 },
                 "collections": {
-                  "$ref": "#/definitions/mass-metadata-scheduled-collection-mode"
+                  "$ref": "#/definitions/mass-metadata-collections"
                 },
                 "labels": {
                   "$ref": "#/definitions/mass-metadata-scheduled-labels"
@@ -6280,13 +6408,29 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
+                      "enum": [
+                        "tmdb",
+                        "trakt",
+                        "tvdb",
+                        "plex",
+                        "ytmusic",
+                        "lock",
+                        "unlock"
+                      ]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
+                        "enum": [
+                          "tmdb",
+                          "trakt",
+                          "tvdb",
+                          "plex",
+                          "ytmusic",
+                          "lock",
+                          "unlock"
+                        ]
                       }
                     }
                   ]
@@ -6369,13 +6513,29 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
+                              "enum": [
+                                "tmdb",
+                                "trakt",
+                                "tvdb",
+                                "plex",
+                                "ytmusic",
+                                "lock",
+                                "unlock"
+                              ]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
+                                "enum": [
+                                  "tmdb",
+                                  "trakt",
+                                  "tvdb",
+                                  "plex",
+                                  "ytmusic",
+                                  "lock",
+                                  "unlock"
+                                ]
                               }
                             }
                           ]
