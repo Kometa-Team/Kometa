@@ -50,18 +50,18 @@ external_templates:
             size: big
             value: 290
           - size: big
-            value: 250
+            value: 216
           - three_characters: true
             value: 230
       height:
         conditions:
           - size: big
-            value: 100
+            value: 60
       final_font_size:
         default: 50
         conditions:
           - size: big
-            value: 100
+            value: 70
     default:
       style: round
       country: <<key>>
@@ -113,7 +113,7 @@ queues:
           conditions:
             - group_alignment: vertical
               size: big
-              value: 101
+              value: 61
             - group_alignment: vertical
               value: 61
         horizontal_spacing:
@@ -121,7 +121,7 @@ queues:
           conditions:
             - group_alignment: horizontal
               size: big
-              value: 251
+              value: 217
             - group_alignment: horizontal
               value: 191
         surround:
@@ -194,7 +194,7 @@ templates:
     run_definition:
       - <<use_<<key>>>>
     plex_search:
-      all:
+      any:
         <<search_attribute>>: <<key>>
 
 overlays:
@@ -521,4 +521,20 @@ overlays:
 
   lao:
     variables: {key: lo, text: LO, weight: 9, country: la}
+    template: [name: flags, name: standard]
+
+  sinhala:
+    variables: {key: si, text: SI, weight:21, country: lk}
+    template: [name: flags, name: standard]
+
+  armenian:
+    variables: {key: hy, text: AM, weight:22, country: am}
+    template: [name: flags, name: standard]
+
+  southern sotho:
+    variables: {key: st, text: LS, weight:23, country: ls}
+    template: [name: flags, name: standard]
+
+  dzongkha:
+    variables: {key: dz, text: BT, weight:24, country: bt}
     template: [name: flags, name: standard]
