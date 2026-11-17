@@ -97,7 +97,10 @@ Supported library types: Movie & Show
 | Irish                    | `ga`  | `18`   | `ie`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Aymara                   | `ay`  | `19`   | `bo`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 | Lao                      | `lo`  | `9`    | `la`         |  :fontawesome-solid-circle-xmark:{ .red }  |
-
+| Sinhala                  | `si`  | `21`   | `lk`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Armenian                 | `hy`  | `22`   | `am`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Southern Soho            | `st`  | `23`   | `ls`         |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Dzongkha                 | `dz`  | `24`   | `bt`         |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ??? tip "Square Style (click to expand)"
 
