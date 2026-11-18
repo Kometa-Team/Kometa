@@ -228,7 +228,7 @@ def values(item, field):
             "user_rating": ("Rating", user, 1),
             "plays": ("PlayCount", user, 1),
             "position_seconds": ("PlaybackPositionTicks", user, 10000000),
-            "season_number": ("ParentIndexNumber", raw, 1),
+            "season_number": ("IndexNumber" if raw.get("Type") == "Season" else "ParentIndexNumber", raw, 1),
             "episode_number": ("IndexNumber", raw, 1),
         }[field]
         number = _number(data.get(key))

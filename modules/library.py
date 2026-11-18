@@ -1,3 +1,5 @@
+import hashlib
+import json
 import os
 import re
 import time
@@ -541,6 +543,23 @@ class Library(ABC):
             if "Overlay" not in labels:
                 labels.append("Overlay")
         return Plex.find_and_upload_assets(cast("Plex", self), item, labels, asset_directory=asset_directory, targeted_update=targeted_update)
+
+    def overlay_cache_key(self, item):
+        """Keep Plex keys compatible; isolate native values by acting identity."""
+        server = getattr(self, "server", None)
+        if server is None or server.type_name == "plex":
+            return item.ratingKey
+        client = getattr(self, "client", None)
+        identity = [
+            server.type_name,
+            str(getattr(client, "base", server.url)).rstrip("/"),
+            hashlib.sha256(str(server.token).encode()).hexdigest(),
+            getattr(server, "profile_id", None),
+            getattr(client, "user_id", getattr(server, "user_id", None)),
+            getattr(self, "library_id", getattr(self, "original_mapping_name", "")),
+            str(item.ratingKey),
+        ]
+        return f"native:{hashlib.sha256(json.dumps(identity).encode()).hexdigest()}"
 
     def fetch_overlay_value(self, item, variable_name):
         """Reuse provider rating lookup and its cache for non-Plex adapters."""

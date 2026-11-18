@@ -314,3 +314,10 @@ def test_missing_metadata_does_not_match_positive_or_negative_searches():
 def test_invalid_search_is_rejected_before_execution(definition):
     with pytest.raises(Failed, match="Silo Error"):
         compile_selector(definition)
+
+
+@pytest.mark.parametrize("definition", [{"all": []}, {"any": []}, {"any": [{"all": []}, {"title": "Example"}]}, {"all": [{"any": []}]}])
+@pytest.mark.parametrize("compile_filter", [compile_selector, compile_silo_selector])
+def test_empty_search_group_lists_are_rejected(definition, compile_filter):
+    with pytest.raises(Failed, match="nonempty"):
+        compile_filter(definition)

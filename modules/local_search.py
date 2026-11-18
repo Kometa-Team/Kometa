@@ -78,6 +78,8 @@ def compile_selector(definition, server_name="Silo", field_values=None, field_ty
     for key, expected in definition.items():
         if key in ("all", "any"):
             groups = expected if isinstance(expected, list) else [expected]
+            if not groups:
+                raise Failed(f"{server_name} Error: Search groups must be nonempty mappings")
             nested = [compile_selector(group, server_name, field_values, field_types, current_time) for group in groups]
             tests.append(lambda item, nested=nested, match=all if key == "all" else any: match(test(item) for test in nested))
             # Within an any mapping, its individual entries are alternatives.

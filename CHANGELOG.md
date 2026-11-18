@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
+
 - Honor targeted native catalog and asset updates after shared API changes, restore native adapter test coverage, and correct type annotations without increasing the Pyright baseline.
 
 - Measure disabled timing instrumentation overhead using CPU time so parallel CI scheduling does not cause false failures.

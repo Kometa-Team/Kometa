@@ -91,6 +91,8 @@ Silo does not expose Plex-style item labels through this adapter. Kometa does no
 
 The paths above assume the standard `config` directory. The mapping name is the library key in your Kometa configuration, sanitized for use as a filename; it can differ from the library's name in Silo. The cache sits beside the configuration YAML with a `.cache` extension, for example `config/test-config.cache` for `config/test-config.yml`. Overlay records use Silo item IDs, not TMDb or TVDb IDs.
 
+Overlay text and provider-rating values in the cache are keyed by server, credentials, library, profile/user, and item ID. Matching item IDs on another server or library do not share those values. Older native value entries without this scope are ignored and fetched again on demand; the original-poster backups and library-specific applied-overlay records remain in place. Rendering, value filters, and MDBList cache checks share the scoped value entries.
+
 #### Updating and removing overlays
 
 On later overlay runs, Kometa scans the original-poster directory to find items with overlays, including shows, seasons, and episodes. The cache records what was applied; the backup file supplies the presence marker and original image. Plex legacy overlay-label cleanup does not run on Silo.

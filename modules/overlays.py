@@ -65,7 +65,7 @@ class Overlays:
             if self.cache:
                 needs_fetch = False
                 for variable in variables:
-                    cached_value, expired = self.cache.query_overlay_value_cache(item.ratingKey, variable)
+                    cached_value, expired = self.cache.query_overlay_value_cache(self.library.overlay_cache_key(item), variable)
                     if cached_value is None or expired:
                         needs_fetch = True
                         break
@@ -188,7 +188,7 @@ class Overlays:
                     if self.cache:
                         for over_name in over_names:
                             if properties[over_name].name.startswith("text"):
-                                for cache_key, cache_value in self.cache.query_overlay_value_cache_all(item.ratingKey).items():
+                                for cache_key, cache_value in self.cache.query_overlay_value_cache_all(self.library.overlay_cache_key(item)).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
                                     if cache_key in overlay.rating_sources:
                                         try:
@@ -363,7 +363,7 @@ class Overlays:
                                                 actual_value = len(actual_value)
                                         if self.cache and format_var not in overlay.rating_sources:
                                             cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value  # type: ignore[union-attr]
-                                            self.cache.update_overlay_value_cache(False, item.ratingKey, format_var, cache_store)
+                                            self.cache.update_overlay_value_cache(False, self.library.overlay_cache_key(item), format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
                                             if mod:

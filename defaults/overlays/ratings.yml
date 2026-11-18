@@ -134,7 +134,7 @@ templates:
       plex_all:
         conditions:
           - image_level: [Rotten, Fresh]
-            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, silo_imdb, plex_tmdb, silo_tmdb, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience, jellyfin_community, jellyfin_audience, jellyfin_critic, jellyfin_user, emby_community, emby_audience, emby_critic, emby_user]
+            rating<<rating_num>>: [tmdb, imdb, floppy, serializd, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, silo_imdb, plex_tmdb, silo_tmdb, plex_tomatoes, silo_tomatoes, plex_tomatoesaudience, silo_tomatoesaudience, silo_user, jellyfin_community, jellyfin_audience, jellyfin_critic, jellyfin_user, emby_community, emby_audience, emby_critic, emby_user]
             value: true
       run_this:
         default: true

@@ -5744,7 +5744,7 @@ class CollectionBuilder:
             if self.config.Cache:
                 needs_fetch = False
                 for variable in variables:
-                    cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, variable)
+                    cached_value, expired = self.config.Cache.query_overlay_value_cache(self.library.overlay_cache_key(item), variable)
                     if cached_value is None or expired:
                         needs_fetch = True
                         break

@@ -400,3 +400,93 @@ def test_missing_rating_does_not_hide_other_sources():
     plx.config.TMDb = MagicMock()
     plx.config.TMDb.get_item.return_value = SimpleNamespace(vote_average=8)
     assert plx.fetch_overlay_value(_item(), "tmdb_rating") == 8
+
+
+def _native_overlay_library(cache, kind="emby"):
+    from modules.media_server import build_media_server
+    from modules.mediabrowser import MediaBrowser
+    from modules.silo import Silo
+
+    library = (Silo if kind == "silo" else MediaBrowser).__new__(Silo if kind == "silo" else MediaBrowser)
+    library.server = build_media_server("native", {"type": kind, "url": "http://native", "token": "secret"})
+    library.client = SimpleNamespace(base="http://native", user_id="user")
+    library.library_id = "movies"
+    library.original_mapping_name = "Movies"
+    library.is_movie = True
+    library.get_ids = MagicMock(return_value=(None, None, "tt123"))
+    library.config = SimpleNamespace(Cache=cache, IMDb=SimpleNamespace(get_rating=MagicMock(return_value=7.0)), MDBList=SimpleNamespace(limit=False))
+    return library
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_native_rating_cache_does_not_reuse_plex_or_other_library_values(tmp_path, monkeypatch, kind):
+    from modules import cache as cache_module
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(cache_module, "logger", FakeLogger())
+    cache = cache_module.Cache(str(tmp_path / "config.yml"), expiration=30)
+    library = _native_overlay_library(cache, kind)
+    record = SimpleNamespace(ratingKey="558", title="Native movie", type="movie", guid="native://558")
+    cache.update_overlay_value_cache(False, 558, "imdb_rating", 9.0)
+    library.library_id = "other"
+    other_key = library.overlay_cache_key(record)
+    cache.update_overlay_value_cache(False, other_key, "imdb_rating", 8.0)
+    library.library_id = "movies"
+    try:
+        assert library.fetch_overlay_value(record, "imdb_rating") == 7.0
+        assert library.fetch_overlay_value(record, "imdb_rating") == 7.0
+        library.config.IMDb.get_rating.assert_called_once_with("tt123")
+        assert float(cache.query_overlay_value_cache(library.overlay_cache_key(record), "imdb_rating")[0]) == 7.0
+        assert float(cache.query_overlay_value_cache(558, "imdb_rating")[0]) == 9.0
+        assert float(cache.query_overlay_value_cache(other_key, "imdb_rating")[0]) == 8.0
+    finally:
+        cache.connection.close()
+
+
+@pytest.mark.parametrize("owner,attribute,value", [("server", "url", "http://other"), ("server", "token", "other-secret"), ("server", "profile_id", "other-profile"), ("client", "user_id", "other-user"), ("library", "library_id", "shows")])
+def test_native_overlay_cache_keys_include_acting_identity(owner, attribute, value):
+    library = _native_overlay_library(None)
+    record = _item("558")
+    original = library.overlay_cache_key(record)
+    instance = library if owner == "library" else getattr(library, owner)
+    setattr(instance, attribute, value)
+    if attribute == "url":
+        library.client.base = value
+    assert library.overlay_cache_key(record) != original
+    assert "secret" not in original
+    assert _make_plex().overlay_cache_key(_item(558)) == 558
+
+
+def test_native_prefetch_paths_ignore_unscoped_values_and_share_scoped_entries(tmp_path, monkeypatch):
+    from modules import cache as cache_module
+    from modules.builder import CollectionBuilder
+    from modules.overlays import Overlays
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(cache_module, "logger", FakeLogger())
+    cache = cache_module.Cache(str(tmp_path / "config.yml"), expiration=30)
+    library = _native_overlay_library(cache)
+    library.prefetch_mdblist = MagicMock()
+    record = _item("558")
+    variable = "mdb_imdb_rating"
+    cache.update_overlay_value_cache(False, 558, variable, 9.0)
+    engine = Overlays.__new__(Overlays)
+    engine.library = library
+    engine.cache = cache
+    builder = CollectionBuilder.__new__(CollectionBuilder)
+    builder.library = library
+    builder.config = library.config
+    builder.value_filters = [(variable, "gte", 6.0)]
+    properties = {"rating": SimpleNamespace(variables={variable})}
+    try:
+        engine._prefetch_mdblist({"558": (record, ["rating"])}, properties)
+        builder._prefetch_mdblist_value_filters([record])
+        assert library.prefetch_mdblist.call_count == 2
+        cache.update_overlay_value_cache(False, library.overlay_cache_key(record), variable, 7.0)
+        library.prefetch_mdblist.reset_mock()
+        engine._prefetch_mdblist({"558": (record, ["rating"])}, properties)
+        builder._prefetch_mdblist_value_filters([record])
+        library.prefetch_mdblist.assert_not_called()
+        assert float(cache.query_overlay_value_cache_all(library.overlay_cache_key(record))[variable]) == 7.0
+    finally:
+        cache.connection.close()

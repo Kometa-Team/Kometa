@@ -981,3 +981,15 @@ def test_jellyfin_tv_studio_dynamic_is_skipped_with_warning(monkeypatch):
     assert not metadata_file.collections
     assert not logger.error_messages
     assert any("use type: network" in message for message in logger.warning_messages)
+
+
+@pytest.mark.parametrize("image_level", ["Fresh", "Rotten"])
+def test_silo_personal_rating_badges_have_an_all_items_builder(image_level):
+    with (Path(__file__).resolve().parents[1] / "defaults" / "overlays" / "ratings.yml").open(encoding="utf-8") as handle:
+        ratings = YAML(typ="safe").load(handle)
+    df = make_datafile(library=SimpleNamespace(type="Movie", name="Movies"), templates={"Rating": (ratings["templates"]["Rating"], {})})
+    name = f"Rating1{image_level}"
+    variables = {**ratings["overlays"][name]["template"], "rating1": "silo_user"}
+    result = df.apply_template(name, name, {}, [variables], {})
+    assert result["plex_all"] is True
+    assert any(key.startswith("silo_user_rating.") for key in result["value_filter"])

@@ -1001,7 +1001,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             if config.Cache:
                 schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
                 if schedule_list_key:
-                    library.scheduled_cached_keys = {cached_item_key(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
+                    server_type = getattr(getattr(library, "server", None), "type_name", "plex")
+                    library.scheduled_cached_keys = {cached_item_key(key, server_type) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
                 target_keys = None

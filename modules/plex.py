@@ -2909,7 +2909,7 @@ class Plex(Library):
             raise OverlayError(f"Overlay Error: {variable_name} requires a Silo library")
         # Reads overlay_value_cache first and returns the cached value if warm, only fetching live on a miss/expiry.
         if self.config.Cache:
-            cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, variable_name)
+            cached_value, expired = self.config.Cache.query_overlay_value_cache(self.overlay_cache_key(item), variable_name)
             if cached_value is not None and not expired:
                 if util.is_valid_rating(cached_value):
                     return float(cached_value)
@@ -3127,7 +3127,7 @@ class Plex(Library):
                 return None
             found_rating = float(found_rating)
             if self.config.Cache and cacheable:
-                self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
+                self.config.Cache.update_overlay_value_cache(False, self.overlay_cache_key(item), variable_name, found_rating)
         return found_rating
 
     def get_locked_attributes(self, item, titles=None, year_titles=None, item_type=None):

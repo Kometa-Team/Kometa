@@ -191,3 +191,17 @@ def test_and_tags_and_aliases(detail):
 
 def test_sort_title_uses_explicit_server_override():
     assert compile_selector({"sort_title.is": "001 Example"})(item(ForcedSortName="001 Example", SortName="Example"))
+
+
+@pytest.mark.parametrize("kind,field", [("Season", "IndexNumber"), ("Episode", "ParentIndexNumber")])
+def test_season_number_uses_the_native_item_type(kind, field):
+    record = item(Type=kind, **{field: 3})
+    assert values(record, "season_number") == [3]
+    assert compile_selector({"season_number": 3})(record)
+    assert not compile_selector({"season_number": 4})(record)
+
+
+@pytest.mark.parametrize("definition", [{"all": []}, {"any": []}, {"any": [{"all": []}, {"title": "Example"}]}])
+def test_browser_empty_search_group_lists_are_rejected(definition):
+    with pytest.raises(Failed, match="nonempty"):
+        compile_selector(definition)

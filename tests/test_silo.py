@@ -1244,7 +1244,7 @@ def test_silo_provider_overlay_ratings_use_shared_resolver_and_cache(variable):
     library.config.TMDb = SimpleNamespace(get_item=MagicMock(return_value=SimpleNamespace(vote_average=8.2)))
     item = SiloItem({"content_id": "movie-imdb-tt0120689", "title": "Example", "type": "movie", "tmdb_id": 152, "imdb_id": "tt0120689"}, library)
     assert library.fetch_overlay_value(item, variable) == 8.2
-    cache.update_overlay_value_cache.assert_called_once_with(False, item.ratingKey, variable, 8.2)
+    cache.update_overlay_value_cache.assert_called_once_with(False, library.overlay_cache_key(item), variable, 8.2)
     cache.query_overlay_value_cache.return_value = (8.2, False)
     assert library.fetch_overlay_value(item, variable) == 8.2
     provider = library.config.IMDb.get_rating if variable == "imdb_rating" else library.config.TMDb.get_item

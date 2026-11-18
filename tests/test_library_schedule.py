@@ -198,3 +198,11 @@ def test_tv_diff_selects_shows_with_changed_seasons(monkeypatch):
 
     assert Library._schedule_item_keys(library, [SimpleNamespace(ratingKey=1, title="Changed"), SimpleNamespace(ratingKey=2, title="Unchanged")]) == {1}
     assert library.xml_updates == [("1", "11", "100"), ("1", "12", "200"), ("2", "21", "300")]
+
+
+@pytest.mark.parametrize("server_type", ["silo", "jellyfin", "emby"])
+def test_native_numeric_ids_stay_cached_in_diff_mode(server_type):
+    library = SimpleNamespace(schedule_mode="diff", is_show=False, scheduled_cached_keys={cached_item_key("558", server_type)})
+    items = [SimpleNamespace(ratingKey="558"), SimpleNamespace(ratingKey="559")]
+    assert Library._schedule_item_keys(library, items) == {"559"}
+    assert cached_item_key("558", "plex") == 558
