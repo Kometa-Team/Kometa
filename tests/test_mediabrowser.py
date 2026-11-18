@@ -908,7 +908,7 @@ def test_emby_removes_untagged_overlay_using_existing_backup(tmp_path, monkeypat
     engine.cache = None
     engine.run_overlays()
     assert base64.b64decode(session.calls[0]["data"], validate=True) == original
-    assert session.calls[-1]["json"]["TagItems"] == []
+    assert len(session.calls) == 1
     assert not backup.exists()
     assert logger.error_messages == []
 
@@ -1493,7 +1493,7 @@ def test_split_operation_only_sends_delete_for_a_verified_duplicate(kind, monkey
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-@pytest.mark.parametrize("status", [502, 503, 504])
+@pytest.mark.parametrize("status", [502, 503, 504, 520, 521, 522, 523, 524])
 def test_read_retries_gateway_errors(monkeypatch, kind, status):
     delays = []
     monkeypatch.setattr(browser_module.time, "sleep", delays.append)
@@ -1505,11 +1505,12 @@ def test_read_retries_gateway_errors(monkeypatch, kind, status):
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-def test_gateway_retries_stop_after_three_attempts(monkeypatch, kind):
+@pytest.mark.parametrize("status", [502, 520])
+def test_gateway_retries_stop_after_three_attempts(monkeypatch, kind, status):
     delays = []
     monkeypatch.setattr(browser_module.time, "sleep", delays.append)
-    session = FakeSession([FakeResponse(status_code=502) for _ in range(3)])
-    with pytest.raises(Failed, match="returned 502"):
+    session = FakeSession([FakeResponse(status_code=status) for _ in range(3)])
+    with pytest.raises(Failed, match=f"returned {status}"):
         MediaBrowserClient(_server(kind), session=session).get_item("432")
     assert delays == [1, 2]
     assert len(session.calls) == 3
@@ -1614,10 +1615,12 @@ def test_browser_catalog_and_details_survive_restart_and_share_fields(tmp_path, 
     assert len(session.calls) == 2
     library.config.Cache.connection.close()
 
-    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "episode"}], "TotalRecordCount": 1})])
     assert [tag.key for tag in other.get_tags("episode.audioLanguage")] == ["en"]
     assert [tag.key for tag in other.get_tags("episode.subtitleLanguage")] == ["fr"]
-    assert session.calls == []
+    assert len(session.calls) == 1
+    assert session.calls[0]["params"]["fields"] == ""
+    assert session.calls[0]["params"]["enableUserData"] == "false"
     other.config.Cache.connection.close()
 
 
@@ -1714,10 +1717,10 @@ def test_nested_episode_parent_fallback_and_details_persist(tmp_path, monkeypatc
         assert library.check_filters(parent, [("episodes", {"aspect": 1.33})], datetime.now(timezone.utc)) is True
     assert len(session.calls) == 3
     library.config.Cache.connection.close()
-    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "one"}], "TotalRecordCount": 1})])
     parent = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Show"}, other)
     assert other.check_filters(parent, [("episodes", {"aspect": 1.33})], datetime.now(timezone.utc)) is True
-    assert session.calls == []
+    assert len(session.calls) == 1
     other.config.Cache.connection.close()
 
 
@@ -1805,7 +1808,7 @@ def test_series_page_size_preserves_other_defaults_and_explicit_limits(include, 
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
-def test_interrupted_catalog_resumes_saved_pages_after_restart(tmp_path, monkeypatch, kind):
+def test_interrupted_catalog_restarts_with_fresh_pages_after_restart(tmp_path, monkeypatch, kind):
     first_page = [{"Id": "one", "Type": "Episode"}]
     last_page = [{"Id": "two", "Type": "Episode"}]
     library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": first_page, "TotalRecordCount": 2}), requests.exceptions.SSLError("interrupted")])
@@ -1816,13 +1819,13 @@ def test_interrupted_catalog_resumes_saved_pages_after_restart(tmp_path, monkeyp
     assert "Episode" not in library._catalog_items_by_type
     cache.connection.close()
 
-    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": last_page, "TotalRecordCount": 2})])
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": last_page, "TotalRecordCount": 1})])
     items = other.get_all(builder_level="episode")
-    assert [item.ratingKey for item in items] == ["one", "two"]
+    assert [item.ratingKey for item in items] == ["two"]
     assert len(session.calls) == 1
-    assert session.calls[0]["params"]["startIndex"] == 1
+    assert session.calls[0]["params"]["startIndex"] == 0
     cache, scope = other._persistent_catalog_cache()
-    assert len(cache.query_native_response(scope, "catalog:Episode")) == 2
+    assert len(cache.query_native_response(scope, "catalog:Episode")) == 1
     assert cache.connection.execute("SELECT count(*) FROM silo_response_cache WHERE scope = ? AND resource LIKE 'catalog:Episode:pages%'", (scope,)).fetchone()[0] == 0
     cache.connection.close()
 
@@ -1838,8 +1841,8 @@ def test_forced_catalog_load_does_not_mix_old_and_new_checkpoint_pages(tmp_path,
     cache, scope = library._persistent_catalog_cache()
     assert cache.query_native_response(scope, "catalog:Episode") is None
     cache.connection.close()
-    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "new-two", "Type": "Episode"}], "TotalRecordCount": 2})])
-    assert [item.ratingKey for item in other.get_all(builder_level="episode")] == ["new-one", "new-two"]
+    other, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "new-two", "Type": "Episode"}], "TotalRecordCount": 1})])
+    assert [item.ratingKey for item in other.get_all(builder_level="episode")] == ["new-two"]
     assert len(session.calls) == 1
     other.config.Cache.connection.close()
 
@@ -2059,9 +2062,9 @@ def test_overlay_writes_preserve_episode_catalog_across_restart(tmp_path, monkey
     after = dict((r["resource"], r["saved_at"]) for r in cache.connection.execute("SELECT resource, saved_at FROM silo_response_cache WHERE scope = ?", (scope,)))
     assert all(after[r["resource"]] == r["saved_at"] for r in before if r["resource"] in after)
     cache.connection.close()
-    other, other_session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    other, other_session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": "episode"}], "TotalRecordCount": 1})])
     assert other.get_all(builder_level="episode")[0].ratingKey == "episode"
-    assert other_session.calls == []
+    assert len(other_session.calls) == 1
     other.config.Cache.connection.close()
 
 
@@ -2083,7 +2086,7 @@ def test_user_state_write_patches_only_matching_cached_item(tmp_path, monkeypatc
 def test_overlay_cleanup_uses_cached_tags_and_backup_records(tmp_path, monkeypatch, kind, level, native_type):
     from modules.overlays import Overlays
 
-    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [])
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": [{"Id": key} for key in ("tagged", "backup", "both", "legacy", "untouched")], "TotalRecordCount": 5})])
     library.is_show = True
     library.is_movie = False
     cache, scope = library._persistent_catalog_cache()
@@ -2104,7 +2107,7 @@ def test_overlay_cleanup_uses_cached_tags_and_backup_records(tmp_path, monkeypat
     assert [item.ratingKey for item in overlays.get_overlay_items(libtype=level)] == ["tagged", "backup", "both"]
     assert [item.ratingKey for item in overlays.get_overlay_items(libtype=level, ignore=["tagged"])] == ["backup", "both"]
     assert [item.ratingKey for item in overlays.get_overlay_items(label="Old Overlay", libtype=level)] == ["legacy"]
-    assert session.calls == []
+    assert len(session.calls) == 1
     cache.connection.close()
 
 
@@ -2229,3 +2232,195 @@ def test_metadata_batch_failure_does_not_patch_failed_item_and_continues(tmp_pat
     assert library.client._metadata_write_queue is None
     assert library.client._pending_cache_patches is None
     cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("current_ids", [[], ["one"], ["one", "new"], ["one", "two", "new"]])
+def test_persistent_catalog_refreshes_changed_membership(tmp_path, monkeypatch, kind, current_ids):
+    library, session = _persistent_browser_library(
+        tmp_path,
+        monkeypatch,
+        kind,
+        [FakeResponse({"Items": [{"Id": key} for key in current_ids], "TotalRecordCount": len(current_ids)}), FakeResponse({"Items": [{"Id": key, "Type": "Series", "Name": key} for key in current_ids], "TotalRecordCount": len(current_ids)})],
+    )
+    library.is_show = True
+    library.is_movie = False
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(scope, "catalog:Series", [{"Id": key, "Type": "Series"} for key in ("one", "two")])
+    cache.update_native_response(scope, "catalog:Series:pages", {"generation": "old"})
+    cache.update_native_response(scope, "catalog:Series:pages:old:0:20", {"Items": [{"Id": "removed", "Type": "Series"}], "TotalRecordCount": 1})
+    assert [item.ratingKey for item in library.get_all()] == current_ids
+    assert [row["Id"] for row in cache.query_native_response(scope, "catalog:Series")] == current_ids
+    assert [item.ratingKey for item in library.get_cached_items()] == current_ids
+    assert len(session.calls) == 2
+    assert session.calls[0]["params"]["parentId"] == library.library_id
+    assert session.calls[0]["params"]["includeItemTypes"] == "Series"
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_catalog_membership_check_failure_does_not_use_stale_items(tmp_path, monkeypatch, kind):
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({}, status_code=403)])
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(scope, "catalog:Movie", [{"Id": "removed", "Type": "Movie"}])
+    with pytest.raises(Failed, match="403"):
+        library.get_all()
+    assert not library._all_items
+    assert not library._catalog_items_by_type
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("include,level", [("Episode", "episode"), ("Season", "season"), ("Series", None)])
+def test_catalog_membership_logs_added_and_removed_items(tmp_path, monkeypatch, kind, include, level):
+    added = {"Id": "new", "Type": include, "Name": "New title", "SeriesName": "Ahsoka", "ParentIndexNumber": 1, "IndexNumber": 2}
+    removed = {"Id": "old", "Type": include, "Name": "Old title", "SeriesName": "Ahsoka", "ParentIndexNumber": 1, "IndexNumber": 1}
+    unchanged = {"Id": "same", "Type": include, "Name": "Unchanged"}
+    rows = [added, unchanged]
+    library, session = _persistent_browser_library(tmp_path, monkeypatch, kind, [FakeResponse({"Items": rows, "TotalRecordCount": 2}), FakeResponse({"Items": rows, "TotalRecordCount": 2})])
+    library.is_show = True
+    library.is_movie = False
+    logger = FakeLogger()
+    monkeypatch.setattr(browser_module, "logger", logger)
+    cache, scope = library._persistent_catalog_cache()
+    cache.update_native_response(scope, f"catalog:{include}", [removed, unchanged])
+    library.get_all(builder_level=level)
+    messages = logger.info_messages
+    assert any("(1 added, 1 removed)" in message for message in messages)
+    added_title = "Ahsoka S01E02: New title" if level == "episode" else "Ahsoka: New title" if level == "season" else "New title"
+    removed_title = "Ahsoka S01E01: Old title" if level == "episode" else "Ahsoka: Old title" if level == "season" else "Old title"
+    assert f"Added {include}: {added_title} [ID: new]" in messages
+    assert f"Removed {include}: {removed_title} [ID: old]" in messages
+    assert not any("Unchanged" in message for message in messages)
+    assert len(session.calls) == 2
+    cache.connection.close()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_overlay_removal_batches_cache_patches_and_flushes_on_failure(kind):
+    session = FakeSession([FakeResponse(None, status_code=204) for _ in range(101)])
+    client = MediaBrowserClient(_server(kind), session=session)
+    cache = MagicMock()
+    client._persistent_catalog_caches = {(1, "scope"): (cache, "scope")}
+    with pytest.raises(Failed, match="restore failed"):
+        with client.batch_overlay_removal():
+            for index in range(101):
+                client.request("POST", f"/Items/{index}", json_body={"Id": str(index), "Type": "Episode", "Tags": []})
+            assert len(session.calls) == 101
+            assert cache.patch_native_items.call_count == 1
+            assert len(cache.patch_native_items.call_args.args[1]) == 100
+            raise Failed("restore failed")
+    assert cache.patch_native_items.call_count == 2
+    assert list(cache.patch_native_items.call_args.args[1]) == ["100"]
+    assert client._pending_cache_patches is None
+    assert client._batch_overlay_removal is False
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("tvdb_id", ["79323", "UNKNOWN"])
+def test_invalid_provider_ids_allow_tmdb_fallback(kind, tvdb_id):
+    from modules.tmdb import TMDb
+
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    item = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Example", "ProviderIds": {"Tmdb": "UNKNOWN", "Tvdb": tvdb_id, "Imdb": "tt0419326"}}, library)
+    ids = library.get_ids(item)
+    assert ids == (None, 79323 if tvdb_id == "79323" else None, "tt0419326")
+    service = TMDb.__new__(TMDb)
+    convert = MagicMock()
+    convert.tvdb_to_tmdb.return_value = 1720
+    convert.imdb_to_tmdb.return_value = (1720, "show")
+    service.config = SimpleNamespace(Convert=convert)
+    service.get_show = MagicMock()
+    assert service.get_item(item, *ids, is_movie=False) is service.get_show.return_value
+    service.get_show.assert_called_once_with(1720)
+    if tvdb_id == "79323":
+        convert.tvdb_to_tmdb.assert_called_once_with(79323)
+        convert.imdb_to_tmdb.assert_not_called()
+    else:
+        convert.imdb_to_tmdb.assert_called_once_with("tt0419326")
+        convert.tvdb_to_tmdb.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("image_type", ["Primary", "Logo", "Banner", "Thumb"])
+@pytest.mark.parametrize("error", [requests.ConnectionError("reset"), requests.Timeout("timeout")])
+def test_remote_fixed_image_download_retries_connection_failure(monkeypatch, kind, image_type, error):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([error, FakeResponse(None, status_code=204)])
+    MediaBrowserClient(_server(kind), session=session).download_remote_image("30895", image_type, "https://example.com/poster.jpg")
+    assert len(session.calls) == 2
+    assert session.calls[0] == session.calls[1]
+    assert session.calls[0]["params"] == {"type": image_type, "imageUrl": "https://example.com/poster.jpg"}
+    assert delays == [1]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_remote_poster_download_retry_limit(monkeypatch, kind):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([requests.ConnectionError("reset") for _ in range(3)])
+    with pytest.raises(Failed, match="RemoteImages/Download failed: reset"):
+        MediaBrowserClient(_server(kind), session=session).download_remote_image("30895", "Primary", "https://example.com/poster.jpg")
+    assert len(session.calls) == 3
+    assert delays == [1, 2]
+
+
+def test_remote_backdrop_download_is_not_replayed(monkeypatch):
+    sleep = MagicMock()
+    monkeypatch.setattr(browser_module.time, "sleep", sleep)
+    session = FakeSession([FakeResponse([]), requests.ConnectionError("reset"), FakeResponse([{"ImageType": "Backdrop", "ImageTag": "new"}])])
+    with pytest.raises(Failed, match="result uncertain"):
+        MediaBrowserClient(_server("emby"), session=session).download_remote_image("30895", "Backdrop", "https://example.com/backdrop.jpg")
+    assert [call["method"] for call in session.calls] == ["GET", "POST", "GET"]
+    sleep.assert_called_once_with(1)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_remote_backdrop_retries_only_after_unchanged_snapshot(monkeypatch, kind):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    images = [{"ImageType": "Backdrop", "ImageTag": "original", "ImageIndex": 0}]
+    session = FakeSession([FakeResponse(images), requests.ConnectionError("reset"), FakeResponse(images), FakeResponse(None, status_code=204)])
+    MediaBrowserClient(_server(kind), session=session).download_remote_image("30895", "Backdrop", "https://example.com/backdrop.jpg")
+    assert [call["method"] for call in session.calls] == ["GET", "POST", "GET", "POST"]
+    assert session.calls[1] == session.calls[3]
+    assert delays == [1]
+
+
+@pytest.mark.parametrize("response", [FakeResponse({}), FakeResponse([{"unexpected": "value"}]), FakeResponse(status_code=403)])
+def test_remote_backdrop_does_not_retry_when_verification_fails(monkeypatch, response):
+    monkeypatch.setattr(browser_module.time, "sleep", lambda _: None)
+    session = FakeSession([FakeResponse([]), requests.ConnectionError("reset"), response])
+    with pytest.raises(Failed):
+        MediaBrowserClient(_server("emby"), session=session).download_remote_image("30895", "Backdrop", "https://example.com/backdrop.jpg")
+    assert [call["method"] for call in session.calls] == ["GET", "POST", "GET"]
+
+
+def test_remote_backdrop_download_success_needs_only_initial_snapshot():
+    session = FakeSession([FakeResponse([]), FakeResponse(None, status_code=204)])
+    MediaBrowserClient(_server("emby"), session=session).download_remote_image("30895", "Backdrop", "https://example.com/backdrop.jpg")
+    assert [call["method"] for call in session.calls] == ["GET", "POST"]
+
+
+def test_remote_backdrop_retry_limit(monkeypatch):
+    delays = []
+    monkeypatch.setattr(browser_module.time, "sleep", delays.append)
+    session = FakeSession([FakeResponse([]), requests.ConnectionError("reset"), FakeResponse([]), requests.ConnectionError("reset"), FakeResponse([]), requests.ConnectionError("reset")])
+    with pytest.raises(Failed, match="RemoteImages/Download failed: reset"):
+        MediaBrowserClient(_server("emby"), session=session).download_remote_image("30895", "Backdrop", "https://example.com/backdrop.jpg")
+    assert [call["method"] for call in session.calls] == ["GET", "POST", "GET", "POST", "GET", "POST"]
+    assert delays == [1, 2]
+
+
+@pytest.mark.parametrize("method,artwork", [("poster_update", "Poster"), ("background_update", "Background"), ("logo_update", "Logo"), ("square_art_update", "Square Art")])
+def test_image_operation_errors_identify_artwork(monkeypatch, method, artwork):
+    import modules.library as library_module
+
+    logger = FakeLogger()
+    monkeypatch.setattr(library_module, "logger", logger)
+    library = _library(MediaBrowserClient(_server("emby"), session=FakeSession([])), kind="emby")
+    library.image_update = MagicMock(side_effect=Failed("connection reset"))
+    item = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Example"}, library)
+    assert getattr(library, method)(item, "https://example.com/image.jpg") == ("Reset", "Assets", "Failed")
+    assert logger.error_messages == [f"Emby Image Error: Example | {artwork}: connection reset"]

@@ -462,3 +462,17 @@ def test_silo_restore_rejects_browser_only_fields_before_writes():
     with pytest.raises(Failed, match="Unsupported attributes"):
         restore_native_metadata(library, item, {"summary": "Saved", "label.sync": []}, MagicMock())
     library.client.update_metadata.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["plex", "silo", "jellyfin", "emby"])
+def test_shared_collection_mode_is_preserved_for_plex_and_warned_elsewhere(kind):
+    logger = MagicMock()
+    params = {"mass_collection_mode": "hide"}
+    configure_metadata_operations(params, kind, logger)
+    logger.error.assert_not_called()
+    if kind == "plex":
+        assert params["mass_collection_mode"] == "hide"
+        logger.warning.assert_not_called()
+    else:
+        assert params["mass_collection_mode"] is None
+        logger.warning.assert_called_once_with(f"Config Warning: Skipping mass_metadata_update.collections.mode for {kind}: Plex collection visibility modes have no native equivalent")

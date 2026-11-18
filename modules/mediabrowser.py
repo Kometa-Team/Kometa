@@ -164,7 +164,7 @@ class MediaBrowserClient:
             try:
                 response = self.session.request(method, f"{self.base}/{path.lstrip('/')}", params=params, json=json_body, data=data, headers=headers, timeout=self.server.timeout)
                 request_log(f"{self.server.type_label} Response: {method} {path} | HTTP {response.status_code} | {time.monotonic() - started:.2f}s")
-                if method in ("GET", "HEAD") and response.status_code in (502, 503, 504) and attempt < 2:
+                if method in ("GET", "HEAD") and response.status_code in (502, 503, 504, 520, 521, 522, 523, 524) and attempt < 2:
                     delay = 2**attempt
                     logger.warning(f"{self.server.type_label} Warning: {method} {path} returned {response.status_code}; retrying in {delay} seconds ({attempt + 1}/2)")
                     time.sleep(delay)
@@ -212,6 +212,8 @@ class MediaBrowserClient:
                             if "UserData" in patch:
                                 patch = {**patch, "UserData": {**(previous.get("UserData") or {}), **patch["UserData"]}}
                             previous.update(patch)
+                            if getattr(self, "_batch_overlay_removal", False) and len(entry) >= 100:
+                                self._flush_cache_patches()
             else:
                 self._invalidate_persistent_catalogs()
         if response.status_code == 204 or not response.content:
@@ -348,6 +350,24 @@ class MediaBrowserClient:
             cache.patch_native_items(scope, updates)
 
     @contextmanager
+    def batch_overlay_removal(self):
+        # Keep server writes synchronous so backups are only deleted after
+        # restoration succeeds, while amortizing catalog serialization.
+        if getattr(self, "_pending_cache_patches", None) is not None:
+            yield
+            return
+        self._pending_cache_patches = {}
+        self._batch_overlay_removal = True
+        try:
+            yield
+        finally:
+            try:
+                self._flush_cache_patches()
+            finally:
+                self._pending_cache_patches = None
+                self._batch_overlay_removal = False
+
+    @contextmanager
     def batch_metadata_updates(self):
         if getattr(self, "_metadata_write_queue", None) is not None:
             raise Failed(f"{self.server.type_label} Error: Metadata update batch is already active")
@@ -462,7 +482,27 @@ class MediaBrowserClient:
         self.request("POST", f"/Items/{_path_id(item_id)}/Images/{image_type}", data=base64.b64encode(content), headers={"Content-Type": content_type}, retry_safe=image_type in ("Primary", "Logo", "Banner", "Thumb"))
 
     def download_remote_image(self, item_id, image_type, image_url):
-        self.request("POST", f"/Items/{_path_id(item_id)}/RemoteImages/Download", params={"type": image_type, "imageUrl": image_url})
+        recover = None
+        if image_type == "Backdrop":
+
+            def snapshot():
+                images = self.request("GET", f"/Items/{_path_id(item_id)}/Images")
+                if not isinstance(images, list) or any(not isinstance(image, dict) or not image.get("ImageType") for image in images):
+                    raise Failed(f"{self.server.type_label} Error: Cannot verify backdrop images for item {item_id}; download not retried")
+                return sorted(json.dumps(image, sort_keys=True) for image in images if image["ImageType"] == "Backdrop")
+
+            before = snapshot()
+
+            def recover_backdrop():
+                if snapshot() != before:
+                    # The list cannot prove that this particular URL succeeded
+                    # (another client may have changed it). Never append again.
+                    raise Failed(f"{self.server.type_label} Error: Backdrop images changed after interrupted download for item {item_id}; result uncertain, download not retried to avoid duplicates")
+                return None
+
+            recover = recover_backdrop
+
+        self.request("POST", f"/Items/{_path_id(item_id)}/RemoteImages/Download", params={"type": image_type, "imageUrl": image_url}, retry_safe=image_type in ("Primary", "Logo", "Banner", "Thumb"), recover=recover)
 
 
 class _Tag:
@@ -712,6 +752,9 @@ class MediaBrowser(Library):
     def batch_metadata_updates(self):
         return self.client.batch_metadata_updates()
 
+    def batch_overlay_removal(self):
+        return self.client.batch_overlay_removal()
+
     def reload(self, item, force=False, exclude_elements=None):
         # Plex XML element exclusions do not apply to native JSON item reads.
         cached = getattr(self, "_search_details", {}).get(item.ratingKey)
@@ -873,6 +916,31 @@ class MediaBrowser(Library):
         resource = f"catalog:{include}"
         rows = cache.query_native_response(scope, resource) if cache and not load else None
         if isinstance(rows, list):
+            # Cached metadata is useful across runs, but library membership must
+            # come from the server. Counts alone miss same-size replacements.
+            current = self.client.items({"parentId": self.library_id, "includeItemTypes": include, "recursive": "true", "fields": "", "enableUserData": "false", "enableImages": "false", "limit": 1000})
+            current_by_id = {str(row["Id"]): row for row in current}
+            cached_by_id = {str(row["Id"]): row for row in rows}
+            added = current_by_id.keys() - cached_by_id.keys()
+            removed = cached_by_id.keys() - current_by_id.keys()
+            if added or removed:
+                logger.info(f"{self.server.type_label} {label} library membership changed; refreshing cached catalog ({len(added)} added, {len(removed)} removed)")
+                for action, identities, catalog in (("Added", added, current_by_id), ("Removed", removed, cached_by_id)):
+                    for identity in sorted(identities):
+                        row = catalog[identity]
+                        title = row.get("Name") or "Unknown title"
+                        if include == "Episode":
+                            series = row.get("SeriesName") or "Unknown show"
+                            season = row.get("ParentIndexNumber")
+                            episode = row.get("IndexNumber")
+                            number = f"S{season:02}E{episode:02}" if season is not None and episode is not None else "Unknown episode number"
+                            title = f"{series} {number}: {title}"
+                        elif include == "Season":
+                            title = f"{row.get('SeriesName') or 'Unknown show'}: {title}"
+                        logger.info(f"{action} {include}: {title} [ID: {identity}]")
+                cache.delete_native_response(scope, resource, descendants=True)
+                rows = None
+        if isinstance(rows, list):
             items = [self._wrap(row) for row in rows]
             catalogs[include] = list(items)
             if not builder_level:
@@ -887,12 +955,11 @@ class MediaBrowser(Library):
         page_cache = None
         if cache:
             manifest_resource = f"{resource}:pages"
-            manifest = cache.query_native_response(scope, manifest_resource) if not load else None
-            if not isinstance(manifest, dict) or not isinstance(manifest.get("generation"), str):
-                manifest = {"generation": uuid.uuid4().hex}
-                cache.update_native_response(scope, manifest_resource, manifest)
-            else:
-                logger.info(f"Reusing saved {label} pages from persistent {self.server.type_label} cache")
+            # A previous partial scan has no trustworthy membership snapshot.
+            # Restart it so removed items cannot survive in checkpoint pages.
+            cache.delete_native_response(scope, manifest_resource, descendants=True)
+            manifest = {"generation": uuid.uuid4().hex}
+            cache.update_native_response(scope, manifest_resource, manifest)
             if load:
                 cache.delete_native_response(scope, resource)
             page_cache = (cache, scope, f"{manifest_resource}:{manifest['generation']}")
@@ -1643,7 +1710,7 @@ def _numeric_id(value):
     try:
         return int(value)
     except (TypeError, ValueError):
-        return value
+        return None
 
 
 def _remember(external_id, rating_key, dict_map):

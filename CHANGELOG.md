@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Check Jellyfin/Emby backdrop lists before retrying interrupted remote downloads; stop on changed or unverifiable lists to avoid duplicate additions, and include artwork type in image-operation errors.
+
+- Retry Jellyfin/Emby catalog reads after Cloudflare 520–524 responses and retry remote fixed-slot artwork replacements after transient connection failures, without replaying backdrop additions.
+
+- Treat invalid Jellyfin/Emby TMDb and TVDb provider IDs such as `UNKNOWN` as missing so metadata lookups can use another provider instead of crashing.
+
+- Skip redundant overlay tag removal when the tag is absent and batch Jellyfin/Emby catalog cache updates during overlay removal while keeping server writes synchronous.
+
+- Warn and skip Plex collection visibility modes on native servers so shared operation settings do not produce configuration errors.
+
+- Validate Jellyfin/Emby cached catalog membership against a fresh lightweight listing before reuse, and restart interrupted catalog scans to exclude removed items.
+
 - Combine pending Jellyfin/Emby operation metadata changes into one request per item using loaded item data, batch local cache patches in groups of 100, and report write progress and failures. Personal ratings retain their separate endpoint.
 
 - Accept the shared operations reload element-exclusion argument on Jellyfin, Emby, and Silo; Plex XML exclusions do not alter native JSON reads.
@@ -38,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
 
 ### Added
+
+- Log added and removed Jellyfin/Emby catalog item counts, titles, and server IDs when library membership changes, including show and episode numbers when available.
 
 - Add `jellyfin_all`, `emby_all`, and `silo_all` builders for native all-item selection, retaining `plex_all` compatibility.
 

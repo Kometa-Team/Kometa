@@ -2,6 +2,7 @@ import os
 import re
 import time
 from abc import ABC, abstractmethod
+from contextlib import nullcontext
 from datetime import datetime, timezone
 
 from PIL import Image, UnidentifiedImageError
@@ -499,7 +500,8 @@ class Library(ABC):
             if getattr(getattr(self, "server", None), "type_name", None) not in ("silo", "jellyfin", "emby"):
                 raise
             source = tmdb[0] if isinstance(tmdb, tuple) else "Assets" if image is not None else "URL"
-            logger.error(f"{self.server.type_label} Image Error: {item.title}: {error}")
+            artwork = (image_type or ("poster" if poster else "background")).replace("_", " ").title()
+            logger.error(f"{self.server.type_label} Image Error: {item.title} | {artwork}: {error}")
             return "Reset", source, "Failed"
 
     def poster_update(self, item, image, tmdb=None, title=None):
@@ -517,6 +519,9 @@ class Library(ABC):
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
+
+    def batch_overlay_removal(self):
+        return nullcontext()
 
     def item_has_overlay(self, item, current_labels=None):
         if current_labels is None:

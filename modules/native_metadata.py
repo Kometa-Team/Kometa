@@ -43,7 +43,7 @@ def configure_metadata_operations(params, server_type, logger):
         unsupported("split_duplicates", reason)
         params["split_duplicates"] = False
     if params.get("mass_collection_mode"):
-        unsupported("mass_metadata_update.collections.mode", "Plex collection visibility modes have no native equivalent")
+        logger.warning(f"Config Warning: Skipping mass_metadata_update.collections.mode for {server_type}: Plex collection visibility modes have no native equivalent")
         params["mass_collection_mode"] = None
     if server_type == "silo":
         for option in ("mass_added_at_update", "mass_imdb_parental_labels"):

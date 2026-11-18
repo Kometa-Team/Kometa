@@ -120,12 +120,16 @@ class Overlays:
 
         if remove_overlays:
             logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
-            for i, item in enumerate(remove_overlays, 1):
-                item_title = self.library.get_item_display_title(item)
-                logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
-                self.remove_overlay(
-                    item, item_title, "Overlay", [os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")]
-                )
+            with self.library.batch_overlay_removal():
+                for i, item in enumerate(remove_overlays, 1):
+                    item_title = self.library.get_item_display_title(item)
+                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
+                    self.remove_overlay(
+                        item,
+                        item_title,
+                        "Overlay",
+                        [os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")],
+                    )
             logger.exorcise()
         else:
             logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
@@ -697,7 +701,8 @@ class Overlays:
                 logger.error(f"Overlay removal skipped for {item_title}: {e}. Continuing the run.")
                 return
             if getattr(self.library, "uses_overlay_labels", True) is not False:
-                self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
+                if any(tag.tag == label for tag in self.library.item_labels(item)):
+                    self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             elif self.cache:
                 self.cache.delete_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
             for loc in locations:

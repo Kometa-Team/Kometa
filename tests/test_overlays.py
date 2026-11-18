@@ -435,6 +435,7 @@ class TestRemoveOverlay:
     def test_removes_label_via_edit_tags(self, overlay, monkeypatch):
         monkeypatch.setattr("modules.overlays.logger", FakeLogger())
         item = MagicMock()
+        overlay.library.item_labels.return_value = [SimpleNamespace(tag="Overlay")]
         overlay.remove_overlay(item, "Test Item", "Overlay", ["/tmp/poster.png"])
         overlay.library.edit_tags.assert_called_once_with("label", item, remove_tags=["Overlay"], do_print=False)
 
