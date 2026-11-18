@@ -12,9 +12,6 @@ hide:
     "DESCRIPTION": "dynamically create seasonal collections based on holidays"
 }'
 %}
-
-On Silo, Jellyfin, and Emby, seasonal collections use ordinary membership rebuilt from the configured lists on each run. Schedules, sync mode, limits, and supported sorting still apply; no item labels are required. Plex seasonal collections continue to use smart labels.
-
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Seasonal"}' %}
 | `Asian American Pacific Islander Movies` | `aapi`          | Collection of Movies related to Asian American Pacific Islander Month. |
 | `Black History Month Movies`             | `black_history` | Collection of Movies related to Black History Month.                   |
@@ -35,6 +32,8 @@ On Silo, Jellyfin, and Emby, seasonal collections use ordinary membership rebuil
 | `Valentine's Day Movies`                 | `valentine`     | Collection of Movies related to Valentine's Day.                       |
 | `Veteran's Day Movies`                   | `veteran`       | Collection of Movies related to Veteran's Day.                         |
 | `Women's History Month Movies`           | `women`         | Collection of Movies related to Women's History Month.                 |
+
+On Silo, Jellyfin, and Emby, seasonal collections use ordinary membership rebuilt from the configured lists on each run. Schedules, sync mode, limits, and supported sorting still apply; no item labels are required. Plex seasonal collections continue to use smart labels.
 
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "seasonal"}' include-tags='all|movie' %}
     ```yaml
