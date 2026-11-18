@@ -181,7 +181,9 @@ def test_font_size_is_pixels_independent_of_canvas_width(width):
         assert compose.call_args.kwargs["font_size"] == 10
 
 
-@pytest.mark.parametrize("builders,filename", [(["imdb_chart"], "IMDb.png"), (["tmdb_trending_daily"], "TMDb.png"), (["plex_search"], "Plex.png"), (["plex_all"], "Plex.png"), (["smart_filter", "imdb_chart"], "IMDb.png"), (["tautulli_popular"], "Tautulli.png")])
+@pytest.mark.parametrize(
+    "builders,filename", [(["imdb_chart"], "IMDb.png"), (["tmdb_trending_daily"], "TMDb.png"), (["plex_search"], "Plex.png"), (["plex_all"], "Plex.png"), (["smart_filter", "imdb_chart"], "IMDb.png"), (["tautulli_popular"], "Tautulli.png")]
+)
 def test_default_builder_logo_mapping(builders, filename):
     from modules.poster import default_builder_logo
 
@@ -364,4 +366,3 @@ def test_caption_effect_pixels():
     assert any(pixel == (255, 0, 0, 255) for _, pixel in outlined.getcolors(outlined.width * outlined.height))
     assert any(pixel == (0, 0, 255, 255) for _, pixel in shadowed.getcolors(shadowed.width * shadowed.height))
     assert render(("small_caps",)).width < plain.width * 1.2
-
