@@ -6,6 +6,8 @@ hide:
 ---
 # Silo Attributes
 
+For migration and behavior changes, see [Silo: differences from Plex](silo_differences.md).
+
 [Silo](https://silo.pzyzbyx.pw/api/v2/docs) is a media server. A library uses Silo when its [`server`](libraries.md#server) attribute names a `media_servers` entry. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
 Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Posters, backdrops, logos, and overlays are set from a URL. Kometa publishes a local image to [transfer.kometa.wiki](https://transfer.kometa.wiki) and gives Silo that URL. A URL Kometa already has, such as a TMDb image, is given to Silo directly. Labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
@@ -61,7 +63,36 @@ Decade and year collections use Silo's stored years. Decade filters cover the en
 
 Country, region, and continent defaults discover countries through Silo's library/profile-scoped catalog facets, cached for the run. Codes such as `US` are exposed as country names for the defaults, and generated filters match both native codes and legacy country-name values.
 
-Silo overlay tracking uses Kometa's local original-poster backups and overlay cache instead of server labels. Keep the overlay backup directory to preserve originals for later updates and removal. Plex legacy overlay-label cleanup does not run on Silo.
+### Tracking without labels
+
+Silo does not expose Plex-style item labels through this adapter. Kometa does not write an `Overlay`, `Kometa`, or `PMM` label to Silo. Genres, studios, countries, and other searchable metadata are separate from these management labels; their availability does not provide label support.
+
+| What Kometa tracks | Where it is stored | How it is used |
+| :--- | :--- | :--- |
+| Original poster and overlay presence | `config/overlays/<library mapping name> Original Posters/<Silo item ID>.jpg`, `.png`, or `.webp` | An existing backup marks the item as overlaid and provides its original image for updates and removal. |
+| Applied overlay definitions, resolved text values, and poster comparisons | Library-specific records in Kometa's SQLite cache | Kometa compares the current definitions and values with saved state to decide whether to render again. |
+| Whether a collection is configured | Collection names resolved from the current Kometa configuration | Name matching identifies configured and unconfigured collections for this run. |
+| Whether a collection is Kometa-managed | No equivalent Silo label or local ownership registry | Kometa cannot distinguish collections it previously created from other collections by ownership. |
+
+The paths above assume the standard `config` directory. The mapping name is the library key in your Kometa configuration, sanitized for use as a filename; it can differ from the library's name in Silo. The cache sits beside the configuration YAML with a `.cache` extension, for example `config/test-config.cache` for `config/test-config.yml`. Overlay records use Silo item IDs, not TMDb or TVDb IDs.
+
+#### Updating and removing overlays
+
+On later overlay runs, Kometa scans the original-poster directory to find items with overlays, including shows, seasons, and episodes. The cache records what was applied; the backup file supplies the presence marker and original image. Plex legacy overlay-label cleanup does not run on Silo.
+
+When an item no longer matches an overlay, the overlay run restores its poster. Setting `remove_overlays: true` requests removal for all locally tracked items in that library. Restoration prefers a matching local poster asset, then the original-poster backup, then an available server poster. After a successful restoration, Kometa deletes the backup and the item's saved overlay state. A failed poster upload leaves the backup in place. Commenting out `overlay_files` alone does not request removal; use `remove_overlays: true` and run the overlay stage.
+
+Local backups also protect posters during `assets_for_all` and poster operations using `ignore_overlays`: an item with a backup is treated as overlaid even though Silo has no label. Keep the backup until overlays have been removed successfully.
+
+#### Preserving tracking when moving Kometa
+
+Preserve the original-poster directories and SQLite cache together when moving or restoring an installation. Keep the library mapping names and the Silo item IDs consistent. Renaming a library key changes its backup directory, and rebuilding the Silo catalog can change item IDs; Kometa does not automatically remap those files by external provider ID.
+
+Deleting the cache loses saved overlay comparisons and values, which can cause overlays to render again, but retained original-poster files still identify overlaid items. Deleting the backups loses both the presence markers and the saved originals; the SQLite cache alone does not identify items for Silo overlay removal. A metadata YAML backup does not contain these image files or tracking records. Another Kometa installation needs the same local state to recognize these overlays.
+
+#### Collection ownership and deletion
+
+Configured collection names are not an ownership record. Without labels, the shared collection checks treat Silo collections as unmanaged, including collections created by Kometa. Consequently, `show_unmanaged` cannot identify which Silo collections were created manually, and `delete_collections.managed: false` does not limit deletion to collections created outside Kometa. `managed: true` does not select Silo collections. Use the configured-name and size conditions deliberately; all supplied deletion conditions must match. Collections absent from the current configuration can be considered unconfigured even if an earlier Kometa run created them.
 
 After publishing a local image to transfer.kometa.wiki, Kometa waits 0.75 seconds before asking Silo to download it. Counting one upload and one download per image, sequential processing averages at most about 2.7 requests per second before network overhead, below the transfer host's sustained limit of 3 requests per second. This also applies when restoring original posters. Direct remote image URLs do not incur this delay. Other clients and burst limits can still cause rate limiting.
 

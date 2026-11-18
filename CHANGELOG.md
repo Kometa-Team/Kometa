@@ -47,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Add dedicated Jellyfin, Emby, and Silo differences-from-Plex guides covering collections, tracking, artwork, metadata, ratings, and caching.
+
+- Document Silo overlay tracking without labels, local-state preservation, and collection ownership and deletion limits.
+
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
 
 ### Added

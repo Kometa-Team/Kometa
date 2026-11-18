@@ -6,6 +6,8 @@ hide:
 ---
 # Jellyfin and Emby Attributes
 
+For migration and behavior changes, see [Jellyfin: differences from Plex](jellyfin_differences.md) and [Emby: differences from Plex](emby_differences.md).
+
 [Jellyfin](https://jellyfin.org/) and [Emby](https://emby.media/) are media servers. A library uses one when its [`server`](libraries.md#server) attribute names a `media_servers` entry with `type: jellyfin` or `type: emby`. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
 Collection name lookups reuse one in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data.

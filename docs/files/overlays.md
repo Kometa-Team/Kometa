@@ -188,6 +188,8 @@ There is an attribute called `reapply_overlays` which, when set to true, will fo
 
   * Ensure `reapply_overlays` is set to `false` if you see it in your Configuration File. If it has previously been set to true we recommend using [ImageMaid](../kometa/scripts/imagemaid.md) to get rid of the bloat.
 
+For Silo libraries, overlay presence is tracked by local original-poster backups rather than a server label. Keep those backups and Kometa's cache when moving an installation; deleting the cache alone does not remove overlays. See [Silo tracking without labels](../config/silo.md#tracking-without-labels) for the storage paths and removal behavior.
+
 To remove all overlays from your library, add the [`remove_overlays` library attribute](../config/libraries.md#remove-overlays) set to `true`.**
 
   * See the above note on Kometa not removing the overlaid images, this is still true here.

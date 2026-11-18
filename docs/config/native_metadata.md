@@ -1,5 +1,7 @@
 # Native mass metadata operations
 
+For a broader comparison with Plex, see the [Jellyfin](jellyfin_differences.md), [Emby](emby_differences.md), and [Silo](silo_differences.md) differences guides.
+
 `mass_metadata_update` uses the same provider sources, mappings, source order, and schedules for Silo, Jellyfin, and Emby as for Plex where the destination can represent the change. Supported changes go to native APIs rather than Plex batch-edit endpoints. Unsupported destinations and controls are reported during configuration, before scanning items. A supported write that the server rejects is reported with the item name while other metadata writes can continue.
 
 | Operation | Silo | Jellyfin / Emby |
@@ -30,6 +32,8 @@ Silo's API exposes numeric lock identifiers without a field-name mapping used by
 Native artwork updates retain provider selection, local assets, source order, language selection, and supported season/episode artwork. Native show, season, and episode files use the standard asset folder names and `Season01` / `S01E01` file names. `ignore_overlays` for posters checks server labels where available and local overlay backups, including on Silo. `ignore_locked` on Jellyfin/Emby also recognizes the item's global metadata lock.
 
 The `plex` image provider and Plex per-image lock/unlock controls are not supported on native servers. YouTube Music image sources require the Plex music workflow and are reported as unsupported by these native adapters. Silo cannot honor `ignore_locked` for artwork with the available lock identifiers, so an image operation requesting that guarantee is skipped with an explicit message. Unsupported sources are removed from a source list; supported alternatives can still run.
+
+On Silo, local original-poster backups mark items as overlaid; the SQLite cache records applied overlay definitions and values. Preserve both when moving an installation. Metadata YAML backups do not include that state or the poster files. See [Tracking without labels](silo.md#tracking-without-labels) for removal, recovery, and collection-ownership limits.
 
 ## Native backups
 
