@@ -13,7 +13,7 @@ class MDBListLimitReached(LimitReached, ServiceError):
 
 
 # --- REQUIRED MODULE ATTRIBUTES ---
-builders = ["mdblist_list", "mdblist_streaming"]
+builders = ["mdblist_list", "mdblist_watchlist", "mdblist_streaming"]
 sort_names = [
     "rank",
     "score",
@@ -188,6 +188,9 @@ class MDbObj:
         except ValueError:
             self.released_digital = None
 
+        # Batch responses can omit this field; only a single-item lookup can confirm a missing date.
+        self.digital_release_checked = bool(data.get("digital_release_checked", not batch or self.released_digital is not None))
+
         self.traktid = util.check_num(data.get("traktid"))
         self.score = _rating("score", data.get("score"), 100)
         self.average = _rating("average", data.get("score_average"), 100)
@@ -351,7 +354,8 @@ class MDBList:
 
         return json_data, response.headers
 
-    def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False):
+    def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False, require_digital=False):
+        """Fetch a single item when a digital-date operation encounters incomplete cached data."""
         key = self._cache_key(media_provider, media_type, media_id)
 
         expired = None
@@ -359,12 +363,14 @@ class MDBList:
         item_url = f"{api_url}{media_provider}/{media_type}/{media_id}/"
 
         if not ignore_cache and key in self._run_cache:
-            return self._run_cache[key]
+            cached = self._run_cache[key]
+            if not require_digital or cached.digital_release_checked:
+                return cached
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 mdb = MDbObj(mdb_dict)
-                if mdb.ratings_valid:
+                if mdb.ratings_valid and (not require_digital or mdb.digital_release_checked):
                     self._run_cache[key] = mdb
                     return mdb
                 expired = True
@@ -449,14 +455,14 @@ class MDBList:
             _, expired = self.cache.query_mdb(key, self.expiration)
             self.cache.update_mdb(expired, key, mdb, self.expiration)
 
-    def get_imdb(self, imdb_id):
-        return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)
+    def get_imdb(self, imdb_id, require_digital=False):
+        return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id, require_digital=require_digital)
 
-    def get_series(self, tvdb_id):
-        return self.get_item(media_provider="tvdb", media_type="show", media_id=tvdb_id)
+    def get_series(self, tvdb_id, require_digital=False):
+        return self.get_item(media_provider="tvdb", media_type="show", media_id=tvdb_id, require_digital=require_digital)
 
-    def get_movie(self, tmdb_id):
-        return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id)
+    def get_movie(self, tmdb_id, require_digital=False):
+        return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id, require_digital=require_digital)
 
     def sync_list(self, slug, ids, mode="sync", removal_types=None):
         """Update a user-owned static list using MDBList's list item API.
@@ -583,6 +589,11 @@ class MDBList:
 
         return valid_lists
 
+    def validate_mdblist_watchlist(self, error_type, watchlists):
+        if watchlists is not True:
+            raise Failed(f"{error_type} Error: mdblist_watchlist must be true")
+        return True
+
     @staticmethod
     def validate_mdblist_streaming(error_type, data):
         if not isinstance(data, dict):
@@ -614,6 +625,25 @@ class MDBList:
         return streaming
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
+        if method == "mdblist_watchlist":
+            if is_movie is None:
+                raise Failed("MDBList Error: mdblist_watchlist can only be used with movie or show libraries")
+            media_type = "movie" if is_movie else "show"
+            # A user's watchlist is exposed as the special `watchlist` list;
+            # the media type is part of the list-items path.
+            response, _ = self._request(f"{api_url}watchlist/items/{media_type}", params={"limit": 1000})
+            items = response.get("movies" if is_movie else "shows", response.get("items", [])) if isinstance(response, dict) else response
+            if not isinstance(items, list):
+                raise Failed("MDBList Error: watchlist response must contain a list of items")
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                tmdb_id = util.check_num(item.get("id") or item.get("tmdb_id") or item.get("tmdbid") or (item.get("ids") or {}).get("tmdb"))
+                if tmdb_id:
+                    results.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
+            return results
+
         if method == "mdblist_streaming":
             if is_movie is None:
                 raise Failed("MDBList Error: mdblist_streaming can only be used with movie or show libraries")

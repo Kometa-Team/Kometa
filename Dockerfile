@@ -15,6 +15,12 @@ LABEL org.opencontainers.image.version=${KOMETA_VERSION}
 LABEL org.opencontainers.image.revision=${KOMETA_GIT_SHA}
 LABEL org.opencontainers.image.source="https://github.com/Kometa-Team/Kometa"
 
+# Let a container kept from an older image (saved python3 entrypoint, PATH without /.venv/bin) still import the venv packages.
+RUN venv_sp="$(/.venv/bin/python3 -c 'import sysconfig; print(sysconfig.get_path("purelib"))')" \
+ && sys_sp="$(/usr/local/bin/python3 -c 'import sysconfig; print(sysconfig.get_path("purelib"))')" \
+ && printf "import site; site.addsitedir('%s')\n" "${venv_sp}" > "${sys_sp}/kometa-venv.pth" \
+ && /usr/local/bin/python3 -c "import packaging"
+
 COPY . /
 
 # Warn until the metadata workflow reaches master; retain validated identity
@@ -38,6 +44,9 @@ if not valid_version:
 if valid_commit and valid_version:
     hint.write_text(commit + "\n")
 PY
+
+# Fail the build when installed packages differ from requirements.txt, so a stale base image cannot ship with newer source.
+RUN /.venv/bin/python3 scripts/verify_runtime_dependencies.py requirements.txt
 
 VOLUME /config
 ENTRYPOINT ["/tini", "-s", "/.venv/bin/python3", "kometa.py", "--"]

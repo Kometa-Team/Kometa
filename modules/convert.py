@@ -295,6 +295,13 @@ class Convert:
 
     def scan_guid(self, guid_str):
         guid = urlparse(guid_str)
+        if guid.scheme == "tv.plex.agents.nfo.movie" and guid.netloc == "movie":
+            tmdb_match = re.fullmatch(r"/tmdb_([0-9]+)", guid.path)
+            if tmdb_match and int(tmdb_match.group(1)) > 0:
+                return "themoviedb", tmdb_match.group(1)
+            imdb_match = re.fullmatch(r"/imdb_(tt[0-9]+)", guid.path)
+            if imdb_match:
+                return "imdb", imdb_match.group(1)
         return guid.scheme.split(".")[-1], guid.netloc
 
     @staticmethod
@@ -335,6 +342,8 @@ class Convert:
                                 tmdb_id.append(int(url_parsed.netloc))
                         except ValueError:
                             pass
+                except AttributeError:
+                    raise MappingConvertError("Mapping Error: No External GUIDs found")
                 except ConnectionError:
                     library.query(item.refresh)
                     logger.stacktrace()
@@ -411,7 +420,7 @@ class Convert:
                         tvdb = self.tmdb_to_tvdb(tmdb)
                         if tvdb:
                             tvdb_id.append(int(tvdb))
-                    if not tvdb_id:
+                    if not tvdb_id and not imdb_id:
                         raise MappingConvertError(f"Convert Error: No TVDb ID found for TMDb ID '{', '.join([str(t) for t in tmdb_id])}'")
 
             if not imdb_id and tvdb_id:

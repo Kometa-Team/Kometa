@@ -63,6 +63,7 @@ SUMMARY_NORMALIZATIONS = [
     (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
     (r"TVDb Error: Skipping Movie: .+", "TVDb Error: Skipping movie"),
     (r"FlickList Warning: No usable ID found for .+; skipping", "FlickList Warning: No usable ID found; skipping item"),
+    (r"Plex Warning: collection: .+ not found; ignoring this collection exclusion$", "Plex Warning: Collection not found; ignoring this collection exclusion"),
     (r"Plex Warning: Collection '.+' already exists; skipping creation", "Plex Warning: Collection already exists; skipping creation"),
     (r"Plex Warning: .+ has no Season 1 Episode 1\s*$", "Plex Warning: No Season 1 Episode 1 found"),
     (r"Plex Warning: Unable to batch (.+) update for .+; using an individual edit", r"Plex Warning: Unable to batch \1 update; using individual edits"),

@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "Kometa's include-markdown extension for Zensical"
 requires-python = ">=3.12"
 license = "Apache-2.0"
-dependencies = ["Markdown>=3.8", "wcmatch>=10", "zensical>=0.0.72,<0.1"]
+dependencies = ["Markdown>=3.8", "wcmatch>=10", "zensical>=0.1,<0.2"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

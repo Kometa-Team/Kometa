@@ -209,7 +209,7 @@ See [Scheduling runs](guides/scheduling.md) and [Schedule syntax](../config/sche
 Back up your configuration before updating. For a local Git installation, inspect `git status` and preserve any local changes before pulling updates or switching branches. Do not discard a stash or reset modified files as a routine update step.
 
 - **Local installation:** follow the update and branch-switching instructions in the [local walkthrough](install/index.md#path-local). Use `master` for stable releases or `develop` for the public beta, and install the dependencies required by that checkout in its virtual environment.
-- **Docker:** pull the desired `kometateam/kometa` image and recreate the container while retaining the configuration volume. Use `latest` for stable releases or `develop` for the public beta. Follow the [Docker walkthrough](install/index.md#path-docker) or your platform's walkthrough; see [Docker images](install/images.md) for available tags.
+- **Docker:** pull the desired `kometateam/kometa` image and recreate the container while retaining the configuration volume. Do not update a container in place or copy an old container's Entrypoint or PATH into the new one: they are saved with the container, and an old Entrypoint can stop a newer image from starting with `ModuleNotFoundError: No module named 'packaging'`. Use `latest` for stable releases or `develop` for the public beta. Follow the [Docker walkthrough](install/index.md#path-docker) or your platform's walkthrough; see [Docker images](install/images.md) for available tags.
 - **Downloaded archive:** follow the local installation instructions for the new release and retain your configuration and asset files.
 
 

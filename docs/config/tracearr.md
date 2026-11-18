@@ -32,6 +32,18 @@ tracearr:
 
     Leave `server_id` blank initially. Kometa automatically matches the Plex server name reported by Tracearr. If Kometa cannot find a unique match, the error message lists the available Tracearr Plex servers and their UUIDs. Copy the appropriate UUID from the log into `server_id`.
 
+### Application and API versions
+
+Tracearr 3.x uses **Public API v2**. The application version and API version are separate;
+use your normal Tracearr base URL, without adding `/api/v2` or `/api/v3`.
+Kometa detects the API version and supported endpoints automatically. In particular,
+`tracearr_watched_media` requires the watched-media endpoint advertised by the API specification,
+rather than a particular application version.
+
+Builder `user` options accept the display name set in Tracearr (`identity_name`) as well as
+existing usernames and account identifiers. Names are matched without regard to case.
+If a name matches more than one identity, use the identity UUID listed in the error message.
+
 # Other Examples
 
 Specifying a second Tracearr instance for a specific library:

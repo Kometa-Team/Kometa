@@ -171,6 +171,14 @@
             "works_with_playlists_and_custom_sort": "Yes"
         },
         {
+            "builder": "mdblist_watchlist",
+            "hyperlink": "https://wiki.kometa.team/files/builders/mdblist/watchlist/",
+            "description": "Gets every movie/show in an MDBList user's watchlist.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
             "builder": "mdblist_streaming",
             "hyperlink": "https://wiki.kometa.team/files/builders/mdblist/streaming/",
             "description": "Gets the JustWatch streaming chart from MDBList.",

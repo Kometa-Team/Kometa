@@ -21,6 +21,9 @@ class EmptyCollection(SimpleNamespace):
 
 
 def _load_plex(monkeypatch):
+    # Importing the isolated module also replaces modules.plex on the parent package.
+    # Restore that reference along with sys.modules so later tests patch the real module.
+    monkeypatch.delattr(sys.modules["modules"], "plex", raising=False)
     monkeypatch.delitem(sys.modules, "modules.plex", raising=False)
     monkeypatch.delitem(sys.modules, "modules.builder", raising=False)
     monkeypatch.delitem(sys.modules, "modules.util", raising=False)
@@ -44,6 +47,7 @@ def _load_plex(monkeypatch):
     fake_util.OverlayError = Exception
     fake_util.PlexImageUploadError = Exception
     fake_util.ServiceError = Exception
+    fake_util.filter_items = lambda items, *_args, **_kwargs: items
     monkeypatch.setitem(sys.modules, "modules.util", fake_util)
 
     fake_library = types.ModuleType("modules.library")
