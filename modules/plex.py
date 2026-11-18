@@ -2620,8 +2620,8 @@ class Plex(Library):
 
         if isinstance(item, Season) or getattr(item, "type", None) == "season":
             file_name = f"Season{item.seasonNumber or 0:02}"
-        elif isinstance(item, Episode) or getattr(item, "type", None) == "episode":
-            file_name = item.seasonEpisode.upper()
+        elif not isinstance(item, str) and (isinstance(item, Episode) or getattr(item, "type", None) == "episode"):
+            file_name = str(item.seasonEpisode).upper()
         elif isinstance(item, Album):
             file_name = item.title
         else:
@@ -2644,12 +2644,12 @@ class Plex(Library):
         if isinstance(item, Album):
             prefix = f"{item.parentTitle} Album {item.title}'s "
             file_name = item.title
-        elif isinstance(item, Season) or getattr(item, "type", None) == "season":
+        elif not isinstance(item, str) and (isinstance(item, Season) or getattr(item, "type", None) == "season"):
             prefix = f"{item.parentTitle} Season {item.seasonNumber}'s "
             file_name = f"Season{'0' if not item.seasonNumber or item.seasonNumber < 10 else ''}{item.seasonNumber}"
-        elif isinstance(item, Episode) or getattr(item, "type", None) == "episode":
-            prefix = f"{item.grandparentTitle} {item.seasonEpisode.upper()}'s "
-            file_name = item.seasonEpisode.upper()
+        elif not isinstance(item, str) and (isinstance(item, Episode) or getattr(item, "type", None) == "episode"):
+            prefix = f"{item.grandparentTitle} {str(item.seasonEpisode).upper()}'s "
+            file_name = str(item.seasonEpisode).upper()
         else:
             prefix = f"{item if isinstance(item, str) else item.title}'s "
             file_name = "poster"
@@ -2888,7 +2888,7 @@ class Plex(Library):
 
     def fetch_overlay_value(self, item, variable_name):
         # Keep missing provider values local to this library's overlay run.
-        missing = self.__dict__.setdefault("_overlay_value_misses", set())
+        missing = vars(self).setdefault("_overlay_value_misses", set())
         key = (item.ratingKey, variable_name)
         if key in missing or (str(variable_name).startswith("mdb") and (item.ratingKey, "mdb") in missing):
             return None
@@ -3035,7 +3035,7 @@ class Plex(Library):
                         logger.trace(f"IMDb ID: {imdb_id}")
                         raise
                 if not mdb_item:
-                    self.__dict__.setdefault("_overlay_value_misses", set()).add((item.ratingKey, "mdb"))
+                    vars(self).setdefault("_overlay_value_misses", set()).add((item.ratingKey, "mdb"))
                     if lookup_errors:
                         logger.error(f"MDBList lookup failed for {item.title}: {'; '.join(dict.fromkeys(lookup_errors))}")
                     raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")

@@ -4,6 +4,7 @@ import time
 from abc import ABC, abstractmethod
 from contextlib import nullcontext
 from datetime import datetime, timezone
+from typing import cast
 
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
@@ -497,11 +498,12 @@ class Library(ABC):
         try:
             return self.image_update(item, image, tmdb=tmdb, title=title, poster=poster, image_type=image_type)
         except Failed as error:
-            if getattr(getattr(self, "server", None), "type_name", None) not in ("silo", "jellyfin", "emby"):
+            server = self.server
+            if server is None or server.type_name not in ("silo", "jellyfin", "emby"):
                 raise
             source = tmdb[0] if isinstance(tmdb, tuple) else "Assets" if image is not None else "URL"
             artwork = (image_type or ("poster" if poster else "background")).replace("_", " ").title()
-            logger.error(f"{self.server.type_label} Image Error: {item.title} | {artwork}: {error}")
+            logger.error(f"{server.type_label} Image Error: {item.title} | {artwork}: {error}")
             return "Reset", source, "Failed"
 
     def poster_update(self, item, image, tmdb=None, title=None):
@@ -529,7 +531,7 @@ class Library(ABC):
         backup = self.__dict__.get("overlay_backup")
         return "Overlay" in current_labels or bool(backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")))
 
-    def find_and_upload_assets(self, item, current_labels, asset_directory=None):
+    def find_and_upload_assets(self, item, current_labels, asset_directory=None, targeted_update=False):
         """Use the shared filesystem uploader and native overlay backup markers."""
         from modules.plex import Plex
 
@@ -538,7 +540,7 @@ class Library(ABC):
         if backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")):
             if "Overlay" not in labels:
                 labels.append("Overlay")
-        return Plex.find_and_upload_assets(self, item, labels, asset_directory=asset_directory)
+        return Plex.find_and_upload_assets(cast("Plex", self), item, labels, asset_directory=asset_directory, targeted_update=targeted_update)
 
     def fetch_overlay_value(self, item, variable_name):
         """Reuse provider rating lookup and its cache for non-Plex adapters."""
@@ -552,12 +554,12 @@ class Library(ABC):
             raise Failed("Overlay Error: Provider rating lookup for non-Plex seasons and episodes is not implemented")
         if str(variable_name).startswith("plex"):
             raise Failed(f"Overlay Error: {variable_name} requires Plex provider rating metadata; use a provider rating variable such as imdb_rating")
-        return Plex.fetch_overlay_value(self, item, variable_name)
+        return Plex.fetch_overlay_value(cast("Plex", self), item, variable_name)
 
     def prefetch_mdblist(self, items):
         from modules.plex import Plex
 
-        return Plex.prefetch_mdblist(self, [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
+        return Plex.prefetch_mdblist(cast("Plex", self), [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
 
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:

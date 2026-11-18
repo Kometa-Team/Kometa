@@ -216,8 +216,9 @@ def values(item, field):
         ratios = []
         for track in video:
             ratio = _number(track.get("aspect_ratio"))
-            if ratio is None and (_number(track.get("height")) or 0) > 0:
-                ratio = (_number(track.get("width")) or 0) / _number(track["height"])
+            height = _number(track.get("height"))
+            if ratio is None and height is not None and height > 0:
+                ratio = (_number(track.get("width")) or 0) / height
             if ratio is not None and ratio > 0:
                 ratios.append(round(ratio, 2))
         if not ratios and (ratio := _number(overlay.get("aspect_ratio"))) is not None and ratio > 0:

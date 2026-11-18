@@ -2,8 +2,13 @@
 
 from datetime import datetime
 from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any, cast
 
 from modules.util import Failed
+
+if TYPE_CHECKING:
+    from modules.mediabrowser import MediaBrowser
+    from modules.silo import Silo
 
 SILO_FIELDS = {"title": "title", "originalTitle": "original_title", "summary": "overview", "genre": "genres", "studio": "studios", "contentRating": "content_rating", "originallyAvailableAt": "release_date"}
 BROWSER_FIELDS = {
@@ -140,7 +145,7 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
                 if browser:
                     value = [{"Name": name} for name in value]
             if browser and field in ("rating", "audienceRating") and value is not None:
-                value = float(value) * (10 if field == "rating" else 1)
+                value = float(cast("str | int | float", value)) * (10 if field == "rating" else 1)
             if field in ("originallyAvailableAt", "addedAt") and value is not None:
                 value = value.strftime("%Y-%m-%d") if isinstance(value, datetime) else str(value)[:10]
                 if browser:
@@ -186,6 +191,12 @@ def date_value(value):
 
 
 class NativeItemMetadata:
+    library: "Silo | MediaBrowser"
+    data: dict[str, Any]
+    type: str
+    title: str
+    studios: list[str]
+
     @property
     def fields(self):
         if self.library.server.type_name == "silo":

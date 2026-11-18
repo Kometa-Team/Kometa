@@ -2,6 +2,7 @@
 
 import math
 from decimal import ROUND_HALF_UP, Decimal
+from typing import cast
 
 from modules.util import Failed
 
@@ -18,7 +19,7 @@ def browser_rating_value(library, item, source):
     if library.server.type_name != server:
         raise Failed(f"Rating Error: {source} requires {server}")
     value = (item.data.get("UserData") or {}).get(field) if field == "Rating" else item.data.get(field)
-    return float(value) * 10 / maximum if util.is_valid_rating(value, maximum=maximum) else None
+    return float(cast("str | int | float", value)) * 10 / maximum if util.is_valid_rating(value, maximum=maximum) else None
 
 
 SILO_TARGETS = {"silo_imdb": "rating_imdb", "silo_tmdb": "rating_tmdb", "silo_tomatoes": "rating_rt_critic", "silo_tomatoesaudience": "rating_rt_audience", "silo_user": "user_rating"}
@@ -113,7 +114,7 @@ def update_silo_ratings(library, item, targets, logger):
                     if score is None:
                         continue
                 else:
-                    variable = {"floppy": "floppy_rating", "serializd": "serializd_rating", "flicklist_user": "flicklist_user_rating", "wetrakr_user": "wetrakr_user_rating", "anidb_rating": "anidb_rating"}.get(source, f"{source}_rating")
+                    variable = {"floppy": "floppy_rating", "serializd": "serializd_rating", "flicklist_user": "flicklist_user_rating", "wetrakr_user": "wetrakr_user_rating", "anidb_rating": "anidb_rating"}.get(str(source), f"{source}_rating")
                     score = library.fetch_overlay_value(item, variable)
                     if score is None:
                         logger.info(f"No {source} rating found for {item.title}; trying next source")

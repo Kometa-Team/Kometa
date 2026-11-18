@@ -41,7 +41,7 @@ def test_people_discovery_ignores_other_servers_cached_credits(role, monkeypatch
         is_music=False,
         collections=[],
         metadatas=[],
-        get_all=lambda: [item],
+        get_all=lambda ignore_schedule_scope=False: [item],
         get_ids=lambda item: (154, None, None),
         reload=MagicMock(return_value=item),
     )

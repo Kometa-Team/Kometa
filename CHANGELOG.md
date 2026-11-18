@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Honor targeted native catalog and asset updates after shared API changes, restore native adapter test coverage, and correct type annotations without increasing the Pyright baseline.
+
+- Measure disabled timing instrumentation overhead using CPU time so parallel CI scheduling does not cause false failures.
+
 - Check Jellyfin/Emby backdrop lists before retrying interrupted remote downloads; stop on changed or unverifiable lists to avoid duplicate additions, and include artwork type in image-operation errors.
 
 - Retry Jellyfin/Emby catalog reads after Cloudflare 520–524 responses and retry remote fixed-slot artwork replacements after transient connection failures, without replaying backdrop additions.

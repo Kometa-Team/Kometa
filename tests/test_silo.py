@@ -1982,3 +1982,20 @@ def test_profile_name_requires_unique_match(profiles, reason):
 def test_invalid_profile_name_configuration(options):
     with pytest.raises(Failed, match="Config Error"):
         _server(**options)
+
+
+@pytest.mark.parametrize("keys", [set(), {"episode-1"}])
+def test_targeted_silo_catalog_reads_preserve_complete_cache(keys):
+    library = _library(SiloClient(_server(), session=FakeSession([])))
+    complete = [SimpleNamespace(ratingKey="show-1")]
+    library._all_items = complete
+    library._catalog_items_by_type = {"series": complete}
+    selected = SimpleNamespace(ratingKey="episode-1")
+    library.fetch_item = MagicMock(return_value=selected)
+    assert library.get_cached_items(target_keys=keys) == ([selected] if keys else [])
+    assert library._all_items is complete
+    assert library._catalog_items_by_type == {"series": complete}
+    assert library.fetch_item.call_count == len(keys)
+    assert library.client.session.calls == []
+    assert library.get_rating_keys("silo_all", "item", target_keys=keys) == ([("episode-1", "ratingKey")] if keys else [])
+    assert library.fetch_item.call_count == 2 * len(keys)

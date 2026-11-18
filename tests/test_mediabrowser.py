@@ -857,7 +857,7 @@ def test_overlay_application_uses_native_tags_and_reuses_backup(tmp_path, monkey
     engine = Overlays.__new__(Overlays)
     engine.library = library
     engine.cache = None
-    engine.compile_overlays = lambda: ({item.ratingKey: (item, ["Blur"])}, {"Blur": definition})
+    engine.compile_overlays = lambda target_keys=None: ({item.ratingKey: (item, ["Blur"])}, {"Blur": definition})
     engine.run_overlays()
     engine.run_overlays()
     assert len(downloads) == 1
@@ -2424,3 +2424,21 @@ def test_image_operation_errors_identify_artwork(monkeypatch, method, artwork):
     item = MediaBrowserItem({"Id": "show", "Type": "Series", "Name": "Example"}, library)
     assert getattr(library, method)(item, "https://example.com/image.jpg") == ("Reset", "Assets", "Failed")
     assert logger.error_messages == [f"Emby Image Error: Example | {artwork}: connection reset"]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("keys", [set(), {"episode-1"}])
+def test_targeted_native_catalog_reads_preserve_complete_cache(kind, keys):
+    library = _library(MediaBrowserClient(_server(kind), session=FakeSession([])), kind=kind)
+    complete = [SimpleNamespace(ratingKey="show-1")]
+    library._all_items = complete
+    library._catalog_items_by_type = {"Series": complete}
+    selected = SimpleNamespace(ratingKey="episode-1")
+    library.fetch_item = MagicMock(return_value=selected)
+    assert library.get_cached_items(target_keys=keys) == ([selected] if keys else [])
+    assert library._all_items is complete
+    assert library._catalog_items_by_type == {"Series": complete}
+    assert library.fetch_item.call_count == len(keys)
+    assert library.client.session.calls == []
+    assert library.get_rating_keys(f"{kind}_all", "item", target_keys=keys) == ([("episode-1", "ratingKey")] if keys else [])
+    assert library.fetch_item.call_count == 2 * len(keys)

@@ -4935,7 +4935,7 @@ class CollectionBuilder:
         if not isinstance(plex_filter, dict):
             raise BuilderValidationError(f"{self.Type} Error: {method} must be a dictionary: {plex_filter}")
         server = getattr(getattr(self, "library", None), "server", None)
-        if method == "plex_search" and getattr(server, "type_name", None) in ("silo", "jellyfin", "emby"):
+        if method == "plex_search" and server is not None and server.type_name in ("silo", "jellyfin", "emby"):
             raise BuilderValidationError(f"{self.Type} Error: plex_search expressions are not supported by {server.display_name}; this definition requires native search translation before it can run on this server")
         if display:
             logger.debug(f"Value: {plex_filter}")

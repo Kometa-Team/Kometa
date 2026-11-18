@@ -59,6 +59,7 @@ def silo_detail():
         duration_seconds=7200,
         release_date="1999-01-01",
         added_at="2026-10-01T12:00:00Z",
+        air_date="1999-01-01",
         first_air_date="1999-01-01",
         last_air_date="2001-12-31",
         rating_imdb=7.5,
@@ -114,6 +115,7 @@ def silo_detail():
     )
     for role in ("actors", "directors", "writers", "producers"):
         setattr(result, role, [SimpleNamespace(tag="Person")])
+    result.library = SimpleNamespace(episode_air_dates=lambda item: [item.data["air_date"]])
     return result
 
 
@@ -288,7 +290,7 @@ def test_silo_country_aliases_and_counts(silo_detail):
 
 
 def item(**data):
-    return SimpleNamespace(data=data)
+    return SimpleNamespace(data=data, type=data.get("type", "movie"))
 
 
 def test_nested_resolution_regex_matches_any_available_version():

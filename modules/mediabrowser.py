@@ -17,6 +17,7 @@ from collections.abc import Iterable
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from types import SimpleNamespace
+from typing import Any, cast
 from urllib.parse import quote
 
 import requests
@@ -206,7 +207,7 @@ class MediaBrowserClient:
                     if image_write:
                         cache.delete_native_response(scope, f"item:{item_id}")
                     else:
-                        patch = {"UserData": json_body} if user_write else json_body
+                        patch: dict[str, Any] = {"UserData": json_body} if user_write else dict(json_body or {})
                         pending = getattr(self, "_pending_cache_patches", None)
                         if pending is None:
                             cache.patch_native_item(scope, item_id, patch)
@@ -228,9 +229,9 @@ class MediaBrowserClient:
                 records = [payload, *(payload.get("Items") or [])] if isinstance(payload, dict) else payload if isinstance(payload, list) else []
                 for record in records:
                     if isinstance(record, dict) and record.get("Type") in ("BoxSet", "Playlist") and record.get("Id"):
-                        self.__dict__.setdefault("_non_media_item_ids", set()).add(str(record["Id"]))
+                        vars(self).setdefault("_non_media_item_ids", set()).add(str(record["Id"]))
                         if record.get("Type") == "BoxSet":
-                            self.__dict__.setdefault("_collection_item_ids", set()).add(str(record["Id"]))
+                            vars(self).setdefault("_collection_item_ids", set()).add(str(record["Id"]))
                 return payload
             except ValueError as error:
                 raise Failed(f"{self.server.type_label} Error: {method} {path} did not return JSON") from error
@@ -348,7 +349,7 @@ class MediaBrowserClient:
         return current
 
     def _flush_cache_patches(self):
-        pending = self._pending_cache_patches
+        pending = self._pending_cache_patches or {}
         self._pending_cache_patches = {}
         for (_cache_id, scope), (cache, updates) in pending.items():
             cache.patch_native_items(scope, updates)
@@ -515,6 +516,8 @@ class _Tag:
 
 
 class MediaBrowserItem(NativeItemMetadata):
+    library: "MediaBrowser"
+
     def split(self):
         return self.library.split_item_versions(self)
 
@@ -546,7 +549,7 @@ class MediaBrowserItem(NativeItemMetadata):
         self.tvdb_id = _numeric_id(_provider(providers, "Tvdb", "TVDb", "tvdb"))
         self.imdb_id = _provider(providers, "Imdb", "IMDb", "imdb")
         self.genres = list(self.data.get("Genres") or [])
-        self.studios = [studio.get("Name") for studio in (self.data.get("Studios") or []) if isinstance(studio, dict) and studio.get("Name")]
+        self.studios = [str(studio["Name"]) for studio in (self.data.get("Studios") or []) if isinstance(studio, dict) and studio.get("Name")]
         self.tags = list(self.data.get("Tags") or [tag.get("Name") if isinstance(tag, dict) else tag for tag in self.data.get("TagItems") or []])
         for role, types in {"actors": {"actor", "gueststar"}, "directors": {"director"}, "writers": {"writer"}, "producers": {"producer", "executiveproducer"}}.items():
             people = []
@@ -562,7 +565,7 @@ class MediaBrowserItem(NativeItemMetadata):
         self.childCount = self.data.get("ChildCount") or self.data.get("RecursiveItemCount") or 0
         self.smart = False
         self.collectionMode = -1
-        self.collectionSort = {"PremiereDate": 0, "SortName": 1}.get(self.data.get("DisplayOrder"), -1)
+        self.collectionSort = {"PremiereDate": 0, "SortName": 1}.get(self.data.get("DisplayOrder") or "", -1)
         self.locations = [source["Path"] for source in self.data.get("MediaSources") or [] if source.get("Path")] or ([self.data["Path"]] if self.data.get("Path") else [])
         self.posterUrl = self.library.find_poster_url(self)
         self.thumb = self.posterUrl
@@ -626,6 +629,8 @@ class MediaBrowserPlaylist(MediaBrowserItem):
 
 
 class MediaBrowser(Library):
+    server: JellyfinMediaServer | EmbyMediaServer
+
     server_class = JellyfinMediaServer
     overlay_backup_fallback = True
 
@@ -767,8 +772,8 @@ class MediaBrowser(Library):
             return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
         item.apply(self.client.get_collection_item(item.ratingKey) if isinstance(item, MediaBrowserCollection) else self._item_detail(item.ratingKey, force=force))
-        self.__dict__.setdefault("_media_details_loaded", set()).add(item.ratingKey)
-        self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
+        vars(self).setdefault("_media_details_loaded", set()).add(item.ratingKey)
+        vars(self).setdefault("_search_details", {})[item.ratingKey] = item
         return item
 
     def item_reload(self, item, exclude_elements=None):
@@ -861,7 +866,7 @@ class MediaBrowser(Library):
         self.client.split_versions(item.ratingKey)
         self._all_items = []
         for name in ("_search_details", "_media_details_loaded", "_collection_search_memberships", "_catalog_items_by_type", "_filter_episode_indexes", "_filter_episode_children_cache"):
-            self.__dict__.pop(name, None)
+            vars(self).pop(name, None)
         self.filter_attr_cache.clear()
 
     def get_tmdb_episode(self, item, show_tmdb_id):
@@ -901,14 +906,16 @@ class MediaBrowser(Library):
                 cache.update_native_response(scope, resource, detail)
         return detail
 
-    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False, target_keys=None):
         self.require(Capability.GET_ALL_ITEMS)
+        if target_keys is not None:
+            return [self.fetch_item(key) for key in target_keys]
         include = _include_type(self, builder_level)
         label = "Shows" if include == "Series" else f"{include}s"
-        catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        catalogs = vars(self).setdefault("_catalog_items_by_type", {})
         if load:
-            self.__dict__.pop("_filter_episode_indexes", None)
-            self.__dict__.pop("_filter_episode_children_cache", None)
+            vars(self).pop("_filter_episode_indexes", None)
+            vars(self).pop("_filter_episode_children_cache", None)
         if load and not builder_level:
             catalogs.clear()
         if not load and include in catalogs:
@@ -942,7 +949,8 @@ class MediaBrowser(Library):
                         elif include == "Season":
                             title = f"{row.get('SeriesName') or 'Unknown show'}: {title}"
                         logger.info(f"{action} {include}: {title} [ID: {identity}]")
-                cache.delete_native_response(scope, resource, descendants=True)
+                if cache:
+                    cache.delete_native_response(scope, resource, descendants=True)
                 rows = None
         if isinstance(rows, list):
             items = [self._wrap(row) for row in rows]
@@ -1089,7 +1097,7 @@ class MediaBrowser(Library):
         from modules.plex import Plex
 
         name = item if isinstance(item, (str, MediaBrowserItem)) else item.title
-        return Plex.asset_search_paths(self, name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
+        return Plex.asset_search_paths(cast("Plex", self), name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
 
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
         # Reuse the filesystem resolver by title; this makes no Plex requests.
@@ -1097,7 +1105,7 @@ class MediaBrowser(Library):
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
         name = item if isinstance(item, (str, MediaBrowserItem)) else item.title
-        return Plex.find_item_assets(self, name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
+        return Plex.find_item_assets(cast("Plex", self), name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
 
     def get_collection(self, data, force_search=False, debug=True):
         self.require(Capability.GET_COLLECTION_BY_NAME)
@@ -1158,7 +1166,7 @@ class MediaBrowser(Library):
                 "use a builder-based collection."
             )
         created = self.client.create_collection(title, parent_id=self.library_id)
-        self.__dict__.pop("_collection_catalog", None)
+        vars(self).pop("_collection_catalog", None)
         return self._wrap_collection(self.client.get_item(created.get("Id")) or {"Id": created.get("Id"), "Name": title, "Type": "BoxSet"})
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
@@ -1171,7 +1179,7 @@ class MediaBrowser(Library):
         ids = [_item_id(item) for item in items]
         if not ids:
             return
-        self.__dict__.pop("_collection_search_memberships", None)
+        vars(self).pop("_collection_search_memberships", None)
         if add and isinstance(collection, str) and self.server.type_name == "emby":
             try:
                 target = self.get_collection(collection, debug=False)
@@ -1180,7 +1188,7 @@ class MediaBrowser(Library):
                 # Emby creates the boxset with its initial members, without a
                 # movie-library parent. These IDs must not be added twice.
                 self.client.create_collection(collection, item_ids=ids)
-                self.__dict__.pop("_collection_catalog", None)
+                vars(self).pop("_collection_catalog", None)
                 return
         else:
             target = self.create_blank_collection(collection) if add and isinstance(collection, str) else self._collection(collection)
@@ -1193,7 +1201,7 @@ class MediaBrowser(Library):
         logger.exorcise()
 
     def delete(self, obj, notify=True, delete_message=None):
-        self.__dict__.pop("_collection_search_memberships", None)
+        vars(self).pop("_collection_search_memberships", None)
         if isinstance(obj, MediaBrowserPlaylist):
             self.require(Capability.DELETE_PLAYLIST)
             label = "Playlist"
@@ -1205,7 +1213,7 @@ class MediaBrowser(Library):
             label = "Item"
         self.client.delete_item(obj.ratingKey)
         if isinstance(obj, MediaBrowserCollection):
-            self.__dict__.pop("_collection_catalog", None)
+            vars(self).pop("_collection_catalog", None)
             self.stats["deleted"] += 1
         if notify:
             self.notify_delete(delete_message or f"{label} {obj.title} deleted")
@@ -1269,7 +1277,7 @@ class MediaBrowser(Library):
 
             known = [item for item in items if sort_value(item) is not None]
             missing = [item for item in items if sort_value(item) is None]
-            known.sort(key=lambda item: float(sort_value(item)) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=order == "desc")
+            known.sort(key=lambda item: float(cast("str | int | float", sort_value(item))) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=order == "desc")
             return (known + missing)[: definition.get("limit")]
         if isinstance(uri_args, dict) and "local_metadata_search" in uri_args:
             predicate = compile_selector(uri_args["local_metadata_search"], self.server.type_label)
@@ -1283,6 +1291,7 @@ class MediaBrowser(Library):
                 if predicate(self._search_metadata(item))
             ]
         self.require(Capability.PARSE_SMART_FILTER)
+        return []
 
     def build_local_search(self, definition):
         if isinstance(definition, dict) and "local_collection_search" in definition:
@@ -1329,7 +1338,7 @@ class MediaBrowser(Library):
         return False
 
     def _search_collection_names(self):
-        cached = self.__dict__.get("_collection_search_memberships")
+        cached = vars(self).get("_collection_search_memberships")
         if cached is None:
             cached = {}
             collections = self.get_all_collections()
@@ -1422,7 +1431,7 @@ class MediaBrowser(Library):
             },
         )
 
-    def get_rating_keys(self, method, data, is_playlist=False):
+    def get_rating_keys(self, method, data, is_playlist=False, target_keys=None):
         if method == f"{self.server.type_name}_all":
             method = "plex_all"
         if method == "plex_search":
@@ -1430,10 +1439,13 @@ class MediaBrowser(Library):
         elif method == "plex_all":
             if data not in ("movie", "show", "item", "season", "episode") or data in ("season", "episode") and not self.is_show:
                 raise Failed(f"{self.server.type_label} Error: Local builder plex_all level {data} is not supported for this library")
-            items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
+            if target_keys is not None:
+                items = self.get_all(builder_level=data if data in ("season", "episode") else None, target_keys=target_keys)
+            else:
+                items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
         else:
             raise Failed(f"{self.server.type_label} Error: Unsupported local builder: {method}")
-        return [(item.ratingKey, "ratingKey") for item in items]
+        return [(item.ratingKey, "ratingKey") for item in items if target_keys is None or item.ratingKey in target_keys]
 
     def get_tags(self, tag):
         """Discover dynamic collection keys from this library's native metadata."""
@@ -1500,7 +1512,7 @@ class MediaBrowser(Library):
 
     def _filter_episode_children(self, item):
         parent_field = "SeasonId" if item.type == "season" else "SeriesId"
-        indexes = self.__dict__.setdefault("_filter_episode_indexes", {})
+        indexes = vars(self).setdefault("_filter_episode_indexes", {})
         if parent_field not in indexes:
             episodes = self.get_all(builder_level="episode")
             if all(episode.data.get(parent_field) is not None for episode in episodes):
@@ -1515,7 +1527,7 @@ class MediaBrowser(Library):
             return index.get(str(item.ratingKey), [])
         # Some server versions omit ancestry in catalog rows. Preserve exact
         # parent selection and cache that response instead of guessing ancestry.
-        children = self.__dict__.setdefault("_filter_episode_children_cache", {})
+        children = vars(self).setdefault("_filter_episode_children_cache", {})
         if item.ratingKey not in children:
             cache, scope = self._persistent_catalog_cache()
             resource = f"episodes:{item.ratingKey}"
@@ -1536,8 +1548,8 @@ class MediaBrowser(Library):
                 matched = 0
                 for number, child in enumerate(children, 1):
                     logger.ghost(f"Filtering {item.title} episodes: {number}/{len(children)}")
-                    child = self.__dict__.get("_search_details", {}).get(child.ratingKey, child)
-                    loaded = self.__dict__.get("_media_details_loaded", set())
+                    child = vars(self).get("_search_details", {}).get(child.ratingKey, child)
+                    loaded = vars(self).get("_media_details_loaded", set())
                     if requires_media(definition) and child.ratingKey not in loaded and "MediaSources" not in child.data and (self._search_requires_sources(definition) or "MediaStreams" not in child.data):
                         child = self.reload(child)
                     matched += bool(predicate(self._search_metadata(child)))
@@ -1545,11 +1557,11 @@ class MediaBrowser(Library):
                     return False
             else:
                 definition = {key: value}
-                loaded = self.__dict__.setdefault("_media_details_loaded", set())
+                loaded = vars(self).setdefault("_media_details_loaded", set())
                 if requires_media(definition) and item.ratingKey not in loaded and "MediaSources" not in item.data and (self._search_requires_sources(definition) or "MediaStreams" not in item.data):
                     item.apply(self._item_detail(item.ratingKey))
                     loaded.add(item.ratingKey)
-                    self.__dict__.setdefault("_search_details", {})[item.ratingKey] = item
+                    vars(self).setdefault("_search_details", {})[item.ratingKey] = item
                 if self._search_requires_collections(definition):
                     item.data["_kometa_collections"] = self._search_collection_names().get(item.ratingKey, [])
                 if not compile_selector(definition, self.server.type_label, current_time)(self._search_metadata(item)):
@@ -1612,7 +1624,7 @@ class MediaBrowser(Library):
 
     def get_all_collections(self, label=None, load=False, include_counts=True):
         if load:
-            self.__dict__.pop("_collection_catalog", None)
+            vars(self).pop("_collection_catalog", None)
         collections = self._collections() if include_counts else self._collections(include_counts=False)
         if label is None:
             return collections

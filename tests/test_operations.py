@@ -513,7 +513,7 @@ class TestRemoveTitleParenthesesBatching:
         logger.error.assert_called_once_with("Config Error: split_duplicates is not supported by silo: Silo grouping repair requires explicit file and target selections")
         library.search.assert_not_called()
         library.refresh_item_cache_and_mappings.assert_not_called()
-        library.get_all.assert_called_once_with()
+        library.get_all.assert_called_once_with(target_keys=None)
 
     def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
         stale_item = make_item(1, "Split Show")
@@ -1401,7 +1401,7 @@ def test_assets_for_all_without_native_labels_or_plex_fields(monkeypatch):
     library.supports.side_effect = lambda capability: capability != Capability.GET_ITEM_LABELS
     library.item_labels.side_effect = AssertionError("native labels must not be read")
     Operations(config=MagicMock(), library=library).run_operations()
-    library.find_and_upload_assets.assert_called_once_with(item, [])
+    library.find_and_upload_assets.assert_called_once_with(item, [], targeted_update=False)
     library.item_labels.assert_not_called()
 
 

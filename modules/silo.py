@@ -16,6 +16,7 @@ import uuid
 from collections.abc import Iterable
 from threading import Lock
 from types import SimpleNamespace
+from typing import TypeVar, cast
 from urllib.parse import quote, urljoin, urlsplit
 
 import requests
@@ -384,6 +385,8 @@ class SiloCollection:
 
 
 class SiloItem(NativeItemMetadata):
+    library: "Silo"
+
     def __init__(self, data, library):
         self.library = library
         self.data = {}
@@ -398,7 +401,7 @@ class SiloItem(NativeItemMetadata):
         self.key = self.content_id
         self.title = self.data.get("title") or ""
         self.year = self.data.get("year")
-        self.type = {"series": "show"}.get(self.data.get("type"), self.data.get("type"))
+        self.type = {"series": "show"}.get(self.data.get("type") or "", self.data.get("type") or "")
         self.guid = f"silo://{self.content_id}"
         self.summary = self.data.get("overview") or self.data.get("description") or ""
         self.contentRating = self.data.get("content_rating")
@@ -455,7 +458,12 @@ class SiloItem(NativeItemMetadata):
         return people
 
 
+_SiloReloadItem = TypeVar("_SiloReloadItem", SiloItem, SiloCollection)
+
+
 class Silo(Library):
+    server: SiloMediaServer
+
     uses_overlay_labels = False
 
     def __init__(self, config, params, client=None):
@@ -591,14 +599,14 @@ class Silo(Library):
         self._apply_artwork(item, "logo", self._public_image_url(image, url=url, kind="logo"))
         return True
 
-    def reload(self, item, force=False, exclude_elements=None):
+    def reload(self, item: _SiloReloadItem, force=False, exclude_elements=None) -> _SiloReloadItem:
         # Plex XML element exclusions do not apply to native JSON item reads.
         if isinstance(item, SiloCollection):
             data, etag = self.client.get_collection(item.id)
             item.apply(data, etag=etag)
             return item
-        cached = self.__dict__.setdefault("_search_details", {}).get(item.content_id)
-        loaded = self.__dict__.setdefault("_loaded_search_details", set())
+        cached = vars(self).setdefault("_search_details", {}).get(item.content_id)
+        loaded = vars(self).setdefault("_loaded_search_details", set())
         if cached is not None and not force and ("versions" in cached.data or item.content_id in loaded):
             item.apply(cached.data)
             return item
@@ -648,7 +656,7 @@ class Silo(Library):
         if not util.is_valid_rating(value, minimum=minimum, maximum=maximum):
             logger.warning(f"Silo Warning: Invalid {variable_name} value {value}; expected {minimum} to {maximum}")
             return None
-        return float(value) * factor
+        return float(cast("str | int | float", value)) * factor
 
     def update_native_ratings(self, item, updates):
         provider = {field: value for field, value in updates.items() if field != "user_rating"}
@@ -657,11 +665,11 @@ class Silo(Library):
             if isinstance(data, dict):
                 item.apply(data)
             item.data.update(provider)
-            self.__dict__.get("_native_rating_details", {}).pop(item.content_id, None)
+            vars(self).get("_native_rating_details", {}).pop(item.content_id, None)
         if "user_rating" in updates:
             self.client.set_user_rating(item.content_id, updates["user_rating"])
             item.data["user_rating"] = updates["user_rating"]
-        self.__dict__.get("_native_rating_details", {}).pop(item.content_id, None)
+        vars(self).get("_native_rating_details", {}).pop(item.content_id, None)
         if "_search_details" in self.__dict__:
             self._search_details[item.content_id] = item
 
@@ -768,7 +776,7 @@ class Silo(Library):
             names = {self._country_names().get(value.upper(), value) for value in self._country_values if isinstance(value, str) and value.strip()}
             return [SimpleNamespace(key=name, title=name) for name in sorted(names)]
         if tag in ("decade", "year"):
-            years = {int(item.year) for item in self.get_all(ignore_schedule_scope=True) if not isinstance(item.year, bool) and str(item.year).isascii() and str(item.year).isdecimal() and 1 <= int(item.year) <= 9999}
+            years = {int(str(item.year)) for item in self.get_all(ignore_schedule_scope=True) if not isinstance(item.year, bool) and str(item.year).isascii() and str(item.year).isdecimal() and 1 <= int(str(item.year)) <= 9999}
             if tag == "decade":
                 return [SimpleNamespace(key=str(year), title=f"{year}s") for year in sorted({year // 10 * 10 for year in years})]
             return [SimpleNamespace(key=str(year), title=str(year)) for year in sorted(years)]
@@ -827,7 +835,7 @@ class Silo(Library):
         from modules.plex import Plex
 
         name = item if isinstance(item, (str, SiloItem)) else item.title
-        return Plex.asset_search_paths(self, name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
+        return Plex.asset_search_paths(cast("Plex", self), name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
 
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
         # The filesystem resolver also accepts a title; it makes no Plex requests.
@@ -835,7 +843,7 @@ class Silo(Library):
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
         name = item if isinstance(item, (str, SiloItem)) else item.title
-        return Plex.find_item_assets(self, name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
+        return Plex.find_item_assets(cast("Plex", self), name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
 
     def item_posters(self, item, providers=None):
         if providers == []:
@@ -883,12 +891,14 @@ class Silo(Library):
                 cache.update_silo_response(scope, resource, detail)
         return detail
 
-    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False, target_keys=None):
         self.require(Capability.GET_ALL_ITEMS)
+        if target_keys is not None:
+            return [self.fetch_item(key) for key in target_keys]
         media_type = _media_type(self, builder_level)
-        catalogs = self.__dict__.setdefault("_catalog_items_by_type", {})
+        catalogs = vars(self).setdefault("_catalog_items_by_type", {})
         if load:
-            self.__dict__.pop("_episode_air_date_index", None)
+            vars(self).pop("_episode_air_date_index", None)
         if load and not builder_level:
             catalogs.clear()
         if not load and media_type in catalogs:
@@ -991,13 +1001,13 @@ class Silo(Library):
         cards = self.client.browse(self.library_id, media_type=libtype or _media_type(self, None), query=title, limit=maxresults or 50)
         return [SiloItem(card, self) for card in cards]
 
-    def fetch_item(self, item):
+    def fetch_item(self, item) -> SiloItem:
         cached = getattr(self, "_search_details", {}).get(getattr(item, "content_id", item))
         if cached is not None:
             return cached
         if isinstance(item, SiloItem):
-            return self.reload(item)
-        return self.reload(SiloItem({"content_id": item}, self))
+            return cast(SiloItem, self.reload(item))
+        return cast(SiloItem, self.reload(SiloItem({"content_id": item}, self)))
 
     def get_all_collections(self, label=None):
         if label:
@@ -1127,6 +1137,7 @@ class Silo(Library):
                     values = [str(v) if isinstance(v, int) and not isinstance(v, bool) else v for v in values]
                 if not values or any(not isinstance(v, str) or not v.strip() for v in values):
                     raise Failed(f"Silo Error: smart_filter {name} requires nonempty tag names")
+                values = [str(entry) for entry in values]
                 if field == "content_rating" and any(entry.casefold() == "none" for entry in values):
                     raise Failed("Silo Error: Explicit unrated content filters require local matching")
                 if field in ("audio_language", "subtitle_language"):
@@ -1182,7 +1193,7 @@ class Silo(Library):
                 raise Failed(f"Silo Error: smart_filter {name} is unsupported; supported relative date filters are release and added with positive day counts")
             groups.append({"match": match, "rules": [{"field": fields[name], "op": "in_last", "value": f"{int(value)}d"}]})
         scope = definition.get("type") or _media_type(self, None)
-        scope = {"movies": "movie", "shows": "series", "show": "series"}.get(scope, scope)
+        scope = {"movies": "movie", "shows": "series", "show": "series"}.get(scope or "", scope)
         if scope not in ("movie", "series"):
             raise Failed(f"Silo Error: smart_filter type {scope} is unsupported")
         sort = str(definition.get("sort_by") or "release.desc")
@@ -1243,7 +1254,7 @@ class Silo(Library):
         if isinstance(uri_args, dict) and "local_collection_search" in uri_args:
             definition = uri_args["local_collection_search"]
             predicate = self.validate_collection_search(definition)
-            scope = {"episodes": "episode", "seasons": "season"}.get(definition.get("type"), definition.get("type"))
+            scope = {"episodes": "episode", "seasons": "season"}.get(definition.get("type") or "", definition.get("type"))
             level = scope if scope in ("episode", "season") else None
             items = [item for item in self._local_search_items(builder_level=level, require_details=requires_details(definition)) if predicate(item)]
             field, _, direction = definition.get("sort_by", "title.asc").rpartition(".")
@@ -1254,7 +1265,7 @@ class Silo(Library):
 
             known = [item for item in items if sort_value(item) is not None]
             missing = [item for item in items if sort_value(item) is None]
-            known.sort(key=lambda item: float(sort_value(item)) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=direction == "desc")
+            known.sort(key=lambda item: float(cast("str | int | float", sort_value(item))) if FIELD_TYPES.get(field) == "number" else str(sort_value(item)).casefold(), reverse=direction == "desc")
             return (known + missing)[: definition.get("limit")]
         if isinstance(uri_args, dict) and "silo_local_search" in uri_args:
             predicate = compile_selector(uri_args["silo_local_search"], country_names=self._country_names())
@@ -1345,7 +1356,7 @@ class Silo(Library):
             logger.exorcise()
         logger.info(f"Scanned: {total}/{total}")
 
-    def get_rating_keys(self, method, data, is_playlist=False):
+    def get_rating_keys(self, method, data, is_playlist=False, target_keys=None):
         if method == f"{self.server.type_name}_all":
             method = "plex_all"
         if method == "plex_search":
@@ -1353,10 +1364,13 @@ class Silo(Library):
         elif method == "plex_all":
             if data not in ("movie", "show", "item", "season", "episode") or data in ("season", "episode") and not self.is_show:
                 raise BuilderValidationError(f"Silo Error: Local builder plex_all level {data} is not supported for this library")
-            items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
+            if target_keys is not None:
+                items = self.get_all(builder_level=data if data in ("season", "episode") else None, target_keys=target_keys)
+            else:
+                items = self.get_all(builder_level=data) if data in ("season", "episode") else self.get_all()
         else:
             raise BuilderValidationError(f"Silo Error: Builder {method} is not supported")
-        return [(item.ratingKey, "ratingKey") for item in items]
+        return [(item.ratingKey, "ratingKey") for item in items if target_keys is None or item.ratingKey in target_keys]
 
     def check_filters(self, item, filters_in, current_time):
         for key, value in filters_in:
