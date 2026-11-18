@@ -202,7 +202,7 @@ python kometa.py --run --collections-only --overlays-only --metadata-only
 pytest
 
 # Lint & format
-prek run --all-files --show-diff-on-failure  # Runs black, isort, flake8, mypy, bandit
+prek run --all-files --show-diff-on-failure  # Runs black, isort, flake8 and the spellcheck
 
 # Docs (separate environment recommended; see CONTRIBUTING.md)
 pip install -r docs/requirements.txt && python -m zensical serve
@@ -218,7 +218,7 @@ python -m zensical build --clean
 - **Formatter**: Black (line length 256)
 - **Imports**: isort (profile: black)
 - **Linter**: flake8 (max 256, ignore E203/W503)
-- **Type hints**: Encouraged; mypy runs informational
+- **Type hints**: Encouraged; pyright runs in CI with a ratcheting baseline, so a file may not gain errors
 - **Security**: bandit (B101 skipped, tests/config/ excluded)
 - **Layout**: Flat root (`kometa.py` + `modules/` package)
 
