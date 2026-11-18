@@ -40,7 +40,7 @@ Dev tools live in the `dev` dependency group of `pyproject.toml` and are locked 
 black .
 isort .
 flake8 .
-mypy .
+python scripts/pyright_baseline.py --check
 bandit -r modules/
 ```
 

@@ -50,6 +50,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
 
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
+
+### Docs
+
+- Point contributors to the pyright baseline check instead of `mypy` in `.github/CONTRIBUTING.md`, `CLAUDE.md` and `AGENTS.md`, and note which checks run in pre-commit and which run in CI.
+
 ## [v2.5.5] - 2026-11-11
 
 ### Removed

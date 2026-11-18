@@ -42,14 +42,14 @@ Python 3.12+ is required.
 
 ## Code style
 
-All code must pass the following before CI will accept it. The pre-commit hooks run these automatically on each commit.
+All code must pass the following before CI will accept it. The pre-commit hooks run `black`, `isort` and `flake8` on each commit; `pyright` and `bandit` run in CI.
 
 | Tool | Purpose | Config |
 | ---- | ------- | ------ |
 | `black` | Formatting | `pyproject.toml` - line length 256 |
 | `isort` | Import ordering | `pyproject.toml` - black profile |
 | `flake8` | Linting | line length 256, ignores `E203 W503 E501` |
-| `mypy` | Type checking | `pyproject.toml` |
+| `pyright` | Type checking - a file may not gain errors over `scripts/pyright/baseline.json` | `pyproject.toml` |
 | `bandit` | Security scanning | excludes `tests/`, `config/`, `.venv/` |
 
 Run them manually at any time:
@@ -58,7 +58,7 @@ Run them manually at any time:
 black .
 isort .
 flake8 .
-mypy .
+python scripts/pyright_baseline.py --check
 bandit -r modules/
 ```
 
@@ -74,7 +74,7 @@ pytest tests/test_builder.py
 pytest tests/test_builder.py::TestName
 ```
 
-Tests live in `tests/test_builder.py` and `tests/test_textfile.py`. Run the full suite locally before opening a PR. If your change touches a builder or text file path, add or update a test.
+Tests live in `tests/`, grouped by the module or behaviour they cover; [`tests/README.md`](../tests/README.md) explains where new tests belong and what makes a useful case. Run the full suite locally before opening a PR. If your change touches a builder or text file path, add or update a test.
 
 ## Changelog
 
