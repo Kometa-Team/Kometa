@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "MediaStinger", 
+        "OVERLAY_NAME": "MediaStinger",
         "CODE_NAME": "mediastinger",
         "OVERLAY_LEVEL": "Movie",
         "DESCRIPTION": "an overlay based on if there\'s an after/during credit scene on each movie within your library"
@@ -13,7 +13,7 @@ hide:
     end='<!--rec-sub-->'
 %}
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "mediastinger", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie' 
 %}
@@ -48,6 +48,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "mediastinger"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "MediaStinger Overlays"
-    
-        The MediaStinger overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`.
+
+    The MediaStinger overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) with [filters](../../../files/filters) on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`.

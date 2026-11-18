@@ -22,10 +22,10 @@ tautulli:
 | `apikey`  | Tautulli API key. | Any valid key or leave **blank**                                      | :fontawesome-solid-circle-check:{ .green } |
 
 ???+ tip
-    
+
     The apikey can be found by going to Tautulli > Settings > Web Interface > API > API Key.
 
-# Other examples
+# Other Examples
 
 Specifying a second Tautulli instance for a specific library:
 

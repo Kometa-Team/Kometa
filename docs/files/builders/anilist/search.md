@@ -1,135 +1,18 @@
----
-hide:
-  - toc
----
-# AniList Search
+# AniList Advanced Search
 
-Finds the anime specified by the AniList Search the options are detailed below. 
+Find anime with `anilist_search`. For IDs, relations, studios, charts, and named
+user lists, see [AniList builders](builders.md). Searches support movie and show
+libraries, playlists, and custom sorting.
 
-There are three fields per search option when using AniList's Search just like Plex's Advanced Filters in the Web UI. The first is the **Attribute** (what attribute you wish to search), the second is the **Modifier** (which modifier to use), and the third is the **Term** (actual term to search).
+## Quick start
 
-The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order. 
+Selects up to 20 sports anime, requesting popularity order. `Sports` is a genre
+string and `20` is an integer limit.
 
-=== "Special Attributes"
-    
-    Special attributes do not support any modifiers.
-    
-    | Special Attribute | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-    |:------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `sort_by`         | **Description:** How to sort the Anime<br>**Default:** `score`<br>**Values:**<table class="clearTable"><tr><td>`score`</td><td>Sort by Average Score</td></tr><tr><td>`popular`</td><td>Sort by Popularity</td></tr><tr><td>`trending`</td><td>Sort by Trending</td></tr></table>                                                                                                                                                                                                 |
-    | `limit`           | **Description:** Number of Anime to query<br>**Values:** Number greater or equal to `0` (use 0 or don't use it at all for all anime)<br>**Default:** `0`                                                                                                                                                                                                                                                                                                                          |
-    | `search`          | **Description:** Text to search<br>**Values:** Any Text                                                                                                                                                                                                                                                                                                                                                                                                                           | 
-    | `season`          | **Description:** Season to search for<br>**Default:** `current`<br>**Values:** <table class="clearTable"><tr><td>`winter`</td><td>For winter season January, February, March</td></tr><tr><td>`spring`</td><td>For spring season April, May, June</td></tr><tr><td>`summer`</td><td>For summer season July, August, September</td></tr><tr><td>`fall`</td><td>For fall season October, November, December</td></tr><tr><td>`current`</td><td>For current Season</td></tr></table> |
-    | `year`            | **Description:** Season year to search for<br>**Default:** Current Year<br>**Values:** Number between `1917` and next year or leave blank for the current year                                                                                                                                                                                                                                                                                                                    |
-    | `min_tag_percent` | **Description:** Minimum tag percentage for the Anime<br>**Values:** Number between `0`-`100`                                                                                                                                                                                                                                                                                                                                                                                     |
-    | `adult`           | **Description:** Search for or not for Adult Anime<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                               |
-    | `country`         | **Description:** Search for anime from a specific country<br>**Values:** [ISO 3166-1 alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)                                                                                                                                                                                                                                                                                                                      |
-    | `source`          | **Description:** Uses the anime's source to match<br>**Values:** `original`, `manga`, `light_novel`, `visual_novel`, `video_game`, `other`, `novel`, `doujinshi`, or `anime`                                                                                                                                                                                                                                                                                                      |
-
-=== "Date Attributes"
-
-    Date attributes can be used with either `.before`, or `.after`.
-    
-    No date attribute can take multiple values.
-    
-    ### "Date Attributes"
-    
-    | Date Attributes | Description                                  |
-    |:----------------|:---------------------------------------------|
-    | `start`         | Uses the anime start date attribute to match |
-    | `end`           | Uses the anime end date attribute to match   |
-
-    ???+ tip "Date Attribute Modifiers"    
-
-        | Date Modifier | Description                                                                                                      |
-        |:--------------|:-----------------------------------------------------------------------------------------------------------------|
-        | `.before`     | Matches every item where the date attribute is before the given date<br>**Format:** MM/DD/YYYY e.g. `01/01/2000` |
-        | `.after`      | Matches every item where the date attribute is after the given date<br>**Format:** MM/DD/YYYY e.g. `01/01/2000`  |
-
-=== "Number Searches"
-
-    Number attributes must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier.
-    
-    No number attribute can take multiple values.
-    
-    ### "Number Attributes"
-    
-    | Number Attribute | Description                                                                                           |
-    |:-----------------|:------------------------------------------------------------------------------------------------------|
-    | `duration`       | **Description:** Uses the duration attribute to match using minutes<br>**Restrictions:** minimum: `1` |
-    | `episodes`       | **Description:** Uses the number of episodes attribute to match<br>**Restrictions:** minimum: `1`     |
-    | `score`          | **Description:** Uses the score attribute to match<br>**Restrictions:** minimum: `1`                  |
-    | `popularity`     | **Description:** Uses the popularity attribute to match<br>**Restrictions:** minimum: `1`             |
-
-    ???+ tip "Number Attribute Modifiers"    
-    
-        | Number Modifier | Description                                                                                                                                             |
-        |:----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `.gt`           | Matches every item where the number attribute is greater than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`             |
-        | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5` |
-        | `.lt`           | Matches every item where the number attribute is less than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`                |
-        | `.lte`          | Matches every item where the number attribute is less than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`    |
-    
-
-=== "Tag Attributes"
-    
-    Tag attributes can be used with either no modifier or with `.not`.
-    
-    String attributes can take multiple values as a **list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string**.
-    
-    ### "Tag Attributes"
-    
-    | Tag Attribute  | Description & Values                                                                                                                                                                            |
-    |:---------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | `format`       | **Description:** Uses the anime's format to match<br>**Values:** `tv`, `short`, `movie`, `special`, `ova`, `ona`, `music`                                                                       |
-    | `status`       | **Description:** Uses the anime's status to match<br>**Values:** `finished`, `airing`, `not_yet_aired`, `cancelled`, `hiatus`                                                                   |
-    | `genre`        | **Description:** Uses the anime's genre to match<br>**Values:** Any Genre in the Genre Dropdown box on the [AniList Search Page](https://anilist.co/search/anime)                               |
-    | `tag`          | **Description:** Uses the anime's tag to match<br>**Values:** Any Tag in the Genre Dropdown box on the [AniList Search Page](https://anilist.co/search/anime)                                   |
-    | `tag_category` | **Description:** Uses the anime's tag category to match<br>**Values:** Any Tag Category in the Advanced Genres & Tag Filters Menu on the [AniList Search Page](https://anilist.co/search/anime) |
-
-    ???+ tip "Tag Attribute Modifiers"
-    
-        | Tag Modifier | Description                                                            |
-        |:-------------|:-----------------------------------------------------------------------|
-        | No Modifier  | Matches every item where the attribute matches the given string        |
-        | `.not`       | Matches every item where the attribute does not match the given string |
-        
-        
-
-### Example AniList Search Builder(s)
-
-```yaml
-collections:
-  Current Anime Season:
-    anilist_search:
-      season:
-      year:
-      sort_by: popular
-    collection_order: custom
-    sync_mode: sync
-```
-```yaml
-collections:
-  Fall 2020 Anime:
-    anilist_search:
-      season: fall
-      year: 2020
-    collection_order: custom
-    sync_mode: sync
-```
-```yaml
-collections:
-  Pirates Anime:
-    anilist_search:
-      tag: Pirates
-      sort_by: popular
-    collection_order: custom
-    sync_mode: sync
-```
 ```yaml
 collections:
   Top Sports Anime:
-    anilist_genre:
+    anilist_search:
       genre: Sports
       limit: 20
       sort_by: popular
@@ -137,3 +20,145 @@ collections:
     sync_mode: sync
 ```
 
+Use `collection_order: custom` to preserve returned order and `sync_mode: sync`
+to keep membership synchronized as results change.
+
+## Filter syntax
+
+Each filter combines an attribute, an optional or required modifier, and a value:
+for example, `episodes.gte: 12` sets an inclusive minimum episode count.
+
+| Attribute group | Modifiers | Value format |
+|:----------------|:----------|:-------------|
+| [Special options](#special-options) | None | As listed below |
+| [Dates](#date-attributes) | `.before`, `.after` | One date as `MM/DD/YYYY` |
+| [Numbers](#number-attributes) | `.gt`, `.gte`, `.lt`, `.lte`, required | One number |
+| [Tags](#tag-attributes) | None or `.not` | String, YAML list, or comma-separated string |
+
+`.gt` / `.lt` mean strictly greater / less than; `.gte` / `.lte` include the
+boundary. Date and number filters do not accept multiple values. Use `.not` to
+exclude tag values. Keep booleans unquoted and quote comma-separated strings.
+
+## Special options
+
+These attributes do not support modifiers.
+
+| Attribute | Value | Purpose / default |
+|:----------|:------|:------------------|
+| `sort_by` | `score`, `popular`, `trending` | Sort by average score, popularity, or trending; default `score` |
+| `limit` | Integer, 0 or greater | Maximum anime; default `0` returns all, as does omitting it |
+| `search` | String | Text search |
+| `season` | `winter`, `spring`, `summer`, `fall`, `current` | Season; default `current` |
+| `year` | Integer, 1917 through next year, or blank | Season year; defaults to the current year |
+| `min_tag_percent` | Number, 0-100 | Minimum tag percentage |
+| `adult` | Boolean | Search for or exclude adult anime |
+| `country` | ISO 3166-1 alpha-2 code | Country to match |
+| `source` | `original`, `manga`, `light_novel`, `visual_novel`, `video_game`, `other`, `novel`, `doujinshi`, `anime` | Original source material |
+
+Season months are January-March for winter, April-June for spring,
+July-September for summer, and October-December for fall.
+
+## Date attributes
+
+| Attribute | Matches |
+|:----------|:--------|
+| `start` | Anime start date |
+| `end` | Anime end date |
+
+Append `.before` or `.after`, such as `start.after: 01/01/2020`.
+
+## Number attributes
+
+| Attribute | Matches | Minimum |
+|:----------|:--------|:--------|
+| `duration` | Duration in minutes | `1` |
+| `episodes` | Episode count | `1` |
+| `score` | Score | `1` |
+| `popularity` | Popularity | `1` |
+
+Each requires `.gt`, `.gte`, `.lt`, or `.lte`. For example, `episodes.gte: 12`
+and `episodes.lte: 26` together form an inclusive episode-count range.
+
+## Tag attributes
+
+| Attribute | Allowed values |
+|:----------|:---------------|
+| `format` | `tv`, `short`, `movie`, `special`, `ova`, `ona`, `music` |
+| `status` | `finished`, `airing`, `not_yet_aired`, `cancelled`, `hiatus` |
+| `genre` | Genre from the [AniList search dropdown](https://anilist.co/search/anime) |
+| `tag` | Tag from the same dropdown |
+| `tag_category` | Category from the Advanced Genres & Tag Filters menu |
+
+Use the base attribute to match values or `.not` to exclude them, such as
+`format.not: music`. Multiple values can be a YAML list or comma-separated string.
+
+## Examples {#example-anilist-search-builders}
+
+=== "Season and year"
+
+    Finds anime for fall 2020, requesting popularity order. `fall` is a string
+    and `2020` is a year integer. Use `season: current` and leave `year` blank
+    to select the current season and year.
+
+    ```yaml
+    collections:
+      Fall 2020 Anime:
+        anilist_search:
+          season: fall
+          year: 2020
+          sort_by: popular
+        collection_order: custom
+        sync_mode: sync
+    ```
+
+=== "Text and boolean"
+
+    Searches for Naruto and excludes adult anime. `Naruto` is a text string;
+    `false` is an unquoted boolean. The integer limit caps results at 20.
+
+    ```yaml
+    collections:
+      Naruto Search:
+        anilist_search:
+          search: "Naruto"
+          adult: false
+          limit: 20
+        collection_order: custom
+        sync_mode: sync
+    ```
+
+=== "Dates and number range"
+
+    Finds anime starting after January 1, 2020, with 12 through 26 episodes,
+    excluding music-format entries. The start date uses `MM/DD/YYYY`; the episode
+    limits are inclusive and `format.not` excludes a tag value.
+
+    ```yaml
+    collections:
+      Recent Shorter Anime:
+        anilist_search:
+          start.after: 01/01/2020
+          episodes.gte: 12
+          episodes.lte: 26
+          format.not: music
+          limit: 50
+        collection_order: custom
+        sync_mode: sync
+    ```
+
+=== "Tag and percentage"
+
+    Searches the Pirates tag with a minimum tag percentage of 50, requesting
+    popularity order. The tag is a string and the percentage is numeric.
+
+    ```yaml
+    collections:
+      Pirates Anime:
+        anilist_search:
+          tag: Pirates
+          min_tag_percent: 50
+          sort_by: popular
+          limit: 20
+        collection_order: custom
+        sync_mode: sync
+    ```

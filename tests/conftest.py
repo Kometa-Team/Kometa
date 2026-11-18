@@ -16,6 +16,9 @@ from unittest.mock import MagicMock
 import pytest
 from lxml import html as lxml_html
 
+# Documentation checks run separately with their own dependency group.
+collect_ignore_glob = ["test_docs*.py"]
+
 # ═══════════════════════════════════════════════════════════════════════
 # Shared Fake Classes
 # ═══════════════════════════════════════════════════════════════════════

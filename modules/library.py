@@ -577,7 +577,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False) -> list: ...
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False, target_keys=None) -> list: ...
 
     @abstractmethod
     def get_items_added_since(self, builder_level, cutoff) -> list: ...
@@ -634,18 +634,18 @@ class Library(ABC):
         yaml.data = self.report_data
         yaml.save()
 
-    def cache_items(self):
+    def cache_items(self, target_keys=None):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_cached_items()
+        items = self.get_cached_items(target_keys=target_keys)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items
 
-    def get_cached_items(self):
+    def get_cached_items(self, target_keys=None):
         """Return the unscoped top-level item snapshot cached for this run."""
-        return self.get_all(ignore_schedule_scope=True)
+        return self.get_all(ignore_schedule_scope=True, target_keys=target_keys)
 
     def _schedule_item_keys(self, items):
         """Return the top-level Plex rating keys selected by today's schedule mode."""

@@ -5,16 +5,17 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Runtimes", 
-        "CODE_NAME": "runtimes",
-        "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay of the movie runtime, episode runtime, or average episode runtime for all items in your library"
-    }'
+    "OVERLAY_NAME": "Runtimes",
+    "CODE_NAME": "runtimes",
+    "OVERLAY_LEVEL": "Movie, Show, Episode",
+    "DESCRIPTION": "an overlay of the movie runtime, episode runtime, or average episode runtime for all items in your library",
+    "OVERLAY_LABEL": "runtimes"
+}'
     end='<!--rec-sub-->'
 %}
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "runtimes", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode' 
 %}
@@ -51,11 +52,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "runtimes"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Runtimes Overlays"
-    
-        The Runtimes overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) to apply to all items in the library.
+
+    The Runtimes overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) to apply to all items in the library.

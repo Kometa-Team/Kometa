@@ -1,152 +1,161 @@
----
-hide:
-  - toc
----
-# Plex Smart Filter
+# Plex Smart Filters
 
-Smart Filters allow Kometa to create Smart Collections. The results of this builder are dynamic and do not require Kometa to re-run in order to update, instead they will update automatically as the data within your Plex Library updates (i.e. if new media is added)
+Use `smart_filter` to create a collection whose rules Plex reevaluates as library
+data changes. New matching items do not need another Kometa run to join.
+Use [Plex Search](search.md) for a manual collection updated on Kometa runs.
 
-Smart Filter Builders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Under `music_playlists` in a Playlist File, `smart_filter` creates a Plex smart playlist within the Music library instead. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
+!!! important "Music smart playlists"
 
-???+ important
+    Under `music_playlists`, `smart_filter` creates a smart playlist within a
+    Music library. It is not supported in regular cross-library Playlist Files.
+    Music smart playlists always contain tracks, even when filtering artist-
+    or album-level fields.
 
-    Smart Filters are supported for music playlists defined under `music_playlists`. They do not work in regular cross-library Playlist Files.
+## Filter structure
 
-Like Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/), you have to start each filter with either `any` or `all` as a base. You can only 
-have one base attribute and all filter attributes must be under the base.
+Start with exactly one root `all` (AND) or `any` (OR), placing filters beneath it.
+Nest these groups for complex rules; use a YAML list if a group name must appear
+more than once at the same level. See [query structure](search.md#query-structure)
+for the shared syntax and [TMDb people](search.md#tmdb-people) for person-ID resolution.
 
-For Music filters, `label` matches labels on the selected type: artists use `artist_label`, albums use `album_label`, and tracks use `track_label`. You can also use those type-specific filter names directly.
+### Plex builder attributes
 
-Music smart playlists always contain tracks. You can still filter by artist- or album-level fields (for example, `artist_mood`); Plex applies those rules to the tracks in the playlist. Kometa's `Items Found` count uses artist results for artist filters and album results for album filters, so it reports the matching titles even though the playlist itself contains tracks.
+Query options sit outside the `all` / `any` group:
 
-Numeric Music filters use comparison modifiers. For example, this creates a playlist of tracks with exactly one skip:
+{%
+    include-markdown "./search.md"
+    start="<!--query-options-start-->"
+    end="<!--query-options-end-->"
+%}
 
-```yaml
-music_playlists:
-  Skipped Tracks:
-    smart_filter:
-      type: track
-      all:
-        track_skips.is: 1
-```
+For collections of seasons, episodes, albums, or tracks, set
+[builder_level](../../settings.md#builder-level) to the required level.
+Smart filters suit membership criteria available entirely within Plex.
 
-Inside the base attribute you can use any filter below or nest more `any` or `all`. You can have as many nested `any` 
-or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.
+## Examples {#example-smart-filter-builders}
 
-**Note: To search by `season`, `episode`, `album`, or `track` you must use the `builder_level` [Setting](../settings.md) 
-to change the type of items the collection holds.**
+=== "AND / OR"
+
+    The first collection requires both Dave Chappelle and Comedy; the second
+    accepts either. Plex reevaluates these rules as library metadata changes.
+
+    ```yaml
+    collections:
+      Dave Chappelle Comedy:
+        smart_filter:
+          all:
+            actor: Dave Chappelle
+            genre: Comedy
+
+      Dave Chappelle or Comedy:
+        smart_filter:
+          any:
+            actor: Dave Chappelle
+            genre: Comedy
+    ```
+
+=== "Date and boolean"
+
+    Includes unplayed movies released after January 1, 2020. The date uses
+    `MM/DD/YYYY`; `true` is an unquoted boolean. Changes to play state can change
+    membership without a Kometa run.
+
+    ```yaml
+    collections:
+      Unplayed Recent Movies:
+        smart_filter:
+          all:
+            release.after: 01/01/2020
+            unplayed: true
+    ```
+
+=== "Rating and limit"
+
+    Shows up to 20 Action movies with an audience rating of at least 7.5, highest
+    rating first. The decimal is a minimum rating; the integer limits results.
+
+    ```yaml
+    collections:
+      Top Action Movies:
+        smart_filter:
+          all:
+            genre: Action
+            audience_rating.gte: 7.5
+          sort_by: audience_rating.desc
+          limit: 20
+    ```
+
+=== "Folder exclusion"
+
+    Includes movies outside the configured `/media/movies` library root. `.not`
+    excludes that root folder. Plex does not expose nested subfolders as Folder
+    Location choices.
+
+    ```yaml
+    collections:
+      Movies Outside Main Folder:
+        smart_filter:
+          all:
+            folder_location.not: /media/movies
+    ```
+
+=== "Decade"
+
+    Includes movies from the 1990s using one numeric value instead of a list of
+    ten years. `decade` takes no modifier.
+
+    ```yaml
+    collections:
+      90s Movies:
+        smart_filter:
+          any:
+            decade: 1990
+    ```
+
+## Music filters and smart playlists
+
+In Music, `label` matches the selected item type: `artist_label`, `album_label`,
+or `track_label`. The type-specific names can also be used directly.
+Artist- or album-level rules, such as `artist_mood`, apply to tracks in music
+smart playlists. Kometa's **Items Found** count can report artist or album titles
+for those filters, even though the playlist contains tracks.
+
+=== "Exact skip count"
+
+    Creates a Music smart playlist of tracks with exactly one skip. Numeric
+    music filters use comparison modifiers: `.is` means equal to the integer,
+    rather than a boolean switch.
+
+    ```yaml
+    music_playlists:
+      Skipped Tracks:
+        smart_filter:
+          type: track
+          all:
+            track_skips.is: 1
+    ```
+
+=== "Track collection and folder"
+
+    Creates a track collection from the configured music-archive root folder.
+    Music `folder_location` filtering requires track level; this example is a
+    collection, rather than a Music smart playlist.
+
+    ```yaml
+    collections:
+      Music From Archive Folder:
+        builder_level: track
+        smart_filter:
+          all:
+            folder_location: /media/music-archive
+    ```
 
 {%
     include-markdown "./search-options.md"
+    start="<!--shared-content-start-->"
 %}
 
 {%
     include-markdown "./sort-options.md"
+    start="<!--shared-content-start-->"
 %}
-
-## Plex Builder Attributes
-
-The majority of Smart and Manual Builders utilize the same Builder Attributes. Any deviation from this will be highlighted against the specific Builder.
-
-| Attribute  | Description & Values                                                                                                                                                                                                                               |
-|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `limit`    | **Description:** The max number of item for the filter.<br>**Default:** `all`<br>**Values:** `all` or a number greater than 0                                                                                                                      |
-| `sort_by`  | **Description:** This will control how the filter is sorted in your library. You can do a multi-level sort using a list.<br>**Default:** `random`<br>**Values:** Any sort options for your filter type in the [Sorts Options Table](#sort-options) |
-| `validate` | **Description:** Determines if a collection will fail on a validation error<br>**Default:** `true`<br>**Values**: `true` or `false`                                                                                                                |
-
-### Example Smart Filter Builder(s)
-
-```yaml
-collections:
-  Documentaries:
-    smart_filter:
-      all:
-        genre: Documentary
-```
-```yaml
-collections:
-  Dave Chappelle Comedy:
-    smart_filter:
-      all:
-        actor: Dave Chappelle
-        genre: Comedy
-```
-```yaml
-collections:
-  Movies Outside Main Folder:
-    smart_filter:
-      all:
-        folder_location.not: /media/movies
-```
-```yaml
-collections:
-  Music From Archive Folder:
-    builder_level: track
-    smart_filter:
-      all:
-        folder_location: /media/music-archive
-```
-```yaml
-collections:
-  Top Action Movies:
-    smart_filter:
-      all:
-        genre: Action
-      sort_by: audience_rating.desc
-      limit: 20
-```
-```yaml
-collections:
-  90s Movies:
-    smart_filter:
-      any:
-        year:
-          - 1990
-          - 1991
-          - 1992
-          - 1993
-          - 1994
-          - 1995
-          - 1996
-          - 1997
-          - 1998
-          - 1999
-```
-```yaml
-collections:
-  90s Movies:
-    smart_filter:
-      any:
-        decade: 1990
-```
-
-If you specify TMDb Person ID's using the Setting `tmdb_person` and then tell either `actor`, `director`, `producer`, or 
-`writer` to add `tmdb`, the script will translate the TMDb Person IDs into their names and run the filter on those names.
-
-```yaml
-collections:
-  Robin Williams:
-    smart_filter:
-      all:
-        actor: tmdb
-    tmdb_person: 2157
-```
-```yaml
-collections:
-  Steven Spielberg:
-    smart_filter:
-      all:
-        director: tmdb
-    tmdb_person: https://www.themoviedb.org/person/488-steven-spielberg
-```
-```yaml
-collections:
-  Quentin Tarantino:
-    smart_filter:
-      any:
-        actor: tmdb
-        director: tmdb
-        producer: tmdb
-        writer: tmdb
-    tmdb_person: 138
-```

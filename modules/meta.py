@@ -890,7 +890,7 @@ class MetadataFile(DataFile):
                                     auto_list[str(ck)] = cv
 
                         if auto_type == "decade" and library.is_show:
-                            all_items = library.get_all()
+                            all_items = library.get_all(ignore_schedule_scope=True)
                             if addons:
                                 raise Failed("Config Error: addons cannot be used with show decades")
                             addons = {}
@@ -969,7 +969,7 @@ class MetadataFile(DataFile):
                                 else:
                                     default_title_format = "Top <<key_name>> <<library_type>>s"
                         elif auto_type == "tmdb_collection":
-                            all_items = library.get_all()
+                            all_items = library.get_all(ignore_schedule_scope=True)
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -980,7 +980,7 @@ class MetadataFile(DataFile):
                                         auto_list[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                             logger.exorcise()
                         elif auto_type == "original_language":
-                            all_items = library.get_all()
+                            all_items = library.get_all(ignore_schedule_scope=True)
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -992,7 +992,7 @@ class MetadataFile(DataFile):
                             logger.exorcise()
                             default_title_format = "<<key_name>> <<library_type>>s"
                         elif auto_type == "origin_country":
-                            all_items = library.get_all()
+                            all_items = library.get_all(ignore_schedule_scope=True)
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
@@ -1021,7 +1021,7 @@ class MetadataFile(DataFile):
                             person_depth = util.parse("Config", "depth", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1)
                             person_minimum = util.parse("Config", "minimum", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=3, minimum=1) if "minimum" in person_methods else None
                             person_limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=person_methods, datatype="int", default=25, minimum=1) if "limit" in person_methods else None
-                            lib_all = library.get_all()
+                            lib_all = library.get_all(ignore_schedule_scope=True)
                             include_cols = []
                             for i, item in enumerate(lib_all, 1):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")

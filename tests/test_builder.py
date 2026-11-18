@@ -25,6 +25,22 @@ from tests.factories import make_builder
 # ═══════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.parametrize("method_name", ["tautulli_popular", "tautulli_top", "tautulli_watched"])
+@pytest.mark.parametrize("minimum, expected, warns", [(None, 0, False), (0, 0, False), (2, 2, False), (-1, 0, True), ("invalid", 0, True)])
+def test_tautulli_list_minimum_defaults_and_validation(monkeypatch, method_name, minimum, expected, warns):
+    logger = MagicMock()
+    monkeypatch.setattr(builder_module.util, "logger", logger)
+    builder = make_builder(Type="Collection", builders=[], library=SimpleNamespace(is_music=False, Tautulli=SimpleNamespace(has_section=True)))
+    data = {"list_days": 30, "list_size": 10}
+    if minimum is not None:
+        data["LIST_MINIMUM"] = minimum
+
+    builder._tautulli(method_name, data)
+
+    assert builder.builders[0][1]["list_minimum"] == expected
+    assert logger.warning.called == warns
+
+
 class FakeShowLibrary:
     def __init__(self):
         self.plex_map = {}
@@ -122,6 +138,65 @@ def test_load_collection_items_without_items_or_mdblist_sync_raises(monkeypatch)
 
     with pytest.raises(Failed, match="No Collection items found"):
         builder.load_collection_items()
+
+
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_validates_destination_and_defaults_to_sync(source):
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock())
+    builder = make_builder(config=config)
+
+    builder._list_export({"source": source, "name": "My List"})
+
+    assert builder.list_export == {"source": source, "name": "My List", "mode": "sync"}
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {"source": "unknown", "name": "My List"},
+        {"source": "flicklist", "name": "My List", "mode": "replace"},
+        {"source": "flicklist", "name": ""},
+        {"source": "wetrakr", "name": "My List", "extra": True},
+    ],
+)
+def test_list_export_rejects_invalid_options(data):
+    builder = make_builder(config=SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock()))
+
+    with pytest.raises(Failed, match="list_export"):
+        builder._list_export(data)
+
+
+@pytest.mark.parametrize("source", ["mdblist", "flicklist", "wetrakr", "tmdb", "floppy"])
+def test_list_export_syncs_empty_builder_results(source, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logs)
+    config = SimpleNamespace(MDBList=MagicMock(), FlickList=MagicMock(), WeTrakr=MagicMock(), TMDb=MagicMock(), Floppy=MagicMock(), Convert=MagicMock())
+    builder = make_builder(config=config, list_export={"source": source, "name": "My List", "mode": "sync"}, found_items=[])
+
+    builder.export_list()
+
+    if source in ("mdblist", "tmdb", "floppy"):
+        getattr(config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list.assert_called_once_with("My List", [], "sync")
+    else:
+        getattr(config, "FlickList" if source == "flicklist" else "WeTrakr").sync_list.assert_called_once_with(config.Convert, "My List", [], mode="sync")
+    assert logs.info_messages == [f"Exporting 'Test Collection' Collection to {source}"]
+
+
+def test_list_export_uses_builder_results_instead_of_existing_collection_items(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    movie_type = type("Movie", (), {})
+    monkeypatch.setattr(builder_module, "Movie", movie_type)
+    found = movie_type()
+    found.ratingKey = 101
+    stale = movie_type()
+    stale.ratingKey = 202
+    config = SimpleNamespace(MDBList=MagicMock())
+    library = SimpleNamespace(movie_rating_key_map={101: 550, 202: 660})
+    builder = make_builder(config=config, libraries=[library], found_items=[found], items=[stale], list_export={"source": "mdblist", "name": "My List", "mode": "sync"})
+
+    builder.export_list()
+
+    config.MDBList.sync_list.assert_called_once_with("My List", [(550, "tmdb")], "sync")
 
 
 def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
@@ -586,13 +661,14 @@ class TestFilterAndSaveItems:
         builder.filter_and_save_items([("383275_2", "tvdb_season")])
         assert builder.found_items == episodes
 
-    def test_expands_tmdb_season_into_playlist_episodes(self, monkeypatch):
+    @pytest.mark.parametrize("playlist", [False, True])
+    def test_expands_tmdb_season_into_playlist_or_collection_episodes(self, monkeypatch, playlist):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
         monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
         monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
         episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
         builder = _episode_builder(FakeTVDbLibrary(FakeShow("Agent Carter", seasons={1: FakeSeason(episodes)})))
-        builder.playlist = True
+        builder.playlist = playlist
         builder.config = SimpleNamespace(Convert=SimpleNamespace(tmdb_to_tvdb=MagicMock(return_value=383275)))
 
         builder.filter_and_save_items([("61550_1", "tmdb_season")])
@@ -739,9 +815,27 @@ class TestTextfile:
     def test_mdblist_list_is_allowed_for_episode_collections(self):
         assert "mdblist_list" in parts_collection_valid
 
-    def test_floppy_list_builders_are_allowed_for_episode_collections(self):
-        assert "floppy_list" in parts_collection_valid
-        assert "floppy_list_details" in parts_collection_valid
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "flicklist_list",
+            "flicklist_list_details",
+            "flicklist_user_lists",
+            "wetrakr_list",
+            "wetrakr_list_details",
+            "wetrakr_user_lists",
+            "floppy_list",
+            "floppy_list_details",
+            "floppy_tracked",
+        ],
+    )
+    def test_tracker_part_builders_are_allowed_for_season_and_episode_collections(self, method):
+        # Both builder levels use this allowlist in CollectionBuilder's validation gate.
+        assert method in parts_collection_valid
+
+    @pytest.mark.parametrize("method", ["flicklist_watchlist", "wetrakr_tracking"])
+    def test_unrelated_tracker_builders_remain_disallowed_for_part_collections(self, method):
+        assert method not in parts_collection_valid
 
     def test_floppy_list_details_is_allowed_for_playlists(self):
         assert "floppy_list_details" in playlist_attributes
@@ -1246,6 +1340,43 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 # update_smart_filter
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestUnsupportedPoster:
+    @pytest.mark.parametrize("attribute", ["kometa_poster", "pmm_poster", "KOMETA_POSTER", "PMM_POSTER"])
+    @pytest.mark.parametrize("value", [None, {"background_color": "#0B1F3A", "components": [{"text": "WEEK 7"}]}])
+    def test_ignores_unsupported_poster_and_preserves_supported_poster(self, monkeypatch, attribute, value):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        renderer = MagicMock(side_effect=AssertionError("Unsupported poster renderer must not run"))
+        monkeypatch.setattr(builder_module, "KometaImage", renderer)
+        library = MagicMock()
+        library.is_movie = False
+        library.is_show = True
+        library.is_music = False
+        library.type = "Show"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.smart_label_check.return_value = True
+        library.get_collection.return_value = SimpleNamespace(title="Week 7", smart=True)
+        filter_url = "?type=2&sort=originallyAvailableAt:desc&label=123"
+        library.smart_filter.return_value = filter_url
+        library.fetchItems.return_value = []
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        monkeypatch.setattr(CollectionBuilder, "build_filter", lambda *args, **kwargs: (2, "Label filter", filter_url))
+        poster_url = "https://example.com/poster.png"
+
+        builder = CollectionBuilder(config, MagicMock(), "Week 7", {"smart_label": "release.desc", "plex_all": True, attribute: value, "url_poster": poster_url}, library=library)
+
+        assert logger.error_messages == [f"Collection Error: {attribute.lower()} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead."]
+        assert builder.posters == {"url_poster": poster_url}
+        assert builder.builders == [("plex_all", "show")]
+        renderer.assert_not_called()
 
 
 class TestUpdateSmartFilter:

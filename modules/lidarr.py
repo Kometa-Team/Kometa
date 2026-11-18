@@ -124,6 +124,15 @@ class Lidarr:
                 tag_ids.append(labels[label])
         return tag_ids
 
+    def _required_tag_ids(self, tags):
+        """IDs for every tag an artist must carry, or None when one is not in Lidarr, so no artist can carry them all."""
+        labels = {tag["label"].lower(): tag["id"] for tag in self._get_list("/tag")}
+        missing = [str(tag) for tag in tags if str(tag).lower() not in labels]
+        if missing:
+            logger.warning(f"Lidarr Warning: Tags not found in Lidarr: {', '.join(missing)}")
+            return None
+        return {labels[str(tag).lower()] for tag in tags}
+
     @staticmethod
     def valid_mbid(mbid):
         return bool(mbid and mbid_pattern.fullmatch(mbid))
@@ -247,14 +256,20 @@ class Lidarr:
             self._put(f"/artist/{artist['id']}", artist)
 
     def remove_all_with_tags(self, tags):
-        wanted_tags = set(self._tag_ids(tags, create=False))
+        wanted_tags = self._required_tag_ids(tags)
+        if not wanted_tags:
+            return
         for artist in self.all_artists():
-            if wanted_tags and wanted_tags.issubset(set(artist.get("tags", []))):
+            if wanted_tags.issubset(set(artist.get("tags", []))):
                 self._delete(f"/artist/{artist['id']}", {"deleteFiles": False, "addImportListExclusion": False})
                 logger.info(f"Removed from Lidarr | {artist['artistName']}")
 
     def get_mbid_ids(self, method, data):
-        allowed = {tag["id"] for tag in self._get_list("/tag") if tag["label"].lower() in data} if method == "lidarr_taglist" else set()
+        allowed = set()
+        if method == "lidarr_taglist" and data:
+            allowed = self._required_tag_ids(data)
+            if allowed is None:
+                return []
         ids = []
         artists = self.all_artists()
         self._artist_names = {artist.get("foreignArtistId"): artist.get("artistName") for artist in artists}

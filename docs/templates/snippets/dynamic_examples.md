@@ -1,4 +1,4 @@
-## Dynamic Collection Examples
+## Dynamic collection examples
 
 ???+ example
 
@@ -17,7 +17,7 @@
           - Talk Show
         template: genre collection #(3)!
     ```
-    
+
     1. Uses the `genre` type to create dynamic collections based on each genre found in the library.
     2. Uses `exclude` to exclude the `Talk Show` genre.
     3. Uses the template called `genre collection` for these collections.

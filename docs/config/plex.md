@@ -42,7 +42,7 @@ plex:
 
 If you set `optimize: true`, you may find that Plex becomes temporarily unresponsive after Kometa has finished running,  this is normal and expected behaviour which is reproducible if you run Optimize Database within the Plex UI.
 
-# Important token notes:
+# Important Token Notes:
 
 The token you use with Kometa should ideally be a token you have generated expressly for Kometa's use.
 
@@ -91,8 +91,6 @@ plex:
 The `plex` instance at the bottom is the "global" plex server. Unless otherwise specified, any connection to plex is 
 assumed to be using that plex server. The first "Movies" library entry is on the global `plex` server.
 
-The "Movies_on_Second_Plex" library is found on the second plex server. Note that this library has its own plex section that lists the attributes that differ from the global plex instance, 
-namely the `URL`, `token` and `timeout`. The library on the second server is also called "Movies", but since you can't have two keys (in this scenario, libraries) with the same name, 
+The "Movies_on_Second_Plex" library is found on the second plex server. Note that this library has its own plex section that lists the attributes that differ from the global plex instance,
+namely the `URL`, `token` and `timeout`. The library on the second server is also called "Movies", but since you can't have two keys (in this scenario, libraries) with the same name,
 it is named Movies_on_Second_Plex in the config.yml, and the `library_name:` attribute contains the name of the library on the actual plex server.
-
-

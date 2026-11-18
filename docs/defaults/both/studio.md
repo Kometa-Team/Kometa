@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Studio", 
-        "CODE_NAME": "studio",
-        "DESCRIPTION": "dynamically create collections based on the studios available in your library",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "070"
-    }'
+    "COLLECTION": "Studio",
+    "CODE_NAME": "studio",
+    "DESCRIPTION": "dynamically create collections based on the studios available in your library",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "070"
+}'
     replace-tags='{"title-sub": "This file also merges similarly named studios (such as \"20th Century Fox\" and \"20th Century Animation\") into one (\"20th Century Studios\")."}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Studio"}' %}
@@ -39,7 +39,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="addons|addons-extra|exclude|include|include-extra|limit|sort_by|format"
         replace='{
-            "DYNAMIC_NAME": "Studios", 
+            "DYNAMIC_NAME": "Studios",
             "DYNAMIC_VALUE": "Studios",
             "NAME_FORMAT": "<<key_name>>",
             "SUMMARY_FORMAT": "<<library_translationU>>s produced by <<key_name>>."
@@ -57,11 +57,11 @@ hide:
         The Studio collections use the [dynamic collections](../../../files/dynamic) system with a default include list and some default addons to consolidate some of the studios.
 
     === "Default `include`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         include: 
     {%    
-      include-markdown "../../../defaults/both/studio.yml" 
+      include-markdown "../../templates/source-defaults/both/studio.yml"
       comments=false
       start="include:\n"
       end="addons:"
@@ -69,11 +69,11 @@ hide:
         ```
 
     === "Default `addons`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         addons: 
     {%    
-      include-markdown "../../../defaults/both/studio.yml" 
+      include-markdown "../../templates/source-defaults/both/studio.yml"
       comments=false
       start="addons:\n"
     %}

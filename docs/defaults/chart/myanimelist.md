@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "MyAnimeList Chart", 
-        "CODE_NAME": "myanimelist",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "020", 
-        "DESCRIPTION": "create collections based on MyAnimeList charts"
-    }'
+    "COLLECTION": "MyAnimeList Chart",
+    "CODE_NAME": "myanimelist",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "020",
+    "DESCRIPTION": "create collections based on MyAnimeList charts"
+}'
 %}
 | `MyAnimeList Favorited`  | `favorited` | Collection of most Favorited Anime on MyAnimeList.      |
 | `MyAnimeList Popular`    | `popular`   | Collection of the most Popular Anime on MyAnimeList.    |
@@ -45,14 +45,14 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="myanimelist|limit|sync_mode|collection_order"
         rewrite-relative-urls=false
-        replace='{"<!--limit-extra-->": "<br>**Default:** `100`", "COLLECTION_ORDER": "`custom`"}'
+        replace='{"<!--limit-extra-->": "**Default:** `100`<br>", "COLLECTION_ORDER": "`custom`"}'
     %}
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "MyAnimeList Chart Collections"
-        
+
         The MyAnimeList Chart collections use [MyAnimeList Builders](../../../files/builders/myanimelist) to create the collections.

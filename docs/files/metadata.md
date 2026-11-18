@@ -155,7 +155,7 @@ You can have the script edit the metadata of Items by adding them to the `metada
             tmdb_show: 56295
             content_rating: R
         ```
-    
+
     === "TV Shows"
         ```yaml
         metadata:
@@ -213,7 +213,7 @@ You can have the script edit the metadata of Items by adding them to the `metada
               4:
                 title: "Book Four: Balance"
         ```
-    
+
     === "Music"
         ```yaml
         metadata:
@@ -240,7 +240,7 @@ You can have the script edit the metadata of Items by adding them to the `metada
                 originally_available: "2007-05-14"
         ```
 
-## Matching Items
+## Matching items
 
 The `match` attribute is used to match movies within Plex to that definition within the Metadata File. One definition 
 can match and edit multiple items. The available matching options are outlined below.
@@ -276,9 +276,9 @@ can match and edit multiple items. The available matching options are outlined b
 ??? example "Matching Examples (Click to Expand)"
     === "Movies"
         #### Example 1 - `title` and `mapping_id` 
-        
+
         The below example shows how `title` and `mapping_id` can be used to match movies.
-        
+
         ```yaml
         metadata:
           movie1:                   # Matches via the title "Star Wars"
@@ -293,14 +293,14 @@ can match and edit multiple items. The available matching options are outlined b
             match:
               mapping_id: tt4154756
             edits...
-          movie4:                   # Matches via the title "9" 
+          movie4:                   # Matches via the title "9"
             match:
               title: 9
             edits...
         ```
-        
+
         The Mapping Name can also be used to reduce line-count, as shown here:
-        
+
         ```yaml
         metadata:
           Star Wars:    # Matches via the title "Star Wars"
@@ -309,20 +309,20 @@ can match and edit multiple items. The available matching options are outlined b
             edits...
           tt4154756:    # Matches via IMDb ID: tt4154756
             edits...
-          "9":          # Matches via the title "9" 
+          "9":          # Matches via the title "9"
             edits...
         ```
-        
+
         **Note:** to search for a movie titled with a number from the mapping name you must surround the number in 
         quotes like in the example below. Otherwise, it will look for the movie associated with that TMDb ID.
-        
+
         #### Example 2 - `title` and `year`
-        
+
         The below example shows how `title` and `year` can be used to match movies. 
-        
+
         In this example, there are two movies in the library called "Godzilla", so the `year` attribute is used to 
         identify which movie is being matched.
-        
+
         ```yaml
         metadata:
           Godzilla (1954):                   # Matches via the title "Godzilla" released in 1954
@@ -336,13 +336,13 @@ can match and edit multiple items. The available matching options are outlined b
               year: 1998
             edits...
         ```
-        
+
         #### Example 3 - using `editions`
-        
+
         The edition attributes can be used to further specify which version of a movie should be matched within Plex.
-        
+
         This can be combined with Example 1 as follows
-        
+
         ```yaml
         metadata:
           movie1:                   # Matches via the title "Star Wars" and edition containing "4K77"
@@ -351,10 +351,10 @@ can match and edit multiple items. The available matching options are outlined b
               edition_contains: 4K77
             edits...
         ```
-        
+
         If you wanted to specify the version of Star Wars which does not have an edition, then the `blank_edition` 
         attribute can be used as shown below:
-        
+
         ```yaml
         metadata:
           movie1:                   # Matches via the title "Star Wars" and checks for no edition version
@@ -366,9 +366,9 @@ can match and edit multiple items. The available matching options are outlined b
 
     === "TV Shows"
         #### Example 1 - `title` and `mapping_id` 
-        
+
         The below example shows how `title` and `mapping_id` can be used to match shows.
-        
+
         ```yaml
         metadata:
           show1:                   # Matches via the title "Game of Thrones"
@@ -383,14 +383,14 @@ can match and edit multiple items. The available matching options are outlined b
             match:
               mapping_id: tt10234724
             edits...
-          show4:                   # Matches via the title "24" 
+          show4:                   # Matches via the title "24"
             match:
               title: 24
             edits...
         ```
-        
+
         The Mapping Name can also be used to reduce line-count, as shown here:
-        
+
         ```yaml
         metadata:
           Game of Thrones:  # Matches via the Name "Game of Thrones"
@@ -399,20 +399,20 @@ can match and edit multiple items. The available matching options are outlined b
             edits...
           tt10234724:       # Matches via IMDb ID: tt10234724
             edits...
-          "24":             # Matches via the Name "24" 
+          "24":             # Matches via the Name "24"
             edits...
         ```
-        
+
         **Note:** to search for a show titled with a number from the mapping name you must surround the number in quotes 
         like in the example below. Otherwise, it will look for the show associated with that TVDb ID.
-        
+
         #### Example 2 - `title` and `year`
-        
+
         The below example shows how `title` and `year` can be used to match shows. 
-        
+
         In this example, there are two shows in the library called "Vikings", so the `year` attribute is used to 
         identify which show is being matched.
-        
+
         ```yaml
         metadata:
           Vikings (2012):                   # Matches via the title "Vikings" released in 2012
@@ -429,36 +429,36 @@ can match and edit multiple items. The available matching options are outlined b
 
     === "Music"
         #### Example 1 - `title`
-        
+
         The below example shows how `title` can be used to match artists.
-        
+
         ```yaml
         metadata:
           artist1:                   # Matches via the title "Ke$ha"
             match:
               title: Ke$ha
             edits...
-          artist2:                   # Matches via the title "311" 
+          artist2:                   # Matches via the title "311"
             match:
               title: 311
             edits...
         ```
-        
+
         The Mapping Name can also be used to reduce line-count, as shown here:
-        
+
         ```yaml
         metadata:
           Ke$ha:             # Matches via the Name "Ke$ha"
             edits...
-          "311":             # Matches via the Name "311" 
+          "311":             # Matches via the Name "311"
             edits...
         ```
 
-## Metadata Edits
+## Metadata edits
 
 The available attributes for editing movies are as follows
 
-### Special Attributes
+### Special attributes
 
 | Attribute         | Description                                                                                                                                                                                                                                                                                                                       | Item Types                   |
 |:------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------|
@@ -475,7 +475,7 @@ The available attributes for editing movies are as follows
 | `update_seasons`  | Used to specify if this definition's seasons metadata will update.<br>Multiple can be used for one definition as a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma separated string. One `false` will cause it to fail.<br>**Values:** `true`, `false`                            | `Shows`                      |
 
 
-### General Attributes
+### General attributes
 
 | Attribute                                                                                | <div style="width:295px">Allowed Values</div>                               | Item Types                                                              |
 |:-----------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:------------------------------------------------------------------------|
@@ -496,7 +496,7 @@ The available attributes for editing movies are as follows
 | `track`                                                                                  | Text to change Track.                                                       | `Tracks`                                                                |
 | `user_rating`                                                                            | Number to change User Rating.                                               | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums`, `Tracks` |
 
-### Tag Attributes
+### Tag attributes
 
 You can add `.remove` to any tag attribute to only remove those tags i.e. `genre.remove`.
 
@@ -516,7 +516,7 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `style`          | List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated text of each Style Tag.          | `Artists`, `Albums`                                                     |
 | `writer`         | List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated text of each Writer Tag.         | `Movies`, `Episodes`                                                    |
 
-### Image and Theme Attributes
+### Image and theme attributes
 
 | Attribute         | <div style="width:365px">Allowed Values</div>    | Item Types                                                    |
 |:------------------|:-------------------------------------------------|:--------------------------------------------------------------|
@@ -541,7 +541,7 @@ metadata:
     file_theme: /config/themes/dune.mp3
 ```
 
-### Advanced Attributes
+### Advanced attributes
 
 | <div style="width:200px">Attribute</div>                                                            | Allowed Values                                                                                                                                                                                                                                                                                                                                                                                                                                                            | <div style="width:110px">Item Types</div> |
 |:----------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------|

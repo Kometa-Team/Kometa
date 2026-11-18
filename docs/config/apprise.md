@@ -19,7 +19,7 @@ apprise:
 |:----------|:-----------------------------------------|:-------------------------------------|:------------------------------------------:|
 | `config`  | Path or URL to an Apprise configuration. | Any valid path or URL                | :fontawesome-solid-circle-check:{ .green } |
 
-## Apprise Configuration File
+## Apprise configuration file
 
 The Apprise configuration file contains the service URLs that should receive notifications.
 

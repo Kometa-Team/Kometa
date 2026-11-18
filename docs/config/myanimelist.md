@@ -41,22 +41,22 @@ A block from Kometa Utilities **Use Kometa App** does not include `client_secret
 
 ### Authenticating outside Kometa
 
-The simplest and preferred way to authenticate against MyAnimeList is the [Kometa Utilities](./authentication.md).
+The simplest and preferred way to authenticate against MyAnimeList is the [Kometa Utilities](authentication.md).
 
 If you want to do this manually, read on.
 
-### Important Note on "Authentication Process":
+### Important note on "authentication process":
 
 The MyAnimeList authentication process is interactive; Kometa will display a URL in the console output and then wait for you to visit that URL in order to grant access and then paste in some additional information.  In order for this to happen you need to run Kometa in an interactive mode, which can be fussy in some contexts (e.g., running Kometa in a Docker container on a NAS).  For this reason, it is far simpler to use the form down below to perform these steps; it does all the same steps, but takes them out of the Kometa script execution.  The form will produce a complete authentication block as shown above ready for you to copy-paste into your `config.yml`.
 
-## MyAnimeList Authentication
+## MyAnimeList authentication
 
 You can complete the MyAnimeList authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `mal` attribute.
 
 To connect to MyAnimeList.net you must create a MyAnimeList application and supply Kometa the `client id` and `client secret` provided, please do the following:
 
 ???+ tip
-    
+
     MyAnimeList may have specific requirements for any value shown below, which may change over time, so refer to the 
     form at MyAnimeList in the event that any of these example values do not work.
 
@@ -91,14 +91,14 @@ To connect to MyAnimeList.net you must create a MyAnimeList application and supp
 
 18. Copy the URL, which will be `localhost/?code=BLAH` and paste in your config file next to `localhost_url`.
 
-     **If you do not see an error as above but instead get taken to some seemingly random website, you probably have a webserver running on your local computer, 
+     **If you do not see an error as above but instead get taken to some seemingly random website, you probably have a webserver running on your local computer,
      probably from some sort of tutorial if you don't recall having set one up. For example, some Docker tutorials have you start up local web servers.**
-    
+
      You will need to stop that web server while you're doing this in order to grab that localhost URL.
 
 19. Run Kometa and the authentication will be completed.
 
-## Alternative Way of Letting Kometa make the URL
+## Alternative way of letting Kometa make the URL
 
 You can record just your `client_id` and `client_secret` and Kometa will create the url for you described below.
 
@@ -131,7 +131,7 @@ Click "Allow", and you will be taken to a page that will not load. That's fine a
 
 Copy the URL, which will be `localhost/?code=BLAH` and paste it at the prompt.
 
-**If you do not see an error as above but instead get taken to some seemingly random website, you probably have a webserver running on your local computer, 
+**If you do not see an error as above but instead get taken to some seemingly random website, you probably have a webserver running on your local computer,
 probably from some sort of tutorial if you don't recall having set one up. For example, some Docker tutorials have you start up local web servers.**
 
 You will need to stop that web server while you're doing this in order to grab that localhost URL.
@@ -144,12 +144,12 @@ You will need to stop that web server while you're doing this in order to grab t
 
 ```
 
-### OAuth Flow using Docker
+### OAuth flow using Docker
 
 To authenticate MyAnimeList the first time, you need run the container with the `-it` flags in order to walk through the OAuth flow mentioned above. 
 Once you have the MyAnimeList authentication data saved into the YAML, you'll be able to run the container normally.
 
-## Online Authorization
+## Online authorization
 
 {% 
   include-markdown "./authentication.md"

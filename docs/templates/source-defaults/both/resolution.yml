@@ -1,0 +1,82 @@
+##############################################################################
+#                           Resolution Collections                           #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#          https://wiki.kometa.team/defaults/both/resolution            #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "120"
+    conditionals:
+      image:
+        default: resolution/<<key>>
+        conditions:
+          - style: standards
+            value: resolution/standards/<<key>>
+      key_name:
+        conditions:
+          - style: standards
+            key: 480
+            value: SD
+          - style: standards
+            key: 720
+            value: HD Ready
+          - style: standards
+            key: 1080
+            value: Full HD
+          - style: standards
+            key: 4k
+            value: Ultra HD
+
+collections:
+  Resolution Collections:
+    template:
+      - name: separator
+        separator: resolution
+        key_name: Resolution
+        translation_key: separator
+
+dynamic_collections:    
+  Resolution:
+    type: resolution
+    title_format: <<key_name>> <<library_typeU>>s
+    other_name: Other Resolutions <<library_typeU>>s
+    template:
+      - smart_filter
+      - shared
+    other_template:
+      - other_collection
+      - smart_filter
+      - shared
+    template_variables:
+      search_term:
+        default: resolution
+      translation_key:
+        default: resolution
+        other: resolution_other
+      order:
+        4k: "1_"
+        1080: "2_"
+        720: "3_"
+        480: "4_"
+      dynamic:
+        default: true
+    include:
+      - 4k
+      - 1080
+      - 720
+      - 480
+    addons:
+      4k:
+        - 8k
+      1080:
+        - 2k
+      480:
+        - 144
+        - 240
+        - 360
+        - sd
+        - 576
+        

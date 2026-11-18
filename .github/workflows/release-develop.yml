@@ -1,14 +1,32 @@
 name: Develop Release
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit on nightly to publish to develop (default is the nightly tip)
+        required: false
+        type: string
+  workflow_call:
+    inputs:
+      sha:
+        description: Commit on nightly to publish to develop (default is the nightly tip)
+        required: false
+        type: string
+  # Remove this push trigger once increment-build.yml's release-develop job is on master (pull_request_target runs master's copy).
   push:
     branches: [nightly]
     paths: [VERSION]
 
+concurrency:
+  group: release-develop
+  cancel-in-progress: false
+
 jobs:
   release-develop:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
 
       - name: Create App Token
@@ -22,15 +40,31 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.app-token.outputs.token }}
-          ref: nightly
+          ref: ${{ inputs.sha || 'nightly' }}
           fetch-depth: 0
 
       - name: Push Nightly to Develop
         id: forward
+        env:
+          TARGET_SHA: ${{ inputs.sha }}
         run: |
+            if [ -n "${TARGET_SHA}" ] && ! [[ "${TARGET_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "sha must be a full 40-character commit SHA" >&2
+              exit 1
+            fi
             hash=$(git rev-parse HEAD)
+            if ! git merge-base --is-ancestor "${hash}" origin/nightly; then
+              echo "${hash} is not on nightly, refusing to publish it to develop" >&2
+              exit 1
+            fi
+            if [ "$(git rev-parse --verify --quiet origin/develop)" = "${hash}" ]; then
+              echo "Develop is already at ${hash}"
+              echo "pushed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
             echo "Pushing Nightly (${hash}) to Develop"
-            git push origin HEAD:refs/heads/develop
+            git push origin "${hash}:refs/heads/develop"
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
             echo "build=${hash}" >> $GITHUB_OUTPUT
             value=$(cat VERSION)
             echo "version=${value%-build*}" >> $GITHUB_OUTPUT
@@ -39,7 +73,7 @@ jobs:
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
-        if: success()
+        if: success() && steps.forward.outputs.pushed == 'true'
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           title: "${{ vars.REPO_NAME }} develop synced to nightly (${{ steps.forward.outputs.build }}): ${{ vars.TEXT_SUCCESS }}"
@@ -52,7 +86,7 @@ jobs:
 
       - name: Discord Develop Update Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
-        if: success()
+        if: success() && steps.forward.outputs.pushed == 'true'
         with:
           webhook_id_token: ${{ secrets.DEVELOP_WEBHOOK }}
           title: ${{ vars.NAME }} ${{ steps.forward.outputs.version }} Build ${{ steps.forward.outputs.build-value }}

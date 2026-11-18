@@ -54,14 +54,14 @@ jobs:
 
       - name: Run Spellcheck on changed files
         id: spellcheck
-        uses: rojopolis/spellcheck-github-actions@c1934c57e61c734261d7905b525486b12f8eb670 # 0.66.0
+        uses: rojopolis/spellcheck-github-actions@dad57fc333130f4c9ae9632a6ad7ddc4de3515a2 # 0.69.0
         with:
           task_name: Markdown
           config_path: .github/.spellcheck.yml
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
 
       - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
 
@@ -96,8 +96,8 @@ jobs:
     needs: [guard, validate]
     # docker/Dockerfile.base is otherwise built only by docker-base.yml's weekly schedule, which
     # checks out nightly -- so a change to it, or to the files it installs from, would not
-    # be exercised until after merge. Build only, never pushed; docker-build still consumes
-    # the published base image.
+    # be exercised until after merge. Build only, never pushed; docker-build builds the PR image
+    # on the PR's own base (docker-bake.hcl) when the base inputs change.
     if: needs.validate.outputs.base == 'true'
     permissions:
       contents: read
@@ -188,7 +188,7 @@ jobs:
             echo "part-value=${COMMITS}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -207,16 +207,16 @@ jobs:
 
       - name: Build and Push
         id: docker_build
+        env:
+          # A PR that changes the base inputs is built on its own base (never pushed); any other PR uses the published :base.
+          BAKE_TARGET: ${{ needs.validate.outputs.base == 'true' && 'app-pr-base' || 'app' }}
+          IMAGE_TAG: kometateam/kometa:${{ steps.build-vars.outputs.tag-name }}
+          BRANCH_NAME: ${{ steps.build-vars.outputs.tag-name }}
         run: |
-          docker buildx build \
-            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
-            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
-            --build-arg BRANCH_NAME=${{ steps.build-vars.outputs.tag-name }} \
-            --file ./Dockerfile \
-            --platform linux/amd64,linux/arm64 \
-            --tag kometateam/kometa:${{ steps.build-vars.outputs.tag-name }} \
-            --push \
-            .
+          KOMETA_GIT_SHA="$(git rev-parse HEAD)"
+          KOMETA_VERSION="$(tr -d '\r\n' < VERSION)"
+          export KOMETA_GIT_SHA KOMETA_VERSION
+          docker buildx bake --file docker-bake.hcl --set "${BAKE_TARGET}.output=type=registry" "${BAKE_TARGET}"
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master

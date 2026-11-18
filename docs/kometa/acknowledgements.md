@@ -1,19 +1,30 @@
----
-hide:
-  - toc
----
-# Acknowledgements
+<span id="acknowledgements"></span>
+
+# Community & Credits
+
+Find support, share configurations, and help improve Kometa.
+
+## Community and project links
+
+| Destination | What to use it for |
+| --- | --- |
+| [Discord](https://discord.com/invite/kometa-822460010649878528) | Ask for help and discuss your setup. Read [support guidance](help.md#get-further-help) before sharing logs. |
+| [Community configs](https://github.com/Kometa-Team/Community-Configs) | Browse examples contributed by other users. |
+| [Report a bug](https://github.com/Kometa-Team/Kometa/issues) | Report a reproducible problem. |
+| [Request a feature](https://features.kometa.wiki/) | Suggest and discuss improvements. |
+| [Sponsor Kometa](https://github.com/sponsors/meisnate12) | Support ongoing development. |
 
 ## Kometa Team
 
 | GitHub                                        | Discord    | Role                                                                                                                                                                    |
 |:----------------------------------------------|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [meisnate12](https://github.com/meisnate12/)  | Sohjiro    | Main Kometa Developer                                                                                                                                                   |
+| [meisnate12](https://github.com/meisnate12/)  | Sohjiro    | Kometa Founder & Developer                                                                                                                                                   |
+| [chazlarson](https://github.com/chazlarson/)  | Mr. Carrot | Kometa Developer, Discord Moderator and Wiki Contributor            |
+| [Badja](https://github.com/orgs/Kometa-Team/people/badja-dev)  | Badja | Kometa Developer           |
 | [YozoraXCII](https://github.com/YozoraXCII)   | Yozora     | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
 | [bullmoose20](https://github.com/bullmoose20) | bullmoose  | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
-| [chazlarson](https://github.com/chazlarson/)  | Mr. Carrot | Kometa Master Discord Support and Wiki Contributor who created the [Local](install/walkthroughs/local.md) and [Docker](install/walkthroughs/docker.md) guides           |
-| [JohnFawkes](https://github.com/JohnFawkes)   | anonfawkes | Kometa Master Discord Support                                                                                                                                           |
-| [antwanchild](https://github.com/antwanchild) | Antwan     | Kometa Master Discord Support                                                                                                                                           |
+| [JohnFawkes](https://github.com/JohnFawkes)   | anonfawkes | Kometa Master, Discord Moderator                                                                                                                                           |
+| [antwanchild](https://github.com/antwanchild) | Antwan     | Kometa Master, Discord Moderator                                                                                                                                           |
 
 The team at Kometa would like to recognize and thank those who have helped the project become what it is today. 
 
@@ -26,12 +37,12 @@ Special Thanks to [RedHeadJedi](https://theposterdb.com/user/RedHeadJedi) over a
 
 
 {%
-    include-markdown "../../README.md"
+    include-markdown "../templates/project.md"
     start="<!--sponsor-start-->"
     end="<!--sponsor-end-->"
 %}
 
-## Community Developer Acknowledgements
+## Community developer acknowledgements
 
 These are the developers and creators who are an active part of the Kometa community and help us achieve new goals.
 
@@ -47,7 +58,7 @@ These are the developers and creators who are an active part of the Kometa commu
 
 <br>
 
-## Project Inspiration Acknowledgements
+## Project inspiration acknowledgements
 
 These are the developers and creators who served as inspiration for Kometa.
 
@@ -62,18 +73,63 @@ These are the developers and creators who served as inspiration for Kometa.
 
 <br>
 
-## Kometa Dependency Acknowledgements
-These are the developers and creators of the technologies that are required to make Kometa work.
-
-| Acknowledgement                             | Reason                                                                                                             |                Sponsor the Developer                 |
-|:--------------------------------------------|:-------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------:|
-| [pkkid](https://github.com/pkkid)           | Creator of [python-plexapi](https://github.com/pkkid/python-plexapi)                                               |       :fontawesome-solid-circle-xmark:{ .red }       |
-| [meisnate12](https://github.com/meisnate12) | Creator of [ArrAPI](https://github.com/Kometa-Team/ArrAPI) and [TMDbAPIs](https://github.com/Kometa-Team/TMDbAPIs) | [Click Here](https://github.com/sponsors/meisnate12) |
-| [dbader](https://github.com/dbader)         | Creator of [schedule](https://github.com/dbader/schedule)                                                          |       :fontawesome-solid-circle-xmark:{ .red }       |
-| [rholder](https://github.com/rholder)       | Creator of [retrying](https://github.com/rholder/retrying)                                                         |       :fontawesome-solid-circle-xmark:{ .red }       |
-| [jd](https://github.com/jd)                 | Creator of [tenacity](https://github.com/jd/tenacity)                                                              |       :fontawesome-solid-circle-xmark:{ .red }       |
-
-
-## Other Acknowledgements
+## Other acknowledgements
 
 <a href="https://www.vecteezy.com/free-vector/meteor-logo">Meteor Logo Vectors by Vecteezy</a>
+
+## Associated Git repos
+
+### Community configurations
+
+- [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs)
+    - Kometa's Community submitted Config Repo
+
+### Tools and metadata resources
+
+- [ImageMaid](https://github.com/Kometa-Team/ImageMaid)
+    - Removes Image bloat from your Plex Server
+- [Kometa Overlay Reset](https://github.com/Kometa-Team/Overlay-Reset)
+    - Resets your Library back to default images removing all overlays
+- [Kometa Anime IDs](https://github.com/Kometa-Team/Anime-IDs)
+    - How Kometa translates Anime IDs to TVDB IDs
+- [Kometa IMDb Awards](https://github.com/Kometa-Team/IMDb-Awards)
+    - How Kometa stores the IMDB Award Lists
+- [Kometa Mediastingers](https://github.com/Kometa-Team/Mediastingers)
+    - How Kometa stores the Mediastingers List
+
+### Python libraries
+
+- [ArrAPI](https://github.com/Kometa-Team/ArrAPI)
+    - Module to interface with Radarr/Sonarr
+- [TMDbAPIs](https://github.com/Kometa-Team/TMDbAPIs)
+    - Module to interface with TMDb
+- [kometautils](https://github.com/Kometa-Team/Kometa-Utils)
+    - Module for various common files among Kometa Repos
+
+### Images and artwork
+
+- [Default Images](https://github.com/Kometa-Team/Default-Images)
+    - Repo to store Kometa's various Images for the Defaults
+- [People Auto Readme](https://github.com/Kometa-Team/People-Auto-Readme)
+    - Stores the File that generates the Readme file for the other Actor repos
+- [People Images](https://github.com/Kometa-Team/People-Images)
+    - Stores the original image for all our actor posters
+- [People Images Black & White (bw)](https://github.com/Kometa-Team/People-Images-bw)
+    - Stores the Black & White actor posters
+- [People Images Rainier (rainier)](https://github.com/Kometa-Team/People-Images-rainier)
+    - Stores the Rainier actor posters
+- [People Images Signature (signature)](https://github.com/Kometa-Team/People-Images-signature)
+    - Stores the Signature actor posters
+- [People Images DIIIVOY (diiivoy)](https://github.com/Kometa-Team/People-Images-diiivoy)
+    - Stores the DIIIVOY actor posters
+- [People Images DIIIVOY Color (diiivoycolor)](https://github.com/Kometa-Team/People-Images-diiivoycolor)
+    - Stores the DIIIVOY Color actor posters
+- [People Images Transparent (transparent)](https://github.com/Kometa-Team/People-Images-transparent)
+    - Stores the Transparent actor posters
+
+### Deployment and translations
+
+- [Unraid Templates](https://github.com/Kometa-Team/Unraid-Templates)
+    - Stores the Kometa Unraid Templates
+- [Translations](https://github.com/Kometa-Team/Translations)
+    - Stores the data for Kometa Translations

@@ -1,7 +1,8 @@
 ---
+search:
+  boost: 3
 hide:
   - tags
-  - toc
 tags:
   - tmdb_person
   - tmdb_person_offset
@@ -33,169 +34,352 @@ tags:
   - file_logo
   - url_square_art
   - file_square_art
+  - addon_offset
+  - item_label
+  - item_label.remove
+  - item_label.sync
+  - item_genre
+  - item_genre.remove
+  - item_genre.sync
+  - item_edition
+  - non_item_remove_label
+  - item_lock_poster
+  - item_lock_background
+  - item_lock_square_art
+  - item_lock_title
+  - item_assets
+  - item_refresh
+  - item_refresh_delay
+  - item_tmdb_season_titles
+  - item_episode_sorting
+  - item_keep_episodes
+  - item_delete_episodes
+  - item_season_display
+  - item_episode_ordering
+  - item_metadata_language
+  - item_use_original_title
+  - item_credits_detection
+  - item_audio_language
+  - item_subtitle_language
+  - item_subtitle_mode
+  - item_analyze
 ---
 
-# Collection/Playlist Metadata Updates
+# Metadata Updates
 
-All the following attributes update various details of the definition's Metadata. 
+Update the collection or playlist itself, or update the Plex media items selected
+by its builders. Put metadata options beside the builder, not inside its dictionary.
 
-**Only `tmdb_person` works with Playlists.**
+## Choose what to update
 
-| Attribute              | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-|:-----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `collection_filtering` | **Description:** Changes the Collection Filtering<br>**Smart Collections Only**<br>**Values:**<table class="clearTable"><tr><td>`admin`</td><td>Always the server admin user</td></tr><tr><td>`user`</td><td>User currently viewing the content</td></tr></table>                                                                                                                                                                                                                                                                                                                                                               |
-| `collection_mode`      | **Description:** Changes the Collection Mode<br>**Values:**<table class="clearTable"><tr><td>`default`</td><td>Library default</td></tr><tr><td>`hide`</td><td>Hide Collection</td></tr><tr><td>`hide_items`</td><td>Hide Items in this Collection</td></tr><tr><td>`show_items`</td><td>Show this Collection and its Items</td></tr></table>                                                                                                                                                                                                                                                                                   |
-| `collection_order`     | **Description:** Changes the Collection Order<br>**Normal Collections Only**<br>When using `custom.asc`/`custom.desc` you can only have a single Builder in the collection.<br>**Values:**<table class="clearTable"><tr><td>`release`</td><td>Order Collection by Release Dates</td></tr><tr><td>`alpha`</td><td>Order Collection Alphabetically</td></tr><tr><td>`custom.asc`/`custom.desc`</td><td>Order Collection Via the Builder Order ascending or descending</td></tr><tr><td>[Any `plex_search` Sort Option](builders/plex/sort-options.md)</td><td>Order Collection by any `plex_search` Sort Option</td></tr></table> |
-| `content_rating`       | **Description:** Changes the content rating.<br>**Values:** Text to change Content Rating                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `file_theme`           | **Description:** Changes the Collection Theme to the file location provided.<br>**Values:** Path to mp3 file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `label.remove`         | **Description:** Removes existing labels from the collection.<br>**Values:** Comma-separated string of labels to remove                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `label.sync`           | **Description:** Matches the labels of the collection to the labels provided (Leave blank to remove all labels)<br>**Values:** Comma-separated string of labels to sync                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `label`                | **Description:** Appends new labels.<br>**Values:** Comma-separated string of labels to append                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `sort_title`           | **Description:** Changes the sort title.<br>You can "promote" certain collections to the top of a library by creating a sort title starting with a `+` or "demote" certain collections to the bottom of a library by creating a sort title starting with a `~`.<br>**Values:** Text to change Sort Title                                                                                                                                                                                                                                                                                                                        |
-| `tmdb_person_offset`   | **Description:** Offsets which search results are used by `tmdb_person`.<br>**Values:** Any number greater than 0<br>**Default:** 0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `tmdb_person`          | **Description:** Changes summary and poster to a TMDb Person's biography and profile to the first specified person as well as allow the people specified to be used in [Plex Searches](builders/plex/search).<br>**Values:** TMDb Person ID or Actor Name (Will pull the first ID from the TMDb search results) (List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string)                                                                                                                                                                                              |
-| `url_theme`            | **Description:** Changes the Collection Theme to the URL provided.<br>**Values:** URL to mp3 file                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `visible_home`         | **Description:** Changes collection visible on Home Tab (Only works with Plex Pass)<br>**Values:**<table class="clearTable"><tr><td>`true`</td><td>Visible</td></tr><tr><td>`false`</td><td>Not Visible</td></tr><tr><td>[Any `schedule` Option](../config/schedule.md)</td><td>Visible When Scheduled</td></tr></table>                                                                                                                                                                                                                                                                                                        |
-| `visible_library`      | **Description:** Changes collection visible on Library Recommended Tab (Only works with Plex Pass)<br>**Values:**<table class="clearTable"><tr><td>`true`</td><td>Visible</td></tr><tr><td>`false`</td><td>Not Visible</td></tr><tr><td>[Any `schedule` Option](../config/schedule.md)</td><td>Visible When Scheduled</td></tr></table>                                                                                                                                                                                                                                                                                         |
-| `visible_shared`       | **Description:** Changes collection visible on Shared Users' Home Tab (Only works with Plex Pass)<br>**Values:**<table class="clearTable"><tr><td>`true`</td><td>Visible</td></tr><tr><td>`false`</td><td>Not Visible</td></tr><tr><td>[Any `schedule` Option](../config/schedule.md)</td><td>Visible When Scheduled</td></tr></table>                                                                                                                                                                                                                                                                                          |
+| Target | Options | Playlist support |
+|:-------|:--------|:-----------------|
+| Collection display and visibility | `collection_*`, `sort_title`, `content_rating`, labels, themes | No |
+| Person metadata | `tmdb_person` | Yes |
+| Summary and artwork | Text, file, URL, and external metadata sources below | Yes |
+| Media items inside a collection | `item_*`, `non_item_remove_label` | No; overlays also unsupported |
 
-* Here's an example of how the collections can look on the Home Page.
+For example, `label` changes the collection's labels, while `item_label` changes
+labels on the selected media. These options update metadata; they do not replace
+a builder that selects the items.
 
-## Summary Collection/Playlist Metadata Updates
+## Collection display
 
-All the following attributes update the summary of the collection/playlist from various sources. 
+| Attribute | Value / effect |
+|:----------|:---------------|
+| `sort_title` | Display-sort string; a leading `+` promotes a collection and `~` demotes it |
+| `content_rating` | Content-rating text |
+| `collection_mode` | `default`: library default; `hide`: hide collection; `hide_items`: hide its items; `show_items`: show collection and items |
+| `collection_order` | `release`, `alpha`, `custom.asc`, `custom.desc`, or a [Plex search sort](builders/plex/search.md#plex-sort-options); manual collections only |
+| `collection_filtering` | `admin`: server admin's view; `user`: current viewer's view; smart collections only |
 
-**All of these details work with Playlists.**
+Custom ascending/descending builder ordering requires **one builder** in the
+collection. Smart collections use their own filter sorting instead.
 
-| Attribute                | Description & Values                                                                                                                                                               |
-|:-------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `letterboxd_description` | **Description:** Changes summary to the Letterboxd List Description<br>**Values:** Letterboxd List URL                                                                             |
-| `summary`                | **Description:** Changes summary to the Text Provided<br>**Values:** Text to change Summary                                                                                        |
-| `tmdb_biography`         | **Description:** Changes summary to the TMDb Person's biography<br>**Values:** TMDb Person ID                                                                                      |
-| `tmdb_description`       | **Description:** Changes summary to the TMDb List Description<br>**Values:** TMDb List ID                                                                                          |
-| `tmdb_summary`           | **Description:** Changes summary to the TMDb Movie/Collection summary for a movie library or the TMDb Show summary for a show library<br>**Values:** TMDb Movie/Show/Collection ID |
-| `tvdb_description`       | **Description:** Changes summary to the TVDb List Description<br>**Values:** TVDb List URL                                                                                         |
-| `tvdb_summary`           | **Description:** Changes summary to the TVDb Movie summary for a movie library or the TVDb Show summary for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
+### Labels
 
-## Poster Collection/Playlist Metadata Updates
+Values below are comma-separated label strings. Append and remove preserve other
+labels; synchronize replaces the collection's label set.
 
-All the following attributes update the poster of the collection/playlist from various sources. 
+| Attribute | Effect |
+|:----------|:-------|
+| `label` | Append labels |
+| `label.remove` | Remove the named labels |
+| `label.sync` | Replace labels with the supplied set; blank removes all labels |
 
-**All of these details work with Playlists.**
+### Visibility and themes
 
-People-Images poster URLs are validated before selection. If a person image is missing, Kometa logs a warning and uses the next available poster source, such as the profile supplied by `tmdb_person`. Existing person images retain their usual priority. Successful checks and missing-image responses are cached for the current run; a later run checks again. Each distinct People-Images URL requires a HEAD check during that run. If validation fails because of rate limiting, a server error, or a network error, Kometa logs the validation failure and tries another available poster source; it does not report a confirmed missing image or cache the temporary failure.
+`visible_library`, `visible_home`, and `visible_shared` require **Plex Pass**.
+Each accepts `true`, `false`, or a [schedule](../config/schedule.md) to control
+visibility on the Library Recommended tab, your Home tab, or shared users' Home
+respectively. The values can therefore be booleans or schedule strings.
 
-If no poster is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
-folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported poster asset
-such as `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` in that folder.
+`file_theme` takes a local MP3 path; `url_theme` takes an MP3 URL. Both change the
+collection's theme.
 
-| Attribute          | Description & Values                                                                                                                                                            |
-|:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `file_poster`      | **Description:** Changes poster to the image in the file system<br>**Values:** Path to image in the file system                                                                 |
-| `tmdb_list_poster` | **Description:** Changes poster to the TMDb List poster<br>**Values:** TMDb List ID                                                                                             |
-| `tmdb_poster`      | **Description:** Changes poster to the TMDb Movie/Collection poster for a movie library or the TMDb Show poster for a show library<br>**Values:** TMDb Movie/Show/Collection ID |
-| `tmdb_profile`     | **Description:** Changes poster to the TMDb Person's profile<br>**Values:** TMDb Person ID                                                                                      |
-| `tvdb_list_poster` | **Description:** Changes poster to the TVDb List poster<br>**Values:** TVDb List URL                                                                                            |
-| `tvdb_poster`      | **Description:** Changes poster to the TVDb Movie poster for a movie library or the TVDb Show poster for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
-| `url_poster`       | **Description:** Changes poster to the URL<br>**Values:** URL of image publicly available on the internet                                                                       |
+## TMDb people
 
-Standard priority is as follows [lower numbers take precedence]:
+`tmdb_person` takes a TMDb person ID or actor name, as a YAML list or comma-separated
+string for multiple people. Names use the first TMDb search result. The **first
+person** supplies the biography and profile image, and the specified people can
+also be used in [Plex searches](builders/plex/search.md#tmdb-people).
 
-1. url_poster
+The other collection display, label, theme, and offset options are collection-only.
 
-2. file_poster
+`tmdb_person_offset` offsets the selected search results. Its default is `0`;
+use a positive number to change the offset.
 
-3. tmdb_poster
+## Summaries {#summary-collectionplaylist-metadata-updates}
 
-4. tvdb_poster
+All summary sources below work with collections and playlists.
 
-5. asset_directory
+| Attribute | Value / source |
+|:----------|:---------------|
+| `summary` | Summary text |
+| `letterboxd_description` | Letterboxd list URL; uses its description |
+| `tmdb_biography` | TMDb person ID; uses the biography |
+| `tmdb_description` | TMDb list ID; uses its description |
+| `tmdb_summary` | TMDb movie/collection ID for movie libraries, or show ID for show libraries |
+| `tvdb_description` | TVDb list URL; uses its description |
+| `tvdb_summary` | TVDb movie/show ID or URL, according to library type |
 
-6. tmdb_person
+## Artwork sources
 
-7. tmdb_collection_details
+All artwork sources below work with collections and playlists. TMDb movie-library
+sources accept movie/collection IDs; show-library sources use show IDs. TVDb
+sources accept the corresponding movie/show ID or URL.
 
-8+. all other _details methods
+<span id="poster-collectionplaylist-metadata-updates"></span>
+<span id="background-collectionplaylist-metadata-updates"></span>
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+| Source | Poster option | Background option | Value |
+|:-------|:--------------|:------------------|:------|
+| Public image URL | `url_poster` | `url_background` | Image URL |
+| Local image | `file_poster` | `file_background` | File path |
+| TMDb title | `tmdb_poster` | `tmdb_background` | TMDb movie/show/collection ID |
+| TVDb title | `tvdb_poster` | `tvdb_background` | TVDb movie/show ID or URL |
+| TMDb list | `tmdb_list_poster` | - | TMDb list ID |
+| TVDb list | `tvdb_list_poster` | - | TVDb list URL |
+| TMDb person | `tmdb_profile` | - | TMDb person ID |
 
-## Background Collection/Playlist Metadata Updates
+<span id="logo-collectionplaylist-metadata-updates"></span>
+<span id="square-art-collectionplaylist-metadata-updates"></span>
 
-All the following attributes update the background of the collection/playlist from various sources.
+| Artwork | Public image URL | Local file |
+|:--------|:-----------------|:-----------|
+| Logo | `url_logo` | `file_logo` |
+| Square art, used by some Plex clients | `url_square_art` | `file_square_art` |
 
-**All of these details work with Playlists.**
+### Asset lookup and source priority
 
-If no background is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) 
-for a folder named either the collection/playlist name or the `name_mapping` if specified and look for a 
-supported background asset such as `background.ext`, `art.ext`, `backdrop.ext`, or `fanart.ext` in that folder.
+When artwork is not specified, Kometa checks the
+[asset directories](../kometa/guides/assets.md) for a folder matching the collection
+or playlist name, or `name_mapping` when set.
 
-| Attribute         | Description & Values                                                                                                                                                                        |
-|:------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `file_background` | **Description:** Changes background to the image in the file system<br>**Values:** Path to image in the file system                                                                         |
-| `tmdb_background` | **Description:** Changes background to the TMDb Movie/Collection background for a movie library or the TMDb Show background for a show library<br>**Values:** TMDb Movie/Show/Collection ID |
-| `tvdb_background` | **Description:** Changes background to the TVDb Movie background for a movie library or the TVDb Show background for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
-| `url_background`  | **Description:** Changes background to the URL<br>**Values:** URL of image publicly available on the internet                                                                               |
+| Artwork | Supported asset names | Standard priority, highest first |
+|:--------|:----------------------|:---------------------------------|
+| Poster | `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, `movie.ext` | `url_poster`, `file_poster`, `tmdb_poster`, `tvdb_poster`, assets, `tmdb_person`, `tmdb_collection_details`, other `_details` methods |
+| Background | `background.ext`, `art.ext`, `backdrop.ext`, `fanart.ext` | `url_background`, `file_background`, `tmdb_background`, `tvdb_background`, assets |
+| Logo | `logo.ext`, `clearlogo.ext` | `url_logo`, `file_logo`, assets |
+| Square art | `square.ext`, `square_art.ext`, `squareArt.ext`, `backgroundSquare.ext` | `url_square_art`, `file_square_art`, assets |
 
-Standard priority is as follows [lower numbers take precedence]:
+`prioritize_assets` moves assets to the top of these priority lists.
 
-1. url_background
+??? info "Person-image validation and fallback"
 
-2. file_background
+    People-Images URLs are checked before selection. Missing images log a warning
+    and fall back to the next poster source, such as the profile from `tmdb_person`.
+    Existing images retain their usual priority. Successful and missing-image
+    checks are cached for the run and checked again next run; each distinct URL
+    requires a HEAD request. Rate-limit, server, and network failures also fall
+    back, but are logged as validation failures rather than confirmed missing
+    images, and temporary failures are not cached.
 
-3. tmdb_background
+## Collection examples
 
-4. tvdb_background
+=== "Strings and collection labels"
 
-5. asset_directory
+    Selects Action movies, assigns a literal summary, and appends two labels to
+    the collection. The comma-separated `label` string does not label the movies.
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+    ```yaml
+    collections:
+      Action Picks:
+        plex_search:
+          all:
+            genre: Action
+        summary: "Action movies for movie night."
+        label: "curated,movie-night"
+        sort_title: +Action Picks
+    ```
 
-## Logo Collection/Playlist Metadata Updates
+=== "Person metadata"
 
-All the following attributes update the logo of the collection/playlist from various sources.
+    Collects Robin Williams' acting credits and uses his TMDb biography/profile
+    for the collection. The numeric person ID is used by both the builder and
+    metadata option for different purposes.
 
-**All of these details work with Playlists.**
+    ```yaml
+    collections:
+      Robin Williams:
+        tmdb_actor: 2157
+        tmdb_person: 2157
+    ```
 
-If no logo is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md)
-for a folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported
-logo asset such as `logo.ext` or `clearlogo.ext` in that folder.
+=== "Artwork and visibility"
 
-| Attribute   | Description & Values                                                                                           |
-|:------------|:---------------------------------------------------------------------------------------------------------------|
-| `file_logo` | **Description:** Changes logo to the image in the file system<br>**Values:** Path to image in the file system |
-| `url_logo`  | **Description:** Changes logo to the URL<br>**Values:** URL of image publicly available on the internet       |
+    Uses local poster and background files and promotes the collection to your
+    Home tab. `true` is an unquoted boolean and Home visibility requires Plex Pass.
+    Replace the file paths with your own images.
 
-Standard priority is as follows [lower numbers take precedence]:
+    ```yaml
+    collections:
+      Featured Movies:
+        plex_search:
+          all:
+            added: 30
+        file_poster: config/assets/featured/poster.jpg
+        file_background: config/assets/featured/background.jpg
+        visible_home: true
+    ```
 
-1. url_logo
+## Media item updates {#item-metadata-updates}
 
-2. file_logo
+!!! important "Collection items only"
 
-3. asset_directory
+    Item updates affect the selected media, rather than the collection itself.
+    They are not supported for playlists or overlays. Most options below apply
+    to movies/shows; show-only and Music exceptions are noted explicitly.
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+### Maintenance and artwork
 
-## Square Art Collection/Playlist Metadata Updates
+| Attribute | Effect | Values / default |
+|:----------|:-------|:-----------------|
+| `item_analyze` | Run Plex Analyze | `true`, **`false`** |
+| `item_assets` | Look for assets for each selected movie/show | `true`, **`false`** |
+| `item_refresh` | Refresh item metadata | `true`, **`false`** |
+| `item_refresh_delay` | Wait between metadata refreshes | Positive delay; default **`0`** |
+| `item_lock_background` | Lock or unlock background | `true`, `false`, or leave blank |
+| `item_lock_poster` | Lock or unlock poster | `true`, `false`, or leave blank |
+| `item_lock_square_art` | Lock or unlock square art | `true`, `false`, or leave blank |
+| `item_lock_title` | Lock or unlock title | `true`, `false`, or leave blank |
 
-All the following attributes update the square art (used by some Plex clients) of the collection/playlist from various sources.
+### Ratings and edition
 
-**All of these details work with Playlists.**
+| Attribute | Effect | Values / default |
+|:----------|:-------|:-----------------|
+| `item_audience_rating` | Set audience rating | Number between 0.0 and 10.0 or blank to erase the rating |
+| `item_critic_rating` | Set critic rating | Number between 0.0 and 10.0 or blank to erase the rating |
+| `item_user_rating` | Set user rating | Number between 0.0 and 10.0 or blank to erase the rating |
+| `item_edition` | Replace edition name | Edition name (e.g. `Extended`, `Director's Cut`) |
 
-If no square art is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
-folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported square art asset
-such as `square.ext`, `square_art.ext`, `squareArt.ext`, or `backgroundSquare.ext` in that folder.
+### Item labels and genres
 
-| Attribute         | Description & Values                                                                                                   |
-|:------------------|:-----------------------------------------------------------------------------------------------------------------------|
-| `file_square_art` | **Description:** Changes square art to the image in the file system<br>**Values:** Path to image in the file system   |
-| `url_square_art`  | **Description:** Changes square art to the URL<br>**Values:** URL of image publicly available on the internet         |
+Label updates support movies, shows, artists, albums, and tracks; `item.label` is
+also accepted as an alias for `item_label`. Genres apply to movies/shows. Supply
+comma-separated strings: the base option appends, `.remove` removes named values,
+and `.sync` replaces the existing set.
 
-Standard priority is as follows [lower numbers take precedence]:
+| Attribute | Effect | Values / default |
+|:----------|:-------|:-----------------|
+| `item_label` | Append labels | Comma-separated string |
+| `item_label.remove` | Remove named labels | Comma-separated string |
+| `item_label.sync` | Replace label set | Comma-separated string |
+| `non_item_remove_label` | Remove these labels from movies/shows outside the collection | Comma-separated string |
+| `item_genre` | Append genres | Comma-separated string |
+| `item_genre.remove` | Remove named genres | Comma-separated string |
+| `item_genre.sync` | Replace genre set | Comma-separated string |
 
-1. url_square_art
+### Playback and metadata preferences
 
-2. file_square_art
+These preferences require the **Plex Movie or Plex Series agent**.
 
-3. asset_directory
+| Attribute | Effect | Values / default |
+|:----------|:-------|:-----------------|
+| `item_audio_language` | Preferred audio language | See [language values](#language-values) (also `en`) |
+| `item_subtitle_language` | Preferred subtitle language | See [language values](#language-values) (also `en`) |
+| `item_metadata_language` | Metadata language | See [language values](#language-values) (locale codes only) |
+| `item_subtitle_mode` | Automatic subtitle selection mode | `default` (Account default), `manual` (Manually selected), `foreign` (Shown with foreign audio), `always` (Always enabled) |
+| `item_use_original_title` | Use original title | `default` (Library default), `no`, `yes` |
+| `item_credits_detection` | Credits-detection preference | `default` (Library default), `disabled` (Disabled) |
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+### Show and episode preferences
+
+These options apply only to **show libraries**.
+
+| Attribute | Effect | Values / default |
+|:----------|:-------|:-----------------|
+| `item_delete_episodes` | Automatic episode deletion policy | `never` (Never), `day` (After a day), `week` (After a week), `month` (After a month), `refresh` (On next refresh) |
+| `item_episode_ordering` | Episode ordering source | `default` (Library default), `tmdb_aired`, `tvdb_aired`, `tvdb_dvd`, `tvdb_absolute` |
+| `item_episode_sorting` | Episode display order | `default` (Library default), `oldest`, `newest` |
+| `item_keep_episodes` | Episode retention policy | `all`, `5_latest`, `3_latest`, `latest`, `past_3`, `past_7`, `past_30` |
+| `item_season_display` | Season display mode | `default` (Library default), `show`, `hide` |
+| `item_tmdb_season_titles` | Use TMDb season titles | `true`, **`false`** |
+
+### Language values
+
+`item_audio_language` and `item_subtitle_language` accept `en` as well as the
+following values. `item_metadata_language` uses the locale list below.
+
+??? info "Language codes"
+
+    `default`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`
+
+## Item examples
+
+=== "Append and clean up labels"
+
+    Appends `action-pick` to the selected Action movies. `non_item_remove_label`
+    removes that label from other movies/shows outside the collection, keeping
+    it aligned with current membership without replacing unrelated labels.
+
+    ```yaml
+    collections:
+      Action Picks:
+        plex_search:
+          all:
+            genre: Action
+        item_label: action-pick
+        non_item_remove_label: action-pick
+    ```
+
+=== "Decimal rating"
+
+    Assigns a user rating of 8.5 to every movie selected from the list. This sets
+    an item field; it does not filter out movies with lower existing ratings.
+
+    ```yaml
+    collections:
+      My Rated Picks:
+        imdb_list:
+          list_id: ls006405458
+        item_user_rating: 8.5
+    ```
+
+=== "Blank rating"
+
+    Clears the user rating on selected movies. A blank value erases the field,
+    unlike a numeric zero, which is a rating value.
+
+    ```yaml
+    collections:
+      Clear Ratings on Tagged Movies:
+        plex_search:
+          all:
+            label: clear-rating
+        item_user_rating:
+    ```
+
+=== "Show preferences"
+
+    Changes selected shows' episode sorting to newest first and keeps all episodes.
+    These are string-valued preferences, not playback-history filters. The show-only
+    preference rules and agent requirements above still apply.
+
+    ```yaml
+    collections:
+      Show Preferences:
+        plex_all: true
+        item_episode_sorting: newest
+        item_keep_episodes: all
+    ```

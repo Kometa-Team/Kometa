@@ -1,4 +1,4 @@
-## Example Configuration File
+## Example configuration file
 
 ??? example "Sample `config.yml` file (Click to Expand)"
 
@@ -45,13 +45,13 @@
             template_variables:
               originals_only: true						# Only create collections for Original Content (i.e. Netflix Originals)
           - default: universe                                 # Marvel Cinematic Universe, Wizarding World, etc.
-          
+
         remove_overlays: false                          # Set to true if you want to remove overlays
         reapply_overlays: false                         # Set to true if you want to force-reapply overlays to everything
                                                         # THERE IS RARELY IF EVER A REASON TO DO THIS AS IT WILL EXTEND RUN TIMES ANS CAUSE IMAGE BLOAT
                                                         # IF YOU THINK YOU WANT TO DO THIS YOU ARE ALMOST CERTAINLY MISTAKEN
         #reset_overlays: tmdb                           # if you want to reset the poster to default poster from tmdb - can cause image bloat
-        
+
         overlay_files:
           - default: audio_codec                              # FLAC, DTS-X, TrueHD, etc. style: standard/compact. compact is default
           - default: resolution                               # 4K HDR, 1080P FHD, etc.
@@ -61,11 +61,11 @@
         settings:
           asset_directory:
             - config/assets
-    
+
         operations:
           split_duplicates: false
           assets_for_all: false
-    
+
       TV Shows:                                         # Must match a library name in your Plex
         report_path: config/missing/TV_missing.yml
         template_variables:
@@ -131,7 +131,7 @@
         settings:
           asset_directory:
             - config/assets
-    
+
         operations:
           split_duplicates: false
           assets_for_all: false

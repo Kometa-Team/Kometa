@@ -1,0 +1,161 @@
+##############################################################################
+#                                 Playlists                                  #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#              https://wiki.kometa.team/defaults/playlist               #
+##############################################################################
+
+external_templates:
+  default: templates
+
+templates:
+  playlist:
+    conditionals:
+      imdb_url:
+        conditions:
+        # check1
+          - key: arrow
+            value: https://www.imdb.com/list/ls566667558/
+          - key: clonewars
+            value: https://www.imdb.com/list/ls544963772/
+          - key: dcau
+            value: https://www.imdb.com/list/ls566357882/
+          - key: mcu
+            value: https://www.imdb.com/list/ls539646485/
+          - key: starwars
+            value: https://www.imdb.com/list/ls501373412/
+          - key: startrek
+            value: https://www.imdb.com/list/ls547463722/
+          - key: xmen
+            value: https://www.imdb.com/list/ls567618635/
+        # check2
+      imdb_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            value: <<imdb_url>>
+      mdblist_url:
+        conditions:
+        # check3
+          - key: dragonball
+            value: https://mdblist.com/lists/k0meta/external/46559
+          - key: pokemon
+            value: https://mdblist.com/lists/k0meta/external/46555
+        # check4
+      mdblist_list:
+        conditions:
+          - imdb_list_<<key>>.exists: false
+            mdblist_list_<<key>>.exists: false
+            value: <<mdblist_url>>
+    default:
+      item_radarr_tag_<<key>>: <<item_radarr_tag>>
+      item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
+      imdb_list_<<key>>: <<imdb_list>>
+      mdblist_list_<<key>>: <<mdblist_list>>
+      url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/<<mapping_name_encoded>>.jpg
+      name_<<key>>: <<mapping_name>>
+      sync_to_users_<<key>>: <<sync_to_users>>
+      exclude_users_<<key>>: <<exclude_users>>
+      delete_playlist_<<key>>: <<delete_playlist>>
+    optional:
+      - use_<<key>>
+      - item_radarr_tag
+      - item_sonarr_tag
+      - ignore_ids
+      - ignore_imdb_ids
+      - sync_to_users
+      - exclude_users
+      - delete_playlist
+      - imdb_list
+      - mdblist_list
+      - libraries
+    run_definition:
+      - <<use_<<key>>>>
+    ignore_ids: <<ignore_ids>>
+    ignore_imdb_ids: <<ignore_imdb_ids>>
+    item_radarr_tag: <<item_radarr_tag_<<key>>>>
+    item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
+    cache_builders: 1
+    sync_to_users: <<sync_to_users_<<key>>>>
+    exclude_users: <<exclude_users_<<key>>>>
+    delete_playlist: <<delete_playlist_<<key>>>>
+    sync_mode: sync
+    libraries: <<libraries>>
+    url_poster: <<url_poster_<<key>>>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
+
+playlists:
+  Arrowverse (Timeline Order):
+    variables:
+      key: arrow
+    template:
+      - name: playlist
+        summary_arrow: The Arrowverse is an American superhero media franchise and a shared universe that is centered on various interconnected television series based on DC Comics superhero characters, primarily airing on The CW as well as web series on CW Seed.
+      - name: arr
+
+  Marvel Cinematic Universe (Timeline Order):
+    variables:
+      key: mcu
+    template:
+      - name: playlist
+        summary_mcu: The Marvel Cinematic Universe (MCU) is a collection of movies and television series that tell a singular narrative related to Marvel characters, settings and stories. The MCU is a product from Disney and Marvel that brings us heroes from Black Panther and Doctor Strange to Spider-Man and Iron Man.
+      - name: arr
+
+  DC Animated Universe (Timeline Order):
+    variables:
+      key: dcau
+    template:
+      - name: playlist
+        summary_dcau: "The DC Animated Universe (DCAU) is a shared universe consisting primarily of superhero-based animated television series, produced by Warner Bros. Animation and based on characters that appear in American comic books published by DC Comics. The first TV series set in the DCAU was Batman: The Animated Series, which premiered in 1992; the last TV series was Justice League Unlimited, which ended its run in 2006."
+      - name: arr
+
+  Pokémon (Timeline Order):
+    variables:
+      key: pokemon
+    template:
+      - name: playlist
+        summary_pokemon: Ash Ketchum, his yellow pet Pikachu, and his human friends explore a world of powerful creatures. Ten-year-old Ash aspires to be the greatest Pokémon (pocket monster) trainer in the world. To do this, he enlists the help of many friends, and his own Pokémon, Pikachu.
+      - name: arr
+
+  Star Trek (Timeline Order):
+    variables:
+      key: startrek
+    template:
+      - name: playlist
+        summary_startrek: All Star Trek canon in chronological order.
+      - name: arr
+
+  Star Wars (Timeline Order):
+    variables:
+      key: starwars
+    template:
+      - name: playlist
+        summary_starwars: A long time ago in a galaxy far, far away, a farm boy on a desert planet dreamed of joining a rebellion and saving a princess from a dark lord, and thus, one of the most successful cinematic sagas of all time was born. What began with one space opera in 1977 quickly grew into a media empire that included toys, comic books, video games, TV series, and memorabilia in every possible form. Today, more than 40 years after it first arrived, Star Wars remains a global pop culture phenomenon, and the story still isn't over.
+      - name: arr
+
+  Star Wars The Clone Wars (Timeline Order):
+    variables:
+      key: clonewars
+    template:
+      - name: playlist
+        summary_clonewars: As more star systems get swept into the Clone Wars, the valiant Jedi knights struggle to maintain order. Anakin Skywalker and his Padawan learner Ahsoka Tano embark on a mission that brings them face-to-face with Jabba the Hutt. Plotting against them is evil Count Dooku and his agent, Asajj Ventress, who would ensure that the Jedis fail. Meanwhile, Yoda and Obi-Wan Kenobi lead the clone army against the forces of the Dark Side.
+      - name: arr
+
+  X-Men (Timeline Order):
+    variables:
+      key: xmen
+    template:
+      - name: playlist
+        summary_xmen: The X-Men are a fictional team of superheroes appearing in American comic books published by Marvel Comics, first appearing in The X-Men Issue 1. Although initially cancelled in 1970, following its 1975 revival and subsequent direction under writer Chris Claremont, it became one of the most recognizable and successful franchises of Marvel Comics.
+      - name: arr
+
+  Dragon Ball (Timeline Order):
+    variables:
+      key: dragonball
+    template:
+      - name: playlist
+        summary_dragonball: Dragon Ball follows the adventures of an extraordinarily strong young boy named Goku as he searches for the seven dragon balls. These balls, when combined, can grant the owner any one wish he desires. Along the way he makes many new friends, and enemies, and he trains to become the strongest fighter in the world.
+      - name: arr

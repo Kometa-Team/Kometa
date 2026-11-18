@@ -269,6 +269,77 @@ def test_seasonal_template_variables_accept_per_collection_use_flags() -> None:
     assert list(validator.iter_errors(variables)) == []
 
 
+@pytest.fixture(scope="module")
+def config_validator():
+    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+        return Draft7Validator(json.load(fh))
+
+
+@pytest.fixture
+def seasonal_visibility_config():
+    return yaml.safe_load("""
+plex:
+  url: http://localhost:32400
+  token: test
+tmdb:
+  apikey: test
+libraries:
+  Movies:
+    collection_files:
+      - default: seasonal
+        template_variables:
+          use_years: true
+          schedule_years: daily
+          visible_home_years: range(12/26-01/04)
+          visible_shared_years: range(12/26-01/04)
+          visible_library_years: false
+""")
+
+
+def test_seasonal_visibility_overrides_in_full_config(config_validator, seasonal_visibility_config) -> None:
+    errors = list(config_validator.iter_errors(seasonal_visibility_config))
+    assert not errors, [error.message for error in errors]
+
+
+@pytest.mark.parametrize("default", ["seasonal", "imdb"])
+@pytest.mark.parametrize("visibility", ["visible_home", "visible_library", "visible_shared"])
+@pytest.mark.parametrize("suffix", ["", "_years", "_christmas"])
+@pytest.mark.parametrize("value", [True, False, "daily", "range(12/26-01/04)", ["weekly(monday)", "range(12/26-01/04)"]])
+def test_collection_visibility_template_variables_accept_boolean_or_schedule(config_validator, seasonal_visibility_config, default, visibility, suffix, value) -> None:
+    collection_file = seasonal_visibility_config["libraries"]["Movies"]["collection_files"][0]
+    collection_file.update(default=default, template_variables={f"{visibility}{suffix}": value})
+
+    errors = list(config_validator.iter_errors(seasonal_visibility_config))
+    assert not errors, [error.message for error in errors]
+
+
+@pytest.mark.parametrize("default", ["seasonal", "imdb"])
+@pytest.mark.parametrize("visibility", ["visible_home", "visible_library", "visible_shared"])
+@pytest.mark.parametrize("suffix", ["", "_years"])
+@pytest.mark.parametrize("value", [None, 1, 1.5, {}, [], [True], ["daily", 1]])
+def test_collection_visibility_template_variables_reject_invalid_types(config_validator, seasonal_visibility_config, default, visibility, suffix, value) -> None:
+    collection_file = seasonal_visibility_config["libraries"]["Movies"]["collection_files"][0]
+    collection_file.update(default=default, template_variables={f"{visibility}{suffix}": value})
+
+    assert list(config_validator.iter_errors(seasonal_visibility_config))
+
+
+@pytest.mark.parametrize("property_name", ["unknown", "visible_hmoe_years", "visible_home_", "visible_library_", "visible_shared_"])
+def test_seasonal_template_variables_reject_unknown_properties(config_validator, seasonal_visibility_config, property_name) -> None:
+    variables = seasonal_visibility_config["libraries"]["Movies"]["collection_files"][0]["template_variables"]
+    variables[property_name] = True
+
+    assert list(config_validator.iter_errors(seasonal_visibility_config))
+
+
+def test_seasonal_visibility_overrides_preserve_other_variables(config_validator, seasonal_visibility_config) -> None:
+    variables = seasonal_visibility_config["libraries"]["Movies"]["collection_files"][0]["template_variables"]
+    variables.update(use_all=False, use_christmas=True, schedule_christmas="range(12/01-12/25)", sort_by="random", collection_mode="hide", name_mapping="Holiday Movies")
+
+    errors = list(config_validator.iter_errors(seasonal_visibility_config))
+    assert not errors, [error.message for error in errors]
+
+
 def test_tracearr_default_uses_short_trending_window_without_raw_history_and_sets_logos() -> None:
     with (DEFAULTS_DIR / "chart" / "tracearr.yml").open(encoding="utf-8") as fh:
         tracearr_default = yaml.safe_load(fh)

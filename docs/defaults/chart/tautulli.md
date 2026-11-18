@@ -5,13 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Tautulli Chart", 
-        "CODE_NAME": "tautulli",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create collections based on Tautulli/Plex charts",
-        "SECTION_NUMBER": "020"
-    }'
-    replace-tags='{"rec-sub": "Requirements: [Tautulli Authentication](../../config/tautulli.md)."}'
+    "COLLECTION": "Tautulli Chart",
+    "CODE_NAME": "tautulli",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on Tautulli/Plex charts",
+    "SECTION_NUMBER": "020"
+}'
+    replace-tags='{"rec-sub": "Requirements: [Tautulli Authentication](../../../../config/tautulli.md)."}'
 %}
 | `Plex Popular` | `popular` | Collection of the most Popular Movies/Shows on Plex. |
 | `Plex Watched` | `watched` | Collection of the most Watched Movies/Shows on Plex. |
@@ -49,9 +49,9 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Tautulli Chart Collections"
-        
+
         The Tautulli Chart collections use [Tautulli Builders](../../../files/builders/tautulli) to create the collections.

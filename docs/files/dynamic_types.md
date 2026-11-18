@@ -15,13 +15,13 @@ requirements of creating the collection.
     <div id="tmdb-collection" />Creates collections based on the TMDb Collections associated with items in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `tmdb_collection`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies
-    
+
     **Key Values:** TMDb Collection ID
 
     **Key Name Value:** TMDb Collection Title
@@ -37,7 +37,7 @@ requirements of creating the collection.
         ```
 
     ???+ example "Example"
-        
+
         ```yaml
         dynamic_collections:
           TMDb Collections:          # This name is the mapping name
@@ -52,13 +52,13 @@ requirements of creating the collection.
     [TMDb's Popular People List](https://www.themoviedb.org/person).
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `tmdb_popular_people`
 
     **`data` Value:** Number greater than 0
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** TMDb Person ID
 
     **Key Name Value:** TMDb Person Name
@@ -78,7 +78,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         Creates a collection for the top 10 popular people according to TMDb.
-        
+
         ```yaml
         dynamic_collections:
           TMDb Popular People:          # This name is the mapping name
@@ -92,13 +92,13 @@ requirements of creating the collection.
     library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `original_language`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
 
     **Key Name Value:** ISO Language Name
@@ -115,7 +115,7 @@ requirements of creating the collection.
         ```
 
     ???+ example "Example"
-        
+
         ```yaml
         dynamic_collections:
           TMDb Languages:          # This name is the mapping name
@@ -128,13 +128,13 @@ requirements of creating the collection.
     library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `origin_country`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Shows
-    
+
     **Key Values:** [ISO 3166-1 alpha-2 country code](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 
     **Key Name Value:** ISO Country Name
@@ -151,7 +151,7 @@ requirements of creating the collection.
         ```
 
     ???+ example "Example"
-        
+
         ```yaml
         dynamic_collections:
           TMDb Countries:          # This name is the mapping name
@@ -163,20 +163,20 @@ requirements of creating the collection.
     <div id="imdb-awards" />Creates collections for each of the Year's found on the IMDb event page.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `imdb_awards`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`event_id` - Determines the [IMDb Event](https://www.imdb.com/event/) used.<a class="headerlink" href="#imdb-awards-event-id" title="Permanent link">¶</a>"
-        
+
         <div id="imdb-awards-event-id" />This determines which [IMDb Event](https://www.imdb.com/event/) is used. 
 
         **Allowed Values:** The ID found in the URLs linked on the [IMDb Events Page](https://www.imdb.com/event/). 
         (ex. `ev0000003`)
 
     ??? blank "`starting` - Determines the starting year of the event to use.<a class="headerlink" href="#imdb-awards-starting" title="Permanent link">¶</a>"
-        
+
         <div id="imdb-awards-starting" />This determines the starting year of the event to use to create collections.
 
         **Allowed Values:** Number greater than 0, `first`, `latest`, relative first (`first+#`; where `#` is the number
@@ -186,7 +186,7 @@ requirements of creating the collection.
         **Default:** `first`
 
     ??? blank "`ending` - Determines the ending year of the event to use.<a class="headerlink" href="#imdb-awards-ending" title="Permanent link">¶</a>"
-        
+
         <div id="imdb-awards-ending" />This determines the ending year of the event to use to create collections. 
 
         **Allowed Values:** Number greater than 0, `first`, `latest`, relative first (`first+#`; where `#` is the number
@@ -196,7 +196,7 @@ requirements of creating the collection.
         **Default:** `latest`
 
     ??? blank "`increment` - Determines amount incremented.<a class="headerlink" href="#number-increment" title="Permanent link">¶</a>"
-        
+
         <div id="number-increment" />Determines the amount incremented from one collection to the other.
 
         **Allowed Values:** Number greater than 0
@@ -204,7 +204,7 @@ requirements of creating the collection.
         **Default:** `1`
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that year) 
 
     **Key Name Value:** Award Year (sometimes this will look like `2003-2` if there are more than one award show that 
@@ -223,7 +223,7 @@ requirements of creating the collection.
         ```
 
     ???+ example "Example"
-        
+
         ```yaml
         dynamic_collections:
           Oscar Awards Lists:          # This name is the mapping name
@@ -239,19 +239,19 @@ requirements of creating the collection.
     <div id="letterboxd-user-lists" />Creates collections for each of the Letterboxd lists that the user has created.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `letterboxd_user_lists`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`username` - Determines the Usernames to scan for lists.<a class="headerlink" href="#letterboxd-user-lists-username" title="Permanent link">¶</a>"
-        
+
         <div id="letterboxd-user-lists-username" />This determines which Usernames are scanned. 
 
         **Allowed Values:** Username or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Usernames
 
     ??? blank "`sort_by` - Determines the sort that the lists are returned.<a class="headerlink" href="#letterboxd-user-lists-sort-by" title="Permanent link">¶</a>"
-        
+
         <div id="letterboxd-user-lists-sort-by" />Determines the sort that the lists are returned.
 
         **Allowed Values:** `updated`, `name`, `popularity`, `newest`, `oldest`
@@ -259,7 +259,7 @@ requirements of creating the collection.
         **Default:** `updated`
 
     ??? blank "`limit` - Determines the number of lists to create collections for.<a class="headerlink" href="#letterboxd-user-lists-limit" title="Permanent link">¶</a>"
-        
+
         <div id="letterboxd-user-lists-limit" />Determines the number of lists to create collections for. (`0` is all lists)
 
         **Allowed Values:** Number 0 or greater
@@ -267,7 +267,7 @@ requirements of creating the collection.
         **Default:** `0`
 
     **Valid Library Types:** Movies
-    
+
     **Key Values:** Letterboxd List URL
 
     **Key Name Value:** Letterboxd List Title
@@ -282,7 +282,7 @@ requirements of creating the collection.
         ```
 
     ???+ example "Example"
-        
+
         ```yaml
         dynamic_collections:
           Letterboxd User Lists:          # This name is the mapping name
@@ -297,13 +297,13 @@ requirements of creating the collection.
     <div id="actor" />Creates collections for each actor found in the library based on given criteria.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `actor`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" acting credits per item.<a class="headerlink" href="#actor-depth" title="Permanent link">¶</a>"
-        
+
         <div id="actor-depth" />This determines how many "top" acting credits there are for each item. Acting credits 
         are parsed in top billing order. 
 
@@ -312,10 +312,10 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`minimum` - Determines the minimum number of "top" acting credits.<a class="headerlink" href="#actor-minimum" title="Permanent link">¶</a>"
-        
+
         <div id="actor-minimum" />Determines the minimum number of "top" acting credits. For a collection for this actor
         to be created they must meet the minimum number of "top" acting credits.
-        
+
         ???+ warning
 
             The number of "top" acting credits per item is determined by the `depth` value.
@@ -325,7 +325,7 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`limit` - Determines the maximum number of actor collections to create.<a class="headerlink" href="#actor-limit" title="Permanent link">¶</a>"
-        
+
         <div id="actor-limit" />Determines the maximum number of actor collections to create.
 
         **Allowed Values:** Number greater than 0
@@ -333,7 +333,7 @@ requirements of creating the collection.
         **Default:** None
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Person Name
 
     **Key Name Value:** Person Name
@@ -350,10 +350,10 @@ requirements of creating the collection.
         ```
 
     ???+ example "Examples"
-        
+
         This example creates a collection for each of the top 25 actors who appear in the "top" 5 acting credits of an 
         item in the library.
-        
+
         ```yaml
         dynamic_collections:
           Top Actors:         # mapping name does not matter just needs to be unique
@@ -380,13 +380,13 @@ requirements of creating the collection.
     <div id="director" />Creates collections for each director found in the library based on given criteria.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `director`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" directing credits per item.<a class="headerlink" href="#director-depth" title="Permanent link">¶</a>"
-        
+
         <div id="director-depth" />This determines how many "top" directing credits there are for each item. Directing 
         credits are parsed in top billing order. 
 
@@ -395,10 +395,10 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`minimum` - Determines the minimum number of "top" directing credits.<a class="headerlink" href="#director-minimum" title="Permanent link">¶</a>"
-        
+
         <div id="director-minimum" />Determines the minimum number of "top" directing credits. For a collection for this 
         director to be created they must meet the minimum number of "top" directing credits.
-        
+
         ???+ warning
 
             The number of "top" directing credits per item is determined by the `depth` value.
@@ -408,7 +408,7 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`limit` - Determines the maximum number of director collections to create.<a class="headerlink" href="#director-limit" title="Permanent link">¶</a>"
-        
+
         <div id="director-limit" />Determines the maximum number of director collections to create.
 
         **Allowed Values:** Number greater than 0
@@ -416,7 +416,7 @@ requirements of creating the collection.
         **Default:** None
 
     **Valid Library Types:** Movies
-    
+
     **Key Values:** Person Name
 
     **Key Name Value:** Person Name
@@ -436,7 +436,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the top 5 directors who appear as the "top" directing credits 
         of movies.
-        
+
         ```yaml
         dynamic_collections:
           Top Directors:         # mapping name does not matter just needs to be unique
@@ -448,7 +448,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the directors who appear as the "top" directing credits of 
         movies the library for at least 10 movies.
-        
+
         ```yaml
         dynamic_collections:
           Directors:         # mapping name does not matter just needs to be unique
@@ -463,13 +463,13 @@ requirements of creating the collection.
     <div id="director" />Creates collections for each writer found in the library based on given criteria.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `writer`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" writing credits per item.<a class="headerlink" href="#writer-depth" title="Permanent link">¶</a>"
-        
+
         <div id="writer-depth" />This determines how many "top" writing credits there are for each item. Writing credits
         are parsed in top billing order. 
 
@@ -478,10 +478,10 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`minimum` - Determines the minimum number of "top" writing credits.<a class="headerlink" href="#writer-minimum" title="Permanent link">¶</a>"
-        
+
         <div id="writer-minimum" />Determines the minimum number of "top" writing credits. For a collection for this 
         writer to be created they must meet the minimum number of "top" writing credits.
-        
+
         ???+ warning
 
             The number of "top" writing credits per item is determined by the `depth` value.
@@ -491,7 +491,7 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`limit` - Determines the maximum number of writer collections to create.<a class="headerlink" href="#writer-limit" title="Permanent link">¶</a>"
-        
+
         <div id="writer-limit" />Determines the maximum number of writer collections to create.
 
         **Allowed Values:** Number greater than 0
@@ -499,7 +499,7 @@ requirements of creating the collection.
         **Default:** None
 
     **Valid Library Types:** Movies
-    
+
     **Key Values:** Person Name
 
     **Key Name Value:** Person Name
@@ -519,7 +519,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the top 5 writers who appear as the "top" writing credits of 
         movies.
-        
+
         ```yaml
         dynamic_collections:
           Top Writers:         # mapping name does not matter just needs to be unique
@@ -531,7 +531,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the writers who appear as the "top" writing credits of movies
         the library for at least 10 movies.
-        
+
         ```yaml
         dynamic_collections:
           Writers:         # mapping name does not matter just needs to be unique
@@ -546,13 +546,13 @@ requirements of creating the collection.
     <div id="director" />Creates collections for each producer found in the library based on given criteria.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `producer`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`depth` - Determines how many "top" producing credits per item.<a class="headerlink" href="#producer-depth" title="Permanent link">¶</a>"
-        
+
         <div id="producer-depth" />This determines how many "top" producing credits there are for each item. Producing
         credits are parsed in top billing order. 
 
@@ -561,10 +561,10 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`minimum` - Determines the minimum number of "top" producing credits.<a class="headerlink" href="#producer-minimum" title="Permanent link">¶</a>"
-        
+
         <div id="producer-minimum" />Determines the minimum number of "top" producing credits. For a collection for this 
         producer to be created they must meet the minimum number of "top" producing credits.
-        
+
         ???+ warning
 
             The number of "top" producing credits per item is determined by the `depth` value.
@@ -574,7 +574,7 @@ requirements of creating the collection.
         **Default:** `3`
 
     ??? blank "`limit` - Determines the maximum number of producer collections to create.<a class="headerlink" href="#producer-limit" title="Permanent link">¶</a>"
-        
+
         <div id="producer-limit" />Determines the maximum number of producer collections to create.
 
         **Allowed Values:** Number greater than 0
@@ -582,7 +582,7 @@ requirements of creating the collection.
         **Default:** None
 
     **Valid Library Types:** Movies
-    
+
     **Key Values:** Person Name
 
     **Key Name Value:** Person Name
@@ -602,7 +602,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the top 5 producers who appear as the "top" producing credits 
         of movies.
-        
+
         ```yaml
         dynamic_collections:
           Top Producers:         # mapping name does not matter just needs to be unique
@@ -614,7 +614,7 @@ requirements of creating the collection.
 
         This example creates a collection for the each of the producers who appear as the "top" producing credits of 
         movies the library for at least 10 movies.
-        
+
         ```yaml
           Producers:         # mapping name does not matter just needs to be unique
             type: producers
@@ -628,13 +628,13 @@ requirements of creating the collection.
     <div id="genre" />Creates collections for each genre found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `genre`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies, Shows, Music, and Video
-    
+
     **Key Values:** Genre
 
     **Key Name Value:** Genre
@@ -655,7 +655,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each genre found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Genres:         # mapping name does not matter just needs to be unique
@@ -667,13 +667,13 @@ requirements of creating the collection.
     <div id="album-genre" />Creates album collections for each genre associated with albums found in the music library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `genre`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Genre
 
     **Key Name Value:** Genre
@@ -695,7 +695,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates album collections for each genre associated with albums found in the music library.
-        
+
         ```yaml
         dynamic_collections:
           Genres:         # mapping name does not matter just needs to be unique
@@ -707,13 +707,13 @@ requirements of creating the collection.
     <div id="content-rating" />Creates collections for each content rating found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `content_rating`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies, Shows, and Video
-    
+
     **Key Values:** Content Rating
 
     **Key Name Value:** Content Rating
@@ -734,7 +734,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each genre found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Content Ratings:         # mapping name does not matter just needs to be unique
@@ -746,13 +746,13 @@ requirements of creating the collection.
     <div id="year" />Creates collections for each year found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `year`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Year
 
     **Key Name Value:** Year
@@ -773,7 +773,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each year found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Years:         # mapping name does not matter just needs to be unique
@@ -785,13 +785,13 @@ requirements of creating the collection.
     <div id="episode-year" />Creates collections for each year associated with episodes found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `episode_year`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Shows
-    
+
     **Key Values:** Year
 
     **Key Name Value:** Year
@@ -813,7 +813,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each year found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Years:         # mapping name does not matter just needs to be unique
@@ -825,13 +825,13 @@ requirements of creating the collection.
     <div id="decade" />Creates collections for each decade found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `decade`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Decade
 
     **Key Name Value:** Decade with an `s` at the end
@@ -839,7 +839,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Best <<library_type>> of the <<key_name>>`
 
     ??? tip "Default Templates (Click to Expand)"
-        
+
         === "Movie Default"
 
             ```yaml
@@ -867,7 +867,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each decade found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Decades:         # mapping name does not matter just needs to be unique
@@ -879,13 +879,13 @@ requirements of creating the collection.
     <div id="country" />Creates collections for each country found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `country`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies, Music, Video
-    
+
     **Key Values:** Country
 
     **Key Name Value:** Country
@@ -893,7 +893,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -906,7 +906,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each country found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Countries:         # mapping name does not matter just needs to be unique
@@ -918,13 +918,13 @@ requirements of creating the collection.
     <div id="resolution" />Creates collections for each resolution found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `resolution`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Resolution
 
     **Key Name Value:** Resolution
@@ -932,7 +932,7 @@ requirements of creating the collection.
     **Default `title_format`:** `<<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -945,7 +945,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each resolution found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Resolutions:         # mapping name does not matter just needs to be unique
@@ -957,13 +957,13 @@ requirements of creating the collection.
     <div id="subtitle-language" />Creates collections for each subtitle language found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `subtitle_language`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
 
     **Key Name Value:** ISO Language Name
@@ -971,7 +971,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -984,7 +984,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each subtitle language found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Subtitle Languages:         # mapping name does not matter just needs to be unique
@@ -996,13 +996,13 @@ requirements of creating the collection.
     <div id="audio-language" />Creates collections for each audio language found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `audio_language`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** [ISO 639-1 Code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)
 
     **Key Name Value:** ISO Language Name
@@ -1010,7 +1010,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1023,7 +1023,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each audio language found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Audio Languages:         # mapping name does not matter just needs to be unique
@@ -1035,13 +1035,13 @@ requirements of creating the collection.
     <div id="studio" />Creates collections for each studio found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `studio`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies and Shows
-    
+
     **Key Values:** Studio
 
     **Key Name Value:** Studio
@@ -1049,7 +1049,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1062,7 +1062,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each studio found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Studios:         # mapping name does not matter just needs to be unique
@@ -1074,13 +1074,13 @@ requirements of creating the collection.
     <div id="edition" />Creates collections for each edition found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `edition`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Movies/Shows
-    
+
     **Key Values:** Edition
 
     **Key Name Value:** Edition
@@ -1088,7 +1088,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1101,7 +1101,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each edition found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Editions:         # mapping name does not matter just needs to be unique
@@ -1113,13 +1113,13 @@ requirements of creating the collection.
     <div id="network" />Creates collections for each network found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `network`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Shows
-    
+
     **Key Values:** Network
 
     **Key Name Value:** Network
@@ -1127,7 +1127,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1140,7 +1140,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each network found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Networks:         # mapping name does not matter just needs to be unique
@@ -1152,13 +1152,13 @@ requirements of creating the collection.
     <div id="mood" />Creates collections for each mood associated with an artist found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `mood`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Mood
 
     **Key Name Value:** Mood
@@ -1166,7 +1166,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1179,7 +1179,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each artist mood found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Moods:         # mapping name does not matter just needs to be unique
@@ -1191,13 +1191,13 @@ requirements of creating the collection.
     <div id="album-mood" />Creates collections for each mood associated with an album found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `album_mood`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Mood
 
     **Key Name Value:** Mood
@@ -1205,7 +1205,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Most Played <<key_name>> Albums`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           builder_level: album
@@ -1219,7 +1219,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each album mood found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Moods:         # mapping name does not matter just needs to be unique
@@ -1231,13 +1231,13 @@ requirements of creating the collection.
     <div id="track-mood" />Creates collections for each mood associated with a track found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `track_mood`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Mood
 
     **Key Name Value:** Mood
@@ -1245,7 +1245,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Most Played <<key_name>> Tracks`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           builder_level: track
@@ -1259,7 +1259,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each track mood found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Moods:         # mapping name does not matter just needs to be unique
@@ -1268,7 +1268,7 @@ requirements of creating the collection.
 
 ??? blank "`ytmusic_genre_charts` - Collections based on YouTube Music genre charts.<a class="headerlink" href="#ytmusic-genre-charts" title="Permanent link">¶</a>"
 
-    <div id="ytmusic-genre-charts" />Creates a track collection for each genre chart available in the selected YouTube Music country. See the [YouTube Music dynamic charts guide](builders/ytmusic/charts.md) for details.
+    <div id="ytmusic-genre-charts" />Creates a track collection for each genre chart available in the selected YouTube Music country. See the [YouTube Music dynamic charts guide](builders/ytmusic/index.md#youtube-music-dynamic-charts) for details.
 
     <hr style="margin: 0px;">
 
@@ -1323,13 +1323,13 @@ requirements of creating the collection.
     <div id="style" />Creates collections for each style associated with an artist found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `style`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Style
 
     **Key Name Value:** Style
@@ -1337,7 +1337,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           smart_filter:
@@ -1350,7 +1350,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each artist style found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Styles:         # mapping name does not matter just needs to be unique
@@ -1362,13 +1362,13 @@ requirements of creating the collection.
     <div id="album-style" />Creates collections for each style associated with an album found in the library.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `album_style`
 
     **`data` Value:** Not Used
 
     **Valid Library Types:** Music
-    
+
     **Key Values:** Style
 
     **Key Name Value:** Style
@@ -1376,7 +1376,7 @@ requirements of creating the collection.
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
     ??? tip "Default Template (Click to Expand)"
-       
+
         ```yaml
         default_template:
           builder_level: album
@@ -1390,7 +1390,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates collections based on each album style found in the library. 
-        
+
         ```yaml
         dynamic_collections:
           Styles:         # mapping name does not matter just needs to be unique
@@ -1402,13 +1402,13 @@ requirements of creating the collection.
     <div id="number" />Creates collections for each number based on given criteria.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `number`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of Attributes
 
     ??? blank "`starting` - Determines the starting number.<a class="headerlink" href="#number-starting" title="Permanent link">¶</a>"
-        
+
         <div id="number-starting" />This determines the starting number of collections to create.
 
         **Allowed Values:** Number greater than 0, `current_year`, or relative year `current_year-#` (`#` is the number 
@@ -1417,16 +1417,16 @@ requirements of creating the collection.
         **Default:** `0`
 
     ??? blank "`ending` - Determines the ending number.<a class="headerlink" href="#number-ending" title="Permanent link">¶</a>"
-        
+
         <div id="number-ending" />This determines the ending number of collections to create. 
-        
+
         **Allowed Values:** Number greater than 1, `current_year`, or relative year `current_year-#` (`#` is the number 
         of years back from the current year)
 
         **Default:** `1`
 
     ??? blank "`increment` - Determines amount incremented.<a class="headerlink" href="#number-increment" title="Permanent link">¶</a>"
-        
+
         <div id="number-increment" />Determines the amount incremented from one collection to the other.
 
         **Allowed Values:** Number greater than 0
@@ -1434,7 +1434,7 @@ requirements of creating the collection.
         **Default:** `1`
 
     **Valid Library Types:** Movies, Shows, Music, and Video
-    
+
     **Key Values:** Number
 
     **Key Name Value:** Number
@@ -1449,7 +1449,7 @@ requirements of creating the collection.
 
         This example create a collection for the Oscar Winner by Year for the last 5 years and names the collection 
         "Oscars Winners [Number]".
-        
+
         ```yaml
         templates:
           Oscars:
@@ -1478,14 +1478,14 @@ requirements of creating the collection.
     <div id="custom" />Creates collections for each custom `dynamic key: key_name` pair defined.
 
     <hr style="margin: 0px;">
-    
+
     **`type` Value:** `custom`
 
     **`data` Value:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } with the keys being the `dynamic key` and the values 
     being the `key name`
 
     **Valid Library Types:** Movies, Shows, Music, and Video
-    
+
     **Key Values:** `dynamic key`
 
     **Key Name Value:** `key_name`
@@ -1499,7 +1499,7 @@ requirements of creating the collection.
     ???+ example "Example"
 
         This example creates a collection for the various Streaming Services and names them "[Key Name] Movies".
-        
+
         ```yaml
         templates:
           streaming:
@@ -1508,7 +1508,7 @@ requirements of creating the collection.
             sync_mode: sync
             mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-movies
             url_poster: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/streaming/<<key_name_encoded>>.jpg
-        
+
         dynamic_collections:
           Streaming:
             type: custom

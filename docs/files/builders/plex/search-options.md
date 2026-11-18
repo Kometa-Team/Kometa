@@ -1,221 +1,216 @@
-## Plex Search Options
+# Search Options
 
-When using a Plex Builder, there are three elements that correlate to Plex's Advanced Filters in the Web UI.
+<!--shared-content-start-->
+## Plex search options
 
--  **Attribute:** What attribute you wish to filter.
--  **Modifier:** Which modifier to use.
--  **Value:** Actual value to filter.
+Use `attribute.modifier: value`, such as `title.not: "Harry Potter"`.
+The attribute and value are required; modifiers depend on the filter type below.
+These options are shared by `plex_search` and `smart_filter`.
 
-These three elements combined would look like `attribute.modifier: value`, in a Builder this may be something like `title.not: Harry Potter` or `episode_added: 7`.
+=== "Boolean filters"
 
-Attribute and Value elements are mandatory, whilst modifiers are optional. Typically speaking, Plex will have a default modifier of "is" or "contains" if you do not specify a modifier.
-
-The majority of Smart and Manual Builders utilize the same Search Options, meaning that the criteria for the builders is largely interchangeable between the two. Any deviation from this will be highlighted against the specific Builder.
-
-=== "Boolean Filters"
-    
     Boolean Filters take no modifier and can only be either `true` or `false`.
- 
-    #### Boolean Filter Attributes
-    
-    | Boolean Search      | Description            |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
-    |:--------------------|:-----------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | `hdr`               | Is HDR                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `hdr10plus`         | Has HDR10+             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `atmos`             | Has Dolby Atmos        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `unmatched`         | Is Unmatched (Music: Artist) | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `duplicate`         | Is Duplicate           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `unplayed`          | Is Unplayed            | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `progress`          | Is In Progress         | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `trash`             | Is Trashed (Music: Track) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | `unplayed_episodes` | Has Unplayed Episodes  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_unplayed`  | Has Episodes Unplayed  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_duplicate` | Has Duplicate Episodes |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_progress`  | Has Episode Progress   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_unmatched` | Has Episodes Unmatched |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `show_unmatched`    | Has Shows Unmatched    |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `artist_unmatched`  | Is Artist's Unmatched  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_unmatched`   | Is Album's Unmatched   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_trash`       | Is Track Trashed       |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `dovi`              | Has Dolby Vision       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-=== "Date Filters"
-    
+    #### Boolean attributes
+
+    | Attribute | Matches / constraints | Supports |
+    |:----------|:----------------------|:---------|
+    | `hdr` | Is HDR | Movies, Shows |
+    | `hdr10plus` | Has HDR10+ | Movies, Shows |
+    | `atmos` | Has Dolby Atmos | Movies, Shows |
+    | `unmatched` | Is Unmatched (Music: Artist) | Movies, Music |
+    | `duplicate` | Is Duplicate | Movies |
+    | `unplayed` | Is Unplayed | Movies |
+    | `progress` | Is In Progress | Movies |
+    | `trash` | Is Trashed (Music: Track) | Movies, Shows, Music |
+    | `unplayed_episodes` | Has Unplayed Episodes | Shows |
+    | `episode_unplayed` | Has Episodes Unplayed | Shows |
+    | `episode_duplicate` | Has Duplicate Episodes | Shows |
+    | `episode_progress` | Has Episode Progress | Shows |
+    | `episode_unmatched` | Has Episodes Unmatched | Shows |
+    | `show_unmatched` | Has Shows Unmatched | Shows |
+    | `artist_unmatched` | Is Artist's Unmatched | Music |
+    | `album_unmatched` | Is Album's Unmatched | Music |
+    | `track_trash` | Is Track Trashed | Music |
+    | `dovi` | Has Dolby Vision | Movies, Shows |
+
+=== "Date filters"
+
     Date filters can be used with no modifier or with `.last`, `.notlast`, `.before`, or `.after`. The legacy `.not` modifier is also accepted as `.notlast`.
-    
-    No date filter can take multiple values.
-    
 
-    #### Date Filter Attributes
-    
-    | Date Search           | Description                                                                        |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
-    |:----------------------|:-----------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | `added`               | Uses the date added attribute to match                                             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_added`       | Uses the date added attribute of the show's episodes to match                      |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `release`             | Uses the release date attribute (originally available) to match                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_air_date`    | Uses the air date attribute (originally available) of the show's episodes to match |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `last_played`         | Uses the date last played attribute to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_last_played` | Uses the date last played attribute of the show's episodes to match                |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `artist_added` / `date_artist_added` | Uses the Artist's date added attribute to match                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_last_played`  | Uses the Artist's last played attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_last_played`   | Uses the Album's last played attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_added` / `date_album_added` | Uses the Album's date added attribute to match                          |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_released` / `date_album_released` | Uses the Album's release date attribute to match                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_last_played`   | Uses the Track's date last played attribute to match                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_last_skipped`  | Uses the Track's date last skipped attribute to match                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_last_rated`    | Uses the Track's date last rated attribute to match                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_added` / `track_added_at` | Uses the Track's date added attribute to match                             |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    
+    No date filter can take multiple values.
+
+
+    #### Date attributes
+
+    | Attribute | Matches / constraints | Supports |
+    |:----------|:----------------------|:---------|
+    | `added` | date added | Movies, Shows |
+    | `episode_added` | date added | Shows |
+    | `release` | release date attribute (originally available) to match | Movies, Shows |
+    | `episode_air_date` | air date attribute (originally available) of the show's episodes to match | Shows |
+    | `last_played` | date last played | Movies, Shows |
+    | `episode_last_played` | date last played | Shows |
+    | `artist_added` / `date_artist_added` | Artist's date added | Music |
+    | `artist_last_played` | Artist's last played | Music |
+    | `album_last_played` | Album's last played | Music |
+    | `album_added` / `date_album_added` | Album's date added | Music |
+    | `album_released` / `date_album_released` | Album's release date | Music |
+    | `track_last_played` | Track's date last played | Music |
+    | `track_last_skipped` | Track's date last skipped | Music |
+    | `track_last_rated` | Track's date last rated | Music |
+    | `track_added` / `track_added_at` | Track's date added | Music |
+
     ???+ tip "Date Filter Modifiers"
-        
+
         | Date Modifier | Description                                                                                                                                                | Plex Web UI Display  |
         |:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------:|
-        | No Modifier / `.last` | Matches every item where the date attribute is in the last X units<br>**Format:** number of days, or a number with `s` (seconds), `min` (minutes), `h` (hours), `d` (days), `m` (months), or `y` (years)<br>**Example:** `10h` | `is in the last` |
-        | `.notlast` / `.not` | Matches every item where the date attribute is not in the last X units<br>**Format:** same as `.last`<br>**Example:** `30` | `is not in the last` |
-        | `.before`     | Matches every item where the date attribute is before the given date<br>**Format:** MM/DD/YYYY or `today` for the current day<br>**Example:** `01/01/2000` |     `is before`      |
-        | `.after`      | Matches every item where the date attribute is after the given date<br>**Format:** MM/DD/YYYY or `today` for the current day<br>**Example:** `01/01/2000`  |      `is after`      |
+        | No Modifier / `.last` | In the last given interval; days by default, or suffix `s`, `min`, `h`, `d`, `m`, `y`. Example: `10h`. | `is in the last` |
+        | `.notlast` / `.not` | Not in the last given interval; same format as `.last`. Example: `30` days. | `is not in the last` |
+        | `.before` | Before a date as `MM/DD/YYYY`, or `today`. | `is before` |
+        | `.after` | After a date as `MM/DD/YYYY`, or `today`. | `is after` |
 
         For example, `date_album_added.last: 10h` matches albums added in the last 10 hours.
-        
-=== "Number Filters"
+
+=== "Number filters"
 
     Number filters can use `.is`, `.isnot`, `.gt`, `.gte`, `.lt`, or `.lte` as a modifier. Only rating filters can use `.rated`.
-    
+
     No number filter can take multiple values.
-    
-    #### Number Filter Attributes
-    
-    | Number Search                                                                                    | Description                                                                                 |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
-    |:-------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | `duration`                                                                                       | Uses the duration attribute to match using minutes<br>**Minimum:** `0`                      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year attribute to match (Music: Album)<br>**Minimum:** `0`                            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | `plays`                                                                                          | Uses the plays attribute to match<br>**Minimum:** `0`                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `critic_rating`                                                                                  | Uses the critic rating attribute to match<br>**Range:** `0.0` - `10.0`                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `audience_rating`                                                                                | Uses the audience rating attribute to match<br>**Range:** `0.0` - `10.0`                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `user_rating`                                                                                    | Uses the user rating attribute to match<br>**Range:** `0.0` - `10.0`                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `commonsense_rating`                                                                             | Uses Plex's Common Sense Media age rating to match<br>**Range:** `1` - `18`                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" } | Uses the Episode's year attribute to match<br> **Minimum:** `0`                             |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_plays`                                                                                  | Uses the Episode's plays attribute to match<br>**Minimum:** `0`                             |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_critic_rating`                                                                          | Uses the critic rating attribute of the show's episodes to match<br>**Range:** `0.0` - `10.0` |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_audience_rating`                                                                        | Uses the audience rating attribute of the show's episodes to match<br>**Range:** `0.0` - `10.0` |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_user_rating`                                                                            | Uses the user rating attribute of the show's episodes to match<br>**Range:** `0.0` - `10.0` |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `album_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }   | Uses the Album's year attribute to match<br>**Minimum:** `0`                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_decade` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" } | Uses the Album's decade attribute to match<br>**Minimum:** `0`                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_plays`                                                                                    | Uses the Album's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_plays`                                                                                    | Uses the Track's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_skips`                                                                                    | Uses the Track's skips attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_rating` / `artist_user_rating`                                                           | Uses the Artist's user rating attribute to match<br>**Range:** `0.0` - `10.0`               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_rating` / `album_user_rating`                                                              | Uses the Album's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_critic_rating`                                                                            | Uses the Album's critic rating attribute to match<br>**Range:** `0.0` - `10.0`              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_rating` / `track_user_rating`                                                             | Uses the Track's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    
+
+    #### Number attributes
+
+    | Attribute | Matches / constraints | Supports |
+    |:----------|:----------------------|:---------|
+    | `duration` | duration using minutes<br>Minimum: `0` | Movies |
+    | `year` | year (Music: Album)<br>Minimum: `0` | Movies, Shows, Music |
+    | `plays` | plays<br>Minimum: `0` | Movies, Shows |
+    | `critic_rating` | critic rating<br>Range: `0.0` - `10.0` | Movies, Shows |
+    | `audience_rating` | audience rating<br>Range: `0.0` - `10.0` | Movies, Shows |
+    | `user_rating` | user rating<br>Range: `0.0` - `10.0` | Movies, Shows |
+    | `commonsense_rating` | Uses Plex's Common Sense Media age rating to match<br>Range: `1` - `18` | Movies, Shows |
+    | `episode_year` | Episode's year<br> Minimum: `0` | Shows |
+    | `episode_plays` | Episode's plays<br>Minimum: `0` | Shows |
+    | `episode_critic_rating` | critic rating<br>Range: `0.0` - `10.0` | Shows |
+    | `episode_audience_rating` | audience rating<br>Range: `0.0` - `10.0` | Shows |
+    | `episode_user_rating` | user rating<br>Range: `0.0` - `10.0` | Shows |
+    | `album_year` | Album's year<br>Minimum: `0` | Music |
+    | `album_decade` | Album's decade<br>Minimum: `0` | Music |
+    | `album_plays` | Album's plays<br>Minimum: `0` | Music |
+    | `track_plays` | Track's plays<br>Minimum: `0` | Music |
+    | `track_skips` | Track's skips<br>Minimum: `0` | Music |
+    | `artist_rating` / `artist_user_rating` | Artist's user rating<br>Range: `0.0` - `10.0` | Music |
+    | `album_rating` / `album_user_rating` | Album's user rating<br>Range: `0.0` - `10.0` | Music |
+    | `album_critic_rating` | Album's critic rating<br>Range: `0.0` - `10.0` | Music |
+    | `track_rating` / `track_user_rating` | Track's user rating<br>Range: `0.0` - `10.0` | Music |
+
     ???+ tip "Number Filter Modifiers"
-    
+
         | Number Modifier | Description                                                                                                                                             | Plex Web UI Display |
         |:----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------:|
-        | `.is`           | Matches every item where the number attribute is equal to the given number<br>**Format:** number<br>**Example:** `1`, `1995`, or `7.5`                  |       `is`          |
-        | `.isnot`        | Matches every item where the number attribute is not equal to the given number<br>**Format:** number<br>**Example:** `1`, `1995`, or `7.5`             |     `is not`        |
-        | `.gt`           | Matches every item where the number attribute is greater than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`             |  `is greater than`  |
-        | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5` |         N/A         |
-        | `.lt`           | Matches every item where the number attribute is less than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`                |   `is less than`    |
-        | `.lte`          | Matches every item where the number attribute is less than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`    |         N/A         |
-        | `.rated`        | Matches every item either rated or not rated<br>**Format:** `true` or `false`                                                                           |         N/A         |
-        
+        | `.is` | Equal to the number. | `is` |
+        | `.isnot` | Not equal to the number. | `is not` |
+        | `.gt` | Greater than the number. | `is greater than` |
+        | `.gte` | Greater than or equal to the number. | N/A |
+        | `.lt` | Less than the number. | `is less than` |
+        | `.lte` | Less than or equal to the number. | N/A |
+        | `.rated` | Rated / unrated; takes `true` or `false`, and only applies to rating filters. | N/A |
+
         * `.rated` only works for rating filters
 
-=== "String Filters"
+=== "String filters"
 
     String filters can be used with either no modifier or with `.not`, `.is`, `.isnot`, `.begins`, or `.ends`.
-    
+
     String filter can take multiple values **only as a list**.
-    
-    #### String Filter Attributes
-    
-    | String Search        | Description                                              |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
-    |:---------------------|:---------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | `title`              | Uses the title attribute to match                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_title`      | Uses the title attribute of the show's episodes to match |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `studio`             | Uses the studio attribute to match                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `edition`            | Uses the edition attribute to match                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `artist_title`       | Uses the Artist's Title attribute to match               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_title`        | Uses the Album's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_title`        | Uses the Track's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `record_label` / `album_record_label` | Uses the Album's Record Label attribute to match        |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `audio_codec`        | Uses the Track's audio codec attribute to match          |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+
+    #### String attributes
+
+    | Attribute | Matches / constraints | Supports |
+    |:----------|:----------------------|:---------|
+    | `title` | title | Movies, Shows |
+    | `episode_title` | title | Shows |
+    | `studio` | studio | Movies, Shows |
+    | `edition` | edition | Movies, Shows |
+    | `artist_title` | Artist's Title | Music |
+    | `album_title` | Album's Title | Music |
+    | `track_title` | Track's Title | Music |
+    | `record_label` / `album_record_label` | Album's Record Label | Music |
+    | `audio_codec` | Track's audio codec | Music |
 
     ???+ tip "String Filter Modifiers"
-    
+
         | String Modifier | Description                                                                    | Plex Web UI Display |
         |:----------------|:-------------------------------------------------------------------------------|:-------------------:|
-        | No Modifier     | Matches every item where the attribute contains the given string               |     `contains`      |
-        | `.not`          | Matches every item where the attribute does not contain the given string       | `does not contain`  |
-        | `.is`           | Matches every item where the attribute exactly matches the given string        |        `is`         |
-        | `.isnot`        | Matches every item where the attribute does not exactly match the given string |      `is not`       |
-        | `.begins`       | Matches every item where the attribute begins with the given string            |    `begins with`    |
-        | `.ends`         | Matches every item where the attribute ends with the given string              |     `ends with`     |
+        | No Modifier | Contains the string. | `contains` |
+        | `.not` | Does not contain the string. | `does not contain` |
+        | `.is` | Exactly matches the string. | `is` |
+        | `.isnot` | Does not exactly match the string. | `is not` |
+        | `.begins` | Begins with the string. | `begins with` |
+        | `.ends` | Ends with the string. | `ends with` |
 
-=== "Tag Filters"
-    
-    Tag filters can be used with either no modifier or with `.not` except for `decade` and `resolution` which can only be 
+=== "Tag filters"
+
+    Tag filters can be used with either no modifier or with `.not` except for `decade` and `resolution` which can only be
     used with no modifier.
-    
+
     Tag filter can take multiple values as a **list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string**.
-     
-    #### Tag Filter Attributes
-    
-    | Tag Search                                                                                       | Description                                                                 |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
-    |:-------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
-    | `actor`                                                                                          | Uses the actor tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_actor`                                                                                  | Uses the episode actor tags to match                                        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `audio_language`                                                                                 | Uses the audio language tags to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `collection`                                                                                     | Uses the collection tags to match for top level collections                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `season_collection`                                                                              | Uses the collection tags to match for season collections                    |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_collection`                                                                             | Uses the collection tags to match for episode collections                   |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `content_rating`                                                                                 | Uses the content rating tags to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `country`                                                                                        | Uses the country tags to match                                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `decade` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }       | Uses the year tag to match the decade                                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `director`                                                                                       | Uses the director tags to match                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `folder_location`                                                                                | Uses the Plex library root folder location to match                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | `genre`                                                                                          | Uses the genre tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `label`                                                                                          | Uses the label tags to match for top level collections; in Music, matches the selected artist, album, or track type | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | `season_label`                                                                                   | Uses the label tags to match for season collections                         |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `episode_label`                                                                                  | Uses the label tags to match for episode collections                        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `network`                                                                                        | Uses the network tags to match<br>**Only works with the New Plex TV Agent** |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `producer`                                                                                       | Uses the actor tags to match                                                | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `resolution`                                                                                     | Uses the resolution tags to match                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `subtitle_language`                                                                              | Uses the subtitle language tags to match                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `writer`                                                                                         | Uses the writer tags to match                                               | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year tag to match (Music: Album)                                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
-    | `episode_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" } | Uses the year tag to match                                                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `artist_genre`                                                                                   | Uses the Artist's Genre attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_collection`                                                                              | Uses the Artist's Collection attribute to match                             |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_country`                                                                                 | Uses the Artist's Country attribute to match                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_mood`                                                                                    | Uses the Artist's Mood attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_style`                                                                                   | Uses the Artist's Style attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_label`                                                                                   | Uses the Artist's Label attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_genre`                                                                                    | Uses the Album's Genre attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_mood`                                                                                     | Uses the Album's Mood attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_style`                                                                                    | Uses the Album's Style attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_format`                                                                                   | Uses the Album's Format attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_type`                                                                                     | Uses the Album's Type attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_collection`                                                                               | Uses the Album's Collection attribute to match                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_source`                                                                                   | Uses the Album's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_label`                                                                                    | Uses the Album's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_mood`                                                                                     | Uses the Track's Mood attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_genre`                                                                                    | Uses the Track's Genre attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_source`                                                                                   | Uses the Track's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_label`                                                                                    | Uses the Track's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    
-    :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }You can use `current_year` to have Kometa use the current years value. This can be combined with a 
+
+    #### Tag attributes
+
+    | Attribute | Matches / constraints | Supports |
+    |:----------|:----------------------|:---------|
+    | `actor` | actor | Movies, Shows |
+    | `episode_actor` | episode actor | Shows |
+    | `audio_language` | audio language | Movies, Shows |
+    | `collection` | collection for top level collections | Movies, Shows |
+    | `season_collection` | collection for season collections | Shows |
+    | `episode_collection` | collection for episode collections | Shows |
+    | `content_rating` | content rating | Movies, Shows |
+    | `country` | country | Movies, Shows |
+    | `decade` | year tag to match the decade | Movies |
+    | `director` | director | Movies |
+    | `folder_location` | Plex library root folder location to match | Movies, Shows, Music |
+    | `genre` | genre | Movies, Shows |
+    | `label` | label for top level collections; in Music, matches the selected artist, album, or track type | Movies, Shows, Music |
+    | `season_label` | label for season collections | Shows |
+    | `episode_label` | label for episode collections | Shows |
+    | `network` | network<br>**Only works with the New Plex TV Agent** | Shows |
+    | `producer` | Producer tags | Movies |
+    | `resolution` | resolution | Movies, Shows |
+    | `subtitle_language` | subtitle language | Movies, Shows |
+    | `writer` | writer | Movies |
+    | `year` | year tag to match (Music: Album) | Movies, Shows, Music |
+    | `episode_year` | year tag to match | Shows |
+    | `artist_genre` | Artist's Genre | Music |
+    | `artist_collection` | Artist's Collection | Music |
+    | `artist_country` | Artist's Country | Music |
+    | `artist_mood` | Artist's Mood | Music |
+    | `artist_style` | Artist's Style | Music |
+    | `artist_label` | Artist's Label | Music |
+    | `album_genre` | Album's Genre | Music |
+    | `album_mood` | Album's Mood | Music |
+    | `album_style` | Album's Style | Music |
+    | `album_format` | Album's Format | Music |
+    | `album_type` | Album's Type | Music |
+    | `album_collection` | Album's Collection | Music |
+    | `album_source` | Album's Source | Music |
+    | `album_label` | Album's Label | Music |
+    | `track_mood` | Track's Mood | Music |
+    | `track_genre` | Track's Genre | Music |
+    | `track_source` | Track's Source | Music |
+    | `track_label` | Track's Label | Music |
+
+    You can use `current_year` to have Kometa use the current year. This can be combined with a
     `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
     `folder_location` values must match a root folder configured in the Plex library. Plex does not expose nested
     subfolders as Folder Location filter choices. In music libraries, `folder_location` is only available with
     `builder_level: track`.
 
-    ???+ tip "Tag Filter Modifiers" 
+    ???+ tip "Tag Filter Modifiers"
 
         | Tag Modifier | Description                                                            | Plex Web UI Display |
         |:-------------|:-----------------------------------------------------------------------|:-------------------:|
-        | No Modifier  | Matches every item where the attribute matches the given string        |        `is`         |
-        | `.not`       | Matches every item where the attribute does not match the given string |      `is not`       |
+        | No Modifier | Matches the value. | `is` |
+        | `.not` | Does not match the value. | `is not` |

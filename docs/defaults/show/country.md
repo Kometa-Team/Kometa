@@ -16,11 +16,11 @@ hide:
 %}
 
     === "Default `include`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         include: 
     {%    
-      include-markdown "../../../defaults/show/country.yml" 
+      include-markdown "../../templates/source-defaults/show/country.yml"
       comments=false
       start="include:\n"
       end="addons:"
@@ -28,11 +28,11 @@ hide:
         ```
 
     === "Default `addons`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         addons: 
     {%    
-      include-markdown "../../../defaults/show/country.yml" 
+      include-markdown "../../templates/source-defaults/show/country.yml"
       comments=false
       start="addons:\n"
     %}

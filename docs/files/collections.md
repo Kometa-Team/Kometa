@@ -4,8 +4,10 @@ hide:
 ---
 # Collection Files
 
+Builders select the items used by collections, overlays, and playlists. Combine them with [filters](filters.md) to narrow the results. Start with [Plex builders](builders/plex/builders.md), [TMDb builders](builders/tmdb/builders.md), or [IMDb builders](builders/imdb/builders.md).
+
 Collection Files holds information on how Kometa should create collections. There are a large number of 
-builders available to build collections, 
+builders available to build collections,
 
 ## Overview
 
@@ -55,13 +57,13 @@ I then call "MyCollections.yml" in my [Configuration File](../config/overview.md
 Whenever I execute Kometa and the Movies library is run, MyCollections.yml will run and my "Top 50 Grossing Films of 
 All Time (Worldwide)" will be created/updated.
 
-## File Attributes
+## File attributes
 
 Collection Files can utilize the following top-level attributes
 
 | Attribute                                           | Description                                                                                                               |
 |:----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| [`collections`](#collection-operations--attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
+| [`collections`](#collection-operations-attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
 | [`dynamic_collections`](#dynamic-collections)       | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
 | [`external_templates`](templates.md)                | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
 | [`templates`](templates.md)                         | contains definitions of templates that can be leveraged by multiple collections                                           |
@@ -72,7 +74,7 @@ an error when trying to run the file against your library.
 * Example Files can be found in the 
 [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
 
-## Collection Operations & Attributes
+## Collection operations & attributes
 
 Whilst [Library Operations](../config/operations.md) are used to control library-wide operations, Collection Files can 
 be used as a method to perform more limited operations, such as:
@@ -91,7 +93,7 @@ attribute)
 Examples of these can be seen here
 
 ???+ example "Examples of Collection Operations"
-    
+
     Click the :fontawesome-solid-circle-plus: icon to learn more
 
     === "Example 1 - Sync Collection to List"
@@ -110,7 +112,7 @@ Examples of these can be seen here
         3. Sort the collection in the order that it is received from the list
 
     === "Example 2 - Send to Arr"
-    
+
         ```yaml
         collections:
           IMDb Top 250:
@@ -154,14 +156,13 @@ Examples of these can be seen here
 
 There are multiple types of attributes that can be utilized within a collection:
 
-* [Builders](builders/overview.md)
+* [Builders](definition-components.md#builders)
 * [Filters](filters.md)
 * [Settings](settings.md)
-* [Radarr/Sonarr Settings](settings.md)
-* [Collection/Playlist Metadata Updates](updates.md)
-* [Item Metadata Updates](item_updates.md)
+* [Radarr, Sonarr, and Seerr options](arr.md)
+* [Metadata updates](updates.md)
 
-## Example File
+## Example file
 
 Below is a common Collection File which will create two collections in a Plex library.
 
@@ -187,7 +188,7 @@ collections:
     summary: Popular Movies across the internet
 ```
 
-## Dynamic Collections
+## Dynamic collections
 
 In addition to manually defining each Collection that you want in your library, Kometa can also dynamically 
 create collections based on a variety of different criteria, such as

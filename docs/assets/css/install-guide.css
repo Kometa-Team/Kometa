@@ -1,0 +1,32 @@
+/* Scoped to the guided installation page. Native controls keep keyboard behavior. */
+#install-questionnaire {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: .4rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  max-width: 38rem;
+}
+#install-questionnaire label { display: block; margin: .8rem 0 .35rem; font-weight: 600; }
+#install-questionnaire select {
+  display: block;
+  width: 100%;
+  padding: .6rem;
+  color: var(--md-default-fg-color);
+  background: var(--md-default-bg-color);
+  border: 1px solid var(--md-default-fg-color--light);
+  border-radius: .2rem;
+  font: inherit;
+}
+#install-questionnaire button {
+  margin-top: 1rem;
+  padding: .4rem .7rem;
+  border: 1px solid var(--md-primary-fg-color);
+  border-radius: .2rem;
+  color: var(--md-default-fg-color);
+  cursor: pointer;
+}
+#install-questionnaire :focus-visible { outline: 2px solid var(--md-accent-fg-color); outline-offset: 3px; }
+#install-summary { margin-bottom: 0; }
+#install-instructions [hidden], #install-instructions[hidden],
+#install-questionnaire[hidden], #install-questionnaire [hidden], #install-fallback[hidden],
+.md-nav--secondary li[hidden] { display: none !important; }
