@@ -1954,3 +1954,31 @@ def test_silo_reload_accepts_shared_operation_element_exclusions():
     assert item.title == "Fresh"
     library.reload(item, exclude_elements=["Media"])
     assert len(session.calls) == 1
+
+
+def test_profile_name_resolves_before_catalog_access():
+    profiles = {"items": [{"id": "home-id", "name": "Home"}, {"id": "kids-id", "name": "Kids"}], "page": {"has_more": False}}
+    session = FakeSession([FakeResponse(profiles)])
+    server = build_media_server("shelf", {"type": "silo", "url": "http://silo:8090", "token": "token", "profile_name": " home "})
+    client = SiloClient(server, session=session)
+    assert server.profile_id == "home-id"
+    assert client.session.headers["X-Profile-Id"] == "home-id"
+    assert session.calls[0]["url"].endswith("/profiles")
+    second_session = FakeSession([])
+    second = SiloClient(server, session=second_session)
+    assert second.session.headers["X-Profile-Id"] == "home-id"
+    assert second_session.calls == []
+
+
+@pytest.mark.parametrize("profiles,reason", [([], "not found"), ([{"id": "one", "name": "Home"}, {"id": "two", "name": "HOME"}], "ambiguous")])
+def test_profile_name_requires_unique_match(profiles, reason):
+    session = FakeSession([FakeResponse({"items": profiles, "page": {"has_more": False}})])
+    with pytest.raises(Failed, match=reason):
+        SiloClient(_server(profile_id=None, profile_name="Home"), session=session)
+    assert "X-Profile-Id" not in session.headers
+
+
+@pytest.mark.parametrize("options", [{"profile_name": " "}, {"profile_name": 12}, {"profile_id": "id", "profile_name": "Home"}])
+def test_invalid_profile_name_configuration(options):
+    with pytest.raises(Failed, match="Config Error"):
+        _server(**options)

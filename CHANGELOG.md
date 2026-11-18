@@ -96,6 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Allow Silo profile selection by `profile_name` as an alternative to `profile_id`, resolving a unique case-insensitive match before catalog access.
+
 - Log added and removed Jellyfin/Emby catalog item counts, titles, and server IDs when library membership changes, including show and episode numbers when available.
 
 - Add `jellyfin_all`, `emby_all`, and `silo_all` builders for native all-item selection, retaining `plex_all` compatibility.

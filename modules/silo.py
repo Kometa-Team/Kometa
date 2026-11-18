@@ -105,9 +105,14 @@ class SiloMediaServer(MediaServer):
     type_name = "silo"
     type_label = "Silo"
 
-    def __init__(self, url, token, timeout=60, verify_ssl=None, db_cache=None, name=None, profile_id=None, pace_requests=False):
+    def __init__(self, url, token, timeout=60, verify_ssl=None, db_cache=None, name=None, profile_id=None, pace_requests=False, profile_name=None):
         super().__init__(url=url, token=token, timeout=timeout, verify_ssl=verify_ssl, db_cache=db_cache, name=name)
         self.profile_id = profile_id
+        if profile_name is not None and (not isinstance(profile_name, str) or not profile_name.strip()):
+            raise Failed("Config Error: Silo profile_name must be a nonempty string")
+        if profile_id and profile_name:
+            raise Failed("Config Error: Set only one of Silo profile_id or profile_name")
+        self.profile_name = profile_name.strip() if profile_name else None
         if not isinstance(pace_requests, bool):
             raise Failed("Config Error: Silo pace_requests must be a boolean")
         self.pace_requests = pace_requests
@@ -127,6 +132,7 @@ class SiloMediaServer(MediaServer):
             name=name,
             profile_id=profile_id if profile_id is not None else silo_config.get("profile_id"),
             pace_requests=silo_config.get("pace_requests", False),
+            profile_name=silo_config.get("profile_name"),
         )
 
 
@@ -166,6 +172,14 @@ class SiloClient:
         if server.pace_requests:
             with _REQUEST_PACERS_LOCK:
                 self._request_pacer = _REQUEST_PACERS.setdefault(server_key, _RequestPacer())
+        if server.profile_name and not server.profile_id:
+            profiles = self._items("GET", "/profiles")
+            matches = {str(profile["id"]) for profile in profiles if profile.get("id") is not None and str(profile.get("name") or "").strip().casefold() == server.profile_name.casefold()}
+            if len(matches) != 1:
+                detail = "not found" if not matches else "ambiguous"
+                raise Failed(f"Silo Error: Profile name '{server.profile_name}' is {detail}. Use profile_id to select a specific profile. Available profiles: {_format_profiles(profiles) or 'none'}")
+            server.profile_id = matches.pop()
+            self.session.headers["X-Profile-Id"] = server.profile_id
 
     def request(self, method, path, params=None, json_body=None, headers=None, files=None):
         for attempt in range(6):

@@ -454,8 +454,13 @@
             }
           ]
         },
+        "profile_name": {
+          "description": "Silo profile name, matched case-insensitively against profiles available to the token. Set either profile_name or profile_id, not both. Duplicate names require profile_id.",
+          "type": "string",
+          "pattern": "\\S"
+        },
         "profile_id": {
-          "description": "Silo profile id. Catalog reads send it as the X-Profile-Id header.",
+          "description": "Silo profile id. Catalog reads send it as the X-Profile-Id header. Set either profile_id or profile_name, not both.",
           "type": "string",
           "minLength": 1
         },

@@ -4,7 +4,7 @@ This page describes how Kometa's Silo adapter differs from its Plex adapter. The
 
 ## Connecting and selecting a library
 
-Define a `media_servers` entry with `type: silo`, then select it with the library's `server` attribute. A Silo-only configuration does not require a root `plex` block; `tmdb` remains required. Kometa uses Silo's v2 API and the selected `profile_id`. Credentials and profile affect the catalog and personal ratings that Kometa can see.
+Define a `media_servers` entry with `type: silo`, then select it with the library's `server` attribute. A Silo-only configuration does not require a root `plex` block; `tmdb` remains required. Kometa uses Silo's v2 API and the profile selected by `profile_id` or a unique `profile_name`. Credentials and profile affect the catalog and personal ratings that Kometa can see.
 
 Use `silo_all` for native all-item builders. Supported `plex_all` and `plex_search` definitions are compatibility forms, not a connection to Plex or a guarantee that every Plex field is available.
 

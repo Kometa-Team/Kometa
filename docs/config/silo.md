@@ -12,7 +12,7 @@ For migration and behavior changes, see [Silo: differences from Plex](silo_diffe
 
 Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Posters, backdrops, logos, and overlays are set from a URL. Kometa publishes a local image to [transfer.kometa.wiki](https://transfer.kometa.wiki) and gives Silo that URL. A URL Kometa already has, such as a TMDb image, is given to Silo directly. Labels, deleting an item, and playlists are not available. A collection that needs one of those stops with an error for that collection.
 
-Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. When `profile_id` is set, catalog reads send it on the `X-Profile-Id` header. Silo has no clean bundles, empty trash, or optimize operation, so those Plex settings are skipped for a Silo library.
+Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. Select a profile with either `profile_id` or `profile_name`. Kometa resolves a unique profile name once during connection setup and sends the resulting ID on the `X-Profile-Id` header. Silo has no clean bundles, empty trash, or optimize operation, so those Plex settings are skipped for a Silo library.
 
 Connection logs include the server version/revision reported by `/api/v2/system/info`. That endpoint does not report the server OS, so Kometa explicitly logs it as not reported. An unavailable information endpoint warns without preventing library setup.
 
@@ -24,7 +24,7 @@ media_servers:
     type: silo
     url: http://192.168.1.12:8090
     token: ####################
-    profile_id: PROFILE_ID
+    profile_id: PROFILE_ID  # Or use profile_name: Home instead
     pace_requests: false
     timeout: 60
     verify_ssl: true
@@ -62,6 +62,21 @@ Resolution and content-rating defaults also use native Silo metadata. Resolution
 Decade and year collections use Silo's stored years. Decade filters cover the entire decade. The decade default's `critic_rating.desc` sort uses Silo's stored Rotten Tomatoes critic score; missing scores are not fetched. Override `sort_by` with `release.desc`, `title.asc`, or another supported field to choose a different order.
 
 Country, region, and continent defaults discover countries through Silo's library/profile-scoped catalog facets, cached for the run. Codes such as `US` are exposed as country names for the defaults, and generated filters match both native codes and legacy country-name values.
+
+### Selecting a profile by name
+
+Use `profile_name` instead of `profile_id` to select a profile by its display name:
+
+```yaml
+media_servers:
+  my-silo:
+    type: silo
+    url: http://192.168.1.12:8090
+    token: YOUR_TOKEN
+    profile_name: Home
+```
+
+Kometa lists the profiles available to the token and resolves a unique name before reading the catalog. Matching ignores letter case and surrounding whitespace. Requests and cache keys then use the resolved profile ID. Set only one of `profile_name` and `profile_id`. If no profile matches or several profiles share the name, configuration fails with the available names and IDs; use `profile_id` to disambiguate. An existing `profile_id` configuration requires no extra lookup. If a profile is renamed, update `profile_name` or use its stable ID.
 
 ### Tracking without labels
 
@@ -143,6 +158,7 @@ These capabilities use metadata Silo returns for the acting account/profile. The
 | `url`        | Server URL. Kometa adds `/api/v2` when a Silo URL does not already end with it.                     | Any valid URL<br><strong>Example:</strong> `http://192.168.1.12:8090` | :fontawesome-solid-circle-check:{ .green } |
 | `token`      | Session token or API key.                                                                            | Any valid token                                              | :fontawesome-solid-circle-check:{ .green } |
 | `profile_id` | Silo profile whose catalog Kometa reads. A profile Silo does not recognize is reported with the server's user and profile ids. | Any profile id                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `profile_name` | Silo profile display name, resolved case-insensitively to a unique ID. Use instead of `profile_id`. | Any unique available profile name | :fontawesome-solid-circle-xmark:{ .red } |
 | `pace_requests` | Space API requests at least 0.5 seconds apart to reduce rate-limit responses. Automatic 429 retries work with either setting. | `true` or **`false`** | :fontawesome-solid-circle-xmark:{ .red } |
 | `timeout`    | Timeout for Silo communication, in seconds.                                                          | Integer, e.g. **`60`**                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `verify_ssl` | Enable or disable SSL verification for this server.                                                 | `true`, `false`, or leave **blank**                          |  :fontawesome-solid-circle-xmark:{ .red }  |
