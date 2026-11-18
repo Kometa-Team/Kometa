@@ -383,6 +383,60 @@ def test_cursor_pagination_non_json_body_raises_failed():
 # --- _parse_media ---
 
 
+@pytest.mark.parametrize("level", [None, "season", "episode", "show"])
+def test_list_parts_use_parent_show_ids_and_preserve_order(level):
+    # Noncompact objects from https://api.wetrakr.com/#/lists/lists-items:
+    # ids belongs to the part; show.ids belongs to the series.
+    show = {"id": 1391953, "ids": {"tmdb": 1396, "tvdb": 81189}}
+    first = {"type": "season", "id": 135905, "number": 1, "ids": {"tmdb": 3572}, "show": show}
+    episode = {"type": "episode", "id": 174658, "season_number": 2, "number": 3, "ids": {"tmdb": 62085}, "show": show}
+    last = dict(first, number=3, id=135907)
+    service, requests = make_wetrakr([FakeResponse(json_data=[first, {"type": "movie", "id": 1, "ids": {"tmdb": 550}}, episode, last, first])], expires_at=_future())
+    is_movie = None if level is None else False
+    actual = service.get_wetrakr_ids("wetrakr_list", 123, is_movie, builder_level=level)
+    assert requests.gets[0][0].endswith("/lists/123/items/all")
+    if level == "show":
+        assert actual == [(1396, "tmdb_show")]
+    else:
+        expected = [("1396_1", "tmdb_season")]
+        if level is None:
+            expected.append((550, "tmdb"))
+        expected.extend([("1396_2", "tmdb_season") if level == "season" else ("1396_2_3", "tmdb_episode"), ("1396_3", "tmdb_season")])
+        assert actual == expected
+
+
+def test_compact_parts_use_show_ids_not_episode_ids():
+    service, _ = make_wetrakr([], expires_at=_future())
+    item = {"type": "episode", "id": 2240328, "ids": {"tmdb": 2856937}, "show_ids": {"tvdb": 295685}, "season_number": 5, "number": 13}
+    assert service._parse_media([item], None) == [("295685_5_13", "tvdb_episode")]
+
+
+def test_part_without_parent_ids_is_skipped_instead_of_matching_own_ids():
+    service, _ = make_wetrakr([], expires_at=_future())
+    assert service._parse_media([{"type": "episode", "id": 174658, "season_number": 1, "number": 1, "ids": {"tmdb": 62085}}], None) == []
+
+
+@pytest.mark.parametrize("number", [None, "bad", -1])
+def test_bad_season_numbers_are_skipped(number):
+    service, _ = make_wetrakr([], expires_at=_future())
+    assert service._parse_media([{"type": "season", "number": number, "show": {"ids": {"tmdb": 1396}}}], None) == []
+
+
+def test_user_lists_fetch_all_types_and_paginate_seasons():
+    first = {"type": "season", "number": 0, "show": {"ids": {"tvdb": 81189}}}
+    service, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 123, "privacy": "public"}]),
+            FakeResponse(json_data=[first], headers={"X-Pagination-Page-Count": "2"}),
+            FakeResponse(json_data=[dict(first, number=2)]),
+        ],
+        expires_at=_future(),
+    )
+    assert service.get_wetrakr_ids("wetrakr_user_lists", 1, False, builder_level="episode") == [("81189_0", "tvdb_season"), ("81189_2", "tvdb_season")]
+    assert requests.gets[1][0].endswith("/lists/123/items/all")
+    assert requests.gets[2][2]["page"] == 2
+
+
 def test_parse_media_skips_season_episode_and_person_rows():
     wetrakr, _ = make_wetrakr([], expires_at=_future())
     items = [
@@ -781,6 +835,25 @@ def test_sync_list_chunks_batches_at_5000_items_and_keeps_body_under_1mb():
     import json
 
     assert len(json.dumps(requests.posts[0][1]).encode("utf-8")) < 1_000_000
+
+
+@pytest.mark.parametrize("mode, expected_posts", [("sync", 1), ("append", 0)])
+def test_sync_list_empty_results_remove_only_in_sync_mode(mode, expected_posts, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(wetrakr_module, "logger", logs)
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": 550}}], headers={}),
+            FakeResponse(json_data={"removed": {"total": 1}}),
+        ],
+        expires_at=_future(),
+    )
+
+    wetrakr.sync_list(FakeConvert(), 1003620444, [], mode=mode)
+
+    assert len(requests.posts) == expected_posts
+    assert logs.info_messages[-2:] == [f"WeTrakr list 1003620444 updated ({mode})", "List: https://wetrakr.com/lists/1003620444"]
 
 
 def test_sync_list_current_item_with_only_imdb_matches_desired_tmdb_via_convert():

@@ -15,13 +15,14 @@ def test_schedule_scope_includes_seasons_and_episodes_of_selected_show():
 
 
 def test_scoped_plex_all_episodes_loads_only_selected_show_episodes(monkeypatch):
-    monkeypatch.setattr("modules.plex.logger", SimpleNamespace(info=lambda *_: None))
-    selected_show = SimpleNamespace(ratingKey=10)
+    monkeypatch.setitem(Plex.get_rating_keys.__globals__, "logger", SimpleNamespace(info=lambda *_: None))
+    selected_show = type("Show", (), {"ratingKey": 10})()
+    monkeypatch.setitem(Plex.get_rating_keys.__globals__, "Show", type(selected_show))
     episodes = [SimpleNamespace(ratingKey=101), SimpleNamespace(ratingKey=102)]
     library = SimpleNamespace(
         has_schedule_scope=True,
         is_show=True,
-        get_all=lambda: [selected_show],
+        get_all=lambda target_keys=None: [selected_show],
         cached_item_subitems=lambda item, method_name: episodes if item is selected_show and method_name == "episodes" else [],
     )
 

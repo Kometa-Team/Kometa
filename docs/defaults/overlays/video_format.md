@@ -5,11 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Video Format", 
-        "CODE_NAME": "video_format",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the video format available on each item within your library"
-    }'
+    "OVERLAY_NAME": "Video Format",
+    "CODE_NAME": "video_format",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the video format available on each item within your library",
+    "OVERLAY_LABEL": "video format"
+}'
     replace-tags='{"rec-sub": "Recommendations: Designed for [TRaSH Guides](https://trash-guides.info/) filename naming scheme."}'
 %}
 | REMUX    | `remux`    | `60` |
@@ -22,7 +23,7 @@ hide:
 | CAM      | `cam`      | `8`  |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "video_format", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -61,11 +62,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "video_format"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Video Format Overlays"
-    
-        The Video Format overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on filepath.
+
+    The Video Format overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) with [filters](../../../files/filters) on filepath.

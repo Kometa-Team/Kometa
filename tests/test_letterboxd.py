@@ -74,6 +74,7 @@ class FakeMovie:
     def __init__(self, slug):
         data = self.payloads[slug]
         self.tmdb_id = data.get("tmdb_id")
+        self.tmdb_link = data.get("tmdb_link")
         self.rating = data.get("rating")
 
 
@@ -279,6 +280,31 @@ def test_request_html_retries_with_scraper_on_cloudflare_challenge(monkeypatch, 
 
     assert response.xpath("//div[@data-film-id]/@data-film-id") == ["111"]
     assert any("retrying with curl_cffi" in message for message in patch_logger.warning_messages)
+
+
+@pytest.mark.parametrize("method", ["letterboxd_list", "letterboxd_user_films"])
+def test_tv_entries_warn_once_without_error_or_invalid_cache_entry(adapter, patch_logger, monkeypatch, method):
+    FakeMovie.payloads = {"tv-entry": {"tmdb_link": "https://www.themoviedb.org/tv/318745/"}, "movie-entry": {"tmdb_id": 123}}
+    items = [("tv-id", "/film/tv-entry/", 2020, None, None), ("movie-id", "/film/movie-entry/", 2020, None, None)]
+    monkeypatch.setattr(adapter, "_get_list_items", lambda *args: items)
+    monkeypatch.setattr(adapter, "_get_user_entries", lambda *args: [(*item, None) for item in items])
+    data = {"url": "https://letterboxd.com/demo/list/mixed/", "username": "demo", "limit": 0, "note": None, "rating": None, "year": None, "min_rating": 0, "incremental": False}
+
+    assert adapter.get_tmdb_ids(method, data, "en") == [(123, "tmdb")]
+    assert len(patch_logger.warning_messages) == 1
+    assert "TV show" in patch_logger.warning_messages[0]
+    assert patch_logger.error_messages == []
+    assert adapter.cache.updates == [("movie-id", 123)]
+
+
+def test_unknown_movie_id_still_logs_lookup_error(adapter, patch_logger, monkeypatch):
+    FakeMovie.payloads = {"unknown": {}}
+    monkeypatch.setattr(adapter, "_get_list_items", lambda *args: [("unknown-id", "/film/unknown/", 2020, None, None)])
+    data = {"url": "https://letterboxd.com/demo/list/unknown/", "limit": 0, "note": None, "rating": None, "year": None}
+
+    assert adapter.get_tmdb_ids("letterboxd_list", data, "en") == []
+    assert len(patch_logger.error_messages) == 1
+    assert adapter.cache.updates == []
 
 
 def test_get_tmdb_ids_for_films_page_respects_filters_and_cache(adapter):

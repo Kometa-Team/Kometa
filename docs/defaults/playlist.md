@@ -6,7 +6,7 @@ hide:
 
 The `playlist` Default Playlist File is used to create playlists based on popular Movie/TV Show universes (such as the Marvel Cinematic Universe or Star Trek).
 
-This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries, 
+This file assumes that you have libraries named `Movies` and `TV Shows`. If you do not have these libraries or want to use alternative/additional libraries,
 use the `libraries` template variable which is outlined in the [Template Variables](#template-variables) table.
 
 ![](../assets/images/defaults/playlist.png)
@@ -49,7 +49,7 @@ playlist_files:
     The below is an example config.yml extract showing how to enable/disable specific playlists using their keys. By default, all keys/playlists are enabled.
 
     Click the :fontawesome-solid-circle-plus: icon to learn more
-    
+
     ```yaml
     playlist_files:
       - default: playlist
@@ -70,19 +70,19 @@ playlist_files:
         rewrite-relative-urls=false
     %}   
 
-    {% include-markdown "./../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Playlists"
-        The default Playlists use the [IMDb List Builder](../files/builders/imdb/list.md) and [MDBList List Builder](../files/builders/mdblist/list.md) to create the playlists.
+        The default Playlists use the [IMDb List Builder](../files/builders/imdb/builders.md#imdb-list) and [MDBList List Builder](../files/builders/mdblist/index.md#mdblist-list) to create the playlists.
 
     === "Default `imdb_list`"
-    
+
         {% include-markdown "../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         imdb_list: 
 {%    
-  include-markdown "../../defaults/playlist.yml" 
+  include-markdown "../templates/source-defaults/playlist.yml"
   comments=false
   start="# check1\n"
   end="# check2"
@@ -90,11 +90,11 @@ playlist_files:
         ```
 
     === "Default `mdblist_list`"
-    
+
         {% include-markdown "../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         mdblist_list: 
 {%    
-  include-markdown "../../defaults/playlist.yml" 
+  include-markdown "../templates/source-defaults/playlist.yml"
   comments=false
   start="# check3\n"
   end="# check4"

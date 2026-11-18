@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "TMDb Chart", 
-        "CODE_NAME": "tmdb",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create collections based on TMDb charts",
-        "SECTION_NUMBER": "020"
-    }'
+    "COLLECTION": "TMDb Chart",
+    "CODE_NAME": "tmdb",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on TMDb charts",
+    "SECTION_NUMBER": "020"
+}'
     replace-tags='{"rec-sub": "Recommendations: The `TMDb Airing Today` and `TMDb On The Air` Collections only work with Show Libraries."}'
 %}
 | `TMDb Airing Today` | `airing`   | Collection of Shows Airing Today on TMDb.            |
@@ -45,14 +45,14 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="white-style|limit|sync_mode|collection_order"
         rewrite-relative-urls=false
-        replace='{"<!--limit-extra-->": "<br>**Default:** `100`", "COLLECTION_ORDER": "`custom`"}'
+        replace='{"<!--limit-extra-->": "**Default:** `100`<br>", "COLLECTION_ORDER": "`custom`"}'
     %}
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "TMDb Chart Collections"
-        
+
         The TMDb Chart collections use [TMDb Builders](../../../files/builders/tmdb) to create the collections.

@@ -5,11 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Aspect", 
-        "CODE_NAME": "aspect",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay on a show/movie detailing its aspect ratio"
-    }'
+    "OVERLAY_NAME": "Aspect",
+    "CODE_NAME": "aspect",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay on a show/movie detailing its aspect ratio",
+    "OVERLAY_LABEL": "aspect"
+}'
 %}
 | 1.33 | `1.33` | `80` |
 | 1.65 | `1.65` | `70` |
@@ -21,7 +22,7 @@ hide:
 | 2.77 | `2.77` | `10` |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "aspect", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -76,11 +77,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "aspect"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Aspect Overlays"
-    
-        The Aspect overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a limited set of aspect ratios.
+
+    The Aspect overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a limited set of aspect ratios.

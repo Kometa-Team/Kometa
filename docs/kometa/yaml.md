@@ -8,7 +8,7 @@ All of Kometa's Config, Metadata, Overlay, and Playlist Files are written in the
 
 This tutorial will help you understand the specific parts of the files.
 
-## Example YAML File
+## Example YAML file
 
 ```{ .yaml .no-copy }
 libraries:
@@ -35,7 +35,7 @@ settings:
     - config/tv assets
 ```
 
-## Basic YAML Syntax
+## Basic YAML syntax
 
 A YAML format primarily uses 3 node types:
 
@@ -77,7 +77,7 @@ settings:                         # Value is a Dictionary with keys `cache` and 
     - config/tv assets            # List Item is a String Literal
 ```
 
-## Indentation 
+## Indentation
 
 A YAML file relies on whitespace and indentation to indicate nesting. The number of spaces used for indentation doesn’t matter as long as they are consistent.
 
@@ -107,7 +107,7 @@ settings:                         # Nesting Level 1
 
 ## Dictionaries
 
-Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation, 
+Dictionaries are used to associate key/value pairs that are unordered. Dictionaries can be nested by increasing the indentation,
 or new dictionaries can be created at the same level by resolving the previous one.
 
 ```{ .yaml .no-copy }
@@ -117,7 +117,7 @@ cache_expiration: 60
 
 The "keys" are `cache` and `cache_expiration` and the "values" are `true` and `60` respectively.
 
-### In-Line Dictionaries
+### In-line dictionaries
 
 you can represent a dictionary on a single line by using `{` and `}`
 
@@ -145,7 +145,7 @@ asset_directory:
 
 The first item in the list is `config/movie assets` and the second is `config/tv assets`.
 
-### In-Line Lists
+### In-line lists
 
 you can represent a dictionary on a single line by using `[` and `]`
 
@@ -173,7 +173,7 @@ Literals can come in multiple types:
 
 * Boolean: `true` or `false`
 
-### String Literals
+### String literals
 
 The string literals do not require to be quoted. It is only important to quote them when they contain a value that can be mistaken as a special character.
 
@@ -190,7 +190,7 @@ message: 3: YAML                      # breaks as a : is a special character
 "message: 3": YAML                    # Works as the key string is quoted
 ```
 
-#### Multi-Line Strings 
+#### Multi-line strings
 
 Strings can be interpreted as multi-line using the pipe (`|`) character.
 
@@ -214,7 +214,7 @@ libraries:                        # Value is a Dictionary with keys `Movies` and
 
 Everything after `#` on a line is ignored.
 
-## Anchors and Aliases
+## Anchors and aliases
 
 With a lot of configuration, configuration files can become quite large.
 
@@ -263,7 +263,7 @@ libraries:
       - default: ribbon
 ```
 
-## YAML Editors
+## YAML editors
 
 An editor that understands YAML syntax can make your life simpler by highlighting common errors that other editors do not pick up on - from incorrect indentation to invalid attributes or values. They can help with checking YML structure, and warning you of potential errors before you run the file through Kometa. This helps save time and reduce troubleshooting efforts.
 
@@ -309,10 +309,10 @@ plex:
   empty_trash: false
   optimize: false
   verify_ssl: #(5)!
-  
-  
+
+
 ...
-  
+
 ```
 
 1.  All sequence items must start at the same column (i.e. bad indentation)
@@ -323,7 +323,7 @@ plex:
 
 The above issues may not be super noticeable if you aren't using a code-aware editor, this makes it much more obvious that something may be wrong with the config.yml
 
-## Kometa JSON Schemas
+## Kometa JSON schemas
 
 There are JSON schemas available in the Kometa repo that you can use with supporting editors to provide Kometa-specific guidance.
 
@@ -353,7 +353,7 @@ There are example YAML files in that same directory to exercise the schemas.
 
 If you find errors in these schemas, please open a github issue, including the YAML file that shows the issue.
 
-### Visual Studio Code (VSCode)
+### Visual studio code (VSCode)
 
 Visual Studio Code is a free, open-source editor renowned for its extensive language support and powerful extension ecosystem. Its built-in support for YAML is enhanced by extensions—such as the YAML Language Support by Red Hat—that provide features like syntax highlighting, auto-completion, and error detection. This makes it especially effective for managing configuration files in modern development workflows including containerization and infrastructure as code.
 
@@ -370,4 +370,3 @@ Sublime Text is a fast, lightweight, and highly customizable editor that many de
 **Operating Systems Supported**: Windows, macOS, Linux - [Visit the Sublime Text Website](https://www.sublimetext.com/)
 
 **Suggested Extensions**: [RainbowIndent](https://packagecontrol.io/packages/RainbowIndent) by jfcherng
-

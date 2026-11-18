@@ -5,12 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "DE Content Rating", 
-        "CODE_NAME": "content_rating_de",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the FSK Rating on each item within your library"
-    }'
-    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with either `mdb` or `omdb` to update Plex to the FSK Rating."}'
+    "OVERLAY_NAME": "DE Content Rating",
+    "CODE_NAME": "content_rating_de",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the FSK Rating on each item within your library",
+    "OVERLAY_LABEL": "DE content rating"
+}'
+    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../../../config/operations.md#mass-metadata-update) with either `mdb` or `omdb` to update Plex to the FSK Rating."}'
     end='<!--table-before-->'
 %}
 
@@ -25,7 +26,7 @@ hide:
 | NR     | `nr`   |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "content_rating_de", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -64,6 +65,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "content_rating_de"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "DE Content Rating Overlays"
-    
-        The DE Content Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.
+
+    The DE Content Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.

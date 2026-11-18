@@ -1,0 +1,265 @@
+##############################################################################
+#                            Seasonal Collections                            #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#           https://wiki.kometa.team/defaults/movie/seasonal            #
+##############################################################################
+
+external_templates:
+  default: templates
+
+templates:
+  holiday:
+    default:
+      sync_mode: sync
+      sync_mode_<<key>>: <<sync_mode>>
+      sort_by: title.asc
+      sort_by_<<key>>: <<sort_by>>
+      schedule_<<key>>: <<schedule>>
+      limit_<<key>>: <<limit>>
+      tmdb_collection_<<key>>: <<tmdb_collection>>
+      tmdb_movie_<<key>>: <<tmdb_movie>>
+      imdb_list_<<key>>: <<imdb_list>>
+      imdb_search_<<key>>: <<imdb_search>>
+      mdblist_list_<<key>>: <<mdblist_list>>
+      delete_collections_named_<<key>>: <<delete_collections_named>>
+      letterboxd_list_<<key>>: <<letterboxd_list>>
+      summary_<<key>>: <<summary_format>>
+      name_<<key>>: <<name_format>>
+      emoji: ""
+      emoji_<<key>>: <<emoji>>
+    optional:
+      - schedule
+      - tmdb_collection
+      - tmdb_movie
+      - limit
+      - imdb_list
+      - imdb_search
+      - mdblist_list
+      - letterboxd_list
+      - summary_format
+      - name_format
+      - key_name
+      - translation_key
+      - limit
+      - delete_collections_named
+    smart_label:
+      sort_by: <<sort_by_<<key>>>>
+      limit: <<limit_<<key>>>>
+      all:
+        label: <<smart_label>>
+    schedule: <<schedule_<<key>>>>
+    delete_not_scheduled: true
+    sync_mode: <<sync_mode_<<key>>>>
+    tmdb_collection: <<tmdb_collection_<<key>>>>
+    tmdb_movie: <<tmdb_movie_<<key>>>>
+    imdb_list: <<imdb_list_<<key>>>>
+    imdb_search: <<imdb_search_<<key>>>>
+    delete_collections_named: <<delete_collections_named_<<key>>>>
+    mdblist_list: <<mdblist_list_<<key>>>>
+    letterboxd_list: <<letterboxd_list_<<key>>>>
+    cache_builders: 1
+    translation_key: <<translation_key>>
+    key_name: <<key_name>>
+    summary: <<summary_<<key>>>>
+    name: <<name_<<key>>>>
+    limit: <<limit_<<key>>>>
+    translation_prefix: <<emoji_<<key>>>>
+
+collections:
+  Seasonal Collections:
+    template:
+      - name: separator
+        separator: seasonal
+        use_separator: false
+        key_name: Seasonal
+        translation_key: separator
+
+dynamic_collections:
+  Seasonal:
+    type: custom
+    data:
+      years: New Year's Day
+      valentine: Valentine's Day
+      patrick: St. Patrick's Day
+      easter: Easter
+      mother: Mother's Day
+      memorial: Memorial Day
+      father: Father's Day
+      independence: Independence Day
+      labor: Labor Day
+      halloween: Halloween
+      veteran: Veteran's Day
+      thanksgiving: Thanksgiving
+      christmas: Christmas
+      aapi: Asian American & Pacific Islander Heritage Month
+      disabilities: Day of Persons with Disabilities
+      black_history: Black History Month
+      lgbtq: LGBTQ+ Pride Month
+      latinx: Latinx Heritage Month
+      women: Women's History Month
+    title_format: <<key_name>> <<library_typeU>>s
+    template:
+      - holiday
+      - shared
+      - arr
+    template_variables:
+      emoji:
+        years: ""
+        valentine: ""
+        patrick: ""
+        easter: ""
+        mother: ""
+        memorial: ""
+        father: ""
+        independence: ""
+        labor: ""
+        halloween: ""
+        veteran: ""
+        thanksgiving: ""
+        christmas: ""
+        aapi: ""
+        disabilities: ""
+        lgbtq: ""
+        latinx: ""
+        women: ""
+        black_history: ""
+      schedule:
+        years: range(12/26-01/04)
+        valentine: range(02/01-02/29)
+        patrick: range(03/01-03/18)
+        easter: range(03/20-04/30)
+        mother: range(05/05-05/10)
+        memorial: range(5/18-6/7)
+        father: range(06/15-06/20)
+        independence: range(06/23-07/11)
+        labor: range(09/01-09/10)
+        halloween: range(10/01-10/31)
+        veteran: range(11/01-11/30)
+        thanksgiving: range(11/01-11/30)
+        christmas: range(12/01-12/31)
+        aapi: range(04/30-05/31)
+        disabilities: range(12/02-12/04)
+        black_history: range(02/01-03/01)
+        lgbtq: range(05/31-06/30)
+        latinx: range(09/15-10/15)
+        women: range(02/28-03/31)
+      imdb_search:
+        years:
+          list.any: ls066838460
+          limit: 500
+        black_history:
+          list.any: ls023525790
+          limit: 500
+        disabilities:
+          keyword.any: disability
+          limit: 500
+        valentine:
+          list.any:
+            - ls032692441
+            - ls000094398
+            - ls057783436
+            - ls064427905
+          limit: 500
+        patrick:
+          list.any: ls067580975
+          limit: 500
+        easter:
+          list.any:
+            - ls062665509
+            - ls051733651
+          limit: 500
+        mother:
+          keyword.any: motherhood, pregnancy
+          limit: 500
+        memorial:
+          list.any: ls526590990
+          limit: 500
+        father:
+          keyword.any: fatherhood
+          limit: 500
+        independence:
+          list.any:
+            - ls561449172
+            - ls541213215
+            - ls068664510
+            - ls080925875
+          limit: 500
+        labor:
+          list.any: ls002014923
+          limit: 500
+        lgbtq:
+          list.any: ls080580859
+          limit: 500
+        halloween:
+          list.any:
+            - ls546214737
+            - ls023118929
+            - ls000099714
+          limit: 500
+        veteran:
+          list.any:
+            - ls526590990
+            - ls565595526
+          limit: 500
+        thanksgiving:
+          keyword.any: thanksgiving
+          limit: 500
+        women:
+          type: movie
+          keyword.any: women in film, women's rights, women's suffrage, womens rights, womens suffrage
+          sort_by: rating.desc
+          limit: 500
+      tmdb_collection:
+        halloween:
+          - 185103    # Hotel Transylvania
+          - 11716     # Addams Family
+          - 750822    # Addams Family Animated
+          - 313086    # Conjuring
+          - 91361     # Halloween Collection
+          - 8581      # A Nightmare on Elm Street Collection
+          - 1733      # The Mummy Collection
+          - 8091      # Alien Collection
+          - 2980      # Ghostbusters
+          - 751156    # Hocus Pocus
+      tmdb_movie:
+        halloween:
+          - 23437    # A Nightmare on Elm Street (2010)
+      mdblist_list:
+        aapi:
+          - https://mdblist.com/lists/k0meta/asian-american-pacific-islander-heritage-month
+        christmas:
+          - https://mdblist.com/lists/k0meta/christmas-extravaganza
+        latinx:
+          - https://mdblist.com/lists/k0meta/latinx-heritage-month
+      letterboxd_list:
+        black_history:
+          - https://letterboxd.com/mardarrius/list/black-is-beautiful/
+      delete_collections_named:
+        years: 🎊 New Year's Day Movies
+        valentine: 💘 Valentine's Day Movies
+        patrick: ☘ St. Patrick's Day Movies
+        easter: 🐰 Easter Movies
+        mother: 🤱 Mother's Day Movies
+        memorial: 🪖 Memorial Day Movies
+        father: 👨 Father's Day Movies
+        independence: 🎆 Independence Day Movies
+        labor: ⚒ Labor Day Movies
+        halloween: 🎃 Halloween Movies
+        veteran: 🎖 Veteran's Day Movies
+        thanksgiving: 🦃 Thanksgiving Movies
+        christmas: 🎅 Christmas Movies
+        aapi: 🌊🌺 Asian American Pacific Islander Movies
+        disabilities: ♿ Disability Month Movies
+        black_history: ✊🏿 Black History Month Movies
+        lgbtq: 🏳️‍🌈 LGBTQ Month Movies
+        latinx: 🪅 National Hispanic Heritage Movies
+        women: 🚺 Women's History Month Movies
+      visible_home:
+        default: true
+      visible_shared:
+        default: true
+      image:
+        default: seasonal/<<key>>
+      translation_key:
+        default: seasonal

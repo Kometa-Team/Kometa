@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Versions", 
+        "OVERLAY_NAME": "Versions",
         "CODE_NAME": "versions",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on if there\'s multiple versions on each item within your library"
@@ -14,7 +14,7 @@ hide:
 %}
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "versions", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -50,11 +50,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "versions"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Versions Overlays"
-    
-        The Versions overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for duplicate items or episodes.
+
+    The Versions overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for duplicate items or episodes.

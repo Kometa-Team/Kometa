@@ -4,7 +4,7 @@ hide:
 ---
 # Serializd Attributes
 
-Configuring [Serializd](https://www.serializd.com/) is optional. It enables Serializd metadata sources, watched synchronization, and [Serializd builders](../files/builders/serializd/overview.md).
+Configuring [Serializd](https://www.serializd.com/) is optional. It enables Serializd metadata sources, watched synchronization, and [Serializd builders](../files/builders/serializd/index.md).
 
 A `serializd` mapping can be added to the root of the config file:
 

@@ -1,3 +1,6 @@
+# File Types
+
+<!--shared-content-start-->
 Files define the structure and format for creating Collections, Overlays, Playlists, and Metadata Edits within your libraries.
 
 Files are modular and when properly leveraged, they not only facilitate the management of your library's collections and 
@@ -14,9 +17,9 @@ These are the File types that can be utilized against Plex servers:
 | [Template Files](../files/templates.md)     | Defines templates in external files, allowing you to use the same templates across multiple other files.                                 | `external_templates` |
 
 ??? example "Example File Blocks (Click to Expand)"
-    
+
     In this example, multiple file blocks are defined for the `"TV Shows"` library:
-    
+
     ```yaml
     libraries:
       TV Shows:
@@ -29,12 +32,12 @@ These are the File types that can be utilized against Plex servers:
     playlist_files:
       - url: https://somewhere.com/Playlists.yml
     ```
-    
+
     **Unlike the others, Playlist Files are not defined per-library.**
 
     Within the above example, Kometa will:
 
-    * First, look within the root of the Kometa directory (also known as `config/`) for a Collection File named `TVShows.yml`. If this file does not exist, 
+    * First, look within the root of the Kometa directory (also known as `config/`) for a Collection File named `TVShows.yml`. If this file does not exist,
     Kometa will skip the entry and move to the next one in the list.
 
     * Then, look within the root of the Kometa directory (also known as `config/`) for a directory called `TV Shows`, and then load any collection files within that directory.

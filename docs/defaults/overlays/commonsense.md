@@ -5,12 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Common Sense Age Rating", 
-        "CODE_NAME": "commonsense",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the Common Sense Age Rating on each item within your library"
-    }'
-    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating."}'
+    "OVERLAY_NAME": "Common Sense Age Rating",
+    "CODE_NAME": "commonsense",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the Common Sense Age Rating on each item within your library",
+    "OVERLAY_LABEL": "Common Sense age rating"
+}'
+    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../../../config/operations.md#mass-metadata-update) with either `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating."}'
     end='<!--table-before-->'
 %}
 
@@ -37,7 +38,7 @@ hide:
 | NR     | `nr` |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "commonsense", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -73,11 +74,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "commonsense"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Common Sense Age Rating Overlays"
-    
-        The Common Sense Age Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.
+
+    The Common Sense Age Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.

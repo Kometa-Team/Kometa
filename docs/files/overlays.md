@@ -90,7 +90,7 @@ tags:
 
 # Overlay Files
 
-Overlay Files holds information on how Kometa should create Overlays. There are a large number of builders available to build Overlays, 
+Overlay Files holds information on how Kometa should create Overlays. There are a large number of builders available to build Overlays,
 
 ## Overview
 
@@ -150,7 +150,7 @@ I then call "MyOverlays.yml" in my [Configuration File](../config/overview.md) w
 
 Whenever I execute Kometa and the Movies library is run, MyOverlays.yml will run and my "Direct Play" overlay will appear on all items with a 4K resolution.
 
-## File Attributes
+## File attributes
 
 Overlay Files can utilize the following top-level attributes
 
@@ -162,7 +162,7 @@ Overlay Files can utilize the following top-level attributes
 
 * Example Files can be found in the [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
 
-## Overlay Understandings
+## Overlay understandings
 
 ???+ danger "Important Notes"
 
@@ -199,7 +199,7 @@ To remove all overlays from your library, add the [`remove_overlays` library att
 
     **To change a single overlay original image either remove the `Overlay` shared label and update the Image in Plex or replace the image in the assets folder and then Kometa will overlay the new image**
 
-## Overlay Attributes
+## Overlay attributes
 
 Overlay Files can utilize the following top-level attributes
 
@@ -215,11 +215,11 @@ Overlay Files can utilize the following top-level attributes
 
 There are multiple types of attributes that can be utilized within an overlay:
 
-* [Builders](builders/overview.md)
+* [Builders](definition-components.md#builders)
 * [Filters](filters.md)
 * [Settings](settings.md)
 
-## Example Files
+## Example files
 
 Below is a common Overlay File which will create an Overlay for all items which have a 4K resolution.
 
@@ -253,7 +253,7 @@ overlays:
 
 ![4K HDR Overlay Example](../assets/images/files/overlays-example-4khdr.png)
 
-## Advanced Overlay Attributes
+## Advanced overlay attributes
 
 The below attributes are also available for Overlay files, to give more granular control over how they function.
 
@@ -294,13 +294,13 @@ The below attributes are also available for Overlay files, to give more granular
 * If `url`, `git`, and `repo` are all not defined then Kometa will look in your `config/overlays` folder for a `.png` file named the same as the `name` attribute.
 
 
-### Positional Image Overlays
+### Positional image overlays
 
 Positional overlays can be of any size and use `horizontal_offset`, `horizontal_align`, `vertical_offset`, and `vertical_align` to position the overlay on the image. 
 
 ???+ tip
 
-    This overlay example uses one of the [Kometa Default Overlay](../defaults/overlays.md) images, which isn't necessary but is used just for this example.
+    This overlay example uses one of the [Kometa Default Overlay](../defaults/overlays/usage.md) images, which isn't necessary but is used just for this example.
 
 ```yaml
 overlays:
@@ -317,7 +317,7 @@ overlays:
 
 ![Positional Overlay Example](../assets/images/files/overlays-example-positional.png)
 
-### Blurring Overlay
+### Blurring overlay
 
 There is a special overlay named `blur` that when given as the overlay name will instead of finding the image will just blur the image instead.
 
@@ -336,7 +336,7 @@ overlays:
 
 ![Blur Overlay Example](../assets/images/files/overlays-example-blur.png)
 
-### Backdrop Overlay
+### Backdrop overlay
 
 There is a special overlay named `backdrop` that when given as the overlay name will instead of finding the image will just apply the background instead.
 
@@ -357,7 +357,7 @@ This example could be useful if you want to have a black banner, and then use a 
 
 ![Backdrop Overlay Example](../assets/images/files/overlays-example-backdrop.png)
 
-### Text Overlay
+### Text overlay
 
 You can add text as an overlay using the special `text()` overlay name. Anything inside the parentheses will be added as an overlay onto the image. Ex `text(4K)` adds `4K` to the image.
 
@@ -394,13 +394,13 @@ Note that we have built up on our backdrop overlay that we created in our previo
 
 ![Text Overlay Example](../assets/images/files/overlays-example-text.png)
 
-#### Special Text Variables
+#### Special text variables
 
 You can use the item's metadata to determine the text by adding Special Text Variables to your text Overlay.
 
 Each Special Text Variables has multiple modifiers that can be used to format the text. The variables are defined like this `<<name$>>` where `name` is the Special Text Variable and the modifier is `$`.
 
-##### Special Rating Text
+##### Special rating text
 
 | Variable                       | Description                                                                       | Item Types                                                                                                                                                                                                |
 |:-------------------------------|:----------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -445,7 +445,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 
      MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
 
-##### Special String Text
+##### Special string text
 
 | Variable         | Description                | Item Types                                  |
 |:-----------------|:---------------------------|:--------------------------------------------|
@@ -465,7 +465,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
     |   `L`    | Text with the first letter Lowercase   |
     |   `P`    | Text with most words Capitalized       |
 
-##### Special Number Text
+##### Special number text
 
 | Variable         | Description                    | Item Types              |
 |:-----------------|:-------------------------------|:------------------------|
@@ -485,7 +485,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
     |   `0`    | Number with 10s Padding   |  `01`   |
     |   `00`   | Number with 100s Padding  |  `001`  |
 
-##### Other Special Text
+##### Other special text
 
 | Special Text Variables & Mods                                                                                                                                                                                                                                   | Item Types                                  |
 |:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------|
@@ -519,7 +519,7 @@ Note that we have once again built up on our backdrop overlay that we created in
 
 ![Special Text Overlay Example](../assets/images/files/overlays-example-special-text.png)
 
-#### Special Text Modifiers
+#### Special text modifiers
 
 Some Special Text attributes (such as ratings) have modifiers which control how they are output. This is detailed in the above table.
 
@@ -574,7 +574,7 @@ overlays:
 
 ![Episode Text Overlay Example](../assets/images/files/overlays-example-episode-text.png)
 
-##### Common Special Text Uses
+##### Common special text uses
 
 These are some commonly-used examples of Special Text overlays:
 
@@ -587,7 +587,7 @@ These are some commonly-used examples of Special Text overlays:
 | `name: text(Season <<season_number>> Episode <<episode_number>>)` | Season 1 Episode 1 |
 | `name: text(Season <<season_number>>)`                            | Season 1           |
 
-#### Text Addon Images
+#### Text addon images
 
 You can add an image to accompany the text by specifying the image location using `file`, `url`, `git`, or `repo`.
 
@@ -597,7 +597,7 @@ Use `addon_position` to control which side of the text the image will be located
 
 ???+ tip
 
-    This overlay example uses one of the [Kometa Default Overlay](../defaults/overlays.md) images, which isn't necessary but is used just for this example.
+    This overlay example uses one of the [Kometa Default Overlay](../defaults/overlays/usage.md) images, which isn't necessary but is used just for this example.
 
 ```yaml
 overlays:
@@ -623,7 +623,7 @@ overlays:
 
 ![Addon Offset Overlay Example](../assets/images/files/overlays-example-addon-offset.png)
 
-### Overlay Groups
+### Overlay groups
 
 Overlay groups are defined by the name given to the `group` attribute. Only one overlay with the highest weight per group will be applied. If multiple matching overlays share the highest weight, the first one defined is applied.
 
@@ -659,7 +659,7 @@ overlays:
       audio_language.count_gt: 2
 ```
 
-### Overlay Queues
+### Overlay queues
 
 Overlay queues are defined by the name given to the `queue` attribute. The overlay with the highest weight is put into the first queue position, then the second highest is placed in the second queue position and so on. 
 
@@ -676,7 +676,7 @@ queues:
       horizontal_align: center
       vertical_offset: 1250
       vertical_align: top
-      
+
 overlays:
   IMDb:
     imdb_chart: popular_movies
@@ -719,14 +719,14 @@ queues:
     - vertical_offset: 1125         # This is the third position
 ```
 
-### Dynamic Queues
+### Dynamic queues
 
 Dynamic Queues build queues based on a set of values. To make a dynamic queue instead of having a list under the queue name you use the settings attribute.
 
 | `settings` Attributes | Description                                                             |
 |:----------------------|:------------------------------------------------------------------------|
-| `conditionals`        | Set [conditional variables](templates.md/#conditionals).                |
-| `default`             | Set [default variables](templates.md/#default).                         |
+| `conditionals`        | Set [conditional variables](templates.md#conditionals).                |
+| `default`             | Set [default variables](templates.md#default).                         |
 | `dynamic_position`    | Dynamic Position Attributes                                             |
 | `overlay_limit`       | Max number of overlays to use.<br>**Value:** Any Integer greater than 0 |
 
@@ -757,7 +757,7 @@ queues:
 
 * This will place 3 overlays with a different vertical offset of 15, 75, 135.
 
-## Value Filter
+## Value filter
 
 `value_filter` is an overlay-file-only attribute that filters items at selection time based on a runtime-fetched numeric value. It is a post-filter (AND on top of whatever the builder returned) — only items where **all** conditions pass are included.
 
@@ -799,7 +799,7 @@ value_filter:
 | `.lt` | Less than |
 | `.lte` | Less than or equal to |
 
-### Supported Variables
+### Supported variables
 
 All values use Kometa's normalised **0–10 scale** regardless of source (e.g. a Rotten Tomatoes score of 79% is `7.9`). The default Fresh threshold used by the `ratings` defaults file is `6.0` (equivalent to 60%).
 
@@ -827,7 +827,7 @@ filters:
   release_year.gte: 2000
 ```
 
-## Suppress Overlays
+## Suppress overlays
 
 You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
 
@@ -857,7 +857,7 @@ overlays:
 
 ## Examples
 
-### Example Overlay File
+### Example overlay file
 
 ```yaml
 overlays:
@@ -883,7 +883,7 @@ overlays:
       has_dolby_vision: true
 ```
 
-### Example Folder Structure
+### Example folder structure
 
 ```
 config

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from modules import util
 from modules.util import Failed, LimitReached, ServiceError
@@ -13,7 +13,7 @@ class MDBListLimitReached(LimitReached, ServiceError):
 
 
 # --- REQUIRED MODULE ATTRIBUTES ---
-builders = ["mdblist_list", "mdblist_streaming"]
+builders = ["mdblist_list", "mdblist_watchlist", "mdblist_streaming"]
 sort_names = [
     "rank",
     "score",
@@ -188,6 +188,9 @@ class MDbObj:
         except ValueError:
             self.released_digital = None
 
+        # Batch responses can omit this field; only a single-item lookup can confirm a missing date.
+        self.digital_release_checked = bool(data.get("digital_release_checked", not batch or self.released_digital is not None))
+
         self.traktid = util.check_num(data.get("traktid"))
         self.score = _rating("score", data.get("score"), 100)
         self.average = _rating("average", data.get("score_average"), 100)
@@ -350,7 +353,8 @@ class MDBList:
 
         return json_data, response.headers
 
-    def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False):
+    def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False, require_digital=False):
+        """Fetch a single item when a digital-date operation encounters incomplete cached data."""
         key = self._cache_key(media_provider, media_type, media_id)
 
         expired = None
@@ -358,12 +362,14 @@ class MDBList:
         item_url = f"{api_url}{media_provider}/{media_type}/{media_id}/"
 
         if not ignore_cache and key in self._run_cache:
-            return self._run_cache[key]
+            cached = self._run_cache[key]
+            if not require_digital or cached.digital_release_checked:
+                return cached
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 mdb = MDbObj(mdb_dict)
-                if mdb.ratings_valid:
+                if mdb.ratings_valid and (not require_digital or mdb.digital_release_checked):
                     self._run_cache[key] = mdb
                     return mdb
                 expired = True
@@ -448,20 +454,20 @@ class MDBList:
             _, expired = self.cache.query_mdb(key, self.expiration)
             self.cache.update_mdb(expired, key, mdb, self.expiration)
 
-    def get_imdb(self, imdb_id):
-        return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)
+    def get_imdb(self, imdb_id, require_digital=False):
+        return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id, require_digital=require_digital)
 
-    def get_series(self, tvdb_id):
-        return self.get_item(media_provider="tvdb", media_type="show", media_id=tvdb_id)
+    def get_series(self, tvdb_id, require_digital=False):
+        return self.get_item(media_provider="tvdb", media_type="show", media_id=tvdb_id, require_digital=require_digital)
 
-    def get_movie(self, tmdb_id):
-        return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id)
+    def get_movie(self, tmdb_id, require_digital=False):
+        return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id, require_digital=require_digital)
 
     def sync_list(self, slug, ids, mode="sync", removal_types=None):
         """Update a user-owned static list using MDBList's list item API.
 
-        ``slug`` is the exact list name. MDBList resolves it to the user's
-        numeric list id; write endpoints then require the id and a payload
+        ``slug`` is the exact list name or a numeric list id. MDBList resolves
+        names to the user's numeric list id; write endpoints require the id and a payload
         containing ``tmdb`` identifiers grouped under movies and shows.
         ``removal_types`` optionally limits removals to the supplied media types.
         """
@@ -469,10 +475,16 @@ class MDBList:
             raise Failed(f"MDBList Error: invalid sync mode: {mode}")
         lists, _ = self._request(f"{api_url}lists/user")
         lists = lists if isinstance(lists, list) else lists.get("lists", [])
-        matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+        if isinstance(slug, bool) or not isinstance(slug, (str, int)):
+            raise Failed(f"MDBList Error: invalid list name or id: {slug}")
+        numeric_id = int(slug) if isinstance(slug, int) or (isinstance(slug, str) and slug.isdigit()) else None
+        matches = [item for item in lists if isinstance(item, dict) and (str(item.get("id")) == str(numeric_id) if numeric_id is not None else item.get("name") == slug)]
         if len(matches) > 1:
             raise Failed(f"MDBList Error: Multiple lists named '{slug}' found")
+        created_list = not matches
         if not matches:
+            if numeric_id is not None:
+                raise Failed(f"MDBList Error: list id {numeric_id} was not found among your lists")
             created, _ = self._request(f"{api_url}lists/user/add", json_data={"name": slug})
             if isinstance(created, dict):
                 list_id = created.get("id") or (created.get("list") or {}).get("id")
@@ -485,16 +497,30 @@ class MDBList:
                 list_id = matches[0].get("id") if len(matches) == 1 else None
             if not list_id:
                 raise Failed(f"MDBList Error: could not create list: {slug}")
+            list_entry = created.get("list", created) if isinstance(created, dict) else {}
+            if not isinstance(list_entry, dict):
+                list_entry = {}
+            if matches:
+                list_entry = matches[0]
         else:
-            list_id = matches[0].get("id")
+            list_entry = matches[0]
+            list_id = list_entry.get("id")
 
         existing = []
         if mode == "sync":
             existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
+        existing_ids = {(int(item_id), item_type) for item_id, item_type in existing}
+        desired_ids = set()
         payload = {"movies": [], "shows": []}
         for item_id, item_type in ids:
+            item = (int(item_id), item_type)
+            if item in desired_ids:
+                continue
+            desired_ids.add(item)
+            if mode == "sync" and item in existing_ids:
+                continue
             key = "movies" if item_type == "tmdb" else "shows"
-            payload[key].append({"tmdb": int(item_id)})
+            payload[key].append({"tmdb": item[0]})
         payload = {key: value for key, value in payload.items() if value}
 
         def update_items(action, item_payload, processed, total):
@@ -511,7 +537,7 @@ class MDBList:
         if mode == "sync":
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:
-                if removal_types is None or item_type in removal_types:
+                if (int(item_id), item_type) not in desired_ids and (removal_types is None or item_type in removal_types):
                     key = "movies" if item_type == "tmdb" else "shows"
                     remove_payload[key].append({"tmdb": int(item_id)})
             remove_payload = {key: value for key, value in remove_payload.items() if value}
@@ -527,7 +553,20 @@ class MDBList:
             for key, value in payload.items():
                 for start in range(0, len(value), 100):
                     processed = update_items("add", {key: value[start : start + 100]}, processed, total)
-        logger.info(f"MDBList list {slug} updated ({mode})")
+        if not (list_entry.get("url") or ((list_entry.get("user_name") or list_entry.get("username")) and list_entry.get("slug"))):
+            try:
+                refreshed, _ = self._request(f"{api_url}lists/user")
+                refreshed = refreshed if isinstance(refreshed, list) else refreshed.get("lists", [])
+                list_entry = next((item for item in refreshed if isinstance(item, dict) and str(item.get("id")) == str(list_id)), list_entry)
+            except Failed:
+                pass
+        list_url = list_entry.get("url")
+        user_name = list_entry.get("user_name") or list_entry.get("username")
+        if not list_url and user_name and list_entry.get("slug"):
+            list_url = f"{base_url}{quote(str(user_name), safe='')}/{quote(str(list_entry['slug']), safe='')}"
+        logger.info(f"MDBList list {slug} {'updated' if created_list or payload or (mode == 'sync' and remove_payload) else 'already up to date'} ({mode})")
+        if list_url:
+            logger.info(f"List: {list_url}")
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
@@ -548,6 +587,11 @@ class MDBList:
             valid_lists.append(list_object)
 
         return valid_lists
+
+    def validate_mdblist_watchlist(self, error_type, watchlists):
+        if watchlists is not True:
+            raise Failed(f"{error_type} Error: mdblist_watchlist must be true")
+        return True
 
     @staticmethod
     def validate_mdblist_streaming(error_type, data):
@@ -580,6 +624,25 @@ class MDBList:
         return streaming
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
+        if method == "mdblist_watchlist":
+            if is_movie is None:
+                raise Failed("MDBList Error: mdblist_watchlist can only be used with movie or show libraries")
+            media_type = "movie" if is_movie else "show"
+            # A user's watchlist is exposed as the special `watchlist` list;
+            # the media type is part of the list-items path.
+            response, _ = self._request(f"{api_url}watchlist/items/{media_type}", params={"limit": 1000})
+            items = response.get("movies" if is_movie else "shows", response.get("items", [])) if isinstance(response, dict) else response
+            if not isinstance(items, list):
+                raise Failed("MDBList Error: watchlist response must contain a list of items")
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                tmdb_id = util.check_num(item.get("id") or item.get("tmdb_id") or item.get("tmdbid") or (item.get("ids") or {}).get("tmdb"))
+                if tmdb_id:
+                    results.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
+            return results
+
         if method == "mdblist_streaming":
             if is_movie is None:
                 raise Failed("MDBList Error: mdblist_streaming can only be used with movie or show libraries")

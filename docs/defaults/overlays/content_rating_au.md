@@ -5,12 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "AU Content Rating", 
-        "CODE_NAME": "content_rating_au",
-        "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
-        "DESCRIPTION": "an overlay based on the Australia Rating on each item within your library"
-    }'
-    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with either `mdb` or `omdb` to update Plex to the Australia Rating."}'
+    "OVERLAY_NAME": "AU Content Rating",
+    "CODE_NAME": "content_rating_au",
+    "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
+    "DESCRIPTION": "an overlay based on the Australia Rating on each item within your library",
+    "OVERLAY_LABEL": "AU content rating"
+}'
+    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../../../config/operations.md#mass-metadata-update) with either `mdb` or `omdb` to update Plex to the Australia Rating."}'
     end='<!--table-before-->'
 %}
 
@@ -25,7 +26,7 @@ hide:
 | NR     | `nr` |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "content_rating_au", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show|episode|season' 
 %}
@@ -64,6 +65,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "content_rating_au"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "AU Content Rating Overlays"
-    
-        The AU Content Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.
+
+    The AU Content Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.

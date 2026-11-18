@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Year", 
-        "CODE_NAME": "year",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "105", 
-        "DESCRIPTION": "dynamically create collections based on the years available in your library, sorted by critic rating to create \"best of YEAR\" collections"
-    }'
+    "COLLECTION": "Year",
+    "CODE_NAME": "year",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "105",
+    "DESCRIPTION": "dynamically create collections based on the years available in your library, sorted by critic rating to create \"best of YEAR\" collections"
+}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Year"}' %}
 | `Best of <<Year>>`<br>**Example:** `Best of 2022` | `<<Year>>`<br>**Example:** `2022` | Collection of Movies/Shows that have this Year. |
@@ -35,7 +35,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="year-data|exclude|limit|sort_by|format"
         replace='{
-            "DYNAMIC_NAME": "Years", 
+            "DYNAMIC_NAME": "Years",
             "DYNAMIC_VALUE": "Years",
             "NAME_FORMAT": "Best of <<key_name>>",
             "SUMMARY_FORMAT": "<<library_translationU>>s released in <<key_name>>.",
@@ -50,5 +50,5 @@ hide:
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Year Collections"
-        
-        The Year collections use the [dynamic collections](./../../files/dynamic.md) system based on the release dates of the items in your libraries.
+
+        The Year collections use the [dynamic collections](../../files/dynamic.md) system based on the release dates of the items in your libraries.

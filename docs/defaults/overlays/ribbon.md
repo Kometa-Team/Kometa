@@ -5,11 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Ribbon", 
-        "CODE_NAME": "ribbon",
-        "OVERLAY_LEVEL": "Movie, Show",
-        "DESCRIPTION": "a ribbon overlay based on the Top Lists of various sites on each item within your library"
-    }'
+    "OVERLAY_NAME": "Ribbon",
+    "CODE_NAME": "ribbon",
+    "OVERLAY_LEVEL": "Movie, Show",
+    "DESCRIPTION": "a ribbon overlay based on the Top Lists of various sites on each item within your library",
+    "OVERLAY_LABEL": "ribbon"
+}'
 %}
 | Oscars Best Picture             | `oscars`          | `190` |
 | Oscars Best Director            | `oscars_director` | `180` |
@@ -33,7 +34,7 @@ hide:
 | Razzies Winner                  | `razzie`          | `10`  |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "ribbon", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|movie|show' 
 %}
@@ -70,12 +71,11 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" end="<!--text-variables-->" replace='{"CODE_NAME": "ribbon"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Ribbon Overlays"
-    
-        The Ribbon overlays use the [`imdb_award` Builder](../../../files/builders/imdb#imdb-award), [`imdb_chart` Builder](../../../files/builders/imdb#imdb-chart), 
-        [`mdblist_list` Builder](../../../files/builders/mdblist#mdblist-list), 
+
+    The Ribbon overlays use the [`imdb_award` Builder](../../../files/builders/imdb#imdb-award), [`imdb_chart` Builder](../../../files/builders/imdb#imdb-chart),
+    [`mdblist_list` Builder](../../../files/builders/mdblist#mdblist-list),

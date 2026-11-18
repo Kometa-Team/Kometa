@@ -1,0 +1,114 @@
+[
+  {
+    "data": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440004",
+        "server_id": "550e8400-e29b-41d4-a716-446655440000",
+        "server_name": "Plex",
+        "server_type": "plex",
+        "state": "stopped",
+        "media_type": "movie",
+        "media_title": "Inception",
+        "year": 2010,
+        "media_id": "550e8400-e29b-41d4-a716-446655440005",
+        "show_media_id": null,
+        "show_title": null,
+        "rating_key": "101",
+        "library_id": "1",
+        "tmdb_id": 27205,
+        "imdb_id": "tt1375666",
+        "tvdb_id": null,
+        "grandparent_rating_key": null,
+        "parent_rating_key": null,
+        "season_number": null,
+        "episode_number": null,
+        "duration_ms": 7200000,
+        "progress_ms": 7200000,
+        "total_duration_ms": 7200000,
+        "percent_complete": 100.0,
+        "watched": true,
+        "segment_count": 2,
+        "started_at": "2026-10-25T18:00:00.000Z",
+        "stopped_at": "2026-10-25T20:00:00.000Z",
+        "reference_id": "550e8400-e29b-41d4-a716-446655440004",
+        "user": {
+          "id": "550e8400-e29b-41d4-a716-446655440001",
+          "server_user_id": "550e8400-e29b-41d4-a716-446655440002",
+          "username": "alice-plex",
+          "thumb_url": null,
+          "avatar_url": null
+        },
+        "is_transcode": false,
+        "video_decision": "directplay",
+        "audio_decision": "directplay",
+        "genres": [
+          "Action"
+        ],
+        "platform": "tvOS",
+        "device": "Apple TV",
+        "source_video_codec": "hevc",
+        "source_audio_codec": "aac"
+      }
+    ],
+    "meta": {
+      "nextCursor": "history-page-2",
+      "pageSize": 100
+    }
+  },
+  {
+    "data": [
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440006",
+        "server_id": "550e8400-e29b-41d4-a716-446655440000",
+        "server_name": "Plex",
+        "server_type": "plex",
+        "state": "stopped",
+        "media_type": "episode",
+        "media_title": "Pilot",
+        "year": 2010,
+        "media_id": "550e8400-e29b-41d4-a716-446655440006",
+        "show_media_id": "550e8400-e29b-41d4-a716-446655440007",
+        "show_title": "Example Show",
+        "rating_key": "202",
+        "library_id": "2",
+        "tmdb_id": null,
+        "imdb_id": null,
+        "tvdb_id": null,
+        "grandparent_rating_key": "200",
+        "parent_rating_key": null,
+        "season_number": 1,
+        "episode_number": 1,
+        "duration_ms": 1800000,
+        "progress_ms": 1800000,
+        "total_duration_ms": 3600000,
+        "percent_complete": 50.0,
+        "watched": false,
+        "segment_count": 2,
+        "started_at": "2026-10-25T18:00:00.000Z",
+        "stopped_at": "2026-10-25T20:00:00.000Z",
+        "reference_id": "550e8400-e29b-41d4-a716-446655440006",
+        "user": {
+          "id": "550e8400-e29b-41d4-a716-446655440001",
+          "server_user_id": "550e8400-e29b-41d4-a716-446655440002",
+          "username": "alice-plex",
+          "thumb_url": null,
+          "avatar_url": null
+        },
+        "is_transcode": false,
+        "video_decision": "directplay",
+        "audio_decision": "directplay",
+        "genres": [
+          "Action"
+        ],
+        "platform": "tvOS",
+        "device": "Apple TV",
+        "source_video_codec": "hevc",
+        "source_audio_codec": "aac"
+      }
+    ],
+    "meta": {
+      "nextCursor": null,
+      "pageSize": 100
+    }
+  }
+]

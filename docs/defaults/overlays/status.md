@@ -5,12 +5,13 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAMEs": "Status",
-        "OVERLAY_NAME": "Status",
-        "CODE_NAME": "status",
-        "OVERLAY_LEVEL": "Show",
-        "DESCRIPTION": "an overlay on a show detailing its Current Airing Status for all shows in your library"
-    }'
+    "OVERLAY_NAMEs": "Status",
+    "OVERLAY_NAME": "Status",
+    "CODE_NAME": "status",
+    "OVERLAY_LEVEL": "Show",
+    "DESCRIPTION": "an overlay on a show detailing its Current Airing Status for all shows in your library",
+    "OVERLAY_LABEL": "status"
+}'
 %}
 | AIRING    | `airing`    | `40` |
 | RETURNING | `returning` | `30` |
@@ -18,7 +19,7 @@ hide:
 | ENDED     | `ended`     | `10` |
 
 {% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
+    include-markdown "./../../templates/defaults/base/mid.md"
     replace='{"CODE_NAME": "status", "collection_files": "overlay_files", "collections:": "overlays:"}' 
     include-tags='all|show'
 %}
@@ -54,11 +55,10 @@ hide:
         rewrite-relative-urls=false
     %}
 
-    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
+    {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false replace='{"[`key`](#collection_section)": "`key`"}' %}
 
 {% include-markdown "./../../templates/defaults/base/overlays/shared.md" replace='{"CODE_NAME": "status"}' %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
-    === "Status Overlays"
-    
-        The Status overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on `tmdb_status`.
+
+    The Status overlays use the [`plex_all` Builder](../../files/builders/plex/builders.md#plex-all) with [filters](../../../files/filters) on `tmdb_status`.

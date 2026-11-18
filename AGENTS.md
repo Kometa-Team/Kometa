@@ -30,7 +30,7 @@ Kometa connects to dozens of third-party services (TMDb, IMDb, AniDB, MyAnimeLis
 | HTTP requests | `requests` + `cloudscraper` |
 | Scheduling | `schedule` |
 | Caching / DB | Custom SQLite cache in `modules/cache.py` |
-| Docs site | MkDocs (Material theme) |
+| Docs site | Zensical, hosted on Read the Docs |
 | Container runtime | Docker (`python:3.13-slim` base) |
 
 ### Key Runtime Dependencies
@@ -139,14 +139,15 @@ The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install wit
 │   ├── test_tvdb.py
 │   └── test_validator.py
 │
-├── docs/                     # MkDocs source
-│   ├── mkdocs.yml            # MkDocs configuration (run `mkdocs serve -f docs/mkdocs.yml`)
+├── docs/                     # Zensical source
 │   ├── requirements.txt      # Docs build dependencies
 │   ├── kometa/               # User-facing wiki pages
 │   ├── config/               # Config reference docs
 │   ├── defaults/             # Defaults documentation
 │   ├── files/                # File builder docs
-│   └── overrides/            # MkDocs theme overrides
+│   ├── overrides/            # Zensical theme overrides
+│   └── docs-extension/       # Repository-owned Markdown include extension
+├── zensical.toml             # Site configuration and navigation
 │
 ├── json-schema/              # JSON Schema for config validation
 │   ├── config-schema.json
@@ -203,8 +204,11 @@ pytest
 # Lint & format
 prek run --all-files --show-diff-on-failure  # Runs black, isort, flake8, mypy, bandit
 
-# Docs
-pip install -r docs/requirements.txt && mkdocs serve -f docs/mkdocs.yml
+# Docs (separate environment recommended; see CONTRIBUTING.md)
+pip install -r docs/requirements.txt && python -m zensical serve
+python -m unittest discover -s tests -p "test_docs*.py"
+node tests/docs_sticky_tables.cjs
+python -m zensical build --clean
 ```
 
 ---

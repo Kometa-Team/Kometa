@@ -73,7 +73,7 @@ This file would then be defined in my `config.yml` file as a `playlist_files` it
     as you can see here
     2. `config` refers to the location that you mapped to `config` when following the Kometa Installation Guides.
 
-## Playlist Attributes
+## Playlist attributes
 
 Kometa can automatically build and update regular playlists defined under `playlists` and Music library playlists defined under `music_playlists`.
 
@@ -105,7 +105,7 @@ playlists:
     # ... builder, details, and filters for this playlist
 ```
 
-## Music Playlists
+## Music playlists
 
 Use `music_playlists` in a Playlist File to create playlists from Music library builders or Plex smart playlist filters. Kometa runs each definition against every configured Music library. Configure those libraries under `libraries` in the main Configuration File.
 
@@ -132,13 +132,13 @@ There are multiple types of attributes that can be utilized within a playlist:
 
 NOTE: these lists are references for collections and playlists, not everything applies to both:
 
-* [Builders](builders/overview.md)
+* [Builders](definition-components.md#builders)
 * [Filters](filters.md)
 * [Settings](settings.md)
 * [Radarr/Sonarr Settings](settings.md)
-* [Collection/Playlist Metadata Updates](updates.md)
+* [Metadata updates](updates.md)
 
-### Special Playlist Attributes
+### Special playlist attributes
 
 | Attribute         | Description                                                                                                                                                                                                                                                                                                                                                                                         |                  Required                  |
 |:------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|
@@ -149,7 +149,7 @@ NOTE: these lists are references for collections and playlists, not everything a
 
 * Any defined playlist will be always be visible by The Plex Media Server owner, so it doesn't need to be defined within `sync_to_users`.
 
-## Example Playlists
+## Example playlists
 
 In the following example, media is pulled from the `Movies` and `TV Shows` libraries into the one Playlist, and the 
 playlist is shared with a specific set of users:

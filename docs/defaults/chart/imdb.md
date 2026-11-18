@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "IMDb Charts", 
-        "CODE_NAME": "imdb",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create collections based on IMDb charts",
-        "SECTION_NUMBER": "020"
-    }'
+    "COLLECTION": "IMDb Charts",
+    "CODE_NAME": "imdb",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on IMDb charts",
+    "SECTION_NUMBER": "020"
+}'
     replace-tags='{"rec-sub": "Recommendations: The `IMDb Lowest Rated` Collection only works with Movie Libraries."}'
 %}
 | `IMDb Lowest Rated` | `lowest`  | Collection of the lowest Rated Movies on IMDb.       |
@@ -46,9 +46,9 @@ hide:
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "IMDb Chart Collections"
-        
+
         The IMDb Chart collections use the [`imdb_chart` IMDb Builder](../../../files/builders/imdb#imdb-chart) to create the collections.

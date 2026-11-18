@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Basic Chart", 
-        "CODE_NAME": "basic",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "010", 
-        "DESCRIPTION": "create collections based on recently released media in your library"
-    }'
+    "COLLECTION": "Basic Chart",
+    "CODE_NAME": "basic",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "010",
+    "DESCRIPTION": "create collections based on recently released media in your library"
+}'
 %}
 | `New Episodes`   | `episodes` | Collection of Episodes released in the last 7 days.            |
 | `Newly Released` | `released` | Collection of Movies or TV Shows released in the last 90 days. |
@@ -45,9 +45,9 @@ Recommendations: The New Episode Collection only work with Show Libraries.
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Basic Chart Collections"
-        
+
         The Basic Chart collections are based on [Smart Filters](../../files/builders/plex/smart-filter.md) using the `in_the_last` attribute, not external lists.

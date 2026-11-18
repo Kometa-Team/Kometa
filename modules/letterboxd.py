@@ -467,6 +467,7 @@ class Letterboxd:
         return items
 
     def _tmdb(self, slug_path, language):
+        tmdb_type = "unknown"
         try:
             movie = self._movie_cls(self._slug_path(slug_path).strip("/").split("/")[1])
         except Exception as e:
@@ -488,8 +489,9 @@ class Letterboxd:
                         return tmdb_id
                     else:
                         logger.warning(f"Letterboxd Warning: TMDb link for {slug_path} is for a TV show, not a movie; ignoring TMDb ID {tmdb_id} from link.")
+                        return None
 
-        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)} item is type {tmdb_type if 'tmdb_type' in locals() else 'unknown'} with tmdb_id {tmdb_id if 'tmdb_id' in locals() else 'unknown'}.")
+        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)} item is type {tmdb_type} with tmdb_id {tmdb_id}.")
 
     @staticmethod
     def _coerce_year(value):
@@ -856,7 +858,7 @@ class Letterboxd:
     def _validate_single_user_page(self, err_type, letterboxd_dict, page_type, language):
         dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
         incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", datatype="bool", default=True) if "incremental" in dict_methods else True
-        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest")
+        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest") if "sort_by" in dict_methods else "release_date_newest"
 
         if incremental:
             self._warn_once((page_type, "incremental"), f"{err_type} Warning: letterboxdpy does not expose stable incremental state for Letterboxd {page_type}; disabling incremental parsing.")
@@ -913,6 +915,8 @@ class Letterboxd:
                     logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                     try:
                         tmdb_id = self._tmdb(slug, language)
+                        if tmdb_id is None:
+                            continue
                     except Failed as e:
                         logger.error(e)
                         continue
@@ -953,6 +957,8 @@ class Letterboxd:
                 logger.ghost(f"Finding TMDb ID {i}/{len(items)}")
                 try:
                     tmdb_id = self._tmdb(slug, language)
+                    if tmdb_id is None:
+                        continue
                 except Failed as e:
                     logger.error(e)
                     continue

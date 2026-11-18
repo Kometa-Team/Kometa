@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Genre", 
-        "CODE_NAME": "genre",
-        "DESCRIPTION": "dynamically create collections based on the genres available in your library",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "060"
-    }'
+    "COLLECTION": "Genre",
+    "CODE_NAME": "genre",
+    "DESCRIPTION": "dynamically create collections based on the genres available in your library",
+    "LIBRARY_TYPE": "Movie, Show",
+    "SECTION_NUMBER": "060"
+}'
     replace-tags='{"title-sub": "This file also merges similarly named genres (such as \"Sci-Fi\", \"SciFi\" and \"Sci-Fi & Fantasy\") into one (\"Science Fiction\")."}'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Genre"}' %}
@@ -43,7 +43,7 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="addons|addons-extra|exclude|limit|sort_by|format"
         replace='{
-            "DYNAMIC_NAME": "Genres", 
+            "DYNAMIC_NAME": "Genres",
             "DYNAMIC_VALUE": "Genres",
             "NAME_FORMAT": "<<key_name>> <<library_translationU>>s",
             "SUMMARY_FORMAT": "<<library_translationU>>s that have the genre <<key_name>>."
@@ -64,11 +64,11 @@ hide:
         i.e. `SciFi` and `Sci-Fi` are both addons of `Science Fiction` so that they all end up in the same `Science Fiction` collection despite technically having different genres.
 
     === "Default `addons`"
-    
+
         {% include-markdown "../../templates/snippets/no-copy.md" rewrite-relative-urls=false %}
         addons: 
     {%    
-      include-markdown "../../../defaults/both/genre.yml" 
+      include-markdown "../../templates/source-defaults/both/genre.yml"
       comments=false
       start="addons:\n"
     %}

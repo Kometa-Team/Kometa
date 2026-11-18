@@ -6,7 +6,7 @@ hide:
 ---
 # Lidarr Attributes
 
-Lidarr integration is optional. It manages **artists** from a Plex music library; it does not add individual tracks. Kometa reads a Plex artist's `mbid://` GUID and adds the artist only when it contains one valid MusicBrainz artist ID. Artists without that GUID are reported and skipped. See the [Lidarr builders](../files/builders/lidarr/overview.md) for artist collections sourced from Lidarr.
+Lidarr integration is optional. It manages **artists** from a Plex music library; it does not add individual tracks. Kometa reads a Plex artist's `mbid://` GUID and adds the artist only when it contains one valid MusicBrainz artist ID. Artists without that GUID are reported and skipped. See the [Lidarr builders](../files/builders/lidarr/index.md) for artist collections sourced from Lidarr.
 
 ```yaml title="config.yml Lidarr sample"
 lidarr:

@@ -1,11 +1,11 @@
 {%
     include-markdown "./base/collection/header.md"
     replace='{
-        "COLLECTION": "Country", 
-        "CODE_NAME": "country",
-        "DESCRIPTION": "dynamically create collections based on the countries within your library",
-        "SECTION_NUMBER": "080"
-    }'
+    "COLLECTION": "Country",
+    "CODE_NAME": "country",
+    "DESCRIPTION": "dynamically create collections based on the countries within your library",
+    "SECTION_NUMBER": "080"
+}'
 %}
 {% include-markdown "./../snippets/separator_line.md" replace='{"SEPARATOR": "Country"}' %}
 | `<<Country>>`<br>**Example:** `Germany` | `<<Country>>`<br>**Example:** `Germany` | Collection of FULL_TYPE that have this Country.               |

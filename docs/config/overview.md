@@ -11,11 +11,11 @@ By default, and unless otherwise stated, Kometa looks for the configuration file
 
 A template Configuration Template File can be found in the  [GitHub Repo](https://github.com/Kometa-Team/Kometa/blob/master/config/config.yml.template).
 
-If Kometa cannot find the `config.yml` at the default location, it will attempt to rename `config.yml.template` for the user. If the template file cannot be found, 
+If Kometa cannot find the `config.yml` at the default location, it will attempt to rename `config.yml.template` for the user. If the template file cannot be found,
 Kometa will attempt to download a copy from the GitHub repository in line with the user's current branch. 
 If this also fails, the user will have to download the Configuration Template File from  the above link and manually rename it to `config.yml`.
 
-## Quickstart Web UI
+## Quickstart web UI
 
 The team at Kometa have developed a tool called [Quickstart](../kometa/scripts/quickstart.md) which is a guided Web UI that helps you create a Configuration File for use with Kometa.
 
@@ -27,7 +27,7 @@ requirements for setup that can be found by clicking the links within the table 
 ???+ tip "Connectors"
 
     Although most connectors are not required for core Kometa functionality, some (such as MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
-    
+
     Hover over the numbered icons for additional information
 
 | Attribute                                                                                                                                                                                                             |                  Required                  |
@@ -50,20 +50,19 @@ requirements for setup that can be found by clicking the links within the table 
 | [`anidb`](anidb.md)                                                                                                                                                                                                   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`radarr`](radarr.md):material-numeric-1-circle:{ .aqua title="This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page." }      |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`sonarr`](sonarr.md):material-numeric-1-circle:{ .aqua title="This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page." }      |  :fontawesome-solid-circle-xmark:{ .red }  |
-|  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`floppy`](floppy.md)                                                                                                                                                                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`yamtrack`](yamtrack.md)                                                                                                                                                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`flicklist`](flicklist.md)                                                                                                                                                                                           |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`wetrakr`](wetrakr.md)                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`mal`](myanimelist.md)                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-## Configuration Template File Example
+## Configuration template file example
 
 The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.
 
 ```yaml title="config.yml.template"
 {%    
-  include-markdown "../../config/config.yml.template" 
+  include-markdown "../templates/config.yml.template"
   comments=false
 %}
 ```

@@ -13,7 +13,7 @@ As of Kometa v2.4.5, there are two methods for placing ratings on posters using 
 
 We recommend the first method. It keeps Plex's own rating fields intact and skips Library Operations entirely, which means faster runs and ratings that always match the source.
 
-## Direct Rating Overlays
+## Direct rating overlays
 
 The `ratings` default overlay now accepts source names directly in `rating1`, `rating2`, and `rating3`.
 
@@ -36,7 +36,7 @@ No `operations` block is required for those three ratings. Kometa fetches the va
 
 ![](./../../assets/images/kometa/guides/ratings/11.png)
 
-### Source Names
+### Source names
 
 The ratings overlay can use `critic`, `audience`, and `user`, but those three names are special: they mean "read the value already stored in Plex."
 
@@ -111,7 +111,7 @@ You can still override the image when you want a different display style:
 
 Use image overrides carefully. The image is only presentation; it does not change which rating value is fetched.
 
-### Fresh, Rotten, and Top Badges
+### Fresh, rotten, and top badges
 
 Notice the Certified Fresh tomato on the Amadeus and Babygirl posters above, and the plain tomato on Sharkboy and Lavagirl? Kometa picks that automatically based on the fetched value.
 
@@ -139,7 +139,7 @@ By default, a rating at or above `6.0` (on Kometa's normalized 0–10 scale, so 
 
 One quirk worth knowing: for `plex_tomatoes`, `mdb_tomatoes`, `plex_tomatoesaudience`, and `mdb_tomatoesaudience` specifically, a Fresh result uses a distinct "Direct" tomato icon rather than the standard Certified Fresh badge. That's intentional — it signals the Fresh/Rotten call was computed by Kometa from the fetched number, not officially awarded by Rotten Tomatoes. If you see a tomato icon that looks slightly different from what you're used to, that's why.
 
-### Filtering Items by Rating
+### Filtering items by rating
 
 Beyond swapping the icon, you can stop an overlay from applying at all below a threshold using `value_filter` — a separate overlay-file attribute that filters items at selection time based on the fetched rating.
 
@@ -159,13 +159,13 @@ This only applies the overlay to items whose `mdb_tomatoes_rating` is `6.0` or h
 
 Fetched rating values aren't pulled fresh on every run. Kometa writes them to a local cache and reuses that value until it expires, based on the `cache_expiration` setting (default 60 days, set under `settings` in your config). The badge selection (Fresh/Rotten/Top) and the number displayed on the poster both come from that same cached value, so both update together the next time the cache refreshes.
 
-### Direct Ratings and Plex Ratings
+### Direct ratings and Plex ratings
 
 Direct-source overlays do not change the ratings shown in the Plex UI. Plex may still show Rotten Tomatoes icons and values while the poster overlay shows IMDb, TMDb or MDBList values.
 
 That is expected. The overlay is drawn onto the poster image by Kometa; Plex's rating fields are not modified unless you configure Library Operations.
 
-### When Operations Are Still Needed
+### When operations are still needed
 
 You still need Library Operations when your overlay uses `critic`, `audience`, or `user` and you want those Plex slots populated from another source. This can be useful if you want the ratings in Plex's UI to directly match the ratings shown on the poster.
 
@@ -217,7 +217,7 @@ This is **not** a recommended approach, as using Library Operations will increas
               rating3: user
     ```
 
-## Legacy Setup: Plex Rating Slots Overlays
+## Legacy setup: Plex rating slots overlays
 
 The legacy method uses Plex's three rating fields:
 
@@ -247,7 +247,7 @@ The Plex UI shows the correct ratings and icons for Rotten Tomatoes and is align
 
 Also note that we have not given this a user rating.
 
-### Initial Overlay
+### Initial overlay
 
 Now let's add rating overlays to the poster. We're going to use the minimal config needed here to illustrate the concepts.
 
@@ -292,7 +292,7 @@ Now just run Kometa again without changing anything else and the user rating ove
 * It gave it an IMDb icon because we told it to in the config file. ([Why does it say 250 instead of IMDb?](#why-do-different-images-appear-for-the-same-source))
 * It's displaying 6.0 since 3 stars on a 5-star scale is 60%.
 
-### Change Rating Image
+### Change rating image
 
 You and I both know that the IMDb rating isn't 6.0, but Kometa is just doing what it's told. Nobody but us humans know where those numbers come from.
 
@@ -326,7 +326,7 @@ When the above is run you see this result:
 * Note that the existing RT ratings numbers (`93%` and `96%`) display on the poster as `9.3` and `9.6`. This is happening because we just told Kometa that those ratings were IMDb, and IMDb ratings are on a 1-10 scale. Kometa does not know where those numbers are from; it places the value from the configured Plex rating box onto the poster.
 * That first overlay showing an IMDb rating of `9.3` is not evidence that Kometa pulled the wrong IMDb rating. It just shows that it has been told to display the number in the critic rating box as an IMDb rating.
 
-### Update User Ratings
+### Update user ratings
 
 Now let's actually update the ratings and push some numbers into those boxes using library operations. We'll start with making that user rating accurate:
 
@@ -362,7 +362,7 @@ After that has been run, we see:
 * The IMDb Rating Overlay on the poster matches the rating from the IMDb page for Star Wars.
 * The number of stars has also changed to 4 stars. (since `8.6` split in half is `4.3` and then rounded down to the nearest half gives you 4 stars)
 
-### Update Critic & Audience Ratings
+### Update critic & audience ratings
 
 Now let's update the critic and audience ratings to some different ratings:
 
@@ -410,7 +410,7 @@ The log will show Kometa updating those values.
 * And the poster reflects those numbers, though with the wrong icons, since that's what **Kometa has been told to do**.
 * The Plex UI still shows RT icons, and it always will, even though the numbers displayed are no longer RT ratings. Plex has no idea.
 
-### Use Proper Images
+### Use proper images
 
 Now, finally, let's make the poster rating images match the numbers we put in there:
 
@@ -454,7 +454,7 @@ You can see that the Plex UI still shows the RT icons with the numbers we put in
 
 The poster displays the correct icons because we told Kometa to do so in the config file.
 
-## Why do different Images appear for the same source?
+## Why do different images appear for the same source?
 
 As seen in the images above, the IMDb rating image says `250` instead of `IMDb` and the Rotten Tomatoes rating images have the Certified Fresh logo vs their normal logo.
 

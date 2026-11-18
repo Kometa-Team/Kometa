@@ -5,12 +5,12 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Simkl Chart", 
-        "CODE_NAME": "simkl",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "DESCRIPTION": "create collections based on Simkl charts",
-        "SECTION_NUMBER": "020"
-    }'
+    "COLLECTION": "Simkl Chart",
+    "CODE_NAME": "simkl",
+    "LIBRARY_TYPE": "Movie, Show",
+    "DESCRIPTION": "create collections based on Simkl charts",
+    "SECTION_NUMBER": "020"
+}'
     replace-tags='{"rec-sub": ""}'
 %}
 | `Simkl Trending Today`      | `trending_today`  | Collection of Movies/Shows Trending Today on Simkl.      |
@@ -44,14 +44,14 @@ hide:
         include-markdown "./../../templates/variable_list.md"
         include-tags="white-style|limit|sync_mode|collection_order"
         rewrite-relative-urls=false
-        replace='{"<!--limit-extra-->": "<br>**Default:** `100`", "COLLECTION_ORDER": "`custom`"}'
+        replace='{"<!--limit-extra-->": "**Default:** `100`<br>", "COLLECTION_ORDER": "`custom`"}'
     %}
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
 
-{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" %}
+{% include-markdown "./../../templates/defaults/base/collection/shared.md" end="<!--separator-variables-->" rewrite-relative-urls=false %}
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Simkl Chart Collections"
-        
+
         The Simkl Chart collections use [Simkl Builders](../../../files/builders/simkl/overview) to create the collections.

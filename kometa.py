@@ -3,6 +3,7 @@ import hashlib
 import multiprocessing
 import os
 import platform
+import re
 import sys
 import sysconfig
 import time
@@ -699,6 +700,7 @@ def start(attrs):
         version_line = f"Version: {my_requests.local}"
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+        log_integrity_summary(integrity_report, logger)
         try:
             details = run_args["trace"] or run_args["log-requests"]
             log_summary = RunLogSummary(rating_sources, details=details)
@@ -745,8 +747,6 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
-
-        log_integrity_summary(integrity_report, logger)
 
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
@@ -1003,12 +1003,23 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                     library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
-                temp_items = library.cache_items()
+                target_keys = None
+                if library.has_schedule_scope and library.schedule_mode.startswith("items(") and library.schedule_mode.endswith(")"):
+                    identifiers = set()
+                    for value in library.schedule_mode[6:-1].split("|"):
+                        id_type, separator, item_id = value.strip().lower().partition(":")
+                        if not separator or not ((id_type in {"tmdb", "tvdb", "plex"} and re.fullmatch(r"[0-9]+", item_id) and int(item_id) > 0) or (id_type == "imdb" and re.fullmatch(r"tt[0-9]+", item_id))):
+                            raise Failed(f"Config Error: schedule mode {library.schedule_mode} invalid; expected items(tmdb:<id>|tvdb:<id>|imdb:<id>|plex:<ratingKey>)")
+                        identifiers.add((id_type, item_id if id_type == "imdb" else str(int(item_id))))
+                    if all(id_type == "plex" for id_type, _ in identifiers):
+                        target_keys = set([int(item_id) for _, item_id in identifiers])
+
+                temp_items = library.cache_items(target_keys=target_keys)
                 library.scheduled_item_keys = library._schedule_item_keys(temp_items)
                 if library.has_schedule_scope:
                     temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
                     logger.info(f"Library Schedule Mode: {library.schedule_mode} ({len(temp_items)} items in scope)")
-                if config.Cache:
+                if config.Cache and target_keys is None:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
                     config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
@@ -1123,9 +1134,9 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.error(e)
                     library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
+                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))
@@ -1188,6 +1199,7 @@ def run_collection(config, library, metadata, requested_collections, music_playl
 
             items_added = 0
             items_removed = 0
+            list_export_ready = True
             if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -1211,9 +1223,8 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                     except ServiceError:
                         raise
                     except Failed as e:
-                        if builder.ignore_blank_results:
-                            logger.warning(e)
-                        elif builder.obj:
+                        list_export_ready = False
+                        if builder.ignore_blank_results and not builder.obj:
                             logger.warning(e)
                         else:
                             raise Failed(e)
@@ -1246,8 +1257,11 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart and not builder.list_export:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
+
+            if builder.list_export and builder.builders and list_export_ready:
+                builder.export_list()
 
             valid = True
             final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)

@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.video import Episode, Season
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
 import modules.operations as ops_module
@@ -546,7 +547,7 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.refresh_item_cache_and_mappings.assert_not_called()
-        library.get_all.assert_called_once_with()
+        library.get_all.assert_called_once_with(target_keys=None)
 
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")
@@ -565,6 +566,37 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.reload.assert_called_once_with(item)
+
+    @pytest.mark.parametrize(
+        "item_type,expected_cached_episode_lookup",
+        [(Episode, False), (Season, True)],
+    )
+    def test_nested_show_targets_do_not_assume_every_item_is_a_show(self, item_type, expected_cached_episode_lookup):
+        item = MagicMock(spec=item_type)
+        item.ratingKey = 1
+        item.title = "Targeted Item"
+        item.fields = []
+        item.locations = []
+        library = make_title_test_library([item])
+        library.is_movie = False
+        library.is_show = True
+        library.sync_watchlist_to_serializd = True
+        library.mass_episode_audience_rating_update = []
+        library.mass_episode_critic_rating_update = []
+        library.mass_episode_user_rating_update = []
+        library.mass_poster_update = {"source": "plex", "ignore_locked": False, "ignore_overlays": False, "episodes": True, "seasons": True} if item_type is Episode else False
+        library.poster_update.return_value = None
+        library.get_item_display_title.return_value = "Targeted Item"
+        library.find_item_assets.return_value = (None, None, None, None, None, None)
+        library.cached_item_subitems.return_value = []
+        library.config = MagicMock()
+
+        Operations(config=library.config, library=library).run_operations(target_keys={1})
+
+        if expected_cached_episode_lookup:
+            library.cached_item_subitems.assert_called_once_with(item, "episodes")
+        else:
+            library.cached_item_subitems.assert_not_called()
 
     def test_batches_by_distinct_new_title(self):
         """Two items with different target titles - one editField call per distinct value."""
@@ -908,6 +940,43 @@ class TestFlushCombinedEdits:
 
         config.Floppy.get_rating.assert_called_once_with("tv", tmdb_id=94605, tvdb_id=371028, imdb_id="tt11126994")
         library.Plex.editField.assert_called_once_with("userRating", "5.0")
+
+    @pytest.mark.parametrize(("operation", "field"), [("mass_originally_available_update", "originallyAvailableAt"), ("mass_added_at_update", "addedAt")])
+    @pytest.mark.parametrize("digital_date", ["2020-08-12", None])
+    def test_mdb_digital_enriches_prefetch_after_rating_lookup(self, monkeypatch, operation, field, digital_date):
+        monkeypatch.setattr("modules.mdblist.logger", MagicMock())
+        item = make_mass_edit_item(1, "Greenland")
+        library = make_mass_edit_library([item], mass_user_rating_update=["mdb"], **{operation: ["mdb_digital"]})
+        library.get_ids.return_value = (524047, None, None)
+        mdblist = MDBList.__new__(MDBList)
+        mdblist.cache = None
+        mdblist.limit = False
+        mdblist._run_cache = {}
+        mdblist._request = MagicMock(
+            side_effect=[
+                ([{"id": 524047, "title": "Greenland", "score": 80}], {}),
+                ({"id": 524047, "title": "Greenland", "score": 80, "released_digital": digital_date}, {}),
+            ]
+        )
+        library.prefetch_mdblist.side_effect = lambda items: mdblist.get_items("tmdb", "movie", [524047])
+        config = MagicMock()
+        config.MDBList = mdblist
+
+        Operations(config=config, library=library).run_operations()
+
+        assert mdblist._request.call_count == 2
+        mdblist._request.assert_called_with("https://api.mdblist.com/tmdb/movie/524047/", params={})
+        date_calls = [call for call in library.Plex.editField.call_args_list if call.args[0] == field]
+        if digital_date:
+            assert len(date_calls) == 1
+            value = date_calls[0].args[1]
+            if field == "addedAt":
+                from datetime import datetime
+
+                value = datetime.fromtimestamp(value).strftime("%Y-%m-%d")
+            assert value == digital_date
+        else:
+            assert not date_calls
 
     def test_mdb_letterboxd_rating_above_ten_is_not_sent_to_plex(self):
         ops_module.logger.reset_mock()

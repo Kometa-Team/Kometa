@@ -1,4 +1,4 @@
-## White Style
+## White style
 
 Below is a screenshot of the alternative White (`white`) style which can be set via the `style` Template Variable.
 

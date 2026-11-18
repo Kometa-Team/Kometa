@@ -13,13 +13,13 @@ Below is an example of a separator, which can be seen surrounded by a red square
 
 ![](../assets/images/defaults/separators.jpg)
 
-## Important Note:
+## Important note:
 
 Plex does not support creating these empty collections natively through its UI, so they can behave strangely in some cases, primarily related to showing/hiding them in 
 the main library view. As a workaround, you can use a `placeholder_` [Template Variable](#shared-separator-variables) to specify a single movie/show to add to these collections 
 so they have one thing in them and will then behave as expected. For example, `placeholder_imdb_id: tt0068646` will place The Godfather inside the separator in a movie library.
 
-## Separator Files
+## Separator files
 
 These are all the files that contain a separator 
 
@@ -46,7 +46,7 @@ These are all the files that contain a separator
 | Writers Collections           | `writer`            |
 | Year Collections              | `year`              |
 
-## Shared Separator Variables
+## Shared separator variables
 
 Template Variables can be used to manipulate the file in various ways to slightly change how it works without having to make your own local copy.
 
@@ -57,7 +57,7 @@ Any value not specified is its default value if it has one if not it's just igno
 
 {% include-markdown "./../templates/defaults/base/collection/shared.md" start="<!--separator-variables-->" %}
 
-## Use Separators
+## Use separators
 
 Separators are enabled by default, but can be disabled/enabled per-file and per-library.
 
@@ -81,7 +81,7 @@ libraries:
           use_separator: false
 ```
 
-## Separator Styles
+## Separator styles
 
 Multiple styles are available for Separators, to match Plex's "categories" feature.
 

@@ -270,6 +270,7 @@ ignored_details = [
     "builder_level",
     "overlay",
     "kometa_poster",
+    "pmm_poster",
     "validate_builders",
     "libraries",
     "sync_to_users",
@@ -688,6 +689,7 @@ custom_sort_builders = [
     "tmdb_on_the_air",
     "trakt_list",
     "mdblist_streaming",
+    "mdblist_watchlist",
     "floppy_list",
     "floppy_list_details",
     "floppy_tracked",
@@ -728,6 +730,7 @@ custom_sort_builders = [
     "tracearr_watched_media",
     *tautulli.builders,
     "mdblist_list",
+    "mdblist_watchlist",
     "letterboxd_list",
     *letterboxd.semantic_builders,
     "icheckmovies_list",
@@ -831,8 +834,16 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "mdblist_watchlist",
+        "flicklist_list",
+        "flicklist_list_details",
+        "flicklist_user_lists",
+        "wetrakr_list",
+        "wetrakr_list_details",
+        "wetrakr_user_lists",
         "floppy_list",
         "floppy_list_details",
+        "floppy_tracked",
         "cache_builders",
         "url_theme",
         "file_theme",
@@ -844,6 +855,7 @@ parts_collection_valid = (
         "sync_to_mdb_list",
         "sync_to_flicklist_list",
         "sync_to_wetrakr_list",
+        "list_export",
     ]
     + episode_parts_only
     + summary_details
@@ -1264,16 +1276,9 @@ class CollectionBuilder:
         self.backgrounds = {}
         self.logos = {}
         self.square_arts = {}
-        if not self.overlay and "kometa_poster" in methods:
-            logger.debug("")
-            logger.debug("Validating Method: kometa_poster")
-            if self.data[methods["kometa_poster"]] is None:
-                logger.error(f"{self.Type} Error: kometa_poster attribute is blank")
-            logger.debug(f"Value: {data[methods['kometa_poster']]}")
-            try:
-                self.posters["kometa_poster"] = KometaImage(self.config, self.data[methods["kometa_poster"]], "kometa_poster", playlist=self.playlist)
-            except Failed as e:
-                logger.error(e)
+        for attribute in ("kometa_poster", "pmm_poster"):
+            if attribute in methods:
+                logger.error(f"{self.Type} Error: {attribute} is not supported and will be ignored. Use file_poster, url_poster, or an asset directory instead.")
 
         if self.overlay:
             if "overlay" in methods:
@@ -1408,6 +1413,7 @@ class CollectionBuilder:
         self.sync_missing_to_flicklist_list = False
         self.sync_to_wetrakr_list = None
         self.sync_missing_to_wetrakr_list = False
+        self.list_export = None
         self.collection_poster = None
         self.collection_square_art = None
         self.collection_background = None
@@ -1946,6 +1952,8 @@ class CollectionBuilder:
                     self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
+                elif method_name == "list_export":
+                    self._list_export(method_data)
                 elif method_name == "sync_to_mdb_list":
                     self._sync_to_mdb_list(method_data)
                 elif method_name in yamtrack.builders:
@@ -3753,6 +3761,8 @@ class CollectionBuilder:
     def _mdblist(self, method_name, method_data):
         if method_name == "mdblist_streaming":
             self.builders.append((method_name, self.config.MDBList.validate_mdblist_streaming(self.Type, method_data)))
+        elif method_name == "mdblist_watchlist":
+            self.builders.append((method_name, self.config.MDBList.validate_mdblist_watchlist(self.Type, method_data)))
         else:
             for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
                 self.builders.append((method_name, mdb_dict))
@@ -3783,14 +3793,19 @@ class CollectionBuilder:
                     default=10,
                     parent=method_name,
                 ),
-                "list_minimum": util.parse(
-                    self.Type,
-                    "list_minimum",
-                    dict_data,
-                    datatype="int",
-                    methods=dict_methods,
-                    default=0,
-                    parent=method_name,
+                "list_minimum": (
+                    util.parse(
+                        self.Type,
+                        "list_minimum",
+                        dict_data,
+                        datatype="int",
+                        methods=dict_methods,
+                        minimum=0,
+                        default=0,
+                        parent=method_name,
+                    )
+                    if "list_minimum" in dict_methods
+                    else 0
                 ),
                 "builder_level": ("track" if self.playlist else self.builder_level) if self.library.is_music else None,
             }
@@ -4040,6 +4055,25 @@ class CollectionBuilder:
             raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
         self.sync_to_mdb_list = {"name": str(name), "mode": mode}
 
+    def _list_export(self, method_data):
+        if not isinstance(method_data, dict):
+            raise BuilderValidationError(f"{self.Type} Error: list_export requires source, name, and optional mode")
+        unknown = set(method_data) - {"source", "name", "mode"}
+        if unknown:
+            raise BuilderValidationError(f"{self.Type} Error: list_export has unknown attributes: {', '.join(sorted(unknown))}")
+        source = str(method_data.get("source") or "").strip().lower()
+        name = method_data.get("name")
+        mode = str(method_data.get("mode", "sync")).strip().lower()
+        if source not in ("mdblist", "flicklist", "wetrakr", "tmdb", "floppy"):
+            raise BuilderValidationError(f"{self.Type} Error: list_export source must be mdblist, flicklist, wetrakr, tmdb, or floppy")
+        if isinstance(name, bool) or not isinstance(name, (str, int)) or not str(name).strip():
+            raise BuilderValidationError(f"{self.Type} Error: list_export name must be a list name or id")
+        if mode not in ("sync", "append"):
+            raise BuilderValidationError(f"{self.Type} Error: list_export mode must be sync or append")
+        if getattr(self.config, {"mdblist": "MDBList", "flicklist": "FlickList", "wetrakr": "WeTrakr", "tmdb": "TMDb", "floppy": "Floppy"}[source], None) is None:
+            raise ServiceError(f"{self.Type} Error: list_export source {source} is not configured")
+        self.list_export = {"source": source, "name": name, "mode": mode}
+
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:
             raise BuilderValidationError(f"{self.Type} Error: yamtrack attribute not found in config")
@@ -4231,7 +4265,7 @@ class CollectionBuilder:
             self.value_filters.append((variable_name, comparator, threshold))
 
     @timings.timed("gather_ids", source_arg=0)
-    def gather_ids(self, method, value):
+    def gather_ids(self, method, value, target_keys=None):
         expired = None
         list_key = None
         cache_method = ""
@@ -4246,7 +4280,7 @@ class CollectionBuilder:
         # Experiment C: serializes gather_ids calls per service - tmdbapis' shared _api.response isn't thread-safe, assume others are too until audited.
         with self.config.get_service_lock(_service_lock_key(method)):
             if "plex" in method:
-                ids = self.library.get_rating_keys(method, value, self.playlist)
+                ids = self.library.get_rating_keys(method, value, self.playlist, target_keys=target_keys)
             elif "tautulli" in method:
                 ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
             elif "tracearr" in method:
@@ -4317,19 +4351,19 @@ class CollectionBuilder:
                     ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "flicklist" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
-                ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
+                ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
             elif "wetrakr" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
-                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None)
+                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
             elif "serializd" in method:
                 ids = self.config.Serializd.get_builder_ids(method, value)
             elif "floppy" in method:
                 if method == "floppy_tracked":
-                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None, builder_level=self.builder_level)
                     if mal_ids:
                         ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
                 else:
-                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None, is_episode=self.builder_level == "episode")
+                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None, is_episode=self.builder_level == "episode", builder_level=self.builder_level)
             elif "radarr" in method:
                 ids = self.library.Radarr.get_tmdb_ids(method, value)
             elif "sonarr" in method:
@@ -5143,6 +5177,9 @@ class CollectionBuilder:
                             valid_list.append(actor_id)
                 if not actor_id:
                     error = f"Plex Error: {attribute}: {fvalue} not found"
+                    if attribute == "collection" and modifier == ".not" and not plex_search:
+                        logger.warning(f"Plex Warning: collection: {fvalue} not found; ignoring this collection exclusion")
+                        continue
                     if self.details["show_options"]:
                         error += f"\nOptions: {names}"
                     if validate:
@@ -5417,7 +5454,7 @@ class CollectionBuilder:
                     if not tmdb_item or self.check_tmdb_filters(tmdb_item, tmdb_f, is_movie) is False:
                         or_result = False
                 if imdb_f:
-                    if not imdb_info and self.check_imdb_filters(imdb_info, imdb_f) is False:
+                    if not imdb_info or self.check_imdb_filters(imdb_info, imdb_f) is False:
                         or_result = False
                 if or_result:
                     final_return = True
@@ -6498,12 +6535,12 @@ class CollectionBuilder:
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
-    def _tracker_sync_ids(self, service, include_missing):
-        """Provider-agnostic walk of self.items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
+    def _tracker_sync_ids(self, service, include_missing, items=None):
+        """Provider-agnostic walk of items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
         service names the tracker in the skip-count warning; include_missing extends the result with this collection's missing movies/shows."""
         current_ids = []
         skipped_seasons_and_episodes = 0
-        for item in self.items:
+        for item in self.items if items is None else items:
             for pl_library in self.libraries:
                 new_id = None
                 if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
@@ -6572,6 +6609,38 @@ class CollectionBuilder:
                     current_ids.append((tmdb_id, "tmdb_show"))
                     break
         self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
+
+    def export_list(self):
+        """Export the successfully gathered builder results, even when the result is empty."""
+        if self.list_export is None:
+            raise Failed(f"{self.Type} Error: list_export is not configured")
+        source = self.list_export["source"]
+        name = self.list_export["name"]
+        mode = self.list_export["mode"]
+        logger.info(f"Exporting '{self.name}' {self.Type} to {source}")
+        if source in ("mdblist", "tmdb", "floppy"):
+            if self.mdb_list_arr_ids is not None:
+                ids = self._get_mdb_list_arr_ids()
+                getattr(self.config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list(name, ids, mode)
+                return
+            ids = []
+            for item in self.found_items:
+                for pl_library in self.libraries:
+                    if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                        ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb"))
+                        break
+                    if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                        try:
+                            tmdb_id = self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True)
+                        except MappingConvertError as e:
+                            logger.warning(f"{source.upper()} Warning: Skipping {item.title}: {e}")
+                            break
+                        ids.append((tmdb_id, "tmdb_show"))
+                        break
+            getattr(self.config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list(name, ids, mode)
+        else:
+            ids = self._tracker_sync_ids(source.title(), False, items=self.found_items)
+            getattr(self.config, "FlickList" if source == "flicklist" else "WeTrakr").sync_list(self.config.Convert, name, ids, mode=mode)
 
     def _get_mdb_list_arr_ids(self):
         current_ids = []
