@@ -1587,7 +1587,7 @@ def test_silo_overlay_application_reuses_original_without_labels(tmp_path, monke
     engine = Overlays.__new__(Overlays)
     engine.library = library
     engine.cache = None
-    engine.compile_overlays = lambda: ({item.ratingKey: (item, list(properties))}, properties)
+    engine.compile_overlays = lambda target_keys=None: ({item.ratingKey: (item, list(properties))}, properties)
     engine.run_overlays()
     engine.run_overlays()
     assert downloads == ["https://example.com/poster.jpg"]
