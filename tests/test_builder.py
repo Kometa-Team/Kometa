@@ -1343,7 +1343,7 @@ class TestDelete:
 
 
 class TestUnsupportedPoster:
-    @pytest.mark.parametrize("attribute", ["kometa_poster", "pmm_poster", "KOMETA_POSTER", "PMM_POSTER"])
+    @pytest.mark.parametrize("attribute", ["pmm_poster", "PMM_POSTER"])
     @pytest.mark.parametrize("value", [None, {"background_color": "#0B1F3A", "components": [{"text": "WEEK 7"}]}])
     def test_ignores_unsupported_poster_and_preserves_supported_poster(self, monkeypatch, attribute, value):
         logger = FakeLogger()

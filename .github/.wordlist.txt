@@ -155,6 +155,7 @@ flicklist
 FlickList's
 FlixPatrol
 fontawesome
+formatter
 Frontend
 FSK
 fuboTV
@@ -452,6 +453,7 @@ sudo
 Sundance
 sundance
 SV
+SVG
 Synology
 Systemctl
 Taglist
