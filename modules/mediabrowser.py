@@ -35,7 +35,11 @@ logger = util.logger
 LIBRARY_TYPES = {"movies": "Movie", "movie": "Movie", "tvshows": "Show", "tv": "Show"}
 ITEM_TYPES = {"Movie": "movie", "Series": "show", "Season": "season", "Episode": "episode", "BoxSet": "collection", "Playlist": "playlist"}
 COLLECTION_FIELDS = "ProviderIds,Overview,Tags,Genres,Studios,SortName,ImageTags,Path,LockedFields,ChildCount,RecursiveItemCount,Settings"
-ITEM_FIELDS = "ProviderIds,Genres,Studios,ProductionLocations,People,Overview,Tags,DateCreated,ProductionYear,PremiereDate,CommunityRating,CriticRating,OfficialRating,ChildCount,RecursiveItemCount,SortName,ImageTags,LockedFields,Path,OriginalTitle,Taglines,DateLastSaved,Settings"
+ITEM_FIELDS = (
+    "ProviderIds,Genres,Studios,ProductionLocations,People,Overview,Tags,DateCreated,ProductionYear,PremiereDate,"
+    "CommunityRating,CriticRating,OfficialRating,ChildCount,RecursiveItemCount,SortName,ImageTags,LockedFields,Path,"
+    "OriginalTitle,Taglines,DateLastSaved,Settings"
+)
 PAGE_SIZE = 200
 COLLECTION_BATCH_SIZE = 100
 LOCAL_COLLECTION_SORTS = {"title": "SortName", "release": "PremiereDate", "added": "DateCreated", "year": "ProductionYear", "audience_rating": "CommunityRating", "critic_rating": "CriticRating"}
@@ -1148,7 +1152,10 @@ class MediaBrowser(Library):
             pass
         if self.server.type_name == "emby":
             raise Failed(
-                "Emby Error: A new collection requires initial members. For separator collections, set placeholder_imdb_id, placeholder_tmdb_movie, or placeholder_tvdb_show under template_variables to an item present in this library (for example, placeholder_imdb_id: tt0068646). Otherwise, use a builder-based collection."
+                "Emby Error: A new collection requires initial members. For separator collections, set "
+                "placeholder_imdb_id, placeholder_tmdb_movie, or placeholder_tvdb_show under template_variables "
+                "to an item present in this library (for example, placeholder_imdb_id: tt0068646). Otherwise, "
+                "use a builder-based collection."
             )
         created = self.client.create_collection(title, parent_id=self.library_id)
         self.__dict__.pop("_collection_catalog", None)
