@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Send a configured IMDb chart `limit` to Kometa Utilities so the chart response follows that size instead of the service default.
 - Fix TMDb episode cache writes failing after an episode is renumbered or moved; replace stale positions atomically without retaining external IDs from a different episode. #3801
 - Ignore the unsupported `kometa_poster` and `pmm_poster` attributes with a clear error directing users to supported poster options, instead of attempting legacy poster rendering. #3796
 - Fetch complete MDBList digital release dates for `mdb_digital` date operations when batch or older cached results omit them, and cache confirmed missing dates to avoid repeated lookups. #3798
