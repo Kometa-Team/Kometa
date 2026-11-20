@@ -375,6 +375,44 @@ class TestMDBListPrefetch:
 
         o.library.prefetch_mdblist.assert_called_once_with([item])
 
+
+class TestIMDbRatingPrefetch:
+    def test_batches_items_whose_overlay_uses_imdb_rating(self):
+        o = make_overlays(cache=None)
+        imdb_item = SimpleNamespace(ratingKey=1)
+        tmdb_item = SimpleNamespace(ratingKey=2)
+        key_to_overlays = {
+            1: (imdb_item, ["imdb"]),
+            2: (tmdb_item, ["tmdb"]),
+        }
+        properties = {
+            "imdb": SimpleNamespace(variables={"imdb_rating"}),
+            "tmdb": SimpleNamespace(variables={"tmdb_rating"}),
+        }
+
+        o._prefetch_imdb_ratings(key_to_overlays, properties)
+
+        o.library.prefetch_imdb.assert_called_once_with([imdb_item], ratings=True)
+
+    def test_skips_items_when_the_overlay_value_is_fresh(self):
+        cache = MagicMock()
+        cache.query_overlay_value_cache.return_value = ("8.1", False)
+        o = make_overlays(cache=cache)
+        item = SimpleNamespace(ratingKey=1)
+
+        o._prefetch_imdb_ratings({1: (item, ["imdb"])}, {"imdb": SimpleNamespace(variables={"imdb_rating"})})
+
+        o.library.prefetch_imdb.assert_not_called()
+
+    def test_does_not_treat_mdb_imdb_rating_as_a_direct_imdb_lookup(self):
+        o = make_overlays(cache=None)
+
+        o._prefetch_imdb_ratings({1: (SimpleNamespace(ratingKey=1), ["mdb"])}, {"mdb": SimpleNamespace(variables={"mdb_imdb_rating"})})
+
+        o.library.prefetch_imdb.assert_not_called()
+
+
+class TestMDBListBulkPrefetch:
     def test_one_thousand_overlay_items_use_ten_requests(self):
         items = [SimpleNamespace(ratingKey=i) for i in range(1000)]
         mdblist = MDBList.__new__(MDBList)
