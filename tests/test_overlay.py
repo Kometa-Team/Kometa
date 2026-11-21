@@ -251,3 +251,18 @@ class TestResolveImagePathCaching:
         ov._resolve_image_path()  # served from local file this time
         with open(path, "rb") as f:
             assert f.read() == b"fake-png-bytes"
+
+
+def test_native_item_canvas_shapes_and_backdrops_agree():
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    from modules.overlay import get_canvas_size
+
+    for item_type, expected in (("episode", (1920, 1080)), ("movie", (1000, 1500)), ("show", (1000, 1500)), ("season", (1000, 1500)), ("album", (1000, 1000))):
+        item = SimpleNamespace(type=item_type)
+        assert get_canvas_size(item) == expected
+        overlay = make_overlay()
+        overlay.get_backdrop = MagicMock(return_value="backdrop")
+        assert overlay.get_canvas(item) == "backdrop"
+        overlay.get_backdrop.assert_called_once_with(expected, box=overlay.backdrop_box, text=overlay.backdrop_text)

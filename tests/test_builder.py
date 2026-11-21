@@ -25,6 +25,51 @@ from tests.factories import make_builder
 # ═══════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.parametrize("templates", [{"name": "separator", "separator": "genre"}, [{"name": "shared"}, {"name": "separator", "separator": "actor"}]])
+def test_silo_separator_skipped_before_template_expansion(templates, monkeypatch):
+    from modules.silo import SiloMediaServer
+    from modules.util import NotScheduled
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    library = SimpleNamespace(name="Movies", server=SiloMediaServer(url="http://silo", token="token"))
+    metadata = MagicMock()
+    with pytest.raises(NotScheduled, match="Silo does not support collection separators"):
+        CollectionBuilder(MagicMock(), metadata, "Genre Collections", {"template": templates}, library=library)
+    metadata.apply_template.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("definition", ["release.desc", {"sort_by": "release.desc", "limit": 20, "all": {"label": "<<smart_label>>"}}])
+@pytest.mark.parametrize("selector,value", [("imdb_list", "https://imdb.com/list/example"), ("plex_all", True), ("plex_search", {"all": {"resolution": "1080p"}})])
+def test_mediabrowser_list_smart_labels_become_ordinary_collections(kind, definition, selector, value, monkeypatch):
+    from modules.mediabrowser import EmbyMediaServer, JellyfinMediaServer
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    server = (JellyfinMediaServer if kind == "jellyfin" else EmbyMediaServer)(url="http://server", token="token")
+    library = SimpleNamespace(server=server)
+    data = {"smart_label": definition, selector: value, "schedule": "daily", "sync_mode": "sync", "filters": {"aspect": 1.33}}
+    methods = {key: key for key in data}
+    CollectionBuilder._adapt_list_smart_label(library, data, methods)
+    CollectionBuilder._validate_smart_server(library, methods)
+    assert "smart_label" not in data and "smart_label" not in methods
+    assert data["collection_order"] == "release.desc"
+    assert data["schedule"] == "daily" and data["sync_mode"] == "sync"
+    assert data[selector] == value and data["filters"] == {"aspect": 1.33}
+    if isinstance(definition, dict):
+        assert data["limit"] == 20
+
+
+@pytest.mark.parametrize("definition,builders", [({"all": {"label": "Different"}}, {"imdb_list": "list"}), ("title.asc", {})])
+def test_mediabrowser_smart_labels_reject_untranslatable_definitions(definition, builders):
+    from modules.mediabrowser import JellyfinMediaServer
+    from modules.util import BuilderValidationError
+
+    data = {"smart_label": definition, **builders}
+    library = SimpleNamespace(server=JellyfinMediaServer(url="http://server", token="token"))
+    with pytest.raises(BuilderValidationError):
+        CollectionBuilder._adapt_list_smart_label(library, data, {key: key for key in data})
+
+
 @pytest.mark.parametrize("method_name", ["tautulli_popular", "tautulli_top", "tautulli_watched"])
 @pytest.mark.parametrize("minimum, expected, warns", [(None, 0, False), (0, 0, False), (2, 2, False), (-1, 0, True), ("invalid", 0, True)])
 def test_tautulli_list_minimum_defaults_and_validation(monkeypatch, method_name, minimum, expected, warns):
@@ -36,7 +81,6 @@ def test_tautulli_list_minimum_defaults_and_validation(monkeypatch, method_name,
         data["LIST_MINIMUM"] = minimum
 
     builder._tautulli(method_name, data)
-
     assert builder.builders[0][1]["list_minimum"] == expected
     assert logger.warning.called == warns
 
@@ -692,6 +736,15 @@ class TestFilterAndSaveItems:
         assert "3 Episodes Expanded from 2 IDs" in logger.info_messages
         assert "2 Unique Episodes Kept" in logger.info_messages
         assert builder.found_items == [ep1, ep2]
+
+
+@pytest.mark.parametrize("rating,expected", [(None, False), (0.0, True), (9.2, True)])
+def test_top_badge_availability_filter_rejects_missing_rating(rating, expected, monkeypatch):
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+    library = MagicMock()
+    library.fetch_overlay_value.return_value = rating
+    builder = make_builder(library=library, value_filters=[("silo_tomatoesaudience_rating", "gte", 0.0)])
+    assert builder.check_value_filter(SimpleNamespace(title="Dune")) is expected
 
 
 class TestMDBListValueFilterPrefetch:
@@ -2529,3 +2582,19 @@ def test_collection_file_item_roots_preserve_mapping_inheritance(monkeypatch, gr
     builder._resolve_collection_asset_directory(metadata, {})
     assert builder.collection_asset_directory == (inherited if grouped and inherited else ["file items"])
     assert builder.collection_assets_configured is bool(grouped and inherited)
+
+
+@pytest.mark.parametrize("server", ["jellyfin", "emby", "silo"])
+@pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+def test_native_all_builders_share_plex_all_selection(server, level):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name=server)), builder_level=level, builders=[])
+    builder._plex(f"{server}_all", True)
+    assert builder.builders == [("plex_all", level)]
+
+
+@pytest.mark.parametrize("method", ["jellyfin_all", "emby_all", "silo_all"])
+def test_native_all_builder_rejects_wrong_server(method):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name="plex")), builders=[])
+    with pytest.raises(Failed, match="requires a"):
+        builder._plex(method, True)
+    assert builder.builders == []

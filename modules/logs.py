@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import re
+import shutil
 import sys
 import traceback
 from logging.handlers import RotatingFileHandler
@@ -295,16 +296,20 @@ class MyLogger:
 
     def ghost(self, text):
         if not self.ignore_ghost and sys.stdout.isatty():
-            try:
-                print(self._space(f"| {text}"), end="\r")
-            except UnicodeEncodeError:
-                text = text.encode("utf-8")
-                print(self._space(f"| {text}"), end="\r")
-            self.spacing = len(text) + 2
+            width = max(1, min(self.screen_width + 2, shutil.get_terminal_size((self.screen_width + 2, 24)).columns) - 1)
+            line = f"| {text}".replace("\n", " ").replace("\r", " ")
+            encoding = getattr(sys.stdout, "encoding", None) or "utf-8"
+            line = line.encode(encoding, errors="replace").decode(encoding)
+            if len(line) > width:
+                line = f"{line[:width - 3]}..." if width >= 3 else line[:width]
+            line = line.ljust(min(self.spacing, width))
+            print(line, end="\r", flush=True)
+            self.spacing = len(line)
 
     def exorcise(self):
         if not self.ignore_ghost and sys.stdout.isatty():
-            print(self._space(" "), end="\r")
+            width = max(1, shutil.get_terminal_size((self.screen_width + 2, 24)).columns - 1)
+            print(" " * min(self.spacing, width), end="\r", flush=True)
             self.spacing = 0
 
     def secret(self, text):

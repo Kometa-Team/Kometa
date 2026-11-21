@@ -40,7 +40,7 @@ dynamic_collections:
         default: white
       translation_key:
         default: country
-        other: country_other
+        other: region_other
       dynamic:
         default: true
 

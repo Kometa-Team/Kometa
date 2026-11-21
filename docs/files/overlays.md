@@ -188,6 +188,8 @@ There is an attribute called `reapply_overlays` which, when set to true, will fo
 
   * Ensure `reapply_overlays` is set to `false` if you see it in your Configuration File. If it has previously been set to true we recommend using [ImageMaid](../kometa/scripts/imagemaid.md) to get rid of the bloat.
 
+For Silo libraries, overlay presence is tracked by local original-poster backups rather than a server label. Keep those backups and Kometa's cache when moving an installation; deleting the cache alone does not remove overlays. See [Silo tracking without labels](../config/silo.md#tracking-without-labels) for the storage paths and removal behavior.
+
 To remove all overlays from your library, add the [`remove_overlays` library attribute](../config/libraries.md#remove-overlays) set to `true`.**
 
   * See the above note on Kometa not removing the overlaid images, this is still true here.
@@ -425,6 +427,11 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `omdb_imdb_rating`             | OMDb IMDb Rating                                                                  | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `omdb_metascore_rating`        | OMDb Metascore Rating                                                             | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `omdb_tomatoes_rating`         | OMDb Rotten Tomatoes Rating                                                       | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
+| `silo_imdb_rating` | Silo-native IMDb rating; normalized to 0–10 | Silo items with the corresponding rating metadata |
+| `silo_tmdb_rating` | Silo-native TMDb rating; normalized to 0–10 | Silo items with the corresponding rating metadata |
+| `silo_tomatoes_rating` | Silo-native Rotten Tomatoes critic rating; normalized to 0–10 | Silo items with the corresponding rating metadata |
+| `silo_tomatoesaudience_rating` | Silo-native Rotten Tomatoes audience rating; normalized to 0–10 | Silo items with the corresponding rating metadata |
+| `silo_user_rating` | Silo-native active profile rating; normalized to 0–10 | Silo items with the corresponding rating metadata |
 | `plex_imdb_rating`             | Plex IMDb Rating                                                                  | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `plex_tmdb_rating`             | Plex TMDb Rating                                                                  | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `plex_tomatoes_rating`         | Plex Rotten Tomatoes Rating                                                       | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }                                                                                               |
@@ -803,7 +810,7 @@ value_filter:
 
 All values use Kometa's normalised **0–10 scale** regardless of source (e.g. a Rotten Tomatoes score of 79% is `7.9`). The default Fresh threshold used by the `ratings` defaults file is `6.0` (equivalent to 60%).
 
-Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `serializd_rating`, `tmdb_rating`.
+Supported variables: `silo_imdb_rating`, `silo_tmdb_rating`, `silo_tomatoes_rating`, `silo_tomatoesaudience_rating`, `silo_user_rating`, `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `serializd_rating`, `tmdb_rating`.
 
 ### Caching
 

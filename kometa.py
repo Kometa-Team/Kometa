@@ -291,6 +291,7 @@ from modules.builder import CollectionBuilder, prefetch_gather_ids  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.overlay import rating_sources  # noqa: E402
 from modules.request import Requests  # noqa: E402
+from modules.schedule_mode import cached_item_key  # noqa: E402
 from modules.tmdb import NotFound as TMDbNotFound  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
 
@@ -1000,7 +1001,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             if config.Cache:
                 schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
                 if schedule_list_key:
-                    library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
+                    server_type = getattr(getattr(library, "server", None), "type_name", "plex")
+                    library.scheduled_cached_keys = {cached_item_key(key, server_type) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
                 target_keys = None

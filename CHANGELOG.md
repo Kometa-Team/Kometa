@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
+
+- Honor targeted native catalog and asset updates after shared API changes, restore native adapter test coverage, and correct type annotations without increasing the Pyright baseline.
+
+- Measure disabled timing instrumentation overhead using CPU time so parallel CI scheduling does not cause false failures.
+
+- Check Jellyfin/Emby backdrop lists before retrying interrupted remote downloads; stop on changed or unverifiable lists to avoid duplicate additions, and include artwork type in image-operation errors.
+
+- Retry Jellyfin/Emby catalog reads after Cloudflare 520–524 responses and retry remote fixed-slot artwork replacements after transient connection failures, without replaying backdrop additions.
+
+- Treat invalid Jellyfin/Emby TMDb and TVDb provider IDs such as `UNKNOWN` as missing so metadata lookups can use another provider instead of crashing.
+
+- Skip redundant overlay tag removal when the tag is absent and batch Jellyfin/Emby catalog cache updates during overlay removal while keeping server writes synchronous.
+
+- Warn and skip Plex collection visibility modes on native servers so shared operation settings do not produce configuration errors.
+
+- Validate Jellyfin/Emby cached catalog membership against a fresh lightweight listing before reuse, and restart interrupted catalog scans to exclude removed items.
+
+- Combine pending Jellyfin/Emby operation metadata changes into one request per item using loaded item data, batch local cache patches in groups of 100, and report write progress and failures. Personal ratings retain their separate endpoint.
+
+- Accept the shared operations reload element-exclusion argument on Jellyfin, Emby, and Silo; Plex XML exclusions do not alter native JSON reads.
+
+- Render native episode overlays on the landscape canvas instead of stretching episode artwork into portrait dimensions.
+
+- Map Jellyfin/Emby runtime ticks to milliseconds for runtime text overlays on movies, shows, seasons, and episodes.
+
+- Reuse Jellyfin/Emby cached catalogs for overlay cleanup tag and backup checks instead of repeating server searches; include tag filters in request diagnostics.
+
+- Preserve Jellyfin/Emby catalogs across overlay artwork writes and patch only matching cached items after metadata/user-state writes without extending cache expiry.
+
+- Support `plex_all` season and episode selection on Jellyfin, Emby, and Silo using the cached catalog without fetching media details for every item.
+
+- Skip Jellyfin TV studio dynamic collections with a warning rather than duplicating network collections.
+
+- Route Jellyfin collection reads before metadata writes through the user-data-free listing endpoint as well as collection reloads.
+
+- Use a single fresh paginated Jellyfin/Emby collection listing for collection operations instead of reloading each box set, and request only collection metadata fields.
+
+- Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
+
+- Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
+
 ### Docs
 
 - Point contributors to the pyright baseline check instead of `mypy` in `.github/CONTRIBUTING.md`, `CLAUDE.md` and `AGENTS.md`, and note which checks run in pre-commit and which run in CI.
@@ -50,6 +94,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Add dedicated Jellyfin, Emby, and Silo differences-from-Plex guides covering collections, tracking, artwork, metadata, ratings, and caching.
+
+- Document Silo overlay tracking without labels, local-state preservation, and collection ownership and deletion limits.
+
 - Replace the MkDocs wiki with Zensical, keeping Read the Docs hosting, branch versions, and existing documentation URLs.
 - Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 
@@ -59,7 +107,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Allow Silo profile selection by `profile_name` as an alternative to `profile_id`, resolving a unique case-insensitive match before catalog access.
+
+- Log added and removed Jellyfin/Emby catalog item counts, titles, and server IDs when library membership changes, including show and episode numbers when available.
+
+- Add `jellyfin_all`, `emby_all`, and `silo_all` builders for native all-item selection, retaining `plex_all` compatibility.
+
+- Support Jellyfin/Emby `episode_duplicate` local searches using episode media sources and shared catalog/detail caches.
+
+- Rebuild Jellyfin/Emby episode- and season-scoped smart filters as ordinary collections using cached TV child catalogs.
+
+- Support Jellyfin/Emby episode_air_date searches using episode premiere dates and cached episode catalogs for shows and seasons.
+
+- Support Jellyfin network dynamic collections using the TV networks stored in series studio metadata.
+
+- Support `delete_collections.less: all` to explicitly ignore collection size and skip Jellyfin/Emby count requests when no numeric size filter is needed.
+
+- Add native Jellyfin/Emby version splitting and stored community, critic, and personal rating sources for mass updates and rating overlays, including TMDb episode lookup.
+
+- Support native Silo/Jellyfin/Emby mass metadata writes, mappings, field controls, episode ratings, artwork, and regular metadata backups with nested seasons and episodes, with preflight reports for unsupported options.
+
+- Add explicit Silo provider and profile rating targets to mass_metadata_update, with source fallbacks, score conversion, clearing, and cross-server validation of rating targets and sources.
+
+- Expand Jellyfin/Emby local search and item filters to native item, stream, source, user-state, tag, and collection metadata, with typed comparisons and local collection sorting.
+
+- Support Jellyfin and Emby duplicate selectors using media sources, loading source details when needed.
+
+- Support Silo duplicate search and filtering using the number of file versions grouped under each catalog item.
+
+- Add Silo metadata-backed search/filter readers for video/audio tracks, aspect ratios and numeric comparisons, ratings, dates, tag counts, and available user state; retain native smart queries where supported and rebuild other supported definitions locally.
 - Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
+- Log remote server names, versions, and available OS details when connecting to Silo, Jellyfin, and Emby; explicitly identify unreported values without using Kometa's host information.
+- Match Jellyfin/Emby actor, director, writer, and producer filters using native People metadata, resolve TMDb person names in local selectors, and support audience/critic rating selection sorts.
+- Rebuild supported Jellyfin/Emby smart_filter definitions as ordinary locally filtered collections, including relative release/added dates, sorting, and limits; skip show-only basic defaults on movie libraries.
+- Discover Silo decades and years for dynamic collections, translate year/decade filters, and support the decade default's critic-rating sort using stored Rotten Tomatoes critic scores.
+- Discover embedded and external Silo subtitle languages for dynamic collections and translate native subtitle-language smart filters.
+- Discover Silo resolutions and content ratings for dynamic collections and translate their filters, including default resolution aliases and rating lists.
+- Discover Silo audio languages from native audio tracks for dynamic collections and translate audio-language smart filters into native rules.
+- Add silo_imdb, silo_tmdb, silo_tomatoes, silo_tomatoesaudience, and silo_user native rating sources for rating overlays, text variables, and value filters without external provider lookups.
+- Evaluate supported Jellyfin/Emby overlay search expressions locally, including nested resolution regex, filepath, HDR, and Dolby Vision selectors, using per-run media-source detail reuse.
+- Apply Jellyfin and Emby collection release/title ordering using native DisplayOrder metadata; support additional ascending Jellyfin sort fields and keep unsupported custom/descending orders explicit without changing member metadata.
+- Apply Silo collection ordering through native sort_config and explicit manual member positions, preserving external builder order and attempting member restoration after a failed reposition.
+- Evaluate supported Silo overlay selectors locally, including nested all/any groups, resolution regexes, HDR, edition, filename, and Dolby Vision filters, with per-run detail reuse.
+- Add Silo as a media server. Define it under `media_servers` and select it on a library with `server`. Silo libraries can build manual and smart collections. Posters, backdrops, logos, and overlays are applied from a URL; a local image is published to transfer.kometa.wiki first. Labels, item deletion, and playlists are not available. (#3351)
+- Add Jellyfin and Emby as media servers. A `media_servers` entry with `type: jellyfin` or `type: emby` names the server, and a library selects it with `server`. Both use the MediaBrowser API. Libraries can build boxset collections and playlists, edit tags and metadata, and upload poster, backdrop, logo, banner, and overlay images. Plex smart filters are not accepted. (#3351)
+- Add a media server object with a queryable capability matrix. Plex remains the default server, and existing `plex:` configuration is unchanged. (#3351)
+- Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
 - Add library schedule modes for full, added, changed, alphabetical, and explicitly selected items, plus a `--mode` / `KOMETA_MODE` override for a run.
@@ -74,8 +167,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.
 - Add music-library `lidarr_all` and `lidarr_taglist` builders, which create Plex artist collections by matching Lidarr and Plex MusicBrainz artist IDs.
 
+### Changed
+
+- Make Silo request spacing opt-in with the server-level `pace_requests` flag (default false); keep automatic 429 retries enabled regardless of pacing.
+- The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
+
 ### Fixed
 
+- Save Jellyfin/Emby catalog pages as they arrive and reuse completed pages after interrupted loads, without exposing partial catalogs to filters.
+
+- Fetch rich Jellyfin/Emby series listings in pages of 20 to avoid timeouts caused by expensive per-show metadata aggregation.
+
+- Log Jellyfin/Emby request starts, response timing/status, and failure types with trace or request logging, so pending requests are visible before timeout.
+
+- Display Shows instead of Seriess in Jellyfin/Emby catalog loading messages.
+
+- Reuse Jellyfin/Emby collection listings for repeated name and missing-collection lookups, refreshing after creation/deletion or an explicit collection-list reload.
+
+- Reuse cached episode catalogs and details for Jellyfin/Emby show and season technical filters instead of repeatedly listing each parent’s episodes.
+
+- Persist Jellyfin/Emby catalogs and full media details across runs with cache expiration, scoped identities, forced refreshes, and invalidation after media writes.
+
+- Reuse completed Jellyfin/Emby media-detail lookups during builder filtering, including shows without media sources, instead of repeating requests for every technical filter.
+
+- Report Jellyfin/Emby catalog loading progress per page and reuse child catalogs across dynamic defaults during a run.
+
+- Support Silo episode search scopes and episode_air_date selectors for recently aired episode collections and show status overlays.
+
+- Allow network dynamic collections on Silo using native network metadata instead of rejecting its non-Plex agent.
+
+- Persist Silo catalogs and full item details between runs using cache expiration, with scoped data, explicit refreshes, and invalidation after item writes.
+
+- Reuse Silo season and episode catalogs across dynamic defaults and local searches during a run instead of repeatedly loading the same catalog.
+
+- Restore regular Silo metadata backups through native metadata and personal rating APIs, with tag sync and consistent personal rating scales.
+
+- Treat content ratings as classification text when restoring native metadata backups.
+
+- Restore regular metadata backup attributes on Jellyfin and Emby through native item updates, including empty tag sync lists, ratings, and nested seasons and episodes.
+
+- Only report deferred overlay poster updates when an asset poster was found, and report provider poster replacements skipped by ignore_overlays when replacement artwork exists.
+
+- Retry Jellyfin/Emby reads after transient HTTP 502, 503, and 504 responses instead of aborting operations immediately.
+
+- Write Silo, Jellyfin, and Emby backups as regular metadata files, with nested seasons/episodes, standard matching, and tag sync instructions.
+
+- Use operation names for missing AniDB original-title and TVDb square-art IDs, and titles instead of internal GUIDs in other mass metadata missing-provider-ID messages.
+
+- Apply Jellyfin/Emby duplicate filters before version splitting and recheck each item so single-version or already-separated items do not receive split requests.
+
+- Preserve Jellyfin/Emby movie TVDb provider IDs for metadata and artwork lookups, without treating movie IDs as TVDb series IDs during TMDb conversion.
+
+- Respect Jellyfin/Emby differences in supported metadata locks and reject added-date clears and Jellyfin numeric personal-rating clears that the APIs cannot apply.
+
+- Retry Jellyfin/Emby response-body connection resets wrapped as chunked-encoding errors for retry-safe requests, including library item listing.
+
+- Report unchanged originally-available and added dates during mass metadata operations.
+
+- Include studio updates in the operations summary and report unchanged studios during item processing.
+
+- Disable unsupported native duplicate-splitting operations during configuration, consistently with other unsupported operations, instead of checking during library processing.
+
+- Use public mass_metadata_update paths for unsupported added-date, parental-label, and square-art options.
+
+- Log Silo rate-limit retry notices at TRACE instead of WARNING.
+
+- Use readable Silo provider names in per-item rating update, unchanged, and warning messages.
+
+- Display native personal-rating updates as User Rating instead of the internal silo_user target name, including the operations summary, and list native provider-rating operations individually.
+
+- Identify the MDBList prefetch and Silo detail-loading stages in logs, and include titles and provider IDs in invalid MDBList rating warnings.
+
+- Select the Emby adapter before its Jellyfin base class and preserve current user state during native rating writes.
+
+- Run native assets_for_all without requiring server labels or Plex item fields, reuse the filesystem artwork uploader, and protect posters with local overlay backups.
+- Resolve Silo movie assets by media folder names and reuse full item details during operations, with detail-loading progress.
+
+- Report unsupported Silo split_duplicates operations clearly and continue other library operations instead of calling a missing item method.
+
+- Restore the library operations settings summary to INFO logging for all media servers.
+
+- Retry transient Jellyfin/Emby poster, logo, banner, and thumb upload connection failures using the existing bounded backoff.
+
+- Show the number of items per overlay table at normal logging verbosity for every media server.
+
+- Handle validate as a Jellyfin/Emby search control option rather than an item field.
+
+- Reuse missing overlay rating lookups within each library run and consolidate failed MDBList identifier fallbacks into one error with the item title.
+
+- Parse comma-separated local search tag alternatives so Silo/Jellyfin/Emby content-rating overlays match the shipped defaults, while preserving regular expressions and explicit list values containing commas.
+- Apply Silo aspect-ratio overlays through native video-track aspect/dimension metadata, validate backend fields before scanning, and show progress while lazily loading reusable item details.
 - Fix TMDb episode cache writes failing after an episode is renumbered or moved; replace stale positions atomically without retaining external IDs from a different episode. #3801
 - Ignore the unsupported `kometa_poster` and `pmm_poster` attributes with a clear error directing users to supported poster options, instead of attempting legacy poster rendering. #3796
 - Fetch complete MDBList digital release dates for `mdb_digital` date operations when batch or older cached results omit them, and cache confirmed missing dates to avoid repeated lookups. #3798
@@ -88,6 +269,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cache TVDb movies and shows independently when they share a numeric ID, migrating existing entries without discarding metadata or resetting expiration. #3804
 - Fix cached MDBList entries never returning the MyAnimeList rating: `query_mdb()` rebuilt that rating with the source label `myanimelist_rating`, which `MDbObj` does not recognize, so `mdb_myanimelist` in `mass_*_rating_update` operations, `<<mdb_myanimelist_rating>>` overlay text and `value_filter` only worked on a fresh MDBList fetch. #3773
 - Fix the `anidb` overlay rating source (`<<anidb_rating>>`, e.g. `rating1: anidb` in the `ratings` Defaults file, and `anidb_rating` in `value_filter`) never returning a value: the AniDB permanent rating was matched against the misspelled variable name `anidb_rating_rating`, so every item logged `Overlay Warning: No 'anidb_rating' found` and no AniDB rating was rendered.
+- Centralize Jellyfin/Emby retry policy for reads, item updates/deletions, and collection membership; recover lost collection-creation responses by exact name lookup before retrying, and accept an already-deleted item after a failed deletion response.
+- Retry transient Emby collection membership failures with the same bounded backoff used for Jellyfin, allowing runs to continue to metadata and artwork after a successful retry.
+- Avoid fetching per-item media details for Jellyfin/Emby metadata-only local searches such as people collections; show scan progress and log checkpoints while preserving lazy detail loading for technical filters.
+- Accept accent and case normalization when verifying Emby sort-title updates while still detecting missing section prefixes or changed names.
+- Lock Emby custom sort titles using the native SortName field lock, preserve existing locks, and verify the stored value instead of reporting an unretained sort title as successful.
+- Write both ForcedSortName and SortName for Emby custom sort titles, matching its native editor so people collections retain their configured section prefixes.
+- Explain Emby's separator placeholder requirement in the empty-collection error, naming all three placeholder template variables and requiring an item present in the library.
+- Lock newly created Jellyfin collections against automatic provider renaming, and recover renamed collections by an unambiguous original boxset folder so configured names and artwork can be restored.
+- Discover Jellyfin/Emby production years and decades for dynamic collections and match decade selectors against native production years.
+- Discover Jellyfin/Emby resolutions for dynamic collections and match the resolution default's numeric and 4k/8k/2k aliases against native video dimensions.
+- Retry Jellyfin collection membership batches after transient connection errors or timeouts, with bounded backoff, without replaying successful batches or collection creation.
+- Normalize ISO 639-2 audio/subtitle language codes (including bibliographic aliases) to the keys expected by language defaults, avoiding known languages falling into Other Audio/Subtitles.
+- Discover Jellyfin/Emby audio and subtitle languages from native media streams, including external subtitles and alternate versions, and match language collection selectors locally.
+- Discover Jellyfin/Emby content ratings, genres, studios, and countries for dynamic collections, and match content-rating selectors locally using native OfficialRating values.
+- Scope dynamic people-credit caches by server, library, profile/user, and item so Jellyfin discovery cannot reuse Silo or Plex credits for the same TMDb title.
+- Exclude explicitly disabled separator definitions from duplicate-name registration so a later enabled instance of the same default can create its separator.
+- Batch Jellyfin/Emby collection additions and removals to avoid HTTP 414 errors that prevent large collections from reaching sort-title and artwork updates.
+- Allow local plex_all/plex_search selectors in non-Plex smart-label fallbacks and evaluate Jellyfin/Emby aspect-ratio filters for aspect collections.
+- Write Jellyfin custom sort titles through ForcedSortName and restore cached posters when Jellyfin/Emby reports no primary image, including separator artwork.
+- Convert simple list-backed smart-label definitions to ordinary collections on Jellyfin and Emby, preserving sorting, limits, and schedules while rejecting unsupported label conditions.
+- Warn and skip unsupported Plex collection visibility settings on Silo so seasonal summaries and posters can still update.
+- Build seasonal defaults as ordinary list-driven collections on Silo instead of unsupported smart-label collections, preserving schedules, limits, sync, and sorting.
+- Use distinct Other Regions and Other Continents translations in movie/show defaults so they do not overwrite Other Countries collections and artwork.
+- Normalize TMDb's lowercase country lookup keys when translating Silo country facets so country/region/continent defaults discover all countries.
+- Discover Silo production countries through catalog facets and translate country names to native codes for country, region, and continent collection defaults.
+- Pace all Silo API requests, including catalog reads and queries, through a thread-safe limiter shared by library clients on the same server.
+- Pace Silo admin reads alongside writes and skip vanished collections with a warning during collection operations instead of aborting the library run.
+- Serialize numeric library IDs in Silo smart-query documents for collection creation, updates, and previews; include field-level validation details in API errors.
+- Report unsupported Silo builders as validation errors without collection failure tracebacks.
+- Show X/Y progress while adding or removing Silo collection members.
+- Warn and skip unsupported Silo collection labels so award defaults can continue updating summaries and artwork.
+- Skip separator-template collections on Silo with an explanatory note because collection sort titles are unavailable.
+- Pace Silo admin writes at most twice per second per library client to reduce rate limiting during collection membership changes and sorting, retaining Retry-After retries.
+- Map Silo cast and crew to dynamic actor/director/writer/producer discovery and translate person smart filters, including TMDb person names.
+- Discover native Silo genres, studios, networks, and countries for dynamic collections and translate their smart filters into native tag rules.
+- Skip Tautulli connections for non-Plex libraries and reject Tautulli builders with a clear Plex-only error before requesting statistics.
+- Require an available rating for Top rating badges and report only successfully rendered overlays in the applied-overlays log.
+- Treat forced Silo/Jellyfin/Emby reloads as fresh item reads rather than server metadata refresh jobs when reapplying overlays; send JSON for explicit Silo refresh requests.
+- Register Silo-native rating placeholders for text rendering at each video level, fixing literal variable names appearing on rating overlays.
+- Expose cached provider rating lookup and MDBList prefetch through the shared library interface for non-Plex movie/show text overlays and value filters.
+- Wait 0.75 seconds after publishing local Silo artwork before asking Silo to download it from transfer.kometa.wiki, pacing sequential upload/download pairs below its sustained rate of three requests per second.
+- Continue overlay removal after a server rejects an individual poster restoration, preserving its original backup and tracking state for a later retry.
+- Clip terminal progress lines to the available width and flush updates so long overlay restoration titles do not wrap and overlap later progress messages.
+- Read and write Emby TagItems alongside legacy Tags and recover overlay removal from local backups when earlier uploads did not persist an Overlay tag.
+- Normalize cropped Jellyfin/Emby SD video into 480p/576p overlay categories instead of using cropped heights that cannot match the resolution defaults.
+- Route Jellyfin/Emby overlay lifecycle operations through native tags and poster/reload hooks instead of Plex legacy label discovery.
+- Format Jellyfin/Emby display titles through the library interface for movie, show, season, and episode processing instead of failing on a missing method.
+- Resolve relative Silo poster URLs against the server URL before overlay downloads while preserving signed query parameters.
+- Use local overlay backups and cached state for Silo overlay lifecycle management instead of Plex label discovery and edits; supply Silo reload, title, and poster hooks required by the overlay engine.
+- Reject untranslated Plex search expressions on Silo, Jellyfin, and Emby before overlay filter compilation reaches missing Plex-specific lookup methods.
+- Retry transient Jellyfin/Emby read connection failures and timeouts with bounded backoff, without retrying write requests or SSL failures.
+- Warn and skip unsupported custom collection item ordering on Jellyfin and Emby instead of failing on the Plex moveItem method.
+- Warn and skip unsupported Silo collection logos and square artwork before upload, preserving supported poster and backdrop updates.
+- Warn and skip unsupported Silo collection sort titles while continuing summary and artwork updates.
+- Create Emby collections with their initial item IDs and no movie-library parent, avoiding the empty-collection creation request that can return HTTP 500.
+- Fetch Emby item details through its user-scoped item endpoint, fixing 404 responses while resolving collection members and reloading metadata.
+- Recheck smart collection capabilities after template expansion so Jellyfin/Emby defaults cannot bypass early validation.
+- Base64-encode Jellyfin and Emby image upload bodies as required by their APIs, fixing server errors when uploading local artwork.
+- Resolve local collection artwork on Jellyfin and Emby using the existing asset folder, filename, search-depth, and name-mapping rules.
+- Resolve Jellyfin/Emby collection title strings correctly and create missing boxsets when the builder adds their first members.
+- Validate server support for smart collection options before collection lookups and mutations, reporting unsupported Jellyfin/Emby smart filters as configuration errors instead of failing on a Plex URI later in initialization.
+- Translate Silo relative release/added smart filters into native query documents, including the Newly Released basic default, and preserve query scope, ordering, and limits.
+- Resolve Silo local collection artwork with the existing asset filename, folder, and search-depth rules instead of failing on missing asset lookup methods.
+- Reload Silo collections through the library interface and update collection summaries using Silo's native API instead of Plex metadata and automatic label methods.
+- Create missing Silo manual collections when adding their first members, matching the builder's Plex collection lifecycle.
+- Resolve Silo collections passed as title strings correctly when finding collections and adding or removing members.
+- Recognize Silo and MediaBrowser movie and show objects when resolving collection builder results instead of rejecting them as non-Plex objects.
+- Persist Silo external item IDs using the configured cache expiration so repeat runs avoid per-item detail requests for cached IDs.
+- Retry rate-limited Silo API requests using the server's Retry-After delay, with bounded exponential backoff when the header is missing or invalid.
+- Preserve nonnumeric media server item IDs when loading the library schedule cache, fixing a crash on subsequent runs.
+- Report Silo user and profile ids when a request fails because the configured profile was not found. (#3351)
+- Skip Plex clean bundles, empty trash, and optimize on Silo, Jellyfin, and Emby libraries. (#3351)
+- Report Silo library load progress with the loaded and total counts while caching a library. (#3351)
+- List Silo, Jellyfin, and Emby collections during collection operations. Silo has no labels, so unmanaged and unconfigured checks do not read labels. (#3351)
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739

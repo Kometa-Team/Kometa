@@ -4,14 +4,18 @@ import os
 import random
 import re
 from collections import Counter
+from contextlib import nullcontext
 from datetime import datetime, timezone
 
 from plexapi.exceptions import NotFound
 from plexapi.video import Episode, Movie, Season, Show
 
 from modules import anidb, plex, timings, tvdb, util
+from modules.media_server import Capability
+from modules.native_metadata import apply_edit, backup_metadata, current_value, is_native
+from modules.rating_operations import BROWSER_RATING_FIELDS, SILO_OPERATIONS, browser_rating_value, update_silo_ratings
 from modules.request import urlparse
-from modules.util import Failed, LimitReached
+from modules.util import CollectionNotFound, Failed, LimitReached
 
 logger = util.logger
 
@@ -40,6 +44,8 @@ tmdb_release_types = {
     "tmdb_physical": 5,
     "tmdb_tv": 6,
 }
+
+meta_operations.extend(SILO_OPERATIONS.values())
 
 # Library operations do not inspect these potentially large show-level elements. Excluding
 # them keeps Plex from serializing an aggregated cast/crew/media payload before operations
@@ -199,6 +205,9 @@ class Operations:
             self.library.mass_originally_available_update,
             self.library.mass_added_at_update,
         ]
+        native = getattr(self.library, "silo_rating_updates", None)
+        if isinstance(native, dict):
+            sources.extend(native.values())
         return any(str(option).startswith("mdb") for source in sources if source for option in util.get_list(source, split=False, return_none=False))
 
     def _prefetch_mdblist(self, items):
@@ -249,7 +258,7 @@ class Operations:
             return False
 
         less_check = True
-        if less_in is not None:
+        if less_in is not None and less_in != "all":
             col_count = col_in.childCount if col_in.childCount is not None else 0
             less_check = col_count < less_in
             logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
@@ -275,45 +284,51 @@ class Operations:
         logger.info("")
         logger.separator(f"{self.library.name} Library Operations")
         logger.info("")
-        logger.debug(f"Assets For All: {self.library.assets_for_all}")
-        logger.debug(f"Delete Collections: {self.library.delete_collections}")
-        logger.debug(f"Show Unmanaged Collections: {self.library.show_unmanaged}")
-        logger.debug(f"Show Unconfigured Collections: {self.library.show_unconfigured}")
-        logger.debug(f"Mass Genre Update: {self.library.mass_genre_update}")
-        logger.debug(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
-        logger.debug(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
-        logger.debug(f"Mass User Rating Update: {self.library.mass_user_rating_update}")
-        logger.debug(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
-        logger.debug(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
-        logger.debug(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
-        logger.debug(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
-        logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
-        logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
-        logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
-        logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
-        logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
-        logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
-        logger.debug(f"Mass Logo Update: {self.library.mass_logo_update}")
-        logger.debug(f"Mass Square Art Update: {self.library.mass_square_art_update}")
-        logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
-        logger.debug(f"Split Duplicates: {self.library.split_duplicates}")
-        logger.debug(f"Sync Watchlist to Serializd: {self.library.sync_watchlist_to_serializd}")
-        logger.debug(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
-        logger.debug(f"Radarr Remove by Tag: {self.library.radarr_remove_by_tag}")
-        logger.debug(f"Sonarr Add All Existing: {self.library.sonarr_add_all_existing}")
-        logger.debug(f"Sonarr Remove by Tag: {self.library.sonarr_remove_by_tag}")
-        logger.debug(f"Lidarr Add All Existing: {self.library.lidarr_add_all_existing}")
-        logger.debug(f"Lidarr Remove by Tag: {self.library.lidarr_remove_by_tag}")
-        logger.debug(f"Update Blank Track Titles: {self.library.update_blank_track_titles}")
-        logger.debug(f"Update Remove Title Parentheses: {self.library.remove_title_parentheses}")
-        logger.debug(f"Genre Mapper: {self.library.genre_mapper}")
-        logger.debug(f"Content Rating Mapper: {self.library.content_rating_mapper}")
-        logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
-        logger.debug(f"Ignore Labels: {self.library.ignore_labels}")
-        logger.debug(f"Respect Ignore IDs: {self.library.respect_ignore_ids}")
-        logger.debug(f"Item Operation: {self.library.items_library_operation}")
-        logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
-        logger.debug("")
+        logger.info(f"Assets For All: {self.library.assets_for_all}")
+        logger.info(f"Delete Collections: {self.library.delete_collections}")
+        logger.info(f"Show Unmanaged Collections: {self.library.show_unmanaged}")
+        logger.info(f"Show Unconfigured Collections: {self.library.show_unconfigured}")
+        logger.info(f"Mass Genre Update: {self.library.mass_genre_update}")
+        logger.info(f"Mass Audience Rating Update: {self.library.mass_audience_rating_update}")
+        logger.info(f"Mass Critic Rating Update: {self.library.mass_critic_rating_update}")
+        native_ratings = getattr(self.library, "silo_rating_updates", None)
+        user_rating = native_ratings.get("silo_user", self.library.mass_user_rating_update) if isinstance(native_ratings, dict) else self.library.mass_user_rating_update
+        logger.info(f"Mass User Rating Update: {user_rating}")
+        if isinstance(native_ratings, dict) and native_ratings:
+            for target, name in (("silo_imdb", "IMDb"), ("silo_tmdb", "TMDb"), ("silo_tomatoes", "Rotten Tomatoes Critic"), ("silo_tomatoesaudience", "Rotten Tomatoes Audience")):
+                logger.info(f"Mass {name} Rating Update: {native_ratings.get(target)}")
+        logger.info(f"Mass Episode Audience Rating Update: {self.library.mass_episode_audience_rating_update}")
+        logger.info(f"Mass Episode Critic Rating Update: {self.library.mass_episode_critic_rating_update}")
+        logger.info(f"Mass Episode User Rating Update: {self.library.mass_episode_user_rating_update}")
+        logger.info(f"Mass Content Rating Update: {self.library.mass_content_rating_update}")
+        logger.info(f"Mass Original Title Update: {self.library.mass_original_title_update}")
+        logger.info(f"Mass Studio Update: {self.library.mass_studio_update}")
+        logger.info(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
+        logger.info(f"Mass Added At Update: {self.library.mass_added_at_update}")
+        logger.info(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
+        logger.info(f"Mass Poster Update: {self.library.mass_poster_update}")
+        logger.info(f"Mass Background Update: {self.library.mass_background_update}")
+        logger.info(f"Mass Logo Update: {self.library.mass_logo_update}")
+        logger.info(f"Mass Square Art Update: {self.library.mass_square_art_update}")
+        logger.info(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
+        logger.info(f"Split Duplicates: {self.library.split_duplicates}")
+        logger.info(f"Sync Watchlist to Serializd: {self.library.sync_watchlist_to_serializd}")
+        logger.info(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
+        logger.info(f"Radarr Remove by Tag: {self.library.radarr_remove_by_tag}")
+        logger.info(f"Sonarr Add All Existing: {self.library.sonarr_add_all_existing}")
+        logger.info(f"Sonarr Remove by Tag: {self.library.sonarr_remove_by_tag}")
+        logger.info(f"Lidarr Add All Existing: {self.library.lidarr_add_all_existing}")
+        logger.info(f"Lidarr Remove by Tag: {self.library.lidarr_remove_by_tag}")
+        logger.info(f"Update Blank Track Titles: {self.library.update_blank_track_titles}")
+        logger.info(f"Update Remove Title Parentheses: {self.library.remove_title_parentheses}")
+        logger.info(f"Genre Mapper: {self.library.genre_mapper}")
+        logger.info(f"Content Rating Mapper: {self.library.content_rating_mapper}")
+        logger.info(f"Metadata Backup: {self.library.metadata_backup}")
+        logger.info(f"Ignore Labels: {self.library.ignore_labels}")
+        logger.info(f"Respect Ignore IDs: {self.library.respect_ignore_ids}")
+        logger.info(f"Item Operation: {self.library.items_library_operation}")
+        logger.info(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
+        logger.info("")
 
         # Populated before the delete loop; closure captures by reference.
         configured_names = None
@@ -321,13 +336,21 @@ class Operations:
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
             return self._should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, configured_names=configured_names)
 
+        native = is_native(self.library)
+        operation_items = {}
         refreshed_items = None
         if self.library.split_duplicates:
             duplicate_items = self.library.search(**{"duplicate": True})
+            split_count = 0
             for item in duplicate_items:
-                item.split()
-                logger.info(f"{item.title[:25]:<25} | Splitting")
-            if duplicate_items:
+                try:
+                    if item.split() is False:
+                        continue
+                    split_count += 1
+                    logger.info(f"{item.title[:25]:<25} | Splitting")
+                except Failed as error:
+                    logger.error(f"{item.title} | Splitting failed: {error}")
+            if split_count:
                 refreshed_items = self.library.refresh_item_cache_and_mappings()
 
         if self.library.update_blank_track_titles:
@@ -356,8 +379,11 @@ class Operations:
             label_edits = {"add": {}, "remove": {}}
             rating_edits = {"audienceRating": {}, "rating": {}, "userRating": {}}
             genre_edits = {"add": {}, "remove": {}}
+            native_clear_edits = {}
+            native_episode_clear_edits = {}
             content_edits = {}
             studio_edits = {}
+            original_title_edits = {}
             title_edits = {}
             date_edits = {"originallyAvailableAt": {}, "addedAt": {}}
             remove_edits = {}
@@ -390,7 +416,8 @@ class Operations:
                     logger.error(e)
                     continue
 
-                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
+                operation_items[item.ratingKey] = item
+                current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations and self.library.supports(Capability.GET_ITEM_LABELS) else []
                 if self.library.item_has_ignore_label(item, current_labels=current_labels):
                     logger.info("Ignored by ignore_labels")
                     continue
@@ -403,7 +430,13 @@ class Operations:
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels, targeted_update=target_keys is not None)
 
-                locked_fields = [f.name for f in item.fields if f.locked]
+                if isinstance(native_ratings, dict) and native_ratings:
+                    try:
+                        update_silo_ratings(self.library, item, native_ratings, logger)
+                    except Failed as error:
+                        logger.error(f"Silo Rating Error: {item.title}: {error}")
+
+                locked_fields = [f.name for f in getattr(item, "fields", []) if f.locked]
 
                 item_edits = ""
 
@@ -433,8 +466,9 @@ class Operations:
                                 item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
-                if getattr(item, "locations", False):
-                    path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
+                locations = getattr(item, "locations", [])
+                if locations:
+                    path = util.media_dirname(locations[0]) if self.library.is_movie else str(locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                         path = path[:-1] if path.endswith(("/", "\\")) else path
@@ -559,7 +593,7 @@ class Operations:
                         if self.config.OMDb.limit is not False:
                             logger.error("Daily OMDb Limit Reached")
                         elif not imdb_id:
-                            logger.info(f"No IMDb ID for Guid: {item.guid}")
+                            logger.info(f"No IMDb ID for: {item.title}")
                         else:
                             try:
                                 _omdb_obj = self.config.OMDb.get_omdb(imdb_id)
@@ -572,13 +606,22 @@ class Operations:
                         raise Failed
                     return _omdb_obj
 
+                missing_provider_ids = set()
+                reported_missing_ids = set()
+
+                def report_missing_id(operation, provider):
+                    key = (operation, provider)
+                    if provider in missing_provider_ids and key not in reported_missing_ids:
+                        logger.info(f"{operation} | No {provider} ID found")
+                        reported_missing_ids.add(key)
+
                 _tvdb_obj = None
 
                 def tvdb_obj():
                     nonlocal _tvdb_obj
                     if _tvdb_obj is None:
                         _tvdb_obj = False
-                        item_tvdb_id = tvdb_id
+                        item_tvdb_id = tvdb_id or (getattr(item, "tvdb_id", None) if native else None)
                         if not item_tvdb_id and self.library.is_movie:
                             try:
                                 for guid_tag in item.guids:
@@ -600,7 +643,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.info(f"No TVDb ID for Guid: {item.guid}")
+                            missing_provider_ids.add("TVDb")
                     if not _tvdb_obj:
                         raise Failed
                     return _tvdb_obj
@@ -669,7 +712,7 @@ class Operations:
                             except Failed as err:
                                 logger.error(str(err))
                         else:
-                            logger.warning(f"No AniDB ID for Guid: {item.guid}")
+                            missing_provider_ids.add("AniDB")
                     if not _anidb_obj:
                         raise Failed
                     return _anidb_obj
@@ -686,12 +729,12 @@ class Operations:
                         if item.ratingKey in self.library.reverse_mal:
                             mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
-                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '{item.guid}'")
+                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for '{item.title}'")
                         else:
                             try:
                                 mal_id = self.config.Convert.anidb_to_mal(anidb_id)
                             except Failed as err:
-                                logger.warning(f"{err} of Guid: {item.guid}")
+                                logger.warning(f"{err} for: {item.title}")
                         if mal_id:
                             try:
                                 _mal_obj = self.config.MyAnimeList.get_anime(mal_id)
@@ -703,8 +746,11 @@ class Operations:
 
                 for attribute, item_attr in [(self.library.mass_audience_rating_update, "audienceRating"), (self.library.mass_critic_rating_update, "rating"), (self.library.mass_user_rating_update, "userRating")]:
                     if attribute:
-                        current = getattr(item, item_attr)
+                        current = current_value(item, item_attr) if native else getattr(item, item_attr)
                         for option in attribute:
+                            if native and option == "clear":
+                                native_clear_edits.setdefault(item_attr, []).append(item.ratingKey)
+                                break
                             if option in ["lock", "remove"]:
                                 if option == "remove" and current:
                                     if item_attr not in remove_edits:
@@ -731,7 +777,9 @@ class Operations:
                                 break
                             else:
                                 try:
-                                    if option == "random":
+                                    if option in BROWSER_RATING_FIELDS:
+                                        found_rating = browser_rating_value(self.library, item, option)
+                                    elif option == "random":
                                         found_rating = _random_rating(current)
                                     elif option == "tmdb":
                                         found_rating = tmdb_obj().vote_average  # noqa
@@ -885,7 +933,7 @@ class Operations:
                             except Failed:
                                 continue
 
-                    item_genres = [g.tag for g in item.genres]
+                    item_genres = [getattr(g, "tag", g) for g in item.genres]
                     if not new_genres and extra_option not in ["remove", "reset"]:
                         new_genres = item_genres
                     if self.library.genre_mapper:
@@ -1053,7 +1101,9 @@ class Operations:
                             break
                         else:
                             try:
-                                if option == "anidb":
+                                if option == "tmdb":
+                                    new_original_title = tmdb_obj().original_title
+                                elif option == "anidb":
                                     new_original_title = anidb_obj().main_title  # noqa
                                 elif option == "anidb_official":
                                     new_original_title = anidb_obj().official_title  # noqa
@@ -1069,10 +1119,16 @@ class Operations:
                                     logger.info(f"No {option} Original Title Found")
                                     raise Failed
                                 if str(current_original) != str(new_original_title):
-                                    item.editOriginalTitle(new_original_title)
+                                    if native:
+                                        original_title_edits.setdefault(new_original_title, []).append(item.ratingKey)
+                                        combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})["originalTitle"] = new_original_title
+                                    else:
+                                        item.editOriginalTitle(new_original_title)
                                     item_edits += f"\nOriginal Title | {new_original_title}"
                                 break
                             except Failed:
+                                if option in ("anidb", "anidb_official"):
+                                    report_missing_id("Original Title", "AniDB")
                                 continue
 
                 if self.library.mass_studio_update:
@@ -1119,14 +1175,18 @@ class Operations:
                                     if new_studio not in studio_edits:
                                         studio_edits[new_studio] = []
                                     studio_edits[new_studio].append(item.ratingKey)
+                                    if native:
+                                        combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})["studio"] = new_studio
                                     item_edits += f"\nStudio (Batched) | {new_studio}"
+                                else:
+                                    logger.info(f"Studio Unchanged | {current_studio}")
                                 break
                             except Failed:
                                 continue
 
                 for attribute, item_attr in [(self.library.mass_originally_available_update, "originallyAvailableAt"), (self.library.mass_added_at_update, "addedAt")]:
                     if attribute:
-                        current = getattr(item, item_attr)
+                        current = current_value(item, item_attr) if native else getattr(item, item_attr)
                         if current:
                             current = current.strftime("%Y-%m-%d")
                         for option in attribute:
@@ -1184,12 +1244,14 @@ class Operations:
                                         date_edits[item_attr][new_date].append(item.ratingKey)
                                         combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = new_date
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {new_date}"
+                                    else:
+                                        logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                     break
                                 except Failed:
                                     continue
 
                 if len(item_edits) > 0:
-                    logger.info(f"{item_edits[1:]}")
+                    logger.info(item_edits[1:].replace("(Batched)", "(Queued)") if native else item_edits[1:])
                 else:
                     logger.info("No Item Edits")
 
@@ -1319,8 +1381,7 @@ class Operations:
                         ignore_locked = self.library.mass_poster_update["ignore_locked"]
                         ignore_overlays = self.library.mass_poster_update.get("ignore_overlays")
                         thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
-                        labels = [la.tag for la in self.library.item_labels(item)]
-                        has_overlay_label = "Overlay" in labels
+                        has_overlay_label = self.library.item_has_overlay(item) if native else "Overlay" in [la.tag for la in self.library.item_labels(item)]
                         resolved_source, poster_url = _get_external_image(self.library.mass_poster_update, is_poster=True)
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
@@ -1331,7 +1392,9 @@ class Operations:
                             # Skip processing if ignore_locked is True and thumb is locked
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         elif ignore_overlays and has_overlay_label:
-                            # Skip processing if ignore_overlays is True and Overlay label is found
+                            # Skip processing if ignore_overlays is True and Overlay label is found.
+                            if new_poster or poster_url:
+                                logger.info("Poster | Skipped because the item has an Overlay")
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         else:
                             result = self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
@@ -1371,7 +1434,11 @@ class Operations:
                         square_art_locked = _field_locked("squareArt")
                         resolved_source, square_art_url = _get_external_image(self.library.mass_square_art_update, is_poster=False, image_type="square_art")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_square_art_update)) == 1) or not (ignore_locked and square_art_locked):
-                            result = self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
+                            if not new_square_art and not square_art_url and resolved_source == "tvdb" and "TVDb" in missing_provider_ids:
+                                report_missing_id("Square Art", "TVDb")
+                                result = ("Reset", resolved_source, "Missing")
+                            else:
+                                result = self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
                             record_image_operation(result, "Square Art", "Item")
                         else:
                             record_image_operation(("Reset", resolved_source, "Skipped"), "Square Art", "Item")
@@ -1398,6 +1465,19 @@ class Operations:
                         if _image_lang:
                             self.config.TMDb.language = _image_lang
                             self.config.TMDb.TMDb.language = _image_lang
+
+                        def update_child_image(kind, child, image, source, url, title):
+                            options = self.library.mass_poster_update if kind == "poster" else self.library.mass_background_update
+                            if native:
+                                if kind == "poster" and options.get("ignore_overlays") and self.library.item_has_overlay(child):
+                                    if image or url:
+                                        logger.info(f"{title} Poster | Skipped because the item has an Overlay")
+                                    return "Reset", source, "Skipped"
+                                if options.get("ignore_locked") and any(field.locked and field.name == ("thumb" if kind == "poster" else "art") for field in child.fields):
+                                    return "Reset", source, "Skipped"
+                            method = self.library.poster_update if kind == "poster" else self.library.background_update
+                            return method(child, image, tmdb=(source, url), title=title)
+
                         try:
                             real_show = None
                             try:
@@ -1406,6 +1486,8 @@ class Operations:
                                 logger.error(e)
                             tmdb_season_numbers = {s.season_number for s in real_show.seasons} if real_show else set()
                             for season in self.library.query(item.seasons):
+                                if native:
+                                    season = self.library.reload(season)
                                 tmdb_season = None
                                 if tmdb_item and season.seasonNumber in tmdb_season_numbers:
                                     try:
@@ -1422,11 +1504,11 @@ class Operations:
                                     tmdb_poster = tmdb_season.poster_url if tmdb_season else None
                                     if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons"):
                                         resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber)
-                                        result = self.library.poster_update(season, season_poster, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        result = update_child_image("poster", season, season_poster, resolved_source, resolved_url, season_title if season else None)
                                         record_image_operation(result, "Poster", "Season")
                                     if _show_level_image_update_enabled(self.library.mass_background_update, "seasons"):
                                         resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber)
-                                        result = self.library.background_update(season, season_background, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        result = update_child_image("background", season, season_background, resolved_source, resolved_url, season_title if season else None)
                                         record_image_operation(result, "Background", "Season")
 
                                 if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes") or _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
@@ -1457,11 +1539,11 @@ class Operations:
                                         tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
                                         if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes"):
                                             resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber, episode=episode.episodeNumber)
-                                            result = self.library.poster_update(episode, episode_poster, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            result = update_child_image("poster", episode, episode_poster, resolved_source, resolved_url, episode_title if episode else None)
                                             record_image_operation(result, "Poster", "Episode")
                                         if _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                             resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber, episode=episode.episodeNumber)
-                                            result = self.library.background_update(episode, episode_background, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            result = update_child_image("background", episode, episode_background, resolved_source, resolved_url, episode_title if episode else None)
                                             record_image_operation(result, "Background", "Episode")
                         finally:
                             if _image_lang:
@@ -1473,7 +1555,7 @@ class Operations:
                 if self.library.is_show and any([x is not None for x, _ in episode_ops]):
 
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
-                        logger.info(f"No IMDb ID for Guid: {item.guid}")
+                        logger.info(f"No IMDb ID for: {item.title}")
 
                     if isinstance(item, Episode):
                         episode_items = [item]
@@ -1481,6 +1563,7 @@ class Operations:
                         episode_items = self.library.cached_item_subitems(item, "episodes")
                     for ep in episode_items:
                         ep = self.library.reload(ep)
+                        operation_items[ep.ratingKey] = ep
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")
                         logger.info(f"{item_title}")
@@ -1491,8 +1574,11 @@ class Operations:
 
                         for attribute, item_attr in episode_ops:
                             if attribute:
-                                current = getattr(ep, item_attr)
+                                current = current_value(ep, item_attr) if native else getattr(ep, item_attr)
                                 for option in attribute:
+                                    if native and option == "clear":
+                                        native_episode_clear_edits.setdefault(item_attr, []).append(ep)
+                                        break
                                     if option in ["lock", "remove"]:
                                         if option == "remove" and current:
                                             if item_attr not in ep_remove_edits:
@@ -1520,17 +1606,21 @@ class Operations:
                                     else:
                                         try:
                                             try:
-                                                tmdb_item = None if option == "random" else tmdb_obj()
+                                                tmdb_item = None if option == "random" or option in BROWSER_RATING_FIELDS else tmdb_obj()
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
-                                            if str(option).startswith("plex"):
+                                            if option in BROWSER_RATING_FIELDS:
+                                                found_rating = browser_rating_value(self.library, ep, option)
+                                            elif str(option).startswith("plex"):
                                                 ratings = self.library.get_ratings(ep)
                                                 try:
                                                     found_rating = ratings[option]  # noqa
                                                 except KeyError:
                                                     found_rating = None
-                                            if option == "random":
+                                            if option in BROWSER_RATING_FIELDS:
+                                                pass
+                                            elif option == "random":
                                                 found_rating = _random_rating(current)
                                             elif tmdb_item and option == "tmdb":
                                                 try:
@@ -1580,7 +1670,7 @@ class Operations:
                                             continue
 
                         if len(item_edits) > 0:
-                            logger.info(f"{item_edits[1:]}")
+                            logger.info(item_edits[1:].replace("(Batched)", "(Queued)") if native else item_edits[1:])
                         else:
                             logger.info("No Item Edits")
 
@@ -1594,7 +1684,7 @@ class Operations:
                     logger.info(f"{operation:<9} | {source:<6} | {image_type:<10} | {level:<7} | {updated:>7} | {skipped:>7} | {missing:>7} | {failed:>6}")
 
             logger.info("")
-            logger.separator("Plex Updates", space=False, border=False)
+            logger.separator("Metadata Updates" if native else "Plex Updates", space=False, border=False)
             logger.info("")
 
             epoch = datetime(1970, 1, 1)
@@ -1604,6 +1694,22 @@ class Operations:
                 _size = len(_edits.items())
                 for j, (update_value, rating_keys) in enumerate(sorted(_edits.items()), 1):
                     update_attr = update_value if display_attr is None else name_display[display_attr] if display_attr in name_display else display_attr.capitalize()
+                    if native:
+                        update_items = rating_keys if is_episode else [operation_items[key] for key in rating_keys if key in operation_items]
+                        action = "Queued" if isinstance(getattr(getattr(self.library, "client", None), "_metadata_write_queue", None), dict) else "Update"
+                        logger.info(f"{self.library.server.type_label} {update_attr} {action} ({j}/{_size}): {len(update_items)} items")
+                        for target in update_items:
+                            try:
+                                apply_edit(
+                                    self.library,
+                                    target,
+                                    fields={update_value: None} if out_type else {display_attr: update_value} if not tag_type else None,
+                                    tags={display_attr: (util.get_list(update_value), []) if tag_type == "add" else ([], util.get_list(update_value))} if tag_type else None,
+                                    control=out_type,
+                                )
+                            except Failed as error:
+                                logger.error(f"{self.library.server.type_label} Metadata Error: {target.title}: {error}")
+                        continue
                     update_items = rating_keys if is_episode else self.library.load_list_from_cache(rating_keys)
                     if not update_items:
                         continue
@@ -1650,63 +1756,80 @@ class Operations:
                 merge_keys = [rk for rk, edit in combinable_edits.items() if len(edit.get("fields", {})) + (1 if "genre" in edit else 0) >= 2]
                 if not merge_keys:
                     return
-                merge_items = self.library.load_list_from_cache(merge_keys)
+                merge_items = [operation_items[key] for key in merge_keys if key in operation_items] if native else self.library.load_list_from_cache(merge_keys)
                 if not merge_items:
                     return
                 item_type_name = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if len(merge_items) > 1 else ''}"
-                logger.info(f"Plex Combined Update: {len(merge_items)} {item_type_name} with 2+ attribute types changed this run")
-                for group in self.library._group_items_by_type(merge_items):
-                    for item in group:
+                logger.info(f"{self.library.server.type_label if native else 'Plex'} Combined Update: {len(merge_items)} {item_type_name} with 2+ attribute types changed this run")
+                if native:
+                    for item in merge_items:
                         edit = combinable_edits[item.ratingKey]
-                        self.library.Plex.batchMultiEdits([item])
-                        for field, value in edit.get("fields", {}).items():
-                            if field == "addedAt":
-                                update_date = datetime.strptime(value, "%Y-%m-%d")
-                                try:
-                                    value = int(round(update_date.timestamp()))
-                                except (TypeError, OSError):
-                                    offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
-                                    value = int((update_date - epoch).total_seconds()) - offset
-                            self.library.Plex.editField(field, value)
-                        if "genre" in edit:
-                            genre_add, genre_remove = edit["genre"]
-                            if genre_add:
-                                self.library.Plex.editTags("genre", genre_add, remove=False)
-                            if genre_remove:
-                                self.library.Plex.editTags("genre", genre_remove, remove=True)
-                        self.library._save_multi_edits_with_retry()
-                        cache_evictions.add(item.ratingKey)
+                        try:
+                            apply_edit(self.library, item, fields=edit.get("fields"), tags={"genre": edit["genre"]} if "genre" in edit else None)
+                        except Failed as error:
+                            logger.error(f"{self.library.server.type_label} Metadata Error: {item.title}: {error}")
+                else:
+                    for group in self.library._group_items_by_type(merge_items):
+                        for item in group:
+                            edit = combinable_edits[item.ratingKey]
+                            self.library.Plex.batchMultiEdits([item])
+                            for field, value in edit.get("fields", {}).items():
+                                if field == "addedAt":
+                                    update_date = datetime.strptime(value, "%Y-%m-%d")
+                                    try:
+                                        value = int(round(update_date.timestamp()))
+                                    except (TypeError, OSError):
+                                        offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
+                                        value = int((update_date - epoch).total_seconds()) - offset
+                                self.library.Plex.editField(field, value)
+                            if "genre" in edit:
+                                genre_add, genre_remove = edit["genre"]
+                                if genre_add:
+                                    self.library.Plex.editTags("genre", genre_add, remove=False)
+                                if genre_remove:
+                                    self.library.Plex.editTags("genre", genre_remove, remove=True)
+                            self.library._save_multi_edits_with_retry()
+                            cache_evictions.add(item.ratingKey)
                 # Purge merged items from the value-keyed dicts below so they aren't written twice.
                 merge_key_set = set(merge_keys)
                 purge_targets = [*rating_edits.values(), content_edits, date_edits["originallyAvailableAt"], date_edits["addedAt"], genre_edits["add"], genre_edits["remove"]]
+                if native:
+                    purge_targets.extend([studio_edits, original_title_edits])
                 for edit_dict in purge_targets:
                     for value_key in list(edit_dict.keys()):
                         edit_dict[value_key] = [rk for rk in edit_dict[value_key] if rk not in merge_key_set]
                         if not edit_dict[value_key]:
                             del edit_dict[value_key]
 
-            flush_combined_edits()
+            native_batch = getattr(type(self.library), "batch_metadata_updates", None) if native else None
+            with native_batch(self.library) if callable(native_batch) else nullcontext():
+                flush_combined_edits()
 
-            for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
-                for tag_operation, batch_edits in edit_dict.items():
-                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
-            for item_attr, rt_edits in rating_edits.items():
-                plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
-            plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
-            plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
-            plex_update_in_batches(title_edits, display_attr="title", evict_cache=True)
-            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
-            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
-            plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
-            plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
-            plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
-            plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
-            for item_attr, ep_edits in ep_rating_edits.items():
-                plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
-            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
+                if native:
+                    plex_update_in_batches(native_clear_edits, out_type="clear")
+                    plex_update_in_batches(native_episode_clear_edits, out_type="clear", is_episode=True)
+                if native:
+                    plex_update_in_batches(original_title_edits, "originalTitle")
+                for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
+                    for tag_operation, batch_edits in edit_dict.items():
+                        plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
+                for item_attr, rt_edits in rating_edits.items():
+                    plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
+                plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
+                plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
+                plex_update_in_batches(title_edits, display_attr="title", evict_cache=True)
+                plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
+                plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
+                plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
+                plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
+                plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
+                plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
+                for item_attr, ep_edits in ep_rating_edits.items():
+                    plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
+                plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
             for rating_key in cache_evictions:
                 self.library.cached_items.pop(rating_key, None)
 
@@ -1775,11 +1898,22 @@ class Operations:
 
             unmanaged_collections = []
             unconfigured_collections = []
-            all_collections = self.library.get_all_collections()
+            browser_collections = getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby")
+            # Native listings include tags and counts. Refresh once after any
+            # membership edits, rather than reloading every collection.
+            if browser_collections and less in (None, "all"):
+                all_collections = self.library.get_all_collections(load=True, include_counts=False)
+            else:
+                all_collections = self.library.get_all_collections(load=True) if browser_collections else self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
-                col = self.library.reload(col, force=True)
-                labels = [la.tag for la in self.library.item_labels(col)]
+                try:
+                    if not browser_collections:
+                        col = self.library.reload(col, force=True)
+                except (CollectionNotFound, NotFound) as e:
+                    logger.warning(f"Collection Warning: Skipping {col.title}; collection no longer exists. {e}")
+                    continue
+                labels = [la.tag for la in self.library.item_labels(col)] if self.library.supports(Capability.GET_ITEM_LABELS) else []
 
                 if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:
@@ -1843,7 +1977,9 @@ class Operations:
                         self.library.collection_mode_query(col, self.library.mass_collection_mode)
                         logger.info(f"{col.title} Collection Mode Updated")
 
-        if self.library.metadata_backup:
+        if self.library.metadata_backup and native:
+            backup_metadata(self.config, self.library, logger)
+        if self.library.metadata_backup and not native:
             logger.info("")
             logger.separator(f"Metadata Backup for {self.library.name} Library", space=False, border=False)
             logger.info("")

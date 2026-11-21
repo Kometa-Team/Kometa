@@ -830,7 +830,7 @@ class TMDb:
 
     def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True, ignore_not_found=False):
         tmdb_item = None
-        if tvdb_id and not tmdb_id:
+        if tvdb_id and not tmdb_id and not is_movie:
             tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
         if imdb_id and not tmdb_id:
             _id, _type = self.config.Convert.imdb_to_tmdb(imdb_id)

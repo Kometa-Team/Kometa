@@ -1,16 +1,22 @@
+import hashlib
+import json
 import os
 import re
 import time
 from abc import ABC, abstractmethod
+from contextlib import nullcontext
 from datetime import datetime, timezone
+from typing import cast
 
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
+from modules.media_server import Capability
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
+from modules.rating_operations import SILO_OPERATIONS
 from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled, PlexImageUploadError
 
@@ -19,6 +25,10 @@ logger = util.logger
 
 class Library(ABC):
     def __init__(self, config, params):
+        self.server = params.get("server") if isinstance(params, dict) else None
+        self.clean_bundles = False
+        self.empty_trash = False
+        self.optimize = False
         self.session = None
         self.Radarr = None
         self.Sonarr = None
@@ -122,6 +132,7 @@ class Library(ABC):
         self.assets_for_all_collections = params["assets_for_all_collections"]
         self.delete_collections = params["delete_collections"]
         self.mass_studio_update = params["mass_studio_update"]
+        self.silo_rating_updates = {target: params[operation] for target, operation in SILO_OPERATIONS.items() if params.get(operation)}
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
         self.mass_critic_rating_update = params["mass_critic_rating_update"]
@@ -174,6 +185,7 @@ class Library(ABC):
         self.items_library_operation = (
             True
             if self.assets_for_all
+            or self.silo_rating_updates
             or self.mass_genre_update
             or self.remove_title_parentheses
             or self.mass_audience_rating_update
@@ -228,6 +240,15 @@ class Library(ABC):
         if output:
             logger.info("")
             logger.info(output)
+
+    def supports(self, capability: Capability) -> bool:
+        return self.server is not None and self.server.supports(capability)
+
+    def require(self, capability: Capability):
+        """Raise ``Failed`` when this library's server cannot perform ``capability``."""
+        if self.server is None:
+            raise Failed("Media server is not configured for this library")
+        return self.server.require(capability)
 
     def item_is_ignored(self, item, tmdb_id=None, tvdb_id=None, imdb_id=None):
         if not self.ignore_ids and not self.ignore_imdb_ids:
@@ -328,6 +349,9 @@ class Library(ABC):
                 image_compare = None
                 if self.config.Cache:
                     _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+                cache_validator = getattr(self, "poster_cache_is_valid", None)
+                if image_compare and callable(cache_validator) and not cache_validator(item):
+                    image_compare = None
                 if not image_compare or str(poster.compare) != str(image_compare):
                     if overlay:
                         self.reload(item, force=True)
@@ -415,11 +439,18 @@ class Library(ABC):
         return poster_uploaded, background_uploaded, logo_uploaded, square_art_uploaded
 
     def get_id_from_maps(self, key):
-        key = int(key)
         if key in self.movie_rating_key_map:
             return self.movie_rating_key_map[key]
-        elif key in self.show_rating_key_map:
+        if key in self.show_rating_key_map:
             return self.show_rating_key_map[key]
+        try:
+            numeric = int(key)
+        except (TypeError, ValueError):
+            return None
+        if numeric in self.movie_rating_key_map:
+            return self.movie_rating_key_map[numeric]
+        if numeric in self.show_rating_key_map:
+            return self.show_rating_key_map[numeric]
 
     def _add_to_plex_map(self, key, values):
         key = int(key)
@@ -465,21 +496,89 @@ class Library(ABC):
     def upload_poster(self, item, image, url=False):
         pass
 
+    def _image_operation_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
+        try:
+            return self.image_update(item, image, tmdb=tmdb, title=title, poster=poster, image_type=image_type)
+        except Failed as error:
+            server = self.server
+            if server is None or server.type_name not in ("silo", "jellyfin", "emby"):
+                raise
+            source = tmdb[0] if isinstance(tmdb, tuple) else "Assets" if image is not None else "URL"
+            artwork = (image_type or ("poster" if poster else "background")).replace("_", " ").title()
+            logger.error(f"{server.type_label} Image Error: {item.title} | {artwork}: {error}")
+            return "Reset", source, "Failed"
+
     def poster_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title)
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title)
 
     def background_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False)
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False)
 
     def logo_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
 
     def square_art_update(self, item, image, tmdb=None, title=None):
-        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
+        return self._image_operation_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
 
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
+
+    def batch_overlay_removal(self):
+        return nullcontext()
+
+    def item_has_overlay(self, item, current_labels=None):
+        if current_labels is None:
+            current_labels = [label.tag for label in self.item_labels(item)] if self.supports(Capability.GET_ITEM_LABELS) else []
+        backup = self.__dict__.get("overlay_backup")
+        return "Overlay" in current_labels or bool(backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")))
+
+    def find_and_upload_assets(self, item, current_labels, asset_directory=None, targeted_update=False):
+        """Use the shared filesystem uploader and native overlay backup markers."""
+        from modules.plex import Plex
+
+        labels = list(current_labels or [])
+        backup = self.__dict__.get("overlay_backup")
+        if backup and any(os.path.isfile(os.path.join(backup, f"{item.ratingKey}.{extension}")) for extension in ("png", "jpg", "webp")):
+            if "Overlay" not in labels:
+                labels.append("Overlay")
+        return Plex.find_and_upload_assets(cast("Plex", self), item, labels, asset_directory=asset_directory, targeted_update=targeted_update)
+
+    def overlay_cache_key(self, item):
+        """Keep Plex keys compatible; isolate native values by acting identity."""
+        server = getattr(self, "server", None)
+        if server is None or server.type_name == "plex":
+            return item.ratingKey
+        client = getattr(self, "client", None)
+        identity = [
+            server.type_name,
+            str(getattr(client, "base", server.url)).rstrip("/"),
+            hashlib.sha256(str(server.token).encode()).hexdigest(),
+            getattr(server, "profile_id", None),
+            getattr(client, "user_id", getattr(server, "user_id", None)),
+            getattr(self, "library_id", getattr(self, "original_mapping_name", "")),
+            str(item.ratingKey),
+        ]
+        return f"native:{hashlib.sha256(json.dumps(identity).encode()).hexdigest()}"
+
+    def fetch_overlay_value(self, item, variable_name):
+        """Reuse provider rating lookup and its cache for non-Plex adapters."""
+        from modules.plex import Plex
+
+        if str(variable_name).startswith(("jellyfin_", "emby_")):
+            raise Failed(f"Overlay Error: {variable_name} requires the matching Jellyfin or Emby library")
+        if str(variable_name).startswith("silo_"):
+            raise Failed(f"Overlay Error: {variable_name} requires a Silo library")
+        if getattr(item, "type", None) in ("season", "episode"):
+            raise Failed("Overlay Error: Provider rating lookup for non-Plex seasons and episodes is not implemented")
+        if str(variable_name).startswith("plex"):
+            raise Failed(f"Overlay Error: {variable_name} requires Plex provider rating metadata; use a provider rating variable such as imdb_rating")
+        return Plex.fetch_overlay_value(cast("Plex", self), item, variable_name)
+
+    def prefetch_mdblist(self, items):
+        from modules.plex import Plex
+
+        return Plex.prefetch_mdblist(cast("Plex", self), [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
 
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:

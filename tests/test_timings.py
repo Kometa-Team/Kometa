@@ -398,9 +398,10 @@ def test_export_is_noop_when_disabled(disabled_registry, tmp_path):
 def test_disabled_track_overhead_is_negligible(disabled_registry):
     """Guards the <3% overhead requirement from Phase 2d: 100k no-op track() calls
     should take a small fraction of a second, not seconds."""
-    start = time.perf_counter()
+    # Measure CPU cost, excluding time descheduled by other parallel CI workers.
+    start = time.process_time()
     for _ in range(100_000):
         with track("noop_phase"):
             pass
-    elapsed = time.perf_counter() - start
+    elapsed = time.process_time() - start
     assert elapsed < 1.0

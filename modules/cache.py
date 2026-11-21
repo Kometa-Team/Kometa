@@ -71,6 +71,7 @@ class Cache:
         self._guid_map_cache = {}
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
+                cursor.execute("CREATE TABLE IF NOT EXISTS silo_response_cache (scope TEXT NOT NULL, resource TEXT NOT NULL, payload TEXT NOT NULL, saved_at REAL NOT NULL, PRIMARY KEY(scope, resource))")
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
                 if cursor.fetchone()[0] == 0:
                     logger.info(f"Initializing cache database at {self.cache_path}")
@@ -1864,3 +1865,72 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO plex_people_cache(item_id, people_type) VALUES(?, ?)", (item_id, people_type))
                 cursor.execute("UPDATE plex_people_cache SET people_data = ?, expiration_date = ? WHERE item_id = ? AND people_type = ?", (json.dumps(people_list), expiration_date.strftime("%Y-%m-%d"), item_id, people_type))
+
+    def query_silo_response(self, scope, resource):
+        with self.connection as connection:
+            row = connection.execute("SELECT payload, saved_at FROM silo_response_cache WHERE scope = ? AND resource = ?", (scope, resource)).fetchone()
+        if row is None or datetime.now().timestamp() - row["saved_at"] > self.expiration * 86400:
+            return None
+        try:
+            return json.loads(row["payload"])
+        except (ValueError, TypeError):
+            return None
+
+    def update_silo_response(self, scope, resource, payload):
+        with self.connection as connection:
+            connection.execute("INSERT OR REPLACE INTO silo_response_cache(scope, resource, payload, saved_at) VALUES (?, ?, ?, ?)", (scope, resource, json.dumps(payload), datetime.now().timestamp()))
+
+    def invalidate_silo_responses(self, scope):
+        with self.connection as connection:
+            connection.execute("DELETE FROM silo_response_cache WHERE scope = ?", (scope,))
+
+    # Shared native-server response storage; retain the existing table and Silo API.
+    query_native_response = query_silo_response
+    update_native_response = update_silo_response
+    invalidate_native_responses = invalidate_silo_responses
+
+    def patch_native_item(self, scope, item_id, fields):
+        self.patch_native_items(scope, {str(item_id): fields})
+
+    def patch_native_items(self, scope, updates):
+        """Patch a batch in one pass over each saved catalog, retaining expiry."""
+        updates = {str(key): value for key, value in updates.items()}
+        if not updates:
+            return
+        placeholders = ",".join("?" for _ in updates)
+        item_types = {fields.get("Type") for fields in updates.values()}
+        catalog_params = []
+        if item_types <= {"Movie", "Series", "Season", "Episode"}:
+            catalog_where = " OR ".join("resource = ? OR resource LIKE ?" for _ in item_types)
+            for item_type in sorted(item_types):
+                catalog_params.extend((f"catalog:{item_type}", f"catalog:{item_type}:%"))
+        else:
+            catalog_where = "resource LIKE 'catalog:%'"
+        children_where = " OR resource LIKE 'episodes:%'" if None in item_types or "Episode" in item_types else ""
+        with self.connection as connection:
+            rows = connection.execute(
+                f"SELECT resource, payload FROM silo_response_cache WHERE scope = ? AND (resource IN ({placeholders}) OR {catalog_where}{children_where})",
+                (scope, *(f"item:{key}" for key in updates), *catalog_params),
+            ).fetchall()
+            for row in rows:
+                try:
+                    payload = json.loads(row["payload"])
+                except (ValueError, TypeError):
+                    continue
+                records = payload if isinstance(payload, list) else payload.get("Items", [payload]) if isinstance(payload, dict) else []
+                changed = False
+                for record in records:
+                    fields = updates.get(str(record.get("Id"))) if isinstance(record, dict) else None
+                    if fields is not None:
+                        for key, value in fields.items():
+                            record[key] = {**(record.get(key) or {}), **value} if key == "UserData" and isinstance(value, dict) else value
+                        changed = True
+                if changed:
+                    connection.execute("UPDATE silo_response_cache SET payload = ? WHERE scope = ? AND resource = ?", (json.dumps(payload), scope, row["resource"]))
+
+    def delete_native_response(self, scope, resource, descendants=False):
+        with self.connection as connection:
+            if descendants:
+                connection.execute("DELETE FROM silo_response_cache WHERE scope = ? AND (resource = ? OR substr(resource, 1, length(?) + 1) = ? || ':')", (scope, resource, resource, resource))
+            else:
+                connection.execute("DELETE FROM silo_response_cache WHERE scope = ? AND resource = ?", (scope, resource))

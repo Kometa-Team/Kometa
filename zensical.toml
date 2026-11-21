@@ -181,6 +181,15 @@ Configuration = [
     { TMDb = "config/tmdb.md" },
 ] },
     { "Optional Services" = [
+    { "Media Servers" = [
+    { Silo = "config/silo.md" },
+    { "Jellyfin and Emby" = "config/jellyfin.md" },
+    { "Differences from Plex" = [
+    { Jellyfin = "config/jellyfin_differences.md" },
+    { Emby = "config/emby_differences.md" },
+    { Silo = "config/silo_differences.md" },
+] },
+] },
     { "Metadata and Tracking" = [
     { FlickList = "config/flicklist.md" },
     { Floppy = "config/floppy.md" },

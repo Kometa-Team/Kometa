@@ -523,6 +523,24 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_silo_split_duplicates_is_disabled_during_configuration(self, monkeypatch):
+        logger = MagicMock()
+        monkeypatch.setattr(ops_module, "logger", logger)
+        library = make_title_test_library([])
+        library.server = SimpleNamespace(type_name="silo")
+        from modules.native_metadata import configure_metadata_operations
+
+        params = {"split_duplicates": True}
+        configure_metadata_operations(params, "silo", logger)
+        library.split_duplicates = params["split_duplicates"]
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        logger.error.assert_called_once_with("Config Error: split_duplicates is not supported by silo: Silo grouping repair requires explicit file and target selections")
+        library.search.assert_not_called()
+        library.refresh_item_cache_and_mappings.assert_not_called()
+        library.get_all.assert_called_once_with(target_keys=None)
+
     def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
         stale_item = make_item(1, "Split Show")
         stale_item.split = MagicMock()
@@ -1340,6 +1358,33 @@ class TestModuleConstants:
         assert len(values) == len(set(values)), "tmdb_release_types has duplicate IDs"
 
 
+@pytest.mark.parametrize("missing", [True, False])
+def test_collection_operations_skip_only_missing_collections(monkeypatch, missing):
+    from modules.util import CollectionNotFound, Failed
+
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_mass_edit_library([], show_unmanaged=True, items_library_operation=False)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.supports.return_value = False
+    gone = SimpleNamespace(title="Gone", smart=False, childCount=1)
+    survivor = SimpleNamespace(title="Survivor", smart=False, childCount=1)
+    library.get_all_collections.return_value = [gone, survivor]
+    failure = CollectionNotFound("404 missing") if missing else Failed("403 forbidden")
+    library.reload.side_effect = [failure, survivor]
+    if missing:
+        Operations(config=MagicMock(), library=library).run_operations()
+        assert library.reload.call_count == 2
+        logger.warning.assert_called_once()
+        assert "Skipping Gone" in logger.warning.call_args.args[0]
+        logger.info.assert_any_call("Survivor")
+    else:
+        with pytest.raises(Failed, match="403 forbidden"):
+            Operations(config=MagicMock(), library=library).run_operations()
+    library.delete_collection.assert_not_called()
+
+
 @pytest.mark.parametrize("field", ["audienceRating", "rating", "userRating"])
 @pytest.mark.parametrize("episode", [False, True])
 @pytest.mark.parametrize("draw, expected", [(0, "0.0"), (57, "5.7"), (100, "10.0")])
@@ -1366,3 +1411,118 @@ def test_random_rating_source(monkeypatch, field, episode, draw, expected, retry
     assert randint.call_count == (3 if retry else 1)
     assert all(call.args == (0, 100) for call in randint.call_args_list)
     library.Plex.editField.assert_any_call(field, expected)
+
+
+def test_assets_for_all_without_native_labels_or_plex_fields(monkeypatch):
+    from modules.media_server import Capability
+
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    item = SimpleNamespace(ratingKey="movie-1", title="Example")
+    library = make_title_test_library([item])
+    library.remove_title_parentheses = False
+    library.assets_for_all = True
+    library.asset_directory = ["assets"]
+    library.label_operations = True
+    library.supports.side_effect = lambda capability: capability != Capability.GET_ITEM_LABELS
+    library.item_labels.side_effect = AssertionError("native labels must not be read")
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.find_and_upload_assets.assert_called_once_with(item, [], targeted_update=False)
+    library.item_labels.assert_not_called()
+
+
+def test_native_silo_rating_operations_write_without_plex_batches(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    item = make_item("movie-1", "Example")
+    item.data = {}
+    library = make_title_test_library([item])
+    library.remove_title_parentheses = False
+    library.silo_rating_updates = {"silo_imdb": [8.2], "silo_user": [7]}
+    Operations(config=MagicMock(), library=library).run_operations()
+    assert library.update_native_ratings.call_count == 2
+    assert library.update_native_ratings.call_args_list[0].args == (item, {"rating_imdb": 8.2})
+    assert library.update_native_ratings.call_args_list[1].args == (item, {"user_rating": 4})
+    library.Plex.batchMultiEdits.assert_not_called()
+
+
+def test_failed_duplicate_split_does_not_prevent_other_splits_or_mapping_refresh(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_title_test_library([])
+    library.split_duplicates = True
+    bad = SimpleNamespace(title="Bad", split=MagicMock(side_effect=ops_module.Failed("forbidden")))
+    good = SimpleNamespace(title="Good", split=MagicMock())
+    library.search.return_value = [bad, good]
+    library.refresh_item_cache_and_mappings.return_value = []
+    Operations(config=MagicMock(), library=library).run_operations()
+    good.split.assert_called_once()
+    library.refresh_item_cache_and_mappings.assert_called_once()
+    logger.error.assert_any_call("Bad | Splitting failed: forbidden")
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_browser_collection_operations_use_one_fresh_listing(monkeypatch, kind):
+    logger = MagicMock()
+    monkeypatch.setattr(ops_module, "logger", logger)
+    library = make_mass_edit_library([], show_unmanaged=True, items_library_operation=False)
+    library.server = SimpleNamespace(type_name=kind)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.supports.return_value = True
+    library.delete_collections = {"managed": True, "configured": None, "less": 2, "ignore_empty_smart_collections": True}
+    empty = SimpleNamespace(title="Small", smart=False, childCount=1)
+    populated = SimpleNamespace(title="Large", smart=False, childCount=12)
+    library.get_all_collections.return_value = [empty, populated]
+    library.item_labels.return_value = [SimpleNamespace(tag="Kometa")]
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.get_all_collections.assert_called_once_with(load=True)
+    library.reload.assert_not_called()
+    library.delete_collection.assert_called_once_with(empty)
+
+
+@pytest.mark.parametrize("managed,configured,expected", [(None, None, True), (False, None, False), (True, False, True), (True, True, False)])
+def test_less_all_preserves_other_deletion_conditions(managed, configured, expected):
+    ops = make_ops([], [])
+    col = SimpleNamespace(title="Unconfigured")
+    assert ops._should_be_deleted(col, ["Kometa"], configured, managed, "all") is expected
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_less_all_collection_operations_skip_count_loading(monkeypatch, kind):
+    monkeypatch.setattr(ops_module, "logger", MagicMock())
+    library = make_mass_edit_library([], items_library_operation=False)
+    library.server = SimpleNamespace(type_name=kind)
+    library.assets_for_all_collections = False
+    library.collection_names = []
+    library.delete_collections = {"managed": None, "configured": None, "less": "all", "ignore_empty_smart_collections": True}
+    col = SimpleNamespace(title="Any size", smart=False)
+    library.get_all_collections.return_value = [col]
+    library.item_labels.return_value = []
+    Operations(config=MagicMock(), library=library).run_operations()
+    library.get_all_collections.assert_called_once_with(load=True, include_counts=False)
+    library.reload.assert_not_called()
+    library.delete_collection.assert_called_once_with(col)
+
+
+def test_browser_operation_flush_combines_requests_across_attribute_groups(monkeypatch):
+    from modules.mediabrowser import MediaBrowserClient, MediaBrowserItem
+    from tests.test_mediabrowser import FakeResponse, FakeSession, _library, _server
+
+    monkeypatch.setattr(ops_module, "logger", MagicMock())
+    session = FakeSession([FakeResponse(None, status_code=204)])
+    client = MediaBrowserClient(_server(), session=session)
+    native_library = _library(client)
+    item = MediaBrowserItem({"Id": "one", "Name": "Movie", "Type": "Movie", "CommunityRating": 1, "CriticRating": 10, "Overview": "Keep", "Tags": []}, native_library)
+    library = make_mass_edit_library([item], mass_critic_rating_update=["7.5"], mass_audience_rating_update=["8.0"], mass_content_rating_update=["PG-13"])
+    library.server = native_library.server
+    library.client = client
+    library.is_show = False
+    monkeypatch.setattr(type(library), "batch_metadata_updates", lambda self: self.client.batch_metadata_updates(), raising=False)
+    Operations(config=MagicMock(), library=library).run_operations()
+    assert len(session.calls) == 1
+    assert session.calls[0]["method"] == "POST"
+    assert session.calls[0]["json"]["CommunityRating"] == 8.0
+    assert session.calls[0]["json"]["CriticRating"] == 75
+    assert session.calls[0]["json"]["OfficialRating"] == "PG-13"
+    assert session.calls[0]["json"]["Overview"] == "Keep"

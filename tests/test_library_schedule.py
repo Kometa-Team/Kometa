@@ -9,8 +9,17 @@ from jsonschema import Draft7Validator
 import modules.builder  # noqa: F401 - pre-import breaks the plex/meta circular import
 from modules import util
 from modules.library import Library
-from modules.schedule_mode import parse_added_duration
+from modules.schedule_mode import cached_item_key, parse_added_duration
 from modules.util import Failed, NotScheduled
+
+
+@pytest.mark.parametrize("keys", [["101", "202"], ["movie-imdb-tt23849204", "movie-tmdb-550"], ["c6c7e380ad114f6496fb3fd40c6bad34"]])
+def test_diff_schedule_restores_cached_server_keys(keys):
+    cached_keys = {cached_item_key(key) for key in keys}
+    items = [SimpleNamespace(ratingKey=int(key) if key.isdecimal() else key) for key in keys]
+    items.append(SimpleNamespace(ratingKey="new-item"))
+    library = SimpleNamespace(schedule_mode="diff", is_show=False, scheduled_cached_keys=cached_keys)
+    assert Library._schedule_item_keys(library, items) == {"new-item"}
 
 
 @pytest.mark.parametrize(
@@ -189,3 +198,11 @@ def test_tv_diff_selects_shows_with_changed_seasons(monkeypatch):
 
     assert Library._schedule_item_keys(library, [SimpleNamespace(ratingKey=1, title="Changed"), SimpleNamespace(ratingKey=2, title="Unchanged")]) == {1}
     assert library.xml_updates == [("1", "11", "100"), ("1", "12", "200"), ("2", "21", "300")]
+
+
+@pytest.mark.parametrize("server_type", ["silo", "jellyfin", "emby"])
+def test_native_numeric_ids_stay_cached_in_diff_mode(server_type):
+    library = SimpleNamespace(schedule_mode="diff", is_show=False, scheduled_cached_keys={cached_item_key("558", server_type)})
+    items = [SimpleNamespace(ratingKey="558"), SimpleNamespace(ratingKey="559")]
+    assert Library._schedule_item_keys(library, items) == {"559"}
+    assert cached_item_key("558", "plex") == 558
