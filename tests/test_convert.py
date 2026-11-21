@@ -46,6 +46,27 @@ class TestConvert:
         assert adapter.get_id(item, library) == ("movie", [1049471], ["tt23724682"])
         adapter.cache.update_guid_map.assert_called_once_with(item.guid, "1049471", "tt23724682", None, "movie")
 
+    @pytest.mark.parametrize("identifier", ["tvdb_113561", "imdb_tt1234567"])
+    def test_nfo_series_guid_maps_and_caches_show(self, adapter, monkeypatch, identifier):
+        from types import SimpleNamespace
+
+        import modules.convert as convert_module
+
+        monkeypatch.setattr(convert_module, "logger", MagicMock())
+        adapter.cache.query_guid_map.return_value = (None, None, None, None)
+        adapter.tvdb_to_imdb = MagicMock(return_value="tt1234567")
+        adapter.imdb_to_tmdb = MagicMock(return_value=(12345, "show"))
+        adapter.tmdb_to_tvdb = MagicMock(return_value=113561)
+        item = SimpleNamespace(guid=f"tv.plex.agents.nfo.series://show/{identifier}", ratingKey=123, title="Example Show")
+        library = SimpleNamespace(is_movie=False, is_show=True, is_other=False)
+
+        assert adapter.get_id(item, library) == ("show", [113561], ["tt1234567"])
+        adapter.cache.update_guid_map.assert_called_once_with(item.guid, "113561", "tt1234567", None, "show")
+
+    @pytest.mark.parametrize("identifier", ["tvdb_bad", "tvdb_0", "tvdb_-1", "tvdb_123/extra", "imdb_bad", "local_123", ""])
+    def test_scan_nfo_series_does_not_accept_malformed_or_local_ids(self, adapter, identifier):
+        assert adapter.scan_guid(f"tv.plex.agents.nfo.series://show/{identifier}") == ("series", "show")
+
     def test_imdb_to_tmdb_cache_hit(self, adapter):
         adapter.cache.query_imdb_to_tmdb_map.return_value = (550, False, None)
         tmdb_id, _ = adapter.imdb_to_tmdb("tt123", fail=False)
