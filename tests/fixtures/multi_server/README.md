@@ -51,7 +51,7 @@ You can also set them during preparation:
   --library my-emby=Films
 ```
 
-Generated configs contain credentials and are created with mode `0600`; run directories are created with mode `0700`. Keep them under your ignored `config/` directory. If the source uses environment substitutions, run with the same environment. Generated collection paths are absolute.
+Generated configs contain credentials. On Linux and macOS they are created with mode `0600`, and run directories with mode `0700`; Windows uses inherited file access rules. Keep them under your ignored `config/` directory. If the source uses environment substitutions, run with the same environment. Generated collection paths are absolute.
 
 ## Run live cases
 

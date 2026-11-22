@@ -26,7 +26,7 @@ def read_yaml(path):
 def write_yaml(path, data):
     from ruamel.yaml import YAML
 
-    # Prepared configurations contain credentials; create with private permissions.
+    # Request owner-only permissions on POSIX; Windows uses inherited access rules.
     with os.fdopen(os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as stream:
         YAML().dump(data, stream)
 

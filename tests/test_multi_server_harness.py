@@ -1,5 +1,6 @@
 """The smoke runner must not report success just because Kometa exits zero."""
 
+import os
 from argparse import Namespace
 from pathlib import Path
 from types import SimpleNamespace
@@ -15,15 +16,21 @@ def prepare_config(tmp_path):
     return output
 
 
-def test_prepare_is_private_isolated_and_does_not_overwrite(tmp_path):
+def test_prepare_is_isolated_and_does_not_overwrite(tmp_path):
     output = prepare_config(tmp_path)
     config = harness.read_yaml(output / "config.yml")
-    assert (output / "config.yml").stat().st_mode & 0o777 == 0o600
     assert config["libraries"]["Movies"]["servers"]["my-silo"]["library_name"] == "Cinema"
     assert Path(config["libraries"]["Movies"]["collection_files"][0]["file"]).is_absolute()
     assert set(config) == {"settings", "tmdb", "media_servers", "libraries"}
     with pytest.raises(FileExistsError):
         prepare_config(tmp_path)
+
+
+@pytest.mark.skipif(os.name != "posix", reason="POSIX permission bits are not enforced on Windows")
+def test_prepare_uses_private_posix_permissions(tmp_path):
+    output = prepare_config(tmp_path)
+    assert output.stat().st_mode & 0o777 == 0o700
+    assert (output / "config.yml").stat().st_mode & 0o777 == 0o600
 
 
 @pytest.mark.parametrize("omit_finish,extra_error,returncode,expected", [(False, False, 0, 0), (True, False, 0, 1), (False, True, 0, 1), (False, False, 1, 1)])
