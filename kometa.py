@@ -775,6 +775,8 @@ def run_config(config, stats):
         if config.general["playlist_report"]:
             ran = []
             for library in config.libraries:
+                if getattr(getattr(library, "server", None), "type_name", "plex") != "plex":
+                    continue
                 if library.PlexServer.machineIdentifier in ran:
                     continue
                 ran.append(library.PlexServer.machineIdentifier)
@@ -858,12 +860,12 @@ def run_config(config, stats):
     logger.separator("Summary")
     for library in config.libraries:
         logger.info("")
-        logger.separator(f"{library.name} Summary", space=False, border=False)
+        logger.separator(f"{library.name} ({library.original_mapping_name}) Summary", space=False, border=False)
         logger.info("")
         logger.info(f"{'Title':<27} | Run Time |")
         logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
-        if library.name in library_status:
-            for text, value in library_status[library.name].items():
+        if library.original_mapping_name in library_status:
+            for text, value in library_status[library.original_mapping_name].items():
                 logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
         print_status(library.status, longest, logger)
@@ -909,7 +911,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.info("")
             logger.separator(f"Skipping {library.original_mapping_name} Library")
             continue
-        library_status[library.name] = {}
+        library_status[library.original_mapping_name] = {}
         try:
             # logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout  # pyright: ignore[reportPrivateImportUsage,reportAttributeAccessIssue]
@@ -973,7 +975,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                         logger.info(f"Collection {collection.title} Deleted")
                     except Failed as e:
                         logger.error(e)
-                library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
+                library_status[library.original_mapping_name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             if run_args["delete-labels"] and not run_args["playlists-only"]:
                 time_start = datetime.now()
@@ -993,7 +995,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
-                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
+                library_status[library.original_mapping_name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             time_start = datetime.now()
             temp_items = None
@@ -1033,7 +1035,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
-            library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
+            library_status[library.original_mapping_name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
             config.run_libraries.append(library)
 
             runs = {
@@ -1093,7 +1095,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.separator(f"{'Test ' if run_args['tests'] else ''}Music Playlists")
                             with timings.overlay_context(False):
                                 run_collection(config, library, metadata, music_playlists_to_run, music_playlist=True)
-                    library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
                     targeted_run = config.requested_collections or config.requested_files
                     if not targeted_run and (library.hub_priorities or library.auto_sort_hubs):
@@ -1118,7 +1120,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             except Failed as e:
                                 library.notify(e)
                                 logger.error(e)
-                    library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Images Files"] = str(datetime.now() - time_start).split(".")[0]
 
                     time_start = datetime.now()
                     for metadata in library.metadata_files:
@@ -1134,11 +1136,11 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
-                    library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
+                    library_status[library.original_mapping_name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
+                    library_status[library.original_mapping_name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))

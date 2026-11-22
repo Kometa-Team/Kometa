@@ -1,0 +1,9 @@
+collections:
+  Kometa Multi-Server Validation:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync
+    build_collection: true
+    collection_order: alpha
+    summary: Temporary collection for validating shared library definitions.

@@ -19,6 +19,7 @@ from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
+from modules.library_config import expand_libraries
 from modules.lidarr import Lidarr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
@@ -1544,13 +1545,12 @@ class ConfigFile:
             self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-            for library_name, lib in libs.items():
-                if self.requested_libraries and library_name not in self.requested_libraries:
-                    continue
+            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries):
                 params = {o: None for o in library_operations}
                 params["mass_logo_update"] = None
                 params["mass_square_art_update"] = None
                 params["mapping_name"] = str(library_name)
+                params["silo_shelves"] = check_for_attribute(lib, "silo_shelves", var_type="bool", default=False, do_print=False, save=False)
                 params["name"] = str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 

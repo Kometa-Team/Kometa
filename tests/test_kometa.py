@@ -28,6 +28,21 @@ def _module_ast() -> ast.Module:
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
 
 
+def test_playlist_reports_skip_native_servers_and_deduplicate_plex():
+    first = SimpleNamespace(PlexServer=SimpleNamespace(machineIdentifier="first", friendlyName="First"), users=[], playlist_report=MagicMock(return_value={"Movies": ["owner"]}))
+    duplicate = SimpleNamespace(server=SimpleNamespace(type_name="plex"), PlexServer=first.PlexServer, playlist_report=MagicMock())
+    second = SimpleNamespace(server=SimpleNamespace(type_name="plex"), PlexServer=SimpleNamespace(machineIdentifier="second", friendlyName="Second"), users=[], playlist_report=MagicMock(return_value={}))
+    native = [SimpleNamespace(server=SimpleNamespace(type_name=kind)) for kind in ("silo", "emby", "jellyfin")]
+    namespace = {"config": SimpleNamespace(libraries=[native[0], first, native[1], duplicate, native[2], second]), "ran": [], "logger": MagicMock()}
+    function = next(node for node in _module_ast().body if isinstance(node, ast.FunctionDef) and node.name == "run_config")
+    report_block = next(node for node in ast.walk(function) if isinstance(node, ast.If) and ast.unparse(node.test) == "config.general['playlist_report']")
+    exec(compile(ast.Module(body=report_block.body, type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+    first.playlist_report.assert_called_once_with()
+    duplicate.playlist_report.assert_not_called()
+    second.playlist_report.assert_called_once_with()
+    assert namespace["ran"] == ["first", "second"]
+
+
 @pytest.mark.parametrize("ignore_blank_results", [False, True])
 @pytest.mark.parametrize("prefetched", [False, True])
 def test_failed_builder_aborts_existing_collection_before_sync(ignore_blank_results, prefetched):

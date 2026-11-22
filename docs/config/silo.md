@@ -123,6 +123,50 @@ Network dynamic collections discover networks from native show metadata and use 
 
 Episode collections accept `type: episodes` (or `episode`) within a show library. `episode_air_date` matches episode air dates, with release dates as a fallback. On show or season selectors it matches any dated child episode, using the shared episode catalog. These filters are rebuilt locally when they cannot be expressed as a native smart query.
 
+### Collection shelves
+
+Use `silo_shelf` on a collection to create or reuse a shelf on the Silo library's Collections tab:
+
+```yaml
+collections:
+  Family Favorites:
+    silo_shelf: Family Movie Night
+    plex_search:
+      all:
+        genre: Family
+  Weekend Adventures:
+    silo_shelf: Family Movie Night
+    tmdb_list: 12345
+```
+
+The shelf name must be a nonempty string. The attribute also works in collection templates. Explicit assignments work without any library option; Plex, Jellyfin, and Emby skip the attribute with a warning, so definitions can be shared across servers. Playlists and overlays cannot use it.
+
+To group defaults automatically, enable the library setting `silo_shelves` (default: `false`):
+
+```yaml
+libraries:
+  Movies:
+    server: my-silo
+    silo_shelves: true
+    collection_files:
+      - default: both/genre
+      - default: both/studio
+```
+
+Each collection file with one separator heading supplies a shelf name, such as **Genre Collections**. Kometa resolves the heading's template name and translation before grouping the file's collections, including dynamic collections. This works even when `use_separator` is false. A collection's explicit or template-provided `silo_shelf` overrides automatic grouping. Silo still skips creating the separator collection itself. Files with multiple separator headings require explicit shelf assignments with automatic shelves disabled for that library.
+
+The packaged awards defaults use a separate shared separator. With `silo_shelves: true`, Oscars, Emmys, BAFTA, and the other awards defaults automatically use **Award Collections**, including their dynamic yearly collections. You do not need to add `award/separator_award` to your config. The shelf heading comes from that canonical separator, while section ordering and template variable overrides come from each awards file (section `130` by default). Explicit `silo_shelf` assignments still take precedence. Custom copies of awards files can use explicit shelf assignments or include their own category heading.
+
+Packaged chart defaults work the same way: TMDb, IMDb, Basic, and the other charts share **Chart Collections**, without requiring `chart/separator_chart` in the config. Each file's section is respected (`020` for most charts, `010` for Basic); the lowest section among files sharing the shelf determines its position. Name overrides and explicit `silo_shelf` assignments work as they do for awards.
+
+New shelves sort their collections by name. Kometa preserves existing sorting inside shelves and other members. Category shelves participating in the current run form a block at the top, ordered by their resolved `collection_section`: `020` precedes `060`, regardless of collection file order. Override the defaults' `collection_section` template variable to change this order. Use an integer of zero or greater, or a string of digits. Equal sections retain their existing relative order. Collections with the same shelf name share that shelf even when their section values differ; the lowest section encountered in the current run determines its order, regardless of file order. Shelves without a category section follow that block alphabetically by name, ignoring case. The synthetic “No heading” entry sorts under that displayed name. This alphabetical ordering also applies when only custom shelves are being assigned, with no category sections.
+
+Kometa moves only collections explicitly assigned or automatically grouped during this run; omitting an assignment later leaves their current placement intact. Renaming a configured shelf creates or reuses that new name and moves the processed collections; it does not rename or delete the old shelf. Reserved shelves and ambiguous names produce errors.
+
+Shelf membership is local to the library. Updates use the current shelf revision; a concurrent change produces an error rather than overwriting another user's edits. Shelves do not create Home rows, change the movie order inside a collection, or grant collection ownership. Use an acting administrator profile with access to Silo's collection-group API.
+
+Collection editor reads that return a revision conflict are retried up to twice. A collection metadata update rejected with a stale revision is refreshed and retried once only when the fields Kometa intends to update still match its original read. Fields already at the desired value need no further write; competing edits to the same fields remain errors. Shelf ordering and membership conflicts still stop without replaying their writes.
+
 ### Search and filter fields
 
 | Metadata | Supported fields |

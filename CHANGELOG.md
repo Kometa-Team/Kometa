@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
+
+- Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
+
+- Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
+
+- Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
+
 ### Fixed
+
+- Group packaged chart defaults on Silo's shared Chart Collections shelf without requiring a separate chart separator, preserving section and name overrides.
+
+- Merge collections with the same Silo shelf name even when their section values differ; use the lowest section for ordering.
+
+- Group packaged awards defaults on Silo's shared Award Collections shelf, even when the separate award separator is omitted, preserving section and name overrides.
+
+- Retry Silo collection reads interrupted by revision changes and recover a stale collection PATCH once when the fields being updated are unchanged, preserving concurrent edits to those fields.
+
+- Skip unsupported playlist reports on native media servers during mixed-server runs.
 
 - Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
 
