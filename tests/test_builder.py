@@ -2613,3 +2613,44 @@ def test_silo_item_metadata_skips_labels_without_reading_them(monkeypatch):
     library.search.assert_not_called()
     assert len(logger.warning_messages) == 2
     assert not logger.error_messages
+
+
+class TestOverlayCollectionLookup:
+    def _library(self):
+        library = MagicMock()
+        library.is_movie = True
+        library.is_show = False
+        library.is_music = False
+        library.type = "Movie"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.default_collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.get_collection.side_effect = Failed("Plex Error: Collection not found")
+        return library
+
+    def _config(self):
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        return config
+
+    def test_overlay_does_not_look_up_a_collection_with_its_name(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Overlay", lambda *args, **kwargs: SimpleNamespace(name="Gallop"))
+        library = self._library()
+
+        builder = CollectionBuilder(self._config(), MagicMock(), "Gallop", {"overlay": {"name": "Gallop"}, "plex_all": True}, library=library, overlay=True)
+
+        assert builder.obj is None
+        library.get_collection.assert_not_called()
+
+    def test_collection_still_looks_up_its_existing_collection(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+
+        CollectionBuilder(self._config(), MagicMock(), "Gallop", {"plex_all": True}, library=library)
+
+        library.get_collection.assert_called_once_with("Gallop", force_search=True)

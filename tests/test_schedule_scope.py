@@ -54,3 +54,38 @@ def test_refresh_maps_all_items_but_returns_only_current_scope():
     assert Library.refresh_item_cache_and_mappings(library) == [items[0]]
     assert calls == [{"load": True, "ignore_schedule_scope": True}, items]
     assert set(library.cached_items) == {10, 20}
+
+
+def _diff_library(**overrides):
+    attrs = {"schedule_mode": "diff", "is_show": False, "is_music": False, "remove_overlays": False, "cached_item_subitems": lambda item, method_name: []}
+    attrs.update(overrides)
+    return SimpleNamespace(**attrs)
+
+
+def test_diff_target_keys_lists_new_movies():
+    items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+
+    assert Library.diff_target_keys(_diff_library(), items) == {1, 2}
+
+
+def test_diff_target_keys_is_empty_when_nothing_is_new():
+    assert Library.diff_target_keys(_diff_library(), []) == set()
+
+
+def test_diff_target_keys_expands_shows_to_seasons_and_episodes():
+    show = SimpleNamespace(ratingKey=10)
+    subitems = {"seasons": [SimpleNamespace(ratingKey=11)], "episodes": [SimpleNamespace(ratingKey=111), SimpleNamespace(ratingKey=112)]}
+    library = _diff_library(is_show=True, cached_item_subitems=lambda item, method_name: subitems[method_name] if item is show else [])
+
+    assert Library.diff_target_keys(library, [show]) == {10, 11, 111, 112}
+
+
+def test_diff_target_keys_gathers_library_wide_outside_diff_or_when_too_large(monkeypatch):
+    items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+
+    assert Library.diff_target_keys(_diff_library(schedule_mode="full"), items) is None
+    assert Library.diff_target_keys(_diff_library(schedule_mode="added(7d)"), items) is None
+    assert Library.diff_target_keys(_diff_library(is_music=True), items) is None
+    assert Library.diff_target_keys(_diff_library(remove_overlays=True), items) is None
+    monkeypatch.setitem(Library.diff_target_keys.__globals__, "DIFF_TARGET_KEY_LIMIT", 1)
+    assert Library.diff_target_keys(_diff_library(), items) is None

@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
+
+- Limit overlay gathering in `diff` schedule runs to the newly seen items (and, in show libraries, their seasons and episodes) instead of searching the whole library for every overlay, and skip overlays when nothing is new.
+
 - Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
 
 - Check multi-server validation file permissions only on POSIX systems, while retaining isolation and overwrite tests on Windows.
