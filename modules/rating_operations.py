@@ -36,11 +36,11 @@ def configure_rating_updates(params, server_type, logger):
         if not sources:
             continue
         if target in SILO_TARGETS and server_type != "silo":
-            logger.error(f"Config Error: ratings.{target} is unsupported on {server_type}; this target requires Silo")
+            logger.warning(f"Config Warning: ratings.{target} is unsupported on {server_type}; this target requires Silo")
             params[operation] = None
             continue
         if server_type == "silo" and target in GENERIC_OPERATIONS and target != "user":
-            logger.error(f"Config Error: ratings.{target} is unsupported on Silo; use an explicit silo_imdb, silo_tmdb, silo_tomatoes, silo_tomatoesaudience, or silo_user target")
+            logger.warning(f"Config Warning: ratings.{target} is unsupported on Silo; use an explicit silo_imdb, silo_tmdb, silo_tomatoes, silo_tomatoesaudience, or silo_user target")
             params[operation] = None
             continue
         accepted = []
@@ -61,9 +61,9 @@ def configure_rating_updates(params, server_type, logger):
             elif server_type == "silo" and source in ("lock", "unlock", "remove", "reset", "random"):
                 reason = "is not supported for native Silo rating writes; use clear to remove a rating"
             if server_type == "jellyfin" and target in ("critic", "audience", "episode_critic", "episode_audience") and source in ("remove", "reset"):
-                logger.error(f"Config Error: ratings.{target} {source} lock change is unsupported on jellyfin: the rating will be cleared, but existing locks are preserved")
+                logger.warning(f"Config Warning: ratings.{target} {source} lock change is unsupported on jellyfin: the rating will be cleared, but existing locks are preserved")
             if reason:
-                logger.error(f"Config Error: ratings.{target} source {source} is unsupported on {server_type}: {reason}")
+                logger.warning(f"Config Warning: ratings.{target} source {source} is unsupported on {server_type}: {reason}")
             else:
                 accepted.append(source)
         params[operation] = accepted or None

@@ -99,7 +99,8 @@ def test_unsupported_operations_reported_before_item_processing(kind):
     else:
         assert params["mass_added_at_update"] == ["tmdb"]
         assert params["mass_imdb_parental_labels"] == "none"
-    assert all("not supported" in args.args[0] for args in logger.error.call_args_list)
+    logger.error.assert_not_called()
+    assert logger.warning.call_count > 0
 
 
 @pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
@@ -224,12 +225,10 @@ def test_added_date_clear_is_reported_before_processing_and_guarded(kind):
     logger = MagicMock()
     configure_metadata_operations(params, kind, logger)
     assert params["mass_added_at_update"] == [datetime(2020, 1, 2)]
-    assert logger.error.call_count == 2
+    logger.error.assert_not_called()
+    assert logger.warning.call_count == 2
     library, item = native_item(kind)
-    from modules.util import Failed
-
-    with pytest.raises(Failed, match="Clearing the added date"):
-        apply_edit(library, item, {"addedAt": None}, control="reset")
+    assert apply_edit(library, item, {"addedAt": None}, control="reset") == {}
     library.client.update_item.assert_not_called()
 
 
@@ -454,14 +453,38 @@ def test_silo_backup_user_rating_round_trip():
     library.client.set_user_rating.assert_called_once_with(item.content_id, 3)
 
 
-def test_silo_restore_rejects_browser_only_fields_before_writes():
+def test_silo_restore_warns_for_browser_only_fields_and_writes_supported_summary():
     from modules.native_metadata import restore_native_metadata
-    from modules.util import Failed
 
     library, item = native_item("silo")
-    with pytest.raises(Failed, match="Unsupported attributes"):
-        restore_native_metadata(library, item, {"summary": "Saved", "label.sync": []}, MagicMock())
-    library.client.update_metadata.assert_not_called()
+    logger = MagicMock()
+    restore_native_metadata(library, item, {"summary": "Saved", "label.sync": [], "critic_rating": 8}, logger)
+    library.client.update_metadata.assert_called_once_with(item.content_id, {"overview": "Saved"})
+    assert logger.warning.call_count == 2
+    logger.error.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_unsupported_metadata_edits_preserve_supported_updates(kind, monkeypatch):
+    from modules import util
+
+    logger = MagicMock()
+    monkeypatch.setattr(util, "logger", logger)
+    library, item = native_item(kind)
+    payload = apply_edit(library, item, {"summary": "Saved", "unsupported_field": "ignored"})
+    assert payload["Overview" if kind != "silo" else "overview"] == "Saved"
+    assert "unsupported_field" not in payload
+    logger.warning.assert_called_once()
+    logger.error.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["silo", "jellyfin", "emby"])
+def test_supported_metadata_api_failures_still_propagate(kind):
+    library, item = native_item(kind)
+    client_write = library.client.update_metadata if kind == "silo" else library.client.update_item
+    client_write.side_effect = RuntimeError("server unavailable")
+    with pytest.raises(RuntimeError, match="server unavailable"):
+        apply_edit(library, item, {"summary": "Saved", "unsupported_field": "ignored"})
 
 
 @pytest.mark.parametrize("kind", ["plex", "silo", "jellyfin", "emby"])
