@@ -808,7 +808,8 @@ class MediaBrowser(Library):
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
         field = TAG_FIELDS.get(attr)
         if field is None:
-            raise Failed(f"{self._server().type_label} Error: Cannot edit {attr.replace('_', ' ')}")
+            logger.warning(f"{self._server().type_label} Warning: Metadata attribute {attr} is not supported; skipping")
+            return
         self.require(Capability.SYNC_TAGS if sync_tags is not None else Capability.ADD_TAG if add_tags else Capability.REMOVE_TAG)
         current = list(getattr(obj, "tags" if field == "Tags" else "genres" if field == "Genres" else "studios", None) or [])
         if sync_tags is not None:
