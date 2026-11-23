@@ -90,6 +90,7 @@ class Library(ABC):
         self.xml_library_id = int(self.image_table_name.rsplit("_", 1)[1]) if self.image_table_name else None
         self.xml_updates = []
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
+        self.silo_shelves = params.get("silo_shelves", False)
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
         self.report_data = {}

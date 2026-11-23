@@ -1,0 +1,18 @@
+templates:
+  validation:
+    silo_shelf: Kometa Multi-Server Validation Shelf
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync
+    collection_order: alpha
+collections:
+  Kometa Multi-Server Shelf Custom One:
+    template:
+      name: validation
+  Kometa Multi-Server Shelf Custom Two:
+    silo_shelf: Kometa Multi-Server Validation Shelf
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync

@@ -458,3 +458,9 @@ Use file paths appropriate to your Plex server. See [Plex Extras](https://suppor
 
 The mixed form produces
 `/media/prerolls/file1.mp4;/media/prerolls/file2.mp4,/media/prerolls/file3.mp4;/media/prerolls/file4.mp4`.
+
+## Silo Shelf
+
+Use `silo_shelf: Shelf Name` on a collection or in a collection template to create or reuse a shelf in the Silo library's Collections tab. The value must be a nonempty string. Explicit assignments work independently of the `silo_shelves` library setting, which enables automatic grouping from separator headings. Other servers skip this attribute with a warning. Existing members and shelf settings are preserved; an absent attribute leaves placement unchanged.
+
+See [Silo collection shelves](../config/silo.md#collection-shelves) for examples, automatic defaults grouping, and concurrent update behavior.

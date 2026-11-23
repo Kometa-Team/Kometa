@@ -1,0 +1,36 @@
+# Fake credentials for offline tests. The preparation script replaces these.
+settings:
+  cache: true
+  save_report: true
+  check_nightly: false
+  show_missing: false
+  show_unmanaged: false
+  show_unconfigured: false
+  show_filtered: false
+  show_unfiltered: false
+tmdb:
+  apikey: offline-tmdb-key
+media_servers:
+  my-plex:
+    type: plex
+    url: http://plex.invalid:32400
+    token: offline-plex-token
+  my-silo:
+    type: silo
+    url: http://silo.invalid:8090
+    token: offline-silo-token
+    profile_id: offline-profile
+  my-emby:
+    type: emby
+    url: http://emby.invalid:8096
+    token: offline-emby-token
+libraries:
+  Movies:
+    servers:
+      my-plex: {}
+      my-silo:
+        library_name: Cinema
+      my-emby:
+        library_name: Films
+    collection_files:
+      - file: tests/fixtures/multi_server/collections.yml

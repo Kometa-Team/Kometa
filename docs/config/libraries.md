@@ -12,7 +12,36 @@ Attributes are used to instruct Kometa what actions to take, such as "load the f
 These attributes can be specified individually per library, or can be inherited from the global value if it has been set.
 If an attribute is specified at both the library and global level, then the library level attribute will take priority.
 
+## Shared libraries across servers
+
+Use `servers` to run a shared library definition independently on several named `media_servers` entries:
+
+```yaml
+libraries:
+  Movies:
+    servers:
+      my-plex: {}
+      my-silo:
+        library_name: Cinema
+      my-emby:
+        library_name: Films
+    collection_files:
+      - file: config/chaz-people.yml
+```
+
+Each target inherits the shared attributes. Its overrides replace entire attributes, including lists and nested mappings.
+The default remote library name is the shared key (`Movies` here). Use either `server` or `servers`, never both.
+Each target must have an override dictionary; use `{}` when no overrides are needed.
+
+Targets have unique mapping names such as `Movies@my-silo`, used for default reports, overlay backups, and caches.
+Explicit output paths should be overridden per target to avoid sharing files.
+Select all targets with `--libraries Movies`, or select one with `--libraries Movies@my-silo`.
+Playlist library references must use the target mapping name; existing playlist server restrictions still apply.
+Each target runs against its own catalog and supports the features available through its server adapter.
+
 ## Attributes
+
+The Silo-only `silo_shelves` library setting defaults to `false`. Enable it to group a collection file's collections under its separator heading instead of creating a separator. Explicit `silo_shelf` collection assignments work independently. See [Silo collection shelves](silo.md#collection-shelves) for configuration and preservation rules.
 
 The available attributes for each library are as follows:
 

@@ -4832,6 +4832,7 @@
       "additionalProperties": false,
       "patternProperties": {
         "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|seerr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+          "not": {"required": ["server", "servers"]},
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4861,6 +4862,20 @@
             "library_name": {
               "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Kometa to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
               "type": "string"
+            },
+            "silo_shelves": {
+              "description": "Automatically group Silo collections using a collection file's separator heading.",
+              "type": "boolean",
+              "default": false
+            },
+            "servers": {
+              "description": "Named server targets with per-target library overrides. Mutually exclusive with server.",
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "object",
+                "not": {"anyOf": [{"required": ["server"]}, {"required": ["servers"]}]}
+              }
             },
             "server": {
               "description": "Name of an entry under media_servers. Omit to use the plex server.",

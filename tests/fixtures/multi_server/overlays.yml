@@ -1,0 +1,18 @@
+# Use dedicated test libraries: the overlay engine reconciles existing overlays.
+overlays:
+  Kometa Multi-Server Validation:
+    overlay:
+      name: text(MULTI SERVER TEST)
+      font: fonts/Inter-Medium.ttf
+      font_size: 48
+      font_color: "#FFFFFF"
+      back_color: "#000000CC"
+      horizontal_align: center
+      vertical_align: bottom
+      horizontal_offset: 0
+      vertical_offset: 30
+    plex_search:
+      all:
+        year.gte: 1800
+      sort_by: title.asc
+    limit: 3

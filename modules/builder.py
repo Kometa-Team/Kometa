@@ -265,7 +265,7 @@ boolean_details = [
     "create_asset_folders",
 ]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
-string_details = ["sort_title", "content_rating", "name_mapping"]
+string_details = ["sort_title", "content_rating", "name_mapping", "silo_shelf"]
 ignored_details = [
     "asset_directory",
     "smart_filter",
@@ -1108,6 +1108,8 @@ class CollectionBuilder:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        self._inherit_silo_shelf(methods)
 
         if library is not None and not self.overlay:
             self._adapt_local_smart_filter(library, self.data, methods)
@@ -2331,6 +2333,13 @@ class CollectionBuilder:
             else:
                 logger.error(f"{self.Type} Error: Square Art Path Does Not Exist: {os.path.abspath(method_data)}")
 
+    def _inherit_silo_shelf(self, methods):
+        if not self.playlist and not self.overlay and "silo_shelf" not in methods:
+            default_shelf = getattr(self.metadata, "silo_default_shelf", None)
+            if isinstance(default_shelf, str) and default_shelf:
+                self.data["silo_shelf"] = default_shelf
+                methods["silo_shelf"] = "silo_shelf"
+
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
             self.url_theme = method_data
@@ -2401,6 +2410,16 @@ class CollectionBuilder:
             default = self.details[method_name] if method_name in self.details else None
             self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="bool", default=default)
         elif method_name in string_details:
+            if method_name == "silo_shelf":
+                if self.playlist or self.overlay or not isinstance(method_data, str) or not method_data.strip():
+                    raise BuilderValidationError("Collection Error: silo_shelf must be a nonempty string on a collection")
+                if getattr(getattr(self.library, "server", None), "type_name", "plex") != "silo":
+                    logger.warning("Collection Warning: silo_shelf only applies to Silo; skipping")
+                    return
+                method_data = method_data.strip()
+                section = getattr(getattr(self, "metadata", None), "silo_default_shelf_section", None)
+                if isinstance(section, int) and not isinstance(section, bool):
+                    self.details["_silo_shelf_section"] = section
             self.details[method_name] = str(method_data)
 
     def _item_details(self, method_name, method_data, method_mod, method_final, methods):

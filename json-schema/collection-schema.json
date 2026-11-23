@@ -301,6 +301,7 @@
                 "label.remove": { "$ref": "#/definitions/tag-value" },
                 "label.sync": { "$ref": "#/definitions/tag-value" },
                 "sort_title": { "type": "string" },
+                "silo_shelf": { "type": "string", "pattern": "\\S" },
                 "tmdb_person": {
                     "oneOf": [
                         { "type": "string" }, { "type": "integer" },

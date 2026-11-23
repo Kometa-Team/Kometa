@@ -1,0 +1,16 @@
+# Loaded last to verify that section order takes precedence over file order.
+templates:
+  separator:
+    default:
+      collection_section: "020"
+    run_definition: false
+    blank_collection: true
+collections:
+  Kometa Multi-Server Earlier Shelf:
+    template:
+      name: separator
+  Kometa Multi-Server Shelf Earlier:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync

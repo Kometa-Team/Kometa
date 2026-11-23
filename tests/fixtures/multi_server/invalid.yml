@@ -1,0 +1,17 @@
+# Each entry is a library definition expected to fail before connection.
+empty-targets:
+  servers: {}
+conflicting-selectors:
+  server: my-plex
+  servers:
+    my-plex: {}
+unknown-server:
+  servers:
+    nonexistent: {}
+invalid-overrides:
+  servers:
+    my-plex: Cinema
+nested-selector:
+  servers:
+    my-plex:
+      server: my-emby
