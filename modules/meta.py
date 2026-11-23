@@ -726,6 +726,10 @@ class MetadataFile(DataFile):
                 logger.info(f"Config: Skipping disabled collection definition: {name}")
             else:
                 active[name] = attributes
+        if collections and not active:
+            # Filtering intentionally disabled definitions is not a blank YAML
+            # attribute. Omit the key so get_dict does not report a false error.
+            return {key: value for key, value in data.items() if key != "collections"}
         return {**data, "collections": active}
 
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
