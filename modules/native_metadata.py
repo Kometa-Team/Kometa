@@ -4,6 +4,7 @@ from datetime import datetime
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any, cast
 
+from modules import util
 from modules.util import Failed
 
 if TYPE_CHECKING:
@@ -41,7 +42,7 @@ def configure_metadata_operations(params, server_type, logger):
     def unsupported(option, reason):
         for internal, public in (("mass_added_at_update", "mass_metadata_update.added_at"), ("mass_imdb_parental_labels", "mass_metadata_update.labels"), ("mass_square_art_update", "mass_metadata_update.square_art")):
             option = option.replace(internal, public, 1)
-        logger.error(f"Config Error: {option} is not supported by {server_type}: {reason}")
+        logger.warning(f"Config Warning: {option} is not supported by {server_type}: {reason}; skipping unsupported setting")
 
     if server_type == "silo" and params.get("split_duplicates"):
         reason = "Silo grouping repair requires explicit file and target selections"
@@ -109,6 +110,10 @@ def current_value(item, field):
     return getattr(item, field, None)
 
 
+def _warn_unsupported(library, attribute, logger=None):
+    (logger or util.logger).warning(f"{library.server.type_label} Warning: {attribute} is not supported by this server; skipping")
+
+
 def apply_edit(library, item, fields=None, tags=None, control=None):
     fields = dict(fields or {})
     browser = library.server.type_name != "silo"
@@ -119,24 +124,31 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
         for field, (add, remove) in tags.items():
             key = mapping.get(field)
             if not key:
-                raise Failed(f"{library.server.type_label} Error: Metadata field {field} is not supported")
+                _warn_unsupported(library, f"Metadata field {field}")
+                continue
             before = item.tags if field == "label" else item.genres
             names = [getattr(value, "tag", value) for value in before]
             fields[field] = list(dict.fromkeys([value for value in names if value not in remove] + list(add)))
     user = fields.pop("userRating", ...) if not control else ...
     if control and "userRating" in fields:
         if control != "clear":
-            raise Failed(f"{library.server.type_label} Error: Profile rating locks are not supported")
+            _warn_unsupported(library, "Profile rating lock control")
+        else:
+            user = None
         fields.pop("userRating")
-        user = None
     for field, value in fields.items():
         if browser and field == "addedAt" and control in ("remove", "reset", "clear"):
-            raise Failed(f"{library.server.type_label} Error: Clearing the added date is not supported")
+            _warn_unsupported(library, "Clearing the added date")
+            continue
         key = mapping.get(field)
         if not browser and field == "originallyAvailableAt":
             key = "first_air_date" if item.type == "show" else "air_date" if item.type in ("season", "episode") else key
         if not key:
-            raise Failed(f"{library.server.type_label} Error: Metadata field {field} is not supported")
+            _warn_unsupported(library, f"Metadata field {field}")
+            continue
+        if control in ("lock", "unlock") and (not browser or key not in (JELLYFIN_LOCKABLE if library.server.type_name == "jellyfin" else BROWSER_LOCKABLE)):
+            _warn_unsupported(library, f"Metadata field {field} {control}")
+            continue
         if control in ("remove", "reset", "clear"):
             value = [] if field in ("genre", "studio", "label") else None
         if not control or control in ("remove", "reset", "clear"):
@@ -169,7 +181,7 @@ def apply_edit(library, item, fields=None, tags=None, control=None):
             item.apply({})
     else:
         if user is not ...:
-            raise Failed("Silo Error: Use the explicit native profile rating operation")
+            _warn_unsupported(library, "Profile rating through generic metadata edits; use the native profile rating operation")
         if payload:
             result = library.client.update_metadata(item.content_id, payload)
             item.apply({**payload, **result} if isinstance(result, dict) else payload)
@@ -374,6 +386,7 @@ def restore_native_metadata(library, item, metadata, logger):
         "audience_rating": "audienceRating",
         "user_rating": "userRating",
     }
+    known = set(scalar_fields) | {f"{tag}{suffix}" for tag in ("genre", "label", "country", "director", "writer", "producer") for suffix in ("", ".sync", ".remove")}
     browser = library.server.type_name != "silo"
     if not browser:
         scalar_fields.pop("critic_rating")
@@ -383,6 +396,9 @@ def restore_native_metadata(library, item, metadata, logger):
     allowed = set(scalar_fields) | {"match", "mapping_id", "year", "seasons", "episodes"}
     allowed.update(f"{tag}{suffix}" for tag in set(tag_fields) | people_roles for suffix in ("", ".sync", ".remove"))
     metadata = {str(key).lower(): value for key, value in metadata.items()}
+    for attribute in sorted((set(metadata) - allowed) & known):
+        _warn_unsupported(library, f"Metadata attribute {attribute}", logger)
+        metadata.pop(attribute)
     unsupported = set(metadata) - allowed
     if unsupported:
         raise Failed(f"{library.server.type_label} Metadata Error: Unsupported attributes: {', '.join(sorted(unsupported))}")

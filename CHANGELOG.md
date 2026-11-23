@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
+
 - Check multi-server validation file permissions only on POSIX systems, while retaining isolation and overwrite tests on Windows.
 
 - Group packaged chart defaults on Silo's shared Chart Collections shelf without requiring a separate chart separator, preserving section and name overrides.

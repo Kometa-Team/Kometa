@@ -770,20 +770,21 @@ class Silo(Library):
     def update_collection_details(self, collection, summary, details):
         """Apply native collection metadata without Plex's automatic label edits."""
         self.item_reload(collection)
-        for field in ("sort_title", "label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared"):
+        for field in ("sort_title", "label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared", "content_rating", "collection_mode", "collection_filtering"):
             if field in details:
                 logger.warning(f"Silo Warning: Collection {field} is not supported by this adapter; skipping {field}")
-        for field in ("content_rating", "collection_mode", "collection_filtering"):
-            if field in details:
-                raise Failed(f"Silo Error: Collection metadata attribute {field} is not supported")
         payload = {}
         if summary and str(summary) != collection.summary:
             payload["description"] = str(summary)
         if "collection_order" in details:
             order = details["collection_order"]
-            sort_config = self._collection_sort_config(order)
-            if sort_config != (collection.data.get("sort_config") or {}):
-                payload["sort_config"] = sort_config
+            try:
+                sort_config = self._collection_sort_config(order)
+            except Failed:
+                logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+            else:
+                if sort_config != (collection.data.get("sort_config") or {}):
+                    payload["sort_config"] = sort_config
         updated = []
         if payload:
             data, etag = self.client.update_collection(collection.id, payload, collection.etag)
@@ -836,17 +837,24 @@ class Silo(Library):
     def sort_collection_items(self, collection, items, order):
         if isinstance(order, list):
             if len(order) != 1:
-                raise Failed("Silo Error: Collection sorting accepts one sort field")
-            config = self._collection_sort_config(order[0])
+                logger.warning("Silo Warning: Collection sorting accepts one sort field; skipping collection_order")
+                return
+            try:
+                config = self._collection_sort_config(order[0])
+            except Failed:
+                logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+                return
             self.item_reload(collection)
             if config != collection.data.get("sort_config"):
                 data, etag = self.client.update_collection(collection.id, {"sort_config": config}, collection.etag)
                 collection.apply({"sort_config": config, **(data or {})}, etag=etag)
             return
         if order not in ("custom", "custom.asc", "custom.desc"):
-            raise Failed(f"Silo Error: Unsupported custom collection order: {order}")
+            logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+            return
         if collection.smart:
-            raise Failed("Silo Error: Explicit item ordering requires a manual collection")
+            logger.warning("Silo Warning: Explicit item ordering requires a manual collection; skipping collection_order")
+            return
         members = self.client.collection_items(collection.id)
         if any(not (row.get("media_item_id") or row.get("content_id")) or not isinstance(row.get("position"), int) for row in members):
             raise Failed("Silo Error: Invalid collection membership response; sorting aborted before changes")
@@ -872,11 +880,10 @@ class Silo(Library):
                 raise
 
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
-        if attr in ("label", "labels"):
-            self.require(Capability.GET_ITEM_LABELS)
         field = TAG_FIELDS.get(attr)
         if field is None:
-            raise Failed(f"Silo Error: {self._silo().display_name} cannot edit {attr.replace('_', ' ')}")
+            logger.warning(f"Silo Warning: Metadata attribute {attr} is not supported; skipping")
+            return
         self.require(Capability.SYNC_TAGS)
         current = list(getattr(obj, field, None) or [])
         if sync_tags is not None:
