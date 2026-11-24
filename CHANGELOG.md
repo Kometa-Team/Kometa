@@ -177,6 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Send a configured IMDb chart `limit` to Kometa Utilities so the chart response follows that size instead of the service default.
+
 - Save Jellyfin/Emby catalog pages as they arrive and reuse completed pages after interrupted loads, without exposing partial catalogs to filters.
 
 - Fetch rich Jellyfin/Emby series listings in pages of 20 to avoid timeouts caused by expensive per-show metadata aggregation.
