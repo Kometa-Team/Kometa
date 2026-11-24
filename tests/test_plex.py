@@ -2325,7 +2325,7 @@ def test_collection_assets_are_separate_from_item_assets(tmp_path, asset_folders
 
 
 @pytest.mark.parametrize("override", [None, ["collection-art"]])
-def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch, override):
+def test_collection_file_asset_override_reaches_metadata_scan(monkeypatch, override):
     import modules.library as library_module
 
     entry = ("File", "collections.yml", {}, ["item-art"])
@@ -2344,10 +2344,8 @@ def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch,
         collection_files=[],
     )
     library.scan_files(False, False, True, False)
-    assert constructor.call_count == 2
-    for call in constructor.call_args_list:
-        assert call.args[5] == entry[3]
-    assert constructor.call_args_list[0].kwargs["configured_names_only"] is True
+    constructor.assert_called_once_with(library.config, library, "File", "collections.yml", {}, entry[3], "collection")
+    assert library.configured_collection_metadata_files == [metadata]
     assert library.collection_names == ["Test"]
     assert library.collections == ["Test"]
 

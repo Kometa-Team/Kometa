@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Avoid rescanning active collection files for configured-name tracking, and honor per-key dynamic collection names when detecting duplicates across files.
 - Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
 
 - Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
