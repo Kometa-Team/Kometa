@@ -75,6 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
 
+- Skip `docker-bake.hcl` in Docker source integrity scans while continuing to verify it in source checkouts.
+
 ### Docs
 
 - Point contributors to the pyright baseline check instead of `mypy` in `.github/CONTRIBUTING.md`, `CLAUDE.md` and `AGENTS.md`, and note which checks run in pre-commit and which run in CI.

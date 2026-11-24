@@ -23,6 +23,7 @@ SHIPPED = {
     "fonts/font.ttf": b"font",
     "docs/kometa/logs.md": b"logs",
     "zensical.toml": b"[project]\n",
+    "docker-bake.hcl": b'group "default" {}\n',
     "config/config.yml.template": b"config",
 }
 
@@ -297,6 +298,15 @@ def test_documentation_config_is_only_required_for_source_installs(installation)
     report = check(installation)
     assert report["state"] == "Modified"
     assert report["missing"] == ["zensical.toml"]
+
+
+@pytest.mark.parametrize("profile", ["docker", "source"])
+def test_docker_bake_is_only_required_for_source_installs(installation, profile):
+    assert check(installation, profile)["state"] == "Verified"
+    (installation[0] / "docker-bake.hcl").unlink()
+    report = check(installation, profile)
+    assert report["state"] == ("Verified" if profile == "docker" else "Modified")
+    assert report["missing"] == ([] if profile == "docker" else ["docker-bake.hcl"])
 
 
 @pytest.mark.parametrize("name", ["../escape.py", "modules/../../escape", "/absolute", "C:/escape", "modules\\escape"])
