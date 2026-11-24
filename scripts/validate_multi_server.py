@@ -13,7 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 FIXTURES = ROOT / "tests" / "fixtures" / "multi_server"
-CASES = ["shared", "selected", "failure", "playlist", "playlist-cross-server", "overlays", "overlays-selected", "operations", "operations-selected", "shelves"]
+CASES = ["shared", "selected", "failure", "playlist", "playlist-cross-server", "overlays", "overlays-selected", "operations", "operations-selected", "shelves", "visibility", "visibility-disabled"]
 
 
 def read_yaml(path):
@@ -82,6 +82,10 @@ def live(args):
         flags = ["--collections-only"]
         expected = targets
         failed = []
+        if case.startswith("visibility"):
+            expected = ["my-silo"]
+            flags.extend(["--libraries", "Movies@my-silo"])
+            config["libraries"]["Movies"]["collection_files"] = [{"file": str(FIXTURES / f"{case}.yml")}]
         if case == "shelves":
             config["libraries"]["Movies"]["silo_shelves"] = True
             config["libraries"]["Movies"]["collection_files"] = [{"file": str(FIXTURES / name)} for name in ("shelves.yml", "shelves-default.yml", "shelves-earlier.yml")]
@@ -163,7 +167,14 @@ def live(args):
                     checks[f"poster_backups_{target}"] = backup_dir.is_dir() and any(path.is_file() and path.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp") for path in backup_dir.iterdir())
             checks["no_errors"] = not re.search(error_pattern, text + "\n" + log_text)
         else:
-            if case == "shelves":
+            if case.startswith("visibility"):
+                for title in ("Library", "Home", "Shared"):
+                    name = f"Kometa Multi-Server Visibility {title}"
+                    checks[f"collection_{title.lower()}"] = text.count(f"Finished {name} Collection") == 1
+                    flags_text = ", ".join(f"visible_{flag}={str(case == 'visibility' and flag == title.lower()).lower()}" for flag in ("library", "home", "shared"))
+                    checks[f"visibility_{title.lower()}"] = bool(re.search(rf"Silo Visibility: Movies@my-silo \| {name} \| {flags_text} \| (Updated|Unchanged)", text))
+                checks["no_other_targets"] = not re.search(r"Silo Visibility: Movies@(my-plex|my-emby)", text)
+            elif case == "shelves":
                 for title in ("Custom One", "Custom Two", "Automatic", "Earlier"):
                     name = f"Kometa Multi-Server Shelf {title}"
                     shelf = "Kometa Multi-Server Earlier Shelf" if title == "Earlier" else "Kometa Multi-Server Validation Shelf"
@@ -225,6 +236,7 @@ def main():
                 "tests/test_media_server.py",
                 "tests/test_schema_validation.py",
                 "tests/test_silo_shelves.py",
+                "tests/test_silo_sections.py",
                 "tests/test_silo_collection_conflicts.py",
             ],
             cwd=ROOT,

@@ -794,7 +794,7 @@ def test_silo_metadata_resolves_local_collection_artwork(tmp_path, monkeypatch, 
         obj=SiloCollection(record),
         name="Star Trek Stuff",
         summaries={},
-        details={"name_mapping": "Trek", "sort_title": "!001 Star Trek", "collection_order": "release", "label": ["Award"], "label.remove": ["Old"], "label.sync": ["Award"], "visible_home": True, "visible_shared": True, "visible_library": False},
+        details={"name_mapping": "Trek", "sort_title": "!001 Star Trek", "collection_order": "release", "label": ["Award"], "label.remove": ["Old"], "label.sync": ["Award"]},
         mapping_name="Star Trek Stuff",
         collection_asset_directory=[str(tmp_path)],
         collection_assets_configured=True,
@@ -815,7 +815,7 @@ def test_silo_metadata_resolves_local_collection_artwork(tmp_path, monkeypatch, 
         assert session.calls[2]["url"].endswith("/col-trek/backdrop")
 
 
-@pytest.mark.parametrize("field", ["content_rating", "collection_mode", "collection_filtering", "label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared", "sort_title"])
+@pytest.mark.parametrize("field", ["content_rating", "collection_mode", "collection_filtering", "label", "label.remove", "label.sync", "sort_title"])
 def test_silo_collection_labels_warn_without_blocking_summary(field, monkeypatch):
     logger = FakeLogger()
     monkeypatch.setattr(silo_module, "logger", logger)

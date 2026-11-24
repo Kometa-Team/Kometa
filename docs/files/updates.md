@@ -109,10 +109,15 @@ labels; synchronize replaces the collection's label set.
 
 ### Visibility and themes
 
-`visible_library`, `visible_home`, and `visible_shared` require **Plex Pass**.
+On Plex, `visible_library`, `visible_home`, and `visible_shared` require **Plex Pass**.
 Each accepts `true`, `false`, or a [schedule](../config/schedule.md) to control
 visibility on the Library Recommended tab, your Home tab, or shared users' Home
 respectively. The values can therefore be booleans or schedule strings.
+
+On Silo, these attributes manage library and Home section rows, including the
+acting profile's Home placement and shared defaults. See [Silo collection
+promotion](../config/silo.md) for the mapping and profile behavior. Emby and
+Jellyfin continue to skip these attributes with warnings.
 
 `file_theme` takes a local MP3 path; `url_theme` takes an MP3 URL. Both change the
 collection's theme.

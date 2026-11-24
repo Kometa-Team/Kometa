@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- Support Silo collection promotion with `visible_library`, `visible_home`, and `visible_shared` using native section rows and acting-profile overrides, with optional multi-server promotion validation cases.
 - Sinhala (Sri Lanka), Southern Soho (Lesotho), Armenian (Armenia), and Dzongkha (Bhutan) added to defaults > overlays > languages
 - Filter library runs by named servers with `--run-servers` or by backend with `--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only`, including environment variable support and combined library selection.
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
