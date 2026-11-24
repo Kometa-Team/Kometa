@@ -33,6 +33,8 @@ hide:
 | `Veteran's Day Movies`                   | `veteran`       | Collection of Movies related to Veteran's Day.                         |
 | `Women's History Month Movies`           | `women`         | Collection of Movies related to Women's History Month.                 |
 
+On Silo, Jellyfin, and Emby, seasonal collections use ordinary membership rebuilt from the configured lists on each run. Schedules, sync mode, limits, and supported sorting still apply; no item labels are required. Plex seasonal collections continue to use smart labels.
+
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "seasonal"}' include-tags='all|movie' %}
     ```yaml
     libraries:

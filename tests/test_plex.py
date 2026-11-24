@@ -103,6 +103,44 @@ class TestMDBListPrefetch:
         config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
+class TestIMDbPrefetch:
+    def test_batches_ratings_and_genres_for_items_outside_the_library_pass(self):
+        imdb = MagicMock()
+        plex = make_plex(config=SimpleNamespace(IMDb=imdb))
+        items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2), make_plex_item(rating_key=1)]
+        plex.get_ids = MagicMock(side_effect=[(None, None, "tt0111161"), (None, None, "tt0068646")])
+
+        plex.prefetch_imdb(items, ratings=True, genres=True)
+
+        imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
+        imdb.cache_library_genres.assert_called_once_with(["tt0111161", "tt0068646"])
+        assert plex.get_ids.call_count == 2
+
+    def test_episode_items_share_the_parent_show_id(self):
+        imdb = MagicMock()
+        plex = make_plex(config=SimpleNamespace(IMDb=imdb), is_movie=False, is_show=True)
+        show = make_plex_item(rating_key=10)
+        first = MagicMock(spec=Episode)
+        second = MagicMock(spec=Episode)
+        first.show.return_value = show
+        second.show.return_value = show
+        plex.get_ids = MagicMock(return_value=(None, None, "tt0096697"))
+
+        plex.prefetch_imdb([first, second], ratings=True)
+
+        imdb.cache_library_ratings.assert_called_once_with(["tt0096697"])
+        imdb.cache_library_genres.assert_not_called()
+        plex.get_ids.assert_called_once_with(show)
+
+    def test_skips_when_imdb_is_not_configured(self):
+        plex = make_plex(config=SimpleNamespace(IMDb=None))
+        plex.get_ids = MagicMock()
+
+        plex.prefetch_imdb([make_plex_item()], ratings=True, genres=True)
+
+        plex.get_ids.assert_not_called()
+
+
 class TestGetAll:
     def test_targeted_fetch_precedes_cache_and_does_not_replace_top_level_cache(self, monkeypatch):
         import modules.plex as plex_module
@@ -129,7 +167,7 @@ class TestGetAll:
 
         with pytest.raises(BadRequest, match="target fetch failed"):
             plex.get_all(target_keys={42})
-
+        plex.Plex._server.query.assert_called_once_with("/library/metadata/42?includeGuids=1")
         plex.Plex._server.query.assert_called_once_with("/library/metadata/42?includeGuids=1")
 
 
@@ -2287,7 +2325,7 @@ def test_collection_assets_are_separate_from_item_assets(tmp_path, asset_folders
 
 
 @pytest.mark.parametrize("override", [None, ["collection-art"]])
-def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch, override):
+def test_collection_file_asset_override_reaches_metadata_scan(monkeypatch, override):
     import modules.library as library_module
 
     entry = ("File", "collections.yml", {}, ["item-art"])
@@ -2306,10 +2344,8 @@ def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch,
         collection_files=[],
     )
     library.scan_files(False, False, True, False)
-    assert constructor.call_count == 2
-    for call in constructor.call_args_list:
-        assert call.args[5] == entry[3]
-    assert constructor.call_args_list[0].kwargs["configured_names_only"] is True
+    constructor.assert_called_once_with(library.config, library, "File", "collections.yml", {}, entry[3], "collection")
+    assert library.configured_collection_metadata_files == [metadata]
     assert library.collection_names == ["Test"]
     assert library.collections == ["Test"]
 

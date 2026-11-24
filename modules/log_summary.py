@@ -16,7 +16,7 @@ class DetailedSummaryRule:
 
 SUMMARY_NORMALIZATIONS = [
     (r"AniDB Error: No valid AniDB IDs found in input: .+", "AniDB Error: No valid AniDB IDs found in input"),
-    (r"No AniDB ID for Guid: .+$", "No AniDB ID for Guid"),
+    (r"No AniDB ID for(?: Guid)?: .+$", "No AniDB ID found"),
     (r"AniList Error: No valid AniList IDs in .+", "AniList Error: No valid AniList IDs"),
     (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory Not Found and Created"),
     (r"Asset Warning: No supported artwork found in the assets folder '.+'", "Asset Warning: No supported artwork found in the assets folder"),

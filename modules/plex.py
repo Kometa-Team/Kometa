@@ -20,6 +20,7 @@ from tenacity import retry, retry_if_exception, retry_if_exception_type, retry_i
 
 from modules import builder, timings, util
 from modules.library import Library
+from modules.media_server import Capability, PlexMediaServer
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError, filter_items
@@ -964,21 +965,26 @@ class TracedPlexServer(PlexServer):
 
 class Plex(Library):
     def __init__(self, config, params):
+        if isinstance(params, dict) and params.get("server") is None and isinstance(params.get("plex"), dict):
+            params["server"] = PlexMediaServer.from_config(params["plex"])
         super().__init__(config, params)
+        server = self.server
+        if not isinstance(server, PlexMediaServer):
+            raise Failed("Plex Error: Library is not connected to a Plex server")
         self.plex = params["plex"]
-        self.url = self.plex["url"]
+        self.url = server.url
         self.clean_bundles = params["plex"]["clean_bundles"]
         self.empty_trash = params["plex"]["empty_trash"]
         self.optimize = params["plex"]["optimize"]
         self.session = self.config.Requests.session
-        if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
+        if server.verify_ssl is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
             self.session = self.config.Requests.create_session(verify_ssl=False, url=self.url)
-        if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
+        if server.verify_ssl is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
             self.session = self.config.Requests.create_session()
-        self.token = self.plex["token"]
-        self.timeout = self.plex["timeout"]
+        self.token = server.token
+        self.timeout = server.timeout
         logger.secret(self.url)
         logger.secret(self.token)
         try:
@@ -992,10 +998,10 @@ class Plex(Library):
             try:
                 db_cache = srv_settings.get("DatabaseCacheSize")
                 logger.info(f"Plex DB cache setting: {db_cache.value} MB")
-                if self.plex["db_cache"] and self.plex["db_cache"] != db_cache.value:
-                    db_cache.set(self.plex["db_cache"])
+                if server.db_cache and server.db_cache != db_cache.value:
+                    db_cache.set(server.db_cache)
                     self.PlexServer.settings.save()
-                    logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
+                    logger.info(f"Plex DB Cache updated to {server.db_cache} MB")
             except NotFound:
                 logger.info("Plex DB cache setting: Unknown")
             try:
@@ -1212,6 +1218,8 @@ class Plex(Library):
         return results
 
     def upload_theme(self, item, url=None, filepath=None):
+        self.require(Capability.UPLOAD_THEME_SONG)
+        self.require(Capability.UPLOAD_THEME_VIDEO)
         key = f"/library/metadata/{item.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
@@ -1221,6 +1229,7 @@ class Plex(Library):
 
     @PLEX_RETRY
     def create_playlist(self, name, items):
+        self.require(Capability.CREATE_PLAYLIST)
         return self.PlexServer.createPlaylist(name, items=items)
 
     @PLEX_RETRY
@@ -1247,6 +1256,7 @@ class Plex(Library):
         return result
 
     def delete_collection(self, obj, notify=True, delete_message=None):
+        self.require(Capability.DELETE_COLLECTION)
         result = self.delete(obj, notify=notify, delete_message=delete_message)
         self.stats["deleted"] += 1
         return result
@@ -1281,6 +1291,7 @@ class Plex(Library):
 
     @PLEX_RETRY
     def item_labels(self, item):
+        self.require(Capability.GET_ITEM_LABELS)
         try:
             return item.labels
         except BadRequest:
@@ -1555,14 +1566,17 @@ class Plex(Library):
 
     @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
+        self.require(Capability.UPLOAD_POSTER)
         self._upload_image_request(item.uploadPoster, upload_context=f"{item.title}: poster ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_background(self, item, image, url=False):
+        self.require(Capability.UPLOAD_BACKDROP)
         self._upload_image_request(item.uploadArt, upload_context=f"{item.title}: background ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
+        self.require(Capability.UPLOAD_LOGO)
         self._upload_image_request(item.uploadLogo, upload_context=f"{item.title}: logo ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
@@ -1928,6 +1942,7 @@ class Plex(Library):
             return None
 
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
+        self.require(Capability.NATIVE_SMART_COLLECTIONS)
         existing_collection = self._collection_by_title(title)
         if existing_collection is not None:
             logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
@@ -1938,6 +1953,7 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def create_smart_playlist(self, title, uri_args):
+        self.require(Capability.CREATE_PLAYLIST)
         if not self.is_music:
             raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
         args = {"type": self.Plex.CONTENT_TYPE, "title": title, "smart": 1, "uri": self._smart_playlist_uri(uri_args)}
@@ -1977,6 +1993,7 @@ class Plex(Library):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
 
     def update_smart_collection(self, collection, uri_args):
+        self.require(Capability.UPDATE_SMART_FILTER)
         self.test_smart_filter(uri_args)
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
@@ -2524,7 +2541,7 @@ class Plex(Library):
             upload_poster = None if has_overlay else poster
             if upload_poster or background or logo or square_art:
                 self.upload_images(item, poster=upload_poster, background=background, logo=logo, square_art=square_art)
-            if has_overlay:
+            if has_overlay and poster:
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
             elif not poster and not background and not logo and not square_art and self.show_missing_assets:
                 searched_directory = item_dir or "', '".join(os.path.abspath(ad) for ad in configured_asset_directories)
@@ -2532,7 +2549,7 @@ class Plex(Library):
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
-        if isinstance(item, Show) and ((self.asset_folders and item_dir) or not self.asset_folders) and not targeted_update:
+        if (isinstance(item, Show) or getattr(item, "type", None) == "show") and ((self.asset_folders and item_dir) or not self.asset_folders) and not targeted_update:
             missing_seasons = ""
             missing_episodes = ""
             found_season = False
@@ -2546,7 +2563,7 @@ class Plex(Library):
                         paths = self.asset_search_paths(season, item_dir, name, asset_directory)
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster [{paths}]"
                     if season_poster or season_background or season_logo or season_square_art:
-                        has_season_overlay = "Overlay" in [la.tag for la in self.item_labels(season)]
+                        has_season_overlay = self.item_has_overlay(season)
                         self.upload_images(season, poster=None if has_season_overlay else season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
@@ -2557,7 +2574,7 @@ class Plex(Library):
                             episode_poster, episode_background, episode_logo, episode_square_art, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background or episode_logo or episode_square_art:
                                 found_episode = True
-                                has_episode_overlay = "Overlay" in [la.tag for la in self.item_labels(episode)]
+                                has_episode_overlay = self.item_has_overlay(episode)
                                 self.upload_images(episode, poster=None if has_episode_overlay else episode_poster, background=episode_background, logo=episode_logo, square_art=episode_square_art)
                             elif self.show_missing_episode_assets:
                                 paths = self.asset_search_paths(episode, item_dir, name, asset_directory)
@@ -2601,10 +2618,10 @@ class Plex(Library):
         if folders_only:
             return ", ".join(directories)
 
-        if isinstance(item, Season):
+        if isinstance(item, Season) or getattr(item, "type", None) == "season":
             file_name = f"Season{item.seasonNumber or 0:02}"
-        elif isinstance(item, Episode):
-            file_name = item.seasonEpisode.upper()
+        elif not isinstance(item, str) and (isinstance(item, Episode) or getattr(item, "type", None) == "episode"):
+            file_name = str(item.seasonEpisode).upper()
         elif isinstance(item, Album):
             file_name = item.title
         else:
@@ -2623,34 +2640,37 @@ class Plex(Library):
         if asset_directory is None:
             asset_directory = self.asset_directories(item)
 
-        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
+        is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str)) or getattr(item, "type", None) in ("movie", "show")
         if isinstance(item, Album):
             prefix = f"{item.parentTitle} Album {item.title}'s "
             file_name = item.title
-        elif isinstance(item, Season):
+        elif not isinstance(item, str) and (isinstance(item, Season) or getattr(item, "type", None) == "season"):
             prefix = f"{item.parentTitle} Season {item.seasonNumber}'s "
             file_name = f"Season{'0' if not item.seasonNumber or item.seasonNumber < 10 else ''}{item.seasonNumber}"
-        elif isinstance(item, Episode):
-            prefix = f"{item.grandparentTitle} {item.seasonEpisode.upper()}'s "
-            file_name = item.seasonEpisode.upper()
+        elif not isinstance(item, str) and (isinstance(item, Episode) or getattr(item, "type", None) == "episode"):
+            prefix = f"{item.grandparentTitle} {str(item.seasonEpisode).upper()}'s "
+            file_name = str(item.seasonEpisode).upper()
         else:
             prefix = f"{item if isinstance(item, str) else item.title}'s "
             file_name = "poster"
 
         if not item_asset_directory:
-            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
-                if isinstance(item, (Episode, Season)):
+            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)) or getattr(item, "type", None) in ("movie", "show", "episode", "season"):
+                if isinstance(item, (Episode, Season)) or getattr(item, "type", None) in ("episode", "season"):
                     starting = getattr(item, "show")()
                 elif isinstance(item, Album):
                     starting = getattr(item, "artist")()
                 else:
                     starting = item
                 if not starting.locations:  # type: ignore[union-attr]
-                    raise Failed(f"Asset Warning: No video filepath found for {item.title}")
-                path_test = str(starting.locations[0])  # type: ignore[union-attr]
-                if not os.path.dirname(path_test):
-                    path_test = path_test.replace("\\", "/")
-                folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
+                    if isinstance(starting, (Movie, Artist, Show)):
+                        raise Failed(f"Asset Warning: No video filepath found for {item.title}")
+                    folder_name = starting.title
+                else:
+                    path_test = str(starting.locations[0])  # type: ignore[union-attr]
+                    if not os.path.dirname(path_test):
+                        path_test = path_test.replace("\\", "/")
+                    folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) or getattr(starting, "type", None) == "movie" else path_test)
             elif isinstance(item, (Collection, Playlist)):
                 folder_name = item.title
             else:
@@ -2720,7 +2740,7 @@ class Plex(Library):
                 background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
                 break
 
-        if not isinstance(item, (Episode, Season)):
+        if not (isinstance(item, (Episode, Season)) or getattr(item, "type", None) in ("episode", "season")):
             for logo_name in logo_names:
                 logo_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{logo_name}*.*"), logo_name)
                 if len(logo_matches) > 0:
@@ -2778,6 +2798,8 @@ class Plex(Library):
     def prefetch_mdblist(self, items):
         if self.config.MDBList.limit is not False:
             return
+        if logger:
+            logger.info("Fetching MDBList ratings...")
         primary_ids = []
         imdb_ids = []
         imdb_by_primary_id = {}
@@ -2820,6 +2842,46 @@ class Plex(Library):
                 logger.debug(err)
             except Failed as err:
                 logger.error(str(err))
+
+    def prefetch_imdb(self, items, ratings=False, genres=False):
+        """Batch-load IMDb ratings and genres for items outside the library preload.
+
+        ``get_rating`` and ``get_genres`` only read data already cached. Call this
+        before a pass that looks those up per item so the remaining ids share one
+        ``POST /ratings`` or ``POST /genre``.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not items or not (ratings or genres):
+            return
+        imdb_ids = []
+        seen_ids = set()
+        seen_items = set()
+        for item in items:
+            item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id is None:
+                continue
+            rating_key = getattr(item_to_id, "ratingKey", None)
+            if rating_key is not None:
+                if rating_key in seen_items:
+                    continue
+                seen_items.add(rating_key)
+            _, _, imdb_id = self.get_ids(item_to_id)
+            if not imdb_id or imdb_id in seen_ids:
+                continue
+            seen_ids.add(imdb_id)
+            imdb_ids.append(imdb_id)
+        if not imdb_ids:
+            return
+        if ratings:
+            try:
+                imdb.cache_library_ratings(imdb_ids)
+            except Exception as error:
+                logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")
+        if genres:
+            try:
+                imdb.cache_library_genres(imdb_ids)
+            except Exception as error:
+                logger.error(f"IMDb Error: Failed to cache genres for {self.name}: {error}")
 
     def get_ratings(self, item):
         ratings = {
@@ -2865,10 +2927,29 @@ class Plex(Library):
         return self.config.TMDb.get_episode(show_tmdb_id, item.seasonNumber, item.episodeNumber)
 
     def fetch_overlay_value(self, item, variable_name):
+        # Keep missing provider values local to this library's overlay run.
+        missing = vars(self).setdefault("_overlay_value_misses", set())
+        key = (item.ratingKey, variable_name)
+        if key in missing or (str(variable_name).startswith("mdb") and (item.ratingKey, "mdb") in missing):
+            return None
+        try:
+            value = Plex._fetch_overlay_value(self, item, variable_name)
+        except MappingConvertError:
+            missing.add(key)
+            raise
+        if value is None:
+            missing.add(key)
+        return value
+
+    def _fetch_overlay_value(self, item, variable_name):
         # Shared rating fetch for overlay text and value_filter. Returns a normalized 0-10 float or None.
+        if str(variable_name).startswith(("jellyfin_", "emby_")):
+            raise OverlayError(f"Overlay Error: {variable_name} requires the matching Jellyfin or Emby library")
+        if str(variable_name).startswith("silo_"):
+            raise OverlayError(f"Overlay Error: {variable_name} requires a Silo library")
         # Reads overlay_value_cache first and returns the cached value if warm, only fetching live on a miss/expiry.
         if self.config.Cache:
-            cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, variable_name)
+            cached_value, expired = self.config.Cache.query_overlay_value_cache(self.overlay_cache_key(item), variable_name)
             if cached_value is not None and not expired:
                 if util.is_valid_rating(cached_value):
                     return float(cached_value)
@@ -2958,6 +3039,7 @@ class Plex(Library):
                 raise OverlayError("Overlay Error: Serializd ratings are only available for shows and episodes")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
+            lookup_errors = []
             if self.config.MDBList.limit is False:
                 if self.is_show and tvdb_id:
                     try:
@@ -2965,7 +3047,8 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"TVDb ID: {tvdb_id}")
                         raise
@@ -2975,7 +3058,8 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"TMDb ID: {tmdb_id}")
                         raise
@@ -2985,11 +3069,15 @@ class Plex(Library):
                     except LimitReached as err:
                         logger.debug(err)
                     except Failed as err:
-                        logger.error(str(err))
+                        lookup_errors.append(str(err))
+                        logger.debug(str(err))
                     except Exception:
                         logger.trace(f"IMDb ID: {imdb_id}")
                         raise
                 if not mdb_item:
+                    vars(self).setdefault("_overlay_value_misses", set()).add((item.ratingKey, "mdb"))
+                    if lookup_errors:
+                        logger.error(f"MDBList lookup failed for {item.title}: {'; '.join(dict.fromkeys(lookup_errors))}")
                     raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
             if mdb_item:
                 cacheable = getattr(mdb_item, "ratings_valid", True)
@@ -3079,7 +3167,7 @@ class Plex(Library):
                 return None
             found_rating = float(found_rating)
             if self.config.Cache and cacheable:
-                self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
+                self.config.Cache.update_overlay_value_cache(False, self.overlay_cache_key(item), variable_name, found_rating)
         return found_rating
 
     def get_locked_attributes(self, item, titles=None, year_titles=None, item_type=None):

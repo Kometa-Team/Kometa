@@ -19,23 +19,31 @@ from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
+from modules.library_config import expand_libraries
 from modules.lidarr import Lidarr
+from modules.listrr import Listrr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
+from modules.media_server import PlexMediaServer, build_media_server
+from modules.mediabrowser import Emby, EmbyMediaServer, Jellyfin, JellyfinMediaServer
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
+from modules.native_metadata import configure_metadata_operations
 from modules.notifiarr import Notifiarr
 from modules.ntfy import Ntfy
 from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.rating_operations import BROWSER_SOURCES, SILO_OPERATIONS, SILO_SOURCES, configure_rating_updates
 from modules.seerr import Seerr
 from modules.serializd import Serializd
+from modules.silo import Silo, SiloMediaServer
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
+from modules.tautulli import supports_library as tautulli_supports_library
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
 from modules.tracearr import Tracearr
@@ -142,6 +150,7 @@ mass_studio_options = {
     "mal": "Use MyAnimeList Studio",
 }
 mass_original_title_options = {
+    "tmdb": "Use TMDb Original Title",
     "lock": "Lock Original Title",
     "unlock": "Unlock Original Title",
     "remove": "Remove and Lock Original Title",
@@ -192,8 +201,12 @@ mass_episode_rating_options = {
     "serializd": "Use Serializd Rating",
     "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
+    **SILO_SOURCES,
+    **BROWSER_SOURCES,
+    "clear": "Clear native rating",
 }
 mass_rating_options = {
+    "clear": "Clear native rating",
     "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
@@ -226,6 +239,8 @@ mass_rating_options = {
     "anidb_average": "Use AniDB Average",
     "anidb_score": "Use AniDB Review Dcore",
     "mal": "Use MyAnimeList Rating",
+    **SILO_SOURCES,
+    **BROWSER_SOURCES,
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 library_operations = {
@@ -247,6 +262,7 @@ library_operations = {
     "mass_collection_content_rating_update": "dict",
     "mass_genre_update": mass_genre_options,
     "mass_studio_update": mass_studio_options,
+    **{operation: {**mass_rating_options, "clear": "Clear native rating"} for operation in SILO_OPERATIONS.values()},
     "mass_audience_rating_update": mass_rating_options,
     "mass_episode_audience_rating_update": mass_episode_rating_options,
     "mass_critic_rating_update": mass_rating_options,
@@ -302,6 +318,8 @@ class ConfigFile:
         self.requested_libraries = None
         if "libraries" in attrs and attrs["libraries"]:
             self.requested_libraries = [s.strip() for s in attrs["libraries"].split("|")]
+        self.requested_servers = [name.strip() for name in attrs["servers"].split("|")] if attrs.get("servers") is not None else None
+        self.requested_server_types = attrs.get("server_types") or None
         self.requested_files = None
         if "files" in attrs and attrs["files"]:
             self.requested_files = []
@@ -721,6 +739,10 @@ class ConfigFile:
         def expand_mass_metadata_operation(config_op, input_dict):
             if not input_dict or not isinstance(input_dict, dict):
                 raise Failed("Config Error: mass_metadata_update must be a dictionary")
+            supported = {"original_title", "studio", "originally_available", "added_at", "backup", "collections", "genre", "content_rating", "labels", "ratings", "poster", "background", "logo", "square_art", "squart_art"}
+            unknown = set(input_dict) - supported
+            if unknown:
+                raise Failed(f"Config Error: mass_metadata_update options not supported: {sorted(unknown)}")
             base_op = dict(config_op)
             base_op.pop("mass_metadata_update", None)
             base_schedule = base_op.pop("schedule", None)
@@ -840,6 +862,10 @@ class ConfigFile:
                     "episode_critic": "mass_episode_critic_rating_update",
                     "episode_user": "mass_episode_user_rating_update",
                 }
+                ratings_aliases.update(SILO_OPERATIONS)
+                unknown = set(ratings_config) - set(ratings_aliases) - {"schedule"}
+                if unknown:
+                    raise Failed(f"Config Error: Unsupported rating targets: {sorted(unknown)}")
                 for new_key, old_key in ratings_aliases.items():
                     if new_key in ratings_config:
                         input_value = ratings_config[new_key]
@@ -1390,6 +1416,29 @@ class ConfigFile:
 
             logger.separator()
 
+            self.Listrr = None
+            if "listrr" in self.data:
+                logger.info("Connecting to Listrr...")
+                try:
+                    apikey = check_for_attribute(self.data, "apikey", parent="listrr", throw=True)
+                    if isinstance(apikey, str):
+                        apikey = apikey.strip()
+                        if not apikey:
+                            raise Failed("Config Error: listrr sub-attribute apikey is blank")
+                    listrr_obj = Listrr(self.Requests, apikey)
+                    listrr_obj.test_connection()
+                    self.Listrr = listrr_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"Listrr Connection {'Failed' if self.Listrr is None else 'Successful'}")
+            else:
+                logger.info("listrr attribute not found")
+
+            logger.separator()
+
             self.WeTrakr = None
             if "wetrakr" in self.data:
                 logger.info("Connecting to WeTrakr...")
@@ -1416,7 +1465,7 @@ class ConfigFile:
 
             logger.separator()
 
-            logger.info("Connecting to Plex Libraries...")
+            logger.info("Connecting to Libraries...")
 
             self.general["plex"] = {
                 "url": check_for_attribute(self.data, "url", parent="plex", var_type="url", default_is_none=True),
@@ -1510,17 +1559,24 @@ class ConfigFile:
                 "server_id": check_for_attribute(self.data, "server_id", parent="tracearr", default_is_none=True),
             }
 
+            self.media_servers = {}
+            raw_servers = self.data.get("media_servers") if isinstance(self.data, dict) else None
+            if raw_servers is not None:
+                if not isinstance(raw_servers, dict) or not raw_servers:
+                    raise Failed("Config Error: media_servers must be a dictionary of named servers")
+                for server_name, server_data in raw_servers.items():
+                    self.media_servers[str(server_name)] = build_media_server(str(server_name), server_data)
+
             self.libraries = []
             self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-            for library_name, lib in libs.items():
-                if self.requested_libraries and library_name not in self.requested_libraries:
-                    continue
+            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries, self.requested_servers, self.requested_server_types):
                 params = {o: None for o in library_operations}
                 params["mass_logo_update"] = None
                 params["mass_square_art_update"] = None
                 params["mapping_name"] = str(library_name)
+                params["silo_shelves"] = check_for_attribute(lib, "silo_shelves", var_type="bool", default=False, do_print=False, save=False)
                 params["name"] = str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
 
@@ -1891,13 +1947,15 @@ class ConfigFile:
                                 section_final[op] = check_for_attribute(config_op, op, test_list=data_type, default_is_none=True, save=False)
                             elif isinstance(data_type, dict):
                                 try:
-                                    if not config_op[op]:
+                                    if not config_op[op] and not (op.endswith("rating_update") and isinstance(config_op[op], (int, float)) and not isinstance(config_op[op], bool) and config_op[op] == 0):
                                         raise Failed("is blank")
                                     input_list = config_op[op] if isinstance(config_op[op], list) else [config_op[op]]
                                     final_list = []
                                     for list_attr in input_list:
-                                        if not list_attr:
+                                        if not list_attr and not (op.endswith("rating_update") and isinstance(list_attr, (int, float)) and not isinstance(list_attr, bool) and list_attr == 0):
                                             raise Failed("has a blank value")
+                                        if op.endswith("rating_update") and isinstance(list_attr, bool):
+                                            raise Failed("requires a rating source or number, not a boolean")
                                         if str(list_attr).lower() in data_type:
                                             final_list.append(str(list_attr).lower())
                                         elif op in [
@@ -1913,7 +1971,10 @@ class ConfigFile:
                                         elif op.endswith("rating_update"):
                                             if str(list_attr).lower() in util.RETIRED_TRAKT_RATING_VALUES:
                                                 raise Failed(util.TRAKT_REMOVAL_MESSAGE)
-                                            final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
+                                            rating = util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True)
+                                            if rating is None:
+                                                raise Failed("requires a finite rating between 0 and 10")
+                                            final_list.append(rating)
                                         else:
                                             raise Failed(f"has an invalid value: {list_attr}")
                                     section_final[op] = final_list
@@ -2015,13 +2076,17 @@ class ConfigFile:
                                     section_final[op] = {
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),
                                         "configured": check_for_attribute(input_dict, "configured", var_type="bool", default_is_none=True, save=False),
-                                        "less": check_for_attribute(
-                                            input_dict,
-                                            "less",
-                                            var_type="int",
-                                            default_is_none=True,
-                                            save=False,
-                                            int_min=1,
+                                        "less": (
+                                            "all"
+                                            if str(input_dict.get("less", "")).lower() == "all"
+                                            else check_for_attribute(
+                                                input_dict,
+                                                "less",
+                                                var_type="int",
+                                                default_is_none=True,
+                                                save=False,
+                                                int_min=1,
+                                            )
                                         ),
                                         "ignore_empty_smart_collections": check_for_attribute(
                                             input_dict,
@@ -2135,7 +2200,7 @@ class ConfigFile:
 
                 params["skip_library"] = False
                 params["schedule_mode"] = self.runtime_mode or "full"
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
+                if lib and "schedule" in lib and not self.requested_libraries and not self.requested_servers and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:
@@ -2268,72 +2333,103 @@ class ConfigFile:
 
                 try:
                     logger.info("")
-                    logger.separator("Plex Configuration", space=False, border=False)
-                    params["plex"] = {
-                        "url": check_for_attribute(
-                            lib,
-                            "url",
-                            parent="plex",
-                            var_type="url",
-                            default=self.general["plex"]["url"],
-                            req_default=True,
-                            save=False,
-                        ),
-                        "token": check_for_attribute(
-                            lib,
-                            "token",
-                            parent="plex",
-                            default=self.general["plex"]["token"],
-                            req_default=True,
-                            save=False,
-                        ),
-                        "timeout": check_for_attribute(
-                            lib,
-                            "timeout",
-                            parent="plex",
-                            var_type="int",
-                            default=self.general["plex"]["timeout"],
-                            save=False,
-                        ),
-                        "verify_ssl": check_for_attribute(
-                            lib,
-                            "verify_ssl",
-                            parent="plex",
-                            var_type="bool",
-                            default=self.general["plex"]["verify_ssl"],
-                            default_is_none=True,
-                            save=False,
-                        ),
-                        "db_cache": check_for_attribute(
-                            lib,
-                            "db_cache",
-                            parent="plex",
-                            var_type="int",
-                            default=self.general["plex"]["db_cache"],
-                            default_is_none=True,
-                            save=False,
-                        ),
-                    }
-                    for attr in ["clean_bundles", "empty_trash", "optimize"]:
-                        try:
-                            params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
-                        except Failed:
-                            test_attr = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
-                            if test_attr is not True and test_attr is not False:
-                                params["plex"][attr] = False
-                                try:
-                                    util.schedule_check(attr, test_attr, current_time, self.run_hour)
-                                    params["plex"][attr] = True
-                                except NotScheduled:
-                                    logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
-                            else:
-                                params["plex"][attr] = test_attr
+                    server_name = str(lib["server"]) if lib and lib.get("server") else None
+                    named_server = None
+                    if server_name:
+                        if server_name not in self.media_servers:
+                            raise Failed(f"Config Error: Library {display_name} server '{server_name}' is not defined in media_servers")
+                        named_server = self.media_servers[server_name]
+                    configure_rating_updates(params, named_server.type_name if named_server else "plex", logger)
+                    configure_metadata_operations(params, named_server.type_name if named_server else "plex", logger)
+                    if isinstance(named_server, SiloMediaServer):
+                        logger.separator("Silo Configuration", space=False, border=False)
+                        params["server"] = named_server
+                        library = Silo(self, params)
+                    elif isinstance(named_server, (JellyfinMediaServer, EmbyMediaServer)):
+                        logger.separator(f"{named_server.type_label} Configuration", space=False, border=False)
+                        params["server"] = named_server
+                        library = Emby(self, params) if isinstance(named_server, EmbyMediaServer) else Jellyfin(self, params)
+                    else:
+                        logger.separator("Plex Configuration", space=False, border=False)
+                        plex_defaults = dict(self.general["plex"])
+                        if isinstance(named_server, PlexMediaServer):
+                            for attr in ("url", "token", "timeout", "verify_ssl", "db_cache"):
+                                value = getattr(named_server, attr)
+                                if value is not None:
+                                    plex_defaults[attr] = value
+                        params["plex"] = {
+                            "url": check_for_attribute(
+                                lib,
+                                "url",
+                                parent="plex",
+                                var_type="url",
+                                default=plex_defaults["url"],
+                                req_default=True,
+                                save=False,
+                            ),
+                            "token": check_for_attribute(
+                                lib,
+                                "token",
+                                parent="plex",
+                                default=plex_defaults["token"],
+                                req_default=True,
+                                save=False,
+                            ),
+                            "timeout": check_for_attribute(
+                                lib,
+                                "timeout",
+                                parent="plex",
+                                var_type="int",
+                                default=plex_defaults["timeout"],
+                                save=False,
+                            ),
+                            "verify_ssl": check_for_attribute(
+                                lib,
+                                "verify_ssl",
+                                parent="plex",
+                                var_type="bool",
+                                default=plex_defaults["verify_ssl"],
+                                default_is_none=True,
+                                save=False,
+                            ),
+                            "db_cache": check_for_attribute(
+                                lib,
+                                "db_cache",
+                                parent="plex",
+                                var_type="int",
+                                default=plex_defaults["db_cache"],
+                                default_is_none=True,
+                                save=False,
+                            ),
+                        }
+                        for attr in ["clean_bundles", "empty_trash", "optimize"]:
+                            try:
+                                params["plex"][attr] = check_for_attribute(lib, attr, parent="plex", var_type="bool", save=False, throw=True)
+                            except Failed:
+                                test_attr = lib["plex"][attr] if "plex" in lib and attr in lib["plex"] and lib["plex"][attr] else self.general["plex"][attr]
+                                if test_attr is not True and test_attr is not False:
+                                    params["plex"][attr] = False
+                                    try:
+                                        util.schedule_check(attr, test_attr, current_time, self.run_hour)
+                                        params["plex"][attr] = True
+                                    except NotScheduled:
+                                        logger.info(f"Skipping Operation Not Scheduled for {test_attr}")
+                                else:
+                                    params["plex"][attr] = test_attr
 
-                    if params["plex"]["url"].lower() == "env":
-                        params["plex"]["url"] = self.env_plex_url
-                    if params["plex"]["token"].lower() == "env":
-                        params["plex"]["token"] = self.env_plex_token
-                    library = Plex(self, params)
+                        if params["plex"]["url"].lower() == "env":
+                            params["plex"]["url"] = self.env_plex_url
+                        if params["plex"]["token"].lower() == "env":
+                            params["plex"]["token"] = self.env_plex_token
+                        if isinstance(named_server, PlexMediaServer):
+                            for attr in ("url", "token", "timeout", "verify_ssl", "db_cache"):
+                                value = getattr(named_server, attr)
+                                if value is not None:
+                                    params["plex"][attr] = value
+                            params["server"] = named_server
+                        else:
+                            params["server"] = PlexMediaServer.from_config(params["plex"])
+                        library = Plex(self, params)
                     library.Seerr = self.Seerr
                     if lib and "seerr" in lib:
                         try:
@@ -2729,7 +2825,9 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Lidarr Connection {'Failed' if library.Lidarr is None else 'Successful'}")
 
-                if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
+                if (self.general["tautulli"]["url"] or (lib and "tautulli" in lib)) and not tautulli_supports_library(library):
+                    logger.warning(f"Tautulli Warning: Skipping Tautulli for {display_name}; Tautulli only supports Plex libraries")
+                elif self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")
                     logger.separator("Tautulli Configuration", space=False, border=False)
                     logger.info("")
@@ -2820,7 +2918,7 @@ class ConfigFile:
             self.library_map = {_l.original_mapping_name: _l for _l in self.libraries}
 
             if len(self.libraries) > 0:
-                logger.info(f"{len(self.libraries)} Plex Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
+                logger.info(f"{len(self.libraries)} Library Connection{'s' if len(self.libraries) > 1 else ''} Successful")
             else:
                 raise Failed("Config Error: No libraries were found in config")
 

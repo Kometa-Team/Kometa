@@ -107,6 +107,11 @@ arguments = {
     "overlays-only": {"args": ["ov", "overlay", "overlays", "overlay-only"], "type": "bool", "help": "Run only overlay files"},
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
+    "run-servers": {"args": ["rs", "server", "servers", "run-server"], "type": "str", "help": "Process only specified named media servers (pipe-separated list '|')"},
+    "plex-only": {"args": [], "type": "bool", "help": "Process only Plex libraries"},
+    "silo-only": {"args": [], "type": "bool", "help": "Process only Silo libraries"},
+    "emby-only": {"args": [], "type": "bool", "help": "Process only Emby libraries"},
+    "jellyfin-only": {"args": [], "type": "bool", "help": "Process only Jellyfin libraries"},
     "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
     "mode": {"args": [], "type": "str", "help": "Override library schedule modes for this run"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
@@ -194,6 +199,11 @@ if run_args["mode"] is not None:
     run_args["mode"] = run_args["mode"].strip().lower()
     if not run_args["mode"]:
         parser.error("--mode / KOMETA_MODE must specify a schedule mode")
+server_only = [kind for kind in ("plex", "silo", "emby", "jellyfin") if run_args[f"{kind}-only"]]
+if len(server_only) > 1:
+    parser.error("Choose only one of --plex-only, --silo-only, --emby-only, or --jellyfin-only")
+if run_args["run-servers"] is not None and any(not name.strip() for name in run_args["run-servers"].split("|")):
+    parser.error("--run-servers / KOMETA_RUN_SERVERS must contain nonempty server names")
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
@@ -291,6 +301,7 @@ from modules.builder import CollectionBuilder, prefetch_gather_ids  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.overlay import rating_sources  # noqa: E402
 from modules.request import Requests  # noqa: E402
+from modules.schedule_mode import cached_item_key  # noqa: E402
 from modules.tmdb import NotFound as TMDbNotFound  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
 
@@ -586,6 +597,8 @@ def start(attrs):
         attrs["playlist_only"] = run_args["playlists-only"]
         attrs["operations_only"] = run_args["operations-only"]
         attrs["overlays_only"] = run_args["overlays-only"]
+        attrs["servers"] = run_args["run-servers"]
+        attrs["server_types"] = server_only
         attrs["plex_url"] = plex_url
         attrs["plex_token"] = plex_token
 
@@ -774,6 +787,8 @@ def run_config(config, stats):
         if config.general["playlist_report"]:
             ran = []
             for library in config.libraries:
+                if getattr(getattr(library, "server", None), "type_name", "plex") != "plex":
+                    continue
                 if library.PlexServer.machineIdentifier in ran:
                     continue
                 ran.append(library.PlexServer.machineIdentifier)
@@ -857,12 +872,12 @@ def run_config(config, stats):
     logger.separator("Summary")
     for library in config.libraries:
         logger.info("")
-        logger.separator(f"{library.name} Summary", space=False, border=False)
+        logger.separator(f"{library.name} ({library.original_mapping_name}) Summary", space=False, border=False)
         logger.info("")
         logger.info(f"{'Title':<27} | Run Time |")
         logger.info(f"{logger.separating_character * 27} | {logger.separating_character * 8} |")
-        if library.name in library_status:
-            for text, value in library_status[library.name].items():
+        if library.original_mapping_name in library_status:
+            for text, value in library_status[library.original_mapping_name].items():
                 logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
         print_status(library.status, longest, logger)
@@ -908,7 +923,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.info("")
             logger.separator(f"Skipping {library.original_mapping_name} Library")
             continue
-        library_status[library.name] = {}
+        library_status[library.original_mapping_name] = {}
         try:
             # logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout  # pyright: ignore[reportPrivateImportUsage,reportAttributeAccessIssue]
@@ -972,7 +987,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                         logger.info(f"Collection {collection.title} Deleted")
                     except Failed as e:
                         logger.error(e)
-                library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
+                library_status[library.original_mapping_name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             if run_args["delete-labels"] and not run_args["playlists-only"]:
                 time_start = datetime.now()
@@ -992,7 +1007,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
-                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
+                library_status[library.original_mapping_name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             time_start = datetime.now()
             temp_items = None
@@ -1000,7 +1015,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             if config.Cache:
                 schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
                 if schedule_list_key:
-                    library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
+                    server_type = getattr(getattr(library, "server", None), "type_name", "plex")
+                    library.scheduled_cached_keys = {cached_item_key(key, server_type) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
                 target_keys = None
@@ -1031,7 +1047,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
-            library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
+            library_status[library.original_mapping_name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
             config.run_libraries.append(library)
 
             runs = {
@@ -1091,7 +1107,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.separator(f"{'Test ' if run_args['tests'] else ''}Music Playlists")
                             with timings.overlay_context(False):
                                 run_collection(config, library, metadata, music_playlists_to_run, music_playlist=True)
-                    library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
                     targeted_run = config.requested_collections or config.requested_files
                     if not targeted_run and (library.hub_priorities or library.auto_sort_hubs):
@@ -1116,7 +1132,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             except Failed as e:
                                 library.notify(e)
                                 logger.error(e)
-                    library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Images Files"] = str(datetime.now() - time_start).split(".")[0]
 
                     time_start = datetime.now()
                     for metadata in library.metadata_files:
@@ -1132,11 +1148,11 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
-                    library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
+                    library_status[library.original_mapping_name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
+                    library_status[library.original_mapping_name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
+                    library_status[library.original_mapping_name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))
@@ -1596,7 +1612,18 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
+        if (
+            run_args["run"]
+            or run_args["tests"]
+            or run_args["run-collections"]
+            or run_args["run-libraries"]
+            or run_args["run-servers"]
+            or run_args["run-files"]
+            or run_args["resume"]
+            or run_args["validate"]
+            or run_args["validate-file"]
+            or run_args["validate-dir"]
+        ):
             exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
             sys.exit(exit_code)
         else:

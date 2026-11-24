@@ -181,9 +181,19 @@ Configuration = [
     { TMDb = "config/tmdb.md" },
 ] },
     { "Optional Services" = [
+    { "Media Servers" = [
+    { Silo = "config/silo.md" },
+    { "Jellyfin and Emby" = "config/jellyfin.md" },
+    { "Differences from Plex" = [
+    { Jellyfin = "config/jellyfin_differences.md" },
+    { Emby = "config/emby_differences.md" },
+    { Silo = "config/silo_differences.md" },
+] },
+] },
     { "Metadata and Tracking" = [
     { FlickList = "config/flicklist.md" },
     { Floppy = "config/floppy.md" },
+    { Listrr = "config/listrr.md" },
     { MDBList = "config/mdblist.md" },
     { OMDb = "config/omdb.md" },
     { Serializd = "config/serializd.md" },
@@ -387,6 +397,10 @@ Reference = [
     { Floppy = "files/builders/floppy/index.md" },
     { ICheckMovies = "files/builders/icheckmovies/index.md" },
     { Letterboxd = "files/builders/letterboxd/builders.md" },
+    { Listrr = [
+    { Overview = "files/builders/listrr/overview.md" },
+    { List = "files/builders/listrr/list.md" },
+] },
     { MDBList = "files/builders/mdblist/index.md" },
     { Serializd = "files/builders/serializd/index.md" },
     { Simkl = "files/builders/simkl/index.md" },

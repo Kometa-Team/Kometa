@@ -50,8 +50,10 @@ booleans
 BoxOfficeMojo
 boxofficemojo
 BoxOfficeMojo's
+boxset
 BPjM
 BritBox
+bt
 Bullmoose
 bullmoose
 bw
@@ -122,10 +124,13 @@ dsm
 DTS
 durations
 DV
+Dzongkha
 ee
 eedd
 EG
 El
+emby
+Emby
 Emmys
 encodings
 ensurepip
@@ -183,6 +188,7 @@ href
 https
 HU
 Hulu
+hy
 ICheckMovies
 iex
 Im
@@ -203,6 +209,8 @@ irm
 isort
 iteratively
 ITVX
+jellyfin
+Jellyfin
 jfcherng
 Jinja
 jobTemplate
@@ -244,6 +252,10 @@ LinuxServer
 Linuxserver
 linuxserver
 linuxserver's
+Listrr
+listrr
+Listrr's
+lk
 localhost
 Logscan
 lookback
@@ -268,6 +280,7 @@ mdblist
 MDBList's
 mdblists
 mecha
+MediaBrowser
 MediaStinger
 mediastinger
 Mediastingers
@@ -424,6 +437,11 @@ ShawShank
 Shortcode
 shoutout
 SIMKL
+Silo
+Silo's
+silo
+Sinhala
+pzyzbyx
 Simkl
 simkl
 Simkl's

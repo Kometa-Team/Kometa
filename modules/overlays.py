@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder, prefetch_gather_ids
-from modules.util import Failed, FilterFailed, NotScheduled, OverlayError, PlexImageUploadError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
 logger = util.logger
 
@@ -65,7 +65,7 @@ class Overlays:
             if self.cache:
                 needs_fetch = False
                 for variable in variables:
-                    cached_value, expired = self.cache.query_overlay_value_cache(item.ratingKey, variable)
+                    cached_value, expired = self.cache.query_overlay_value_cache(self.library.overlay_cache_key(item), variable)
                     if cached_value is None or expired:
                         needs_fetch = True
                         break
@@ -75,7 +75,22 @@ class Overlays:
         if items:
             self.library.prefetch_mdblist(items)
 
+    def _prefetch_imdb_ratings(self, key_to_overlays, properties):
+        """Batch IMDb ratings for overlay items that were not in the library preload."""
+        items = []
+        for item, over_names in key_to_overlays.values():
+            if not any("imdb_rating" in getattr(properties.get(over_name), "variables", ()) for over_name in over_names):
+                continue
+            if self.cache:
+                cached_value, expired = self.cache.query_overlay_value_cache(item.ratingKey, "imdb_rating")
+                if cached_value is not None and not expired:
+                    continue
+            items.append(item)
+        if items:
+            self.library.prefetch_imdb(items, ratings=True)
+
     def run_overlays(self, target_keys=None):
+        self.library._overlay_value_misses = set()
         overlay_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")
@@ -88,9 +103,14 @@ class Overlays:
         if not self.library.remove_overlays:
             key_to_overlays, properties = self.compile_overlays(target_keys=target_keys)
             self._prefetch_mdblist(key_to_overlays, properties)
+            self._prefetch_imdb_ratings(key_to_overlays, properties)
         ignore_list = [rk for rk in key_to_overlays]
 
-        old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
+        uses_labels = getattr(self.library, "uses_overlay_labels", True) is not False
+        if callable(getattr(type(self.library), "get_legacy_overlay_labels", None)):
+            old_overlays = self.library.get_legacy_overlay_labels()
+        else:
+            old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")] if uses_labels else []
         if old_overlays:
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
             logger.info("")
@@ -115,12 +135,16 @@ class Overlays:
 
         if remove_overlays:
             logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
-            for i, item in enumerate(remove_overlays, 1):
-                item_title = self.library.get_item_display_title(item)
-                logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
-                self.remove_overlay(
-                    item, item_title, "Overlay", [os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")]
-                )
+            with self.library.batch_overlay_removal():
+                for i, item in enumerate(remove_overlays, 1):
+                    item_title = self.library.get_item_display_title(item)
+                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
+                    self.remove_overlay(
+                        item,
+                        item_title,
+                        "Overlay",
+                        [os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")],
+                    )
             logger.exorcise()
         else:
             logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
@@ -149,7 +173,9 @@ class Overlays:
                         cached_state = self.cache.query_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
                     with timings.track("overlay_item_reload", library=self.library.name):
                         self.library.reload(item, force=self.library.reapply_overlays)
-                    has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
+                    has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)]) if uses_labels else bool(self._overlay_backup_extensions.get(str(item.ratingKey)))
+                    if getattr(self.library, "overlay_backup_fallback", False) is True:
+                        has_overlay = has_overlay or bool(self._overlay_backup_extensions.get(str(item.ratingKey)))
 
                     current_hashes = {properties[ov].mapping_name: properties[ov].get_overlay_compare() for ov in over_names}
                     blur_num = 0
@@ -177,7 +203,7 @@ class Overlays:
                     if self.cache:
                         for over_name in over_names:
                             if properties[over_name].name.startswith("text"):
-                                for cache_key, cache_value in self.cache.query_overlay_value_cache_all(item.ratingKey).items():
+                                for cache_key, cache_value in self.cache.query_overlay_value_cache_all(self.library.overlay_cache_key(item)).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
                                     if cache_key in overlay.rating_sources:
                                         try:
@@ -281,8 +307,10 @@ class Overlays:
                                 exif_tags[0x04BC] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
+                                rendered_names = []
                                 if blur_num > 0:
                                     new_poster = new_poster.filter(ImageFilter.GaussianBlur(blur_num))
+                                    rendered_names.extend(name for name in over_names if properties[name].name == f"blur({blur_num})")
 
                                 def get_text(text_overlay):
                                     full_text = text_overlay.name[5:-1]
@@ -350,7 +378,7 @@ class Overlays:
                                                 actual_value = len(actual_value)
                                         if self.cache and format_var not in overlay.rating_sources:
                                             cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value  # type: ignore[union-attr]
-                                            self.cache.update_overlay_value_cache(False, item.ratingKey, format_var, cache_store)
+                                            self.cache.update_overlay_value_cache(False, self.library.overlay_cache_key(item), format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
                                             if mod:
@@ -431,6 +459,8 @@ class Overlays:
                                             new_poster.paste(current_overlay.image, (0, 0), current_overlay.image)
                                             new_poster = new_poster.resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
+                                    rendered_names.append(over_name)
+
                                 for queue, weights in queue_overlays.items():
                                     cords = self.library.queues[queue]
                                     sorted_weights = sorted(weights.items(), reverse=True)
@@ -459,6 +489,7 @@ class Overlays:
                                             else:
                                                 overlay_box = current_overlay.get_coordinates((canvas_width, canvas_height), box=current_overlay.image.size, new_cords=cord)
                                             new_poster.paste(current_overlay.image, overlay_box, current_overlay.image)
+                                        rendered_names.append(over_name)
                                 ext = "webp" if self.library.overlay_artwork_filetype.startswith("webp") else self.library.overlay_artwork_filetype
                                 temp = os.path.join(self.library.overlay_folder, f"temp.{ext}")
                                 if self.library.overlay_artwork_quality and self.library.overlay_artwork_filetype in ["jpg", "webp_lossy"]:
@@ -469,12 +500,13 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags)
                                 with timings.track("overlay_plex_upload", library=self.library.name):
                                     self.library.upload_poster(item, temp)
-                                overlay_label_items.append(item)
+                                if uses_labels:
+                                    overlay_label_items.append(item)
                                 if self.library.plex_bulk_edit_batch_size and len(overlay_label_items) >= self.library.plex_bulk_edit_batch_size:
                                     self.library.batch_add_label(overlay_label_items, "Overlay")
                                     overlay_label_items = []
                                 poster_compare = poster.compare if poster else item.thumb
-                                logger.info(f"  Overlays Applied: {', '.join(over_names)}")
+                                logger.info(f"  Overlays Applied: {', '.join(rendered_names) if rendered_names else 'None'}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()
                             raise Failed(f"  Overlay Error: {e}")
@@ -580,18 +612,18 @@ class Overlays:
         logger.debug(f"Reset Overlays: {self.library.reset_overlays}")
         logger.debug("")
         logger.separator("Number of Items Per Overlay", space=False, border=False)
-        logger.debug("")
+        logger.info("")
 
         longest = 7
         for overlay_name in properties:
             if len(overlay_name) > longest:
                 longest = len(overlay_name)
 
-        logger.debug(f"{'Overlay':^{longest}} | Number |")
-        logger.debug(f"{logger.separating_character * longest} | {logger.separating_character * 6} |")
+        logger.info(f"{'Overlay':^{longest}} | Number |")
+        logger.info(f"{logger.separating_character * longest} | {logger.separating_character * 6} |")
         for overlay_name, over_obj in properties.items():
-            logger.debug(f"{overlay_name:<{longest}} | {len(over_obj.keys):^6} |")
-        logger.debug("")
+            logger.info(f"{overlay_name:<{longest}} | {len(over_obj.keys):^6} |")
+        logger.info("")
 
         for overlay_name, over_obj in properties.items():
             if over_obj.group:
@@ -648,9 +680,18 @@ class Overlays:
         return key_to_overlays, properties
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None, target_keys=None):
-        items = self.library.search(label=label, libtype=libtype)
+        if getattr(self.library, "uses_overlay_labels", True) is False:
+            backups = self._overlay_backup_extensions
+            items = [item for item in self.library.get_all(builder_level=libtype) if str(item.ratingKey) in backups]
+        elif getattr(self.library, "overlay_backup_fallback", False) is True:
+            # Native catalogs already carry tags. Avoid another paginated
+            # server search before applying overlays at each builder level.
+            backups = self._overlay_backup_extensions if label == "Overlay" else {}
+            items = [item for item in self.library.get_all(builder_level=libtype) if any(str(tag.tag).casefold() == str(label).casefold() for tag in self.library.item_labels(item)) or str(item.ratingKey) in backups]
+        else:
+            items = self.library.search(label=label, libtype=libtype)
         if ignore:
-            items = [o for o in items if o.ratingKey not in ignore]
+            items = [item for item in items if item.ratingKey not in ignore]
         return [item for item in items if item.ratingKey in target_keys] if target_keys else items
 
     def remove_overlay(self, item, item_title, label, locations):
@@ -673,10 +714,14 @@ class Overlays:
         if poster_location:
             try:
                 self.library.upload_poster(item, poster_location, url=is_url)
-            except PlexImageUploadError as e:
+            except Failed as e:
                 logger.error(f"Overlay removal skipped for {item_title}: {e}. Continuing the run.")
                 return
-            self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
+            if getattr(self.library, "uses_overlay_labels", True) is not False:
+                if any(tag.tag == label for tag in self.library.item_labels(item)):
+                    self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
+            elif self.cache:
+                self.cache.delete_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
             for loc in locations:
                 if os.path.exists(loc):
                     os.remove(loc)

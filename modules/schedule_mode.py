@@ -6,6 +6,12 @@ from datetime import timedelta
 _ADDED_MODE = re.compile(r"added\((0*[1-9][0-9]*)([mhd]?)\)", re.IGNORECASE)
 
 
+def cached_item_key(key, server_type="plex"):
+    """Restore numeric Plex keys while preserving other servers' string IDs."""
+    value = str(key)
+    return int(value) if server_type == "plex" and value.isascii() and value.isdecimal() else value
+
+
 def parse_added_duration(mode: str) -> timedelta:
     """Return the lookback for added(N[m|h|d]); bare N means days."""
     match = _ADDED_MODE.fullmatch(mode)

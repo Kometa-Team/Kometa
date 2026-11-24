@@ -16,13 +16,58 @@ from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid, playlist_attributes
-from modules.util import Failed
+from modules.util import Failed, ServiceError
 from tests.conftest import FakeLogger
 from tests.factories import make_builder
 
 # ═══════════════════════════════════════════════════════════════════════
 # Shared fakes
 # ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.parametrize("templates", [{"name": "separator", "separator": "genre"}, [{"name": "shared"}, {"name": "separator", "separator": "actor"}]])
+def test_silo_separator_skipped_before_template_expansion(templates, monkeypatch):
+    from modules.silo import SiloMediaServer
+    from modules.util import NotScheduled
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    library = SimpleNamespace(name="Movies", server=SiloMediaServer(url="http://silo", token="token"))
+    metadata = MagicMock()
+    with pytest.raises(NotScheduled, match="Silo does not support collection separators"):
+        CollectionBuilder(MagicMock(), metadata, "Genre Collections", {"template": templates}, library=library)
+    metadata.apply_template.assert_not_called()
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+@pytest.mark.parametrize("definition", ["release.desc", {"sort_by": "release.desc", "limit": 20, "all": {"label": "<<smart_label>>"}}])
+@pytest.mark.parametrize("selector,value", [("imdb_list", "https://imdb.com/list/example"), ("plex_all", True), ("plex_search", {"all": {"resolution": "1080p"}})])
+def test_mediabrowser_list_smart_labels_become_ordinary_collections(kind, definition, selector, value, monkeypatch):
+    from modules.mediabrowser import EmbyMediaServer, JellyfinMediaServer
+
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    server = (JellyfinMediaServer if kind == "jellyfin" else EmbyMediaServer)(url="http://server", token="token")
+    library = SimpleNamespace(server=server)
+    data = {"smart_label": definition, selector: value, "schedule": "daily", "sync_mode": "sync", "filters": {"aspect": 1.33}}
+    methods = {key: key for key in data}
+    CollectionBuilder._adapt_list_smart_label(library, data, methods)
+    CollectionBuilder._validate_smart_server(library, methods)
+    assert "smart_label" not in data and "smart_label" not in methods
+    assert data["collection_order"] == "release.desc"
+    assert data["schedule"] == "daily" and data["sync_mode"] == "sync"
+    assert data[selector] == value and data["filters"] == {"aspect": 1.33}
+    if isinstance(definition, dict):
+        assert data["limit"] == 20
+
+
+@pytest.mark.parametrize("definition,builders", [({"all": {"label": "Different"}}, {"imdb_list": "list"}), ("title.asc", {})])
+def test_mediabrowser_smart_labels_reject_untranslatable_definitions(definition, builders):
+    from modules.mediabrowser import JellyfinMediaServer
+    from modules.util import BuilderValidationError
+
+    data = {"smart_label": definition, **builders}
+    library = SimpleNamespace(server=JellyfinMediaServer(url="http://server", token="token"))
+    with pytest.raises(BuilderValidationError):
+        CollectionBuilder._adapt_list_smart_label(library, data, {key: key for key in data})
 
 
 @pytest.mark.parametrize("method_name", ["tautulli_popular", "tautulli_top", "tautulli_watched"])
@@ -36,7 +81,6 @@ def test_tautulli_list_minimum_defaults_and_validation(monkeypatch, method_name,
         data["LIST_MINIMUM"] = minimum
 
     builder._tautulli(method_name, data)
-
     assert builder.builders[0][1]["list_minimum"] == expected
     assert logger.warning.called == warns
 
@@ -694,6 +738,15 @@ class TestFilterAndSaveItems:
         assert builder.found_items == [ep1, ep2]
 
 
+@pytest.mark.parametrize("rating,expected", [(None, False), (0.0, True), (9.2, True)])
+def test_top_badge_availability_filter_rejects_missing_rating(rating, expected, monkeypatch):
+    monkeypatch.setattr("modules.builder.logger", FakeLogger())
+    library = MagicMock()
+    library.fetch_overlay_value.return_value = rating
+    builder = make_builder(library=library, value_filters=[("silo_tomatoesaudience_rating", "gte", 0.0)])
+    assert builder.check_value_filter(SimpleNamespace(title="Dune")) is expected
+
+
 class TestMDBListValueFilterPrefetch:
     def test_skips_items_with_fresh_overlay_values(self):
         cache = MagicMock()
@@ -736,6 +789,37 @@ class TestMDBListValueFilterPrefetch:
 
         cache.query_overlay_value_cache.assert_not_called()
         library.prefetch_mdblist.assert_not_called()
+
+
+class TestIMDbValueFilterPrefetch:
+    def test_batches_items_whose_imdb_rating_is_not_cached(self):
+        cache = MagicMock()
+        cache.query_overlay_value_cache.side_effect = [("8.0", False), (None, None)]
+        library = MagicMock()
+        first = SimpleNamespace(ratingKey=1)
+        second = SimpleNamespace(ratingKey=2)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache),
+            library=library,
+            value_filters=[("imdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_imdb_value_filters([first, second])
+
+        library.prefetch_imdb.assert_called_once_with([second], ratings=True)
+
+    def test_prefetches_every_item_when_there_is_no_overlay_cache(self):
+        library = MagicMock()
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            value_filters=[("imdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_imdb_value_filters(items)
+
+        library.prefetch_imdb.assert_called_once_with(items, ratings=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -2161,6 +2245,100 @@ class TestDispatchTables:
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+        assert "listrr_list" in all_builders
+        assert "listrr_list_details" in all_builders
+        assert "listrr_list" in custom_sort_builders
+
+
+@pytest.mark.parametrize("method", ["listrr_list", "listrr_list_details"])
+def test_missing_listrr_config_uses_the_service_configured_message(method, monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    def get_collection(name, force_search=False):
+        raise Failed("not found")
+
+    def split(text):
+        lowered = str(text).lower()
+        return lowered, "", lowered
+
+    library = SimpleNamespace(
+        name="Movies",
+        collections=[],
+        is_show=False,
+        is_music=False,
+        is_movie=True,
+        type="Movie",
+        Plex=SimpleNamespace(language="en"),
+        show_filtered=False,
+        show_unfiltered=False,
+        show_options=False,
+        show_missing=False,
+        save_report=False,
+        missing_only_released=False,
+        only_filter_missing=False,
+        asset_folders=False,
+        create_asset_folders=False,
+        delete_below_minimum=False,
+        delete_not_scheduled=False,
+        changes_webhooks=None,
+        mass_collection_mode=None,
+        minimum_items=1,
+        ignore_ids=[],
+        ignore_imdb_ids=[],
+        sync_mode="append",
+        default_collection_order=None,
+        asset_directory=[],
+        collection_asset_directory=[],
+        get_collection=get_collection,
+        split=split,
+    )
+    metadata = SimpleNamespace(language="en", asset_directory=None, collection_asset_directory=None, asset_directory_is_mapping=False)
+    config = SimpleNamespace(Listrr=None, FlickList=None)
+
+    with pytest.raises(ServiceError, match=rf"Collection Error: '{method}' requires Listrr to be configured"):
+        CollectionBuilder(config, metadata, "Listrr Movies", {method: "671527158e1c7df162d0fe69"}, library=library)
+
+
+def test_listrr_lists_register_as_one_builder_and_keep_the_first_description():
+    listrr = MagicMock()
+    lists = [
+        {"list_id": "671527158e1c7df162d0fe69", "sort_by": "name.asc", "limit": 0},
+        {"list_id": "67fb123c6f5a448f92e7ee03", "sort_by": "release.desc", "limit": 10},
+    ]
+    listrr.validate_lists.return_value = lists
+    listrr.list_description.return_value = "First list"
+    builder = make_builder(config=SimpleNamespace(Listrr=listrr), summaries={})
+
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", {"url": "https://listrr.pro/Lists/ShowShowList/67fb123c6f5a448f92e7ee03"}])
+
+    assert builder.builders == [("listrr_list", lists)]
+    assert builder.summaries["listrr_list_details"] == "First list"
+    listrr.list_description.assert_called_once_with("671527158e1c7df162d0fe69")
+
+
+def test_listrr_description_failure_keeps_the_single_builder(monkeypatch):
+    from requests.exceptions import ConnectionError
+
+    from modules.listrr import Listrr
+
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+
+    class Down:
+        def get(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+        def get_once(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+    builder = make_builder(config=SimpleNamespace(Listrr=Listrr(Down(), "test-key")), summaries={})
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"])
+
+    assert len(builder.builders) == 1
+    assert builder.builders[0][0] == "listrr_list"
+    assert [entry["list_id"] for entry in builder.builders[0][1]] == ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"]
+    assert builder.summaries == {}
+    assert any("List description not found" in message for message in logger.error_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -2194,6 +2372,7 @@ class TestServiceLockKey:
             ("floppy_tracked", "floppy"),
             ("radarr_taglist", "radarr"),
             ("sonarr_taglist", "sonarr"),
+            ("listrr_list", "listrr"),
         ],
     )
     def test_known_prefixes_map_to_expected_bucket(self, method, expected):
@@ -2498,3 +2677,34 @@ def test_collection_file_item_roots_preserve_mapping_inheritance(monkeypatch, gr
     builder._resolve_collection_asset_directory(metadata, {})
     assert builder.collection_asset_directory == (inherited if grouped and inherited else ["file items"])
     assert builder.collection_assets_configured is bool(grouped and inherited)
+
+
+@pytest.mark.parametrize("server", ["jellyfin", "emby", "silo"])
+@pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+def test_native_all_builders_share_plex_all_selection(server, level):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name=server)), builder_level=level, builders=[])
+    builder._plex(f"{server}_all", True)
+    assert builder.builders == [("plex_all", level)]
+
+
+@pytest.mark.parametrize("method", ["jellyfin_all", "emby_all", "silo_all"])
+def test_native_all_builder_rejects_wrong_server(method):
+    builder = make_builder(library=SimpleNamespace(server=SimpleNamespace(type_name="plex")), builders=[])
+    with pytest.raises(Failed, match="requires a"):
+        builder._plex(method, True)
+    assert builder.builders == []
+
+
+def test_silo_item_metadata_skips_labels_without_reading_them(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+    library = BatchLabelLibrary(1)
+    library.server = SimpleNamespace(type_name="silo")
+    library.item_labels = MagicMock(side_effect=AssertionError("Silo has no labels"))
+    library.item_has_overlay = MagicMock(return_value=False)
+    builder = make_builder(library=library, libraries=[library], items=[label_item(1)], item_details={"item_label": ["Favorite"], "non_item_remove_label": ["Old"]})
+    builder.update_item_details()
+    library.item_labels.assert_not_called()
+    library.search.assert_not_called()
+    assert len(logger.warning_messages) == 2
+    assert not logger.error_messages

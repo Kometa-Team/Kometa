@@ -1,0 +1,280 @@
+---
+search:
+  boost: 3
+hide:
+  - toc
+---
+# Silo Attributes
+
+For migration and behavior changes, see [Silo: differences from Plex](silo_differences.md).
+
+[Silo](https://silo.pzyzbyx.pw/api/v2/docs) is a media server. A library uses Silo when its [`server`](libraries.md#server) attribute names a `media_servers` entry. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
+
+Silo libraries can create and update manual collections and smart collections. A smart collection takes a Silo query document. Plex smart filter addresses are not accepted. Posters, backdrops, logos, and overlays are set from a URL. Kometa publishes a local image to [transfer.kometa.wiki](https://transfer.kometa.wiki) and gives Silo that URL. A URL Kometa already has, such as a TMDb image, is given to Silo directly. Labels, deleting an item, and playlists are not available. Unsupported metadata and display attributes are skipped with warnings, and supported collection updates continue. Unsupported builders and search conditions still report errors.
+
+Kometa calls Silo's `/api/v2` API. `token` is a session token or an API key sent on the `Authorization` header. Select a profile with either `profile_id` or `profile_name`. Kometa resolves a unique profile name once during connection setup and sends the resulting ID on the `X-Profile-Id` header. Silo has no clean bundles, empty trash, or optimize operation, so those Plex settings are skipped for a Silo library.
+
+Connection logs include the server version/revision reported by `/api/v2/system/info`. That endpoint does not report the server OS, so Kometa explicitly logs it as not reported. An unavailable information endpoint warns without preventing library setup.
+
+```yaml title="config.yml Silo sample"
+tmdb:
+  apikey: ################################
+media_servers:
+  Shelf:
+    type: silo
+    url: http://192.168.1.12:8090
+    token: ####################
+    profile_id: PROFILE_ID  # Or use profile_name: Home instead
+    pace_requests: false
+    timeout: 60
+    verify_ssl: true
+libraries:
+  Films:
+    server: Shelf
+    collection_files:
+      - default: basic
+```
+
+`Films` uses the Silo server named `Shelf`. Add a `plex` block when another library in the same file uses Plex.
+
+With Kometa's cache enabled, Silo catalogs, full item details, and resolved TMDb, TVDb, and IMDb IDs persist between runs and refresh according to `cache_expiration`. This includes season and episode catalogs. Audio-language, subtitle-language, resolution, and other selectors reuse the same saved detail response rather than fetching each field separately. Detail responses are saved individually, so an interrupted scan can reuse its completed requests on the next run. Cache entries are scoped to server, credentials, profile, and library. Explicit catalog reloads bypass the saved catalog, and forced item reloads bypass saved details. Successful item metadata, artwork, refresh, and rating writes invalidate persisted catalog/detail data for that scope. External library changes, including additions and playback state, become visible when the cached data expires or is explicitly refreshed. Disabling the cache keeps only in-run reuse.
+
+Collection summary updates use Silo's native description field. Kometa does not add its automatic collection label on Silo. Collection `sort_title` is skipped with a warning. Explicit collection label, content rating, Plex collection mode, and filtering options are skipped with warnings.
+
+`collection_order: release` and `alpha` set Silo's native default sort. `custom`/`custom.asc` preserve the builder's order, and `custom.desc` reverses it; extra members retained in append mode follow the builder's items. Custom ordering changes manual member positions by removing and re-adding members whose positions differ, because Silo's add endpoint preserves existing positions. If a re-add fails, Kometa attempts to restore that member at its old position. These requests are not atomic: an interruption can leave a partial order, and a failed restoration can leave a missing member. Rerun Kometa to reconcile membership and ordering. Do not edit the same collection concurrently while sorting.
+
+Single-field sort expressions support `title`, `release`, `added`, `year`, `duration`, and `content_rating`, each with `.asc` or `.desc`. Multiple sort fields and other sort expressions report errors rather than silently changing their meaning. Silo clients can override the collection default with their own browsing sort.
+
+Collection artwork supports posters and backdrops. Collection logos and square artwork are skipped with warnings; local files for those unsupported types are not published. Item logos remain supported.
+
+Native rating overlays support `silo_imdb`, `silo_tmdb`, `silo_tomatoes`, `silo_tomatoesaudience`, and `silo_user`. Use the `_rating` suffix for text variables and value filters. These read Silo's stored rating metadata and the active profile's personal rating, without external provider requests. See [Ratings overlays](../defaults/overlays/ratings.md).
+
+Silo dynamic actor collections read cast metadata; director, writer, and producer discovery reads the corresponding crew jobs. Person smart filters match native names, including names resolved by `tmdb_person` for `default: actor`.
+
+Collections using the `separator` template are skipped with a note on Silo because collection sort titles are unavailable. Other collections in the same defaults file continue to run. Existing separators are not automatically deleted.
+
+Collection `sort_title`, `label`, `label.remove`, and `label.sync` settings warn and skip on Silo. Supported metadata and artwork continue updating, including artwork on yearly award and seasonal collections. Collection visibility settings manage native sections as described below.
+
+Dynamic language collections (`default: audio_language` and `default: subtitle_language`) discover language codes across all file versions and tracks, reusing item details within the run. Subtitle discovery includes embedded and external tracks. Missing track languages are ignored. Smart filters support `audio_language` and `subtitle_language` with `.is`/`.not` modifiers and language-code lists.
+
+Resolution and content-rating defaults also use native Silo metadata. Resolution discovery includes all file versions and translates default keys such as `480`, `1080`, and `4k` into Silo's resolution values. Content-rating collections match Silo's stored certification strings; choosing a regional default such as `content_rating_nz` does not fetch or replace certifications in Silo.
+
+Decade and year collections use Silo's stored years. Decade filters cover the entire decade. The decade default's `critic_rating.desc` sort uses Silo's stored Rotten Tomatoes critic score; missing scores are not fetched. Override `sort_by` with `release.desc`, `title.asc`, or another supported field to choose a different order.
+
+Country, region, and continent defaults discover countries through Silo's library/profile-scoped catalog facets, cached for the run. Codes such as `US` are exposed as country names for the defaults, and generated filters match both native codes and legacy country-name values.
+
+### Selecting a profile by name
+
+Use `profile_name` instead of `profile_id` to select a profile by its display name:
+
+```yaml
+media_servers:
+  my-silo:
+    type: silo
+    url: http://192.168.1.12:8090
+    token: YOUR_TOKEN
+    profile_name: Home
+```
+
+Kometa lists the profiles available to the token and resolves a unique name before reading the catalog. Matching ignores letter case and surrounding whitespace. Requests and cache keys then use the resolved profile ID. Set only one of `profile_name` and `profile_id`. If no profile matches or several profiles share the name, configuration fails with the available names and IDs; use `profile_id` to disambiguate. An existing `profile_id` configuration requires no extra lookup. If a profile is renamed, update `profile_name` or use its stable ID.
+
+### Tracking without labels
+
+Silo does not expose Plex-style item labels through this adapter. Kometa does not write an `Overlay`, `Kometa`, or `PMM` label to Silo. Genres, studios, countries, and other searchable metadata are separate from these management labels; their availability does not provide label support.
+
+| What Kometa tracks | Where it is stored | How it is used |
+| :--- | :--- | :--- |
+| Original poster and overlay presence | `config/overlays/<library mapping name> Original Posters/<Silo item ID>.jpg`, `.png`, or `.webp` | An existing backup marks the item as overlaid and provides its original image for updates and removal. |
+| Applied overlay definitions, resolved text values, and poster comparisons | Library-specific records in Kometa's SQLite cache | Kometa compares the current definitions and values with saved state to decide whether to render again. |
+| Whether a collection is configured | Collection names resolved from the current Kometa configuration | Name matching identifies configured and unconfigured collections for this run. |
+| Whether a collection is Kometa-managed | No equivalent Silo label or local ownership registry | Kometa cannot distinguish collections it previously created from other collections by ownership. |
+
+The paths above assume the standard `config` directory. The mapping name is the library key in your Kometa configuration, sanitized for use as a filename; it can differ from the library's name in Silo. The cache sits beside the configuration YAML with a `.cache` extension, for example `config/test-config.cache` for `config/test-config.yml`. Overlay records use Silo item IDs, not TMDb or TVDb IDs.
+
+Overlay text and provider-rating values in the cache are keyed by server, credentials, library, profile/user, and item ID. Matching item IDs on another server or library do not share those values. Older native value entries without this scope are ignored and fetched again on demand; the original-poster backups and library-specific applied-overlay records remain in place. Rendering, value filters, and MDBList cache checks share the scoped value entries.
+
+#### Updating and removing overlays
+
+On later overlay runs, Kometa scans the original-poster directory to find items with overlays, including shows, seasons, and episodes. The cache records what was applied; the backup file supplies the presence marker and original image. Plex legacy overlay-label cleanup does not run on Silo.
+
+When an item no longer matches an overlay, the overlay run restores its poster. Setting `remove_overlays: true` requests removal for all locally tracked items in that library. Restoration prefers a matching local poster asset, then the original-poster backup, then an available server poster. After a successful restoration, Kometa deletes the backup and the item's saved overlay state. A failed poster upload leaves the backup in place. Commenting out `overlay_files` alone does not request removal; use `remove_overlays: true` and run the overlay stage.
+
+Local backups also protect posters during `assets_for_all` and poster operations using `ignore_overlays`: an item with a backup is treated as overlaid even though Silo has no label. Keep the backup until overlays have been removed successfully.
+
+#### Preserving tracking when moving Kometa
+
+Preserve the original-poster directories and SQLite cache together when moving or restoring an installation. Keep the library mapping names and the Silo item IDs consistent. Renaming a library key changes its backup directory, and rebuilding the Silo catalog can change item IDs; Kometa does not automatically remap those files by external provider ID.
+
+Deleting the cache loses saved overlay comparisons and values, which can cause overlays to render again, but retained original-poster files still identify overlaid items. Deleting the backups loses both the presence markers and the saved originals; the SQLite cache alone does not identify items for Silo overlay removal. A metadata YAML backup does not contain these image files or tracking records. Another Kometa installation needs the same local state to recognize these overlays.
+
+#### Collection ownership and deletion
+
+Configured collection names are not an ownership record. Without labels, the shared collection checks treat Silo collections as unmanaged, including collections created by Kometa. Consequently, `show_unmanaged` cannot identify which Silo collections were created manually, and `delete_collections.managed: false` does not limit deletion to collections created outside Kometa. `managed: true` does not select Silo collections. Use the configured-name and size conditions deliberately; all supplied deletion conditions must match. Collections absent from the current configuration can be considered unconfigured even if an earlier Kometa run created them.
+
+After publishing a local image to transfer.kometa.wiki, Kometa waits 0.75 seconds before asking Silo to download it. Counting one upload and one download per image, sequential processing averages at most about 2.7 requests per second before network overhead, below the transfer host's sustained limit of 3 requests per second. This also applies when restoring original posters. Direct remote image URLs do not incur this delay. Other clients and burst limits can still cause rate limiting.
+
+Set `pace_requests: true` on a Silo entry under `media_servers` to space all Silo API requests at least 0.5 seconds apart (at most two requests per second per server), including catalog reads, queries, collection detail reads, additions, removals, sorting, and retries. Library clients with pacing enabled targeting the same normalized API base URL share a thread-safe limiter within the Kometa process, even when using different tokens or profiles. Time spent on requests counts toward this interval. Separate Kometa processes and other applications do not share this limiter. Pacing defaults to `false`, so requests normally proceed without the additional spacing. Silo's 429 responses always use `Retry-After` or increasing retry delays; other clients and stricter server limits can still cause throttling.
+
+Silo evaluates a subset of `plex_search` overlay selectors locally using catalog item details. Nested `all`/`any` groups support `title`, `year`, `resolution`, `edition`, `filepath`, `hdr`, `has_dolby_vision`, `genre`, `studio`, and `country`. String fields accept `.regex`, `.is`, `.not`, `.isnot`, `.begins`, and `.ends`; HDR and Dolby Vision selectors require boolean values. Item details are reused within a run. Filepath matching requires Silo to expose `file_path` to the configured user; missing metadata does not match, including negative filters. Dolby Vision matching uses Silo's `overlay_summary.hdr` value. Unknown fields and modifiers report errors rather than selecting the entire library. Plex sorting/limit/type options are not yet supported in these local selectors. This selector support does not imply full compatibility with every Plex overlay definition or rendering feature.
+
+Silo smart collections accept native query documents under `smart_filter`. Kometa translates supported metadata rules to native queries, including tags, people, production years, relative dates, runtime, stored ratings, and bitrate. For supported fields or modifiers that the native query engine cannot express, `smart_filter` becomes an ordinary collection rebuilt by Kometa on each run. The log identifies that fallback; matching and sorting happen before the result limit is applied. `plex_search`, collection `filters`, and overlays use the same metadata-backed field readers. Unsupported Plex-only fields, labels, and unavailable collection-membership state still report explicit errors.
+
+Network dynamic collections discover networks from native show metadata and use Silo network filters; they do not require a Plex TV agent.
+
+Episode collections accept `type: episodes` (or `episode`) within a show library. `episode_air_date` matches episode air dates, with release dates as a fallback. On show or season selectors it matches any dated child episode, using the shared episode catalog. These filters are rebuilt locally when they cannot be expressed as a native smart query.
+
+### Collection promotion
+
+Collection promotion uses Silo's section APIs. These attributes accept booleans or [schedules](schedule.md), including the visibility template variables supplied by defaults:
+
+| Attribute | Silo behavior |
+| :--- | :--- |
+| `visible_library` | Enable or disable a collection-backed row on this library's landing page. |
+| `visible_home` | Show or hide the collection row on the acting profile's Home page. |
+| `visible_shared` | Enable or disable the administrator's default collection row on Home for other profiles. Their own hidden/reordered settings remain in effect. |
+
+```yaml
+collections:
+  Featured Movies:
+    silo_all: true
+    limit: 10
+    visible_library: true
+    visible_home: true
+    visible_shared: false
+```
+
+The example promotes the collection on the library landing page and the acting profile's Home without adding a default Home row for other profiles. Setting only one visibility attribute preserves the other Home setting; omitted attributes leave existing placement alone. Scheduled values turn the corresponding promotion on or off on each run. These settings do not change collection access permissions, personal collection sharing, or Collections-tab shelf membership.
+
+Kometa reuses an existing collection-backed administrator row for the collection and scope, preserving its position and display settings. Multiple matching rows are ambiguous and produce an error before that scope is changed. Disabled rows are retained for reuse. When Home is enabled only for the acting profile, Kometa creates a profile-owned row with a stable identifier; switching to a shared row removes that managed personal row. Other personal rows are preserved.
+
+An acting administrator profile and Silo's v2 admin/profile section APIs are required. Administrator updates use the current `ETag`. The profile API replaces the complete override set and has no conditional-write facility: Kometa preserves unrelated settings and checks for changes immediately before writing, but edits made in the interval between that check and the write cannot be detected. Avoid editing that profile's Home layout during a Kometa visibility run. Other profiles' overrides are never replaced.
+
+### Collection shelves
+
+Use `silo_shelf` on a collection to create or reuse a shelf on the Silo library's Collections tab:
+
+```yaml
+collections:
+  Family Favorites:
+    silo_shelf: Family Movie Night
+    plex_search:
+      all:
+        genre: Family
+  Weekend Adventures:
+    silo_shelf: Family Movie Night
+    tmdb_list: 12345
+```
+
+The shelf name must be a nonempty string. The attribute also works in collection templates. Explicit assignments work without any library option; Plex, Jellyfin, and Emby skip the attribute with a warning, so definitions can be shared across servers. Playlists and overlays cannot use it.
+
+To group defaults automatically, enable the library setting `silo_shelves` (default: `false`):
+
+```yaml
+libraries:
+  Movies:
+    server: my-silo
+    silo_shelves: true
+    collection_files:
+      - default: both/genre
+      - default: both/studio
+```
+
+Each collection file with one separator heading supplies a shelf name, such as **Genre Collections**. Kometa resolves the heading's template name and translation before grouping the file's collections, including dynamic collections. This works even when `use_separator` is false. A collection's explicit or template-provided `silo_shelf` overrides automatic grouping. Silo still skips creating the separator collection itself. Files with multiple separator headings require explicit shelf assignments with automatic shelves disabled for that library.
+
+The packaged awards defaults use a separate shared separator. With `silo_shelves: true`, Oscars, Emmys, BAFTA, and the other awards defaults automatically use **Award Collections**, including their dynamic yearly collections. You do not need to add `award/separator_award` to your config. The shelf heading comes from that canonical separator, while section ordering and template variable overrides come from each awards file (section `130` by default). Explicit `silo_shelf` assignments still take precedence. Custom copies of awards files can use explicit shelf assignments or include their own category heading.
+
+Packaged chart defaults work the same way: TMDb, IMDb, Basic, and the other charts share **Chart Collections**, without requiring `chart/separator_chart` in the config. Each file's section is respected (`020` for most charts, `010` for Basic); the lowest section among files sharing the shelf determines its position. Name overrides and explicit `silo_shelf` assignments work as they do for awards.
+
+New shelves sort their collections by name. Kometa preserves existing sorting inside shelves and other members. Category shelves participating in the current run form a block at the top, ordered by their resolved `collection_section`: `020` precedes `060`, regardless of collection file order. Override the defaults' `collection_section` template variable to change this order. Use an integer of zero or greater, or a string of digits. Equal sections retain their existing relative order. Collections with the same shelf name share that shelf even when their section values differ; the lowest section encountered in the current run determines its order, regardless of file order. Shelves without a category section follow that block alphabetically by name, ignoring case. The synthetic “No heading” entry sorts under that displayed name. This alphabetical ordering also applies when only custom shelves are being assigned, with no category sections.
+
+Kometa moves only collections explicitly assigned or automatically grouped during this run; omitting an assignment later leaves their current placement intact. Renaming a configured shelf creates or reuses that new name and moves the processed collections; it does not rename or delete the old shelf. Reserved shelves and ambiguous names produce errors.
+
+Shelf membership is local to the library. Updates use the current shelf revision; a concurrent change produces an error rather than overwriting another user's edits. Shelves do not create Home rows, change the movie order inside a collection, or grant collection ownership. Use an acting administrator profile with access to Silo's collection-group API.
+
+Collection editor reads that return a revision conflict are retried up to twice. A collection metadata update rejected with a stale revision is refreshed and retried once only when the fields Kometa intends to update still match its original read. Fields already at the desired value need no further write; competing edits to the same fields remain errors. Shelf ordering and membership conflicts still stop without replaying their writes.
+
+### Search and filter fields
+
+| Metadata | Supported fields |
+| --- | --- |
+| Titles and descriptions | `title`, `summary`/`overview`, `original_title`, `sort_title`, `tagline`, `show_title` |
+| Tags and identity | `genre`, `studio`, `network`, `country`/`origin_country`, `keyword`, `original_language`, `content_rating`, `actor`, `director`, `writer`, `producer`, `type`, `status`, `show_status` |
+| Dates | `release`, `added`, `first_episode_aired`, `last_episode_aired`, `last_played` when reported |
+| Years and counts | `year`, `decade`, `versions`, `seasons`, `episodes`, `season_number`, `episode_number`, `advisory_age` |
+| Video | `resolution`, `aspect`, `width`, `height`, `video_codec`, `video_profile`, `video_range`, `video_bit_depth`, `video_bitrate`, `frame_rate`, `reference_frames`, `dovi_profile`, `dovi_level` |
+| Audio and subtitles | `channels`, `audio_codec`, `audio_profile`, `audio_track_title`, `subtitle_track_title`, `audio_language`, `subtitle_language`, `audio_bit_depth`, `audio_sample_rate`, `audio_bitrate` |
+| Files | `filepath`, `folder`, `container`, `edition`, `release_type`, `file_size`, `bitrate` |
+| Duration and ratings | `duration`/`runtime` (minutes), `duration_seconds`, `critic_rating`, `audience_rating`, `user_rating` (0–10), `rating_imdb`, `rating_tmdb`, `rating_rt_critic`, `rating_rt_audience` (Rotten Tomatoes raw scores are 0–100) |
+| Flags and progress | `duplicate`, `hdr`, `has_dolby_vision`, `hdr10plus`, `atmos` (reported track title/profile), `interlaced`, `has_edition`, `unmatched`, `watched`, `is_favorite`, `in_watchlist`, `not_interested`, `is_in_progress`, `position_seconds`, `plays`/`progress` when listing metrics report them |
+
+Numeric fields accept `.gt`, `.gte`, `.lt`, `.lte`, equality, and `.not`. Text fields match contained text and accept `.is`, `.isnot`, `.not`, `.begins`, `.ends`, and `.regex`. Tags additionally support `.count_gt`, `.count_gte`, `.count_lt`, and `.count_lte`. Dates accept relative day counts, `.before`/`.after` calendar dates, and `.regex`. Nested `all`/`any` groups can be mappings or lists of mappings.
+
+Tag searches accept comma-separated alternatives, as used by the content-rating overlay defaults. Regular expressions and individual values in explicit lists keep literal commas. The explicit content-rating alternative `None` matches unrated items; other missing ratings do not match a known rating.
+
+Aspect ratios accept the reported ratio (`1.33:1`, `4:3`) or fall back to width divided by height, rounded to two decimal places. Aspect, dimensions, channel count, and file sizes and bit rates use the largest known value across versions, matching Kometa's media-filter behavior. File `bitrate` is in `kbps` (1,000 bits per second); track `audio_bitrate` and `video_bitrate` are in bits per second, as Silo reports them. Rating sources also use stored `ratings`/`rating_sources` when the direct field is absent. Missing numeric, date, and boolean metadata does not match, including negative filters; unknown values are not treated as zero or false.
+
+```yaml
+filters:
+  aspect.gt: 1.32
+  aspect.lt: 1.34
+  channels.gte: 6
+```
+
+These capabilities use metadata Silo returns for the acting account/profile. They do not fetch missing provider data, infer file paths from names, or manufacture play counts. Some listing metrics are only present for the corresponding listing sort, and metadata visibility may hide paths or ratings.
+
+<div class="annotate" markdown>
+
+| Attribute    | Description                                                                                          | Allowed Values (default in **bold**)                         |                  Required                  |
+|:-------------|:-----------------------------------------------------------------------------------------------------|:-------------------------------------------------------------|:------------------------------------------:|
+| `type`       | Media server type.                                                                                   | `silo` or `plex`                                             | :fontawesome-solid-circle-check:{ .green } |
+| `url`        | Server URL. Kometa adds `/api/v2` when a Silo URL does not already end with it.                     | Any valid URL<br><strong>Example:</strong> `http://192.168.1.12:8090` | :fontawesome-solid-circle-check:{ .green } |
+| `token`      | Session token or API key.                                                                            | Any valid token                                              | :fontawesome-solid-circle-check:{ .green } |
+| `profile_id` | Silo profile whose catalog Kometa reads. A profile Silo does not recognize is reported with the server's user and profile ids. | Any profile id                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `profile_name` | Silo profile display name, resolved case-insensitively to a unique ID. Use instead of `profile_id`. | Any unique available profile name | :fontawesome-solid-circle-xmark:{ .red } |
+| `pace_requests` | Space API requests at least 0.5 seconds apart to reduce rate-limit responses. Automatic 429 retries work with either setting. | `true` or **`false`** | :fontawesome-solid-circle-xmark:{ .red } |
+| `timeout`    | Timeout for Silo communication, in seconds.                                                          | Integer, e.g. **`60`**                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `verify_ssl` | Enable or disable SSL verification for this server.                                                 | `true`, `false`, or leave **blank**                          |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `db_cache`   | Plex database cache size in MB. Used when `type` is `plex`.                                          | Integer, e.g. **`40`**                                       |  :fontawesome-solid-circle-xmark:{ .red }  |
+
+</div>
+
+A `type: plex` entry is another Plex server. Its `url`, `token`, `timeout`, `verify_ssl`, and `db_cache` replace that library's `plex` values. Options such as `empty_trash` stay on the `plex` block.
+
+Libraries that omit `server` keep using `plex`.
+
+If a collection disappears between listing and reloading during collection operations, Kometa warns and skips it rather than aborting the library run. Other reload errors still surface as failures.
+
+The `duplicate` flag matches items with more than one file version, including alternate resolutions or editions grouped under one Silo item. It does not detect separate catalog entries for the same movie. Unknown version metadata matches neither `duplicate: true` nor `duplicate: false`.
+
+The `split_duplicates` operation is not supported by the Silo adapter. Silo grouping repair requires explicit file and target selections, which this automatic operation does not provide. When enabled, Kometa reports a warning and disables that operation before library processing. Other library operations continue.
+
+The `assets_for_all` operation uploads local artwork without requiring Silo labels. Movie assets use the media file directory name, matching Plex asset naming, and fall back to the title when no file path is available. Posters with local overlay backups are preserved for the overlay run; other supported artwork can still update. Full item details are loaded with progress and reused within the run.
+
+### Mass rating updates
+
+Silo stores named provider scores rather than generic critic and audience slots. Choose explicit targets:
+
+```yaml
+operations:
+  mass_metadata_update:
+    ratings:
+      silo_imdb: imdb
+      silo_tmdb: tmdb
+      silo_tomatoes: mdb_tomatoes
+      silo_tomatoesaudience: mdb_tomatoesaudience
+      silo_user: mdb_tomatoes
+```
+
+Targets accept a provider source, a fallback list, a constant score from 0–10, or `clear`. The usual `{source: ..., schedule: ...}` form and a shared ratings schedule are supported. Sources are tried in order; missing or invalid source values leave existing ratings unchanged. Provider updates for one item share a single metadata PATCH. Profile stars use the configured acting profile and a separate rating request.
+
+| Target | Stored value |
+| :--- | :--- |
+| `silo_imdb`, `silo_tmdb` | 0–10 decimal score |
+| `silo_tomatoes`, `silo_tomatoesaudience` | 0–100 integer percentage; half values round upward |
+| `silo_user` | Whole 1–5 stars; divide the source score by two, round halves upward, and clamp to this range |
+
+For example, a normalized score of 7 becomes 4 stars; zero becomes 1 star. Use `clear` to remove a profile rating or set a provider score to null. The common `user` target also selects profile stars on Silo. If both `user` and `silo_user` are configured, Kometa reports the conflict and uses `silo_user`.
+
+Generic `critic`, `audience`, and episode rating targets are reported as unsupported on Silo. Silo-specific targets and `silo_` rating sources are reported as unsupported on other servers. Sources beginning `plex_` require Plex. Native Silo operations do not implement `random`, `lock`, `unlock`, `remove`, or `reset`; those options are reported as unsupported, with `clear` suggested for deletion. These rating options are validated before item scanning. Named provider scores do not change the generic target semantics on Plex, Jellyfin, or Emby.
+
+See [Native mass metadata operations](native_metadata.md) for supported metadata changes, artwork, backups, and explicit unsupported-option behavior.

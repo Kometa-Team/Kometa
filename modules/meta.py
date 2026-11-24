@@ -1,3 +1,5 @@
+import copy
+import json
 import math
 import operator
 import os
@@ -8,10 +10,33 @@ from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from requests.exceptions import RequestException
 
 from modules import ergast, letterboxd, plex, timings, util, ytmusic
+from modules.media_server import MediaServer
+from modules.native_metadata import restore_native_metadata
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
 logger = util.logger
+
+
+def _people_cache_key(library, item, provider_id):
+    """Credits and person IDs belong to a specific library, not a shared provider ID."""
+    server = getattr(library, "server", None)
+    if not isinstance(server, MediaServer):
+        return provider_id
+    return json.dumps(
+        [
+            "native_people_v2",
+            server.type_name,
+            server.url.rstrip("/"),
+            getattr(library, "library_id", None) or getattr(library, "original_mapping_name", None),
+            getattr(server, "profile_id", None),
+            getattr(server, "user_id", None),
+            str(item.ratingKey),
+            provider_id,
+        ],
+        separators=(",", ":"),
+    )
+
 
 all_auto = ["genre", "number", "custom"]
 ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "studio", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
@@ -113,6 +138,7 @@ class DataFile:
             return data
 
     def load_file(self, file_type, file_path, overlay=False, translation=False, images=False, folder=""):
+        main_default = file_type == "Default" and file_path == self.path and not (overlay or translation or images)
         if translation:
             if file_path.endswith(".yml"):
                 file_path = file_path[:-4]
@@ -166,6 +192,8 @@ class DataFile:
                     raise Failed(f"File Error: File does not exist {content_path}")
             # This branch is a local, never-saved file load (Default/Repo-sourced collection/overlay/playlist content) - safe to use the faster read_only loader.
             yaml = self.config.Requests.file_yaml(content_path, check_empty=True, read_only=True)
+            if main_default:
+                self._default_collection_path = content_path
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
             data, trakt_found = util.remove_trakt(yaml.data)
@@ -221,7 +249,7 @@ class DataFile:
                     add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
         return translations, key_names, variables
 
-    def apply_template(self, call_name, mapping_name, data, template_call, extra_variables):
+    def apply_template(self, call_name, mapping_name, data, template_call, extra_variables, resolved_variables=None):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
         elif not template_call:
@@ -612,6 +640,11 @@ class DataFile:
                                 continue
                     logger.trace(f"Current Final: {new_attributes}")
                     logger.trace("")
+                    if resolved_variables is not None:
+                        for variable in resolved_variables:
+                            if variable in variables or variable in default:
+                                resolved_variables[variable] = check_for_var(variable, f"<<{variable}>>", False)
+
             logger.separator("Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)
@@ -630,6 +663,75 @@ class DataFile:
 
 
 class MetadataFile(DataFile):
+    def _silo_default_shelf(self, data, shared_fallback=True):
+        """Resolve the category heading before disabled separators are discarded."""
+        self.silo_default_shelf_section = None
+        if not getattr(self.library, "silo_shelves", False) or getattr(getattr(self.library, "server", None), "type_name", None) != "silo":
+            return None
+        headings = []
+        for name, attributes in (data.get("collections") or {}).items():
+            if not isinstance(attributes, dict):
+                continue
+            calls = util.get_list(attributes.get("template"), split=False) or []
+            if any(isinstance(call, dict) and call.get("name") == "separator" for call in calls):
+                context = {"collection_section": None}
+                resolved = self.apply_template(attributes.get("name"), name, copy.deepcopy(attributes), copy.deepcopy(calls), copy.deepcopy(attributes.get("variables") or {}), resolved_variables=context)
+                section = context["collection_section"]
+                if section is not None:
+                    if isinstance(section, bool) or not str(section).isascii() or not str(section).isdecimal():
+                        raise Failed("Silo Error: collection_section must be a nonnegative integer for shelf ordering")
+                    self.silo_default_shelf_section = int(section)
+                headings.append(attributes.get("name") or resolved.get("name") or name)
+        if len(headings) > 1:
+            raise Failed("Silo Error: Automatic shelves require one separator per collection file; use explicit silo_shelf attributes for multiple categories")
+        if not headings and shared_fallback:
+            default_path = getattr(self, "_default_collection_path", None)
+            defaults_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
+            if isinstance(default_path, str):
+                for category, separator_name in (("award", "separator_award"), ("chart", "separator_chart")):
+                    if os.path.dirname(default_path) == os.path.join(defaults_dir, category):
+                        # These defaults share a standalone category separator.
+                        separator = self.load_file("Default", f"{category}/{separator_name}")
+                        return self._silo_default_shelf(separator, shared_fallback=False)
+        return headings[0] if headings else None
+
+    def _active_collection_definitions(self, data):
+        """Do not let explicitly disabled definitions reserve duplicate names."""
+        if getattr(self, "configured_names_only", False):
+            # Disabled definitions still protect configured names from cleanup.
+            return data
+        collections = data.get("collections") if isinstance(data, dict) else None
+        if not isinstance(collections, dict):
+            return data
+        active = {}
+        for name, attributes in collections.items():
+            enabled = True
+            if isinstance(attributes, dict):
+                methods = {key.lower(): key for key in attributes}
+                if "run_definition" in methods:
+                    enabled = attributes[methods["run_definition"]]
+                elif "template" in methods:
+                    calls = util.get_list(attributes[methods["template"]], split=False) or []
+                    if any(isinstance(call, dict) and call.get("name") == "separator" for call in calls):
+                        try:
+                            resolved = self.apply_template(attributes.get("name"), name, copy.deepcopy(attributes), copy.deepcopy(calls), copy.deepcopy(attributes.get("variables") or {}))
+                            enabled = resolved.get("run_definition", True)
+                        except Failed:
+                            # Keep invalid definitions for normal builder validation.
+                            enabled = True
+            if enabled is False or isinstance(enabled, str) and enabled.lower() == "false":
+                if not hasattr(self, "_disabled_collection_definitions"):
+                    self._disabled_collection_definitions = set()
+                self._disabled_collection_definitions.add(name)
+                logger.info(f"Config: Skipping disabled collection definition: {name}")
+            else:
+                active[name] = attributes
+        if collections and not active:
+            # Filtering intentionally disabled definitions is not a blank YAML
+            # attribute. Omit the key so get_dict does not report a false error.
+            return {key: value for key, value in data.items() if key != "collections"}
+        return {**data, "collections": active}
+
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
@@ -639,6 +741,7 @@ class MetadataFile(DataFile):
         self.configured_names_only = configured_names_only
         self.data_type = "Collection"
         self.library = library
+        self.silo_default_shelf = None
         self.metadata = None
         self.collections = None
         self.music_playlists = {}
@@ -794,8 +897,9 @@ class MetadataFile(DataFile):
             logger.info("")
             logger.info("Images File Loaded Successfully")
         elif file_type == "Data":
-            self.collections = get_dict("collections", path, library.collections)
             self.templates = get_dict("templates", path)
+            self.silo_default_shelf = self._silo_default_shelf(path)
+            self.collections = get_dict("collections", self._active_collection_definitions(path), library.collections)
         else:
             data = self.load_file(self.type, self.path)
             if self.file_style == "metadata":
@@ -803,7 +907,8 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.external_templates(data)
             if self.file_style == "collection":
-                self.collections = get_dict("collections", data, library.collections)
+                self.silo_default_shelf = self._silo_default_shelf(data)
+                self.collections = get_dict("collections", self._active_collection_definitions(data), library.collections)
                 self.music_playlists = get_dict("music_playlists", data)
                 if self.music_playlists and not library.is_music:
                     raise Failed("YAML Error: music_playlists can only be used in a Music library collection file")
@@ -830,9 +935,13 @@ class MetadataFile(DataFile):
                             raise Failed(f"Config Error: {map_name} type attribute is blank")
                         elif dynamic[methods["type"]].lower() not in auto[library.type]:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
-                        elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents:
+                        elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents and getattr(getattr(library, "server", None), "type_name", None) not in ("silo", "jellyfin"):
                             raise Failed(f"Config Error: {map_name} type attribute: network only works with the New Plex TV Agent")
                         auto_type = dynamic[methods["type"]].lower()
+                        if auto_type == "studio" and library.is_show and getattr(getattr(library, "server", None), "type_name", None) == "jellyfin":
+                            logger.warning(f"Config Warning: Skipping {map_name} studio dynamic collection: Jellyfin TV studio metadata stores networks; use type: network")
+                            self._skipped_dynamic_collections = True
+                            continue
                         og_exclude = []
                         if "exclude" in self.temp_vars:
                             og_exclude = util.parse("Config", "exclude", self.temp_vars["exclude"], parent="template_variables", datatype="strlist")
@@ -1037,6 +1146,7 @@ class MetadataFile(DataFile):
                                         elif imdb_id:
                                             item_id = f"imdb:{imdb_id}"
                                         if item_id:
+                                            item_id = _people_cache_key(library, item, item_id)
                                             people_list, expired = self.config.Cache.query_plex_people(item_id, auto_type)
                                             if expired:
                                                 people_list = None
@@ -1405,7 +1515,10 @@ class MetadataFile(DataFile):
                                 new_call = og_call.copy()
                                 new_call["name"] = template_name
                                 template_call.append(new_call)
-                            if key in title_override:
+                            key_name_override_var = f"name_{key}"
+                            if key_name_override_var in self.temp_vars and isinstance(self.temp_vars[key_name_override_var], str):
+                                collection_title = self.temp_vars[key_name_override_var].replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                            elif key in title_override:
                                 collection_title = title_override[key]
                             else:
                                 # Sync-key priority: name_format (user override) → translation_key → title_format
@@ -1447,7 +1560,7 @@ class MetadataFile(DataFile):
                                 col = {"template": template_call, "append_label": str(map_name)}
                                 # Only set col["name"] for name_format/title_override — lets builder.py resolve translation naturally while still matching our sync key.
                                 _name_fmt_check = og_call.get("name_format") or self.temp_vars.get("name_format")
-                                if key in title_override or isinstance(_name_fmt_check, str):
+                                if key_name_override_var in self.temp_vars or key in title_override or isinstance(_name_fmt_check, str):
                                     col["name"] = collection_title
                                 if test:
                                     col["test"] = True
@@ -1492,7 +1605,7 @@ class MetadataFile(DataFile):
 
             if self.file_style == "metadata" and not self.metadata:
                 raise Failed("YAML Error: metadata attribute is required")
-            if self.file_style == "collection" and not self.collections and not self.music_playlists:
+            if self.file_style == "collection" and not self.collections and not self.music_playlists and not getattr(self, "_disabled_collection_definitions", None) and not getattr(self, "_skipped_dynamic_collections", False):
                 raise Failed("YAML Error: collections, dynamic_collections, or music_playlists attribute is required")
             logger.info("")
             logger.info(f"{self.type_str} Loaded Successfully")
@@ -1903,6 +2016,8 @@ class MetadataFile(DataFile):
         return False
 
     def update_metadata_item(self, item, mapping_name, meta, methods):
+        if getattr(getattr(self.library, "server", None), "type_name", None) in ("silo", "jellyfin", "emby"):
+            return restore_native_metadata(self.library, item, meta, logger)
 
         updated = False
 

@@ -6,7 +6,7 @@ hide:
 ---
 # Plex Attributes
 
-Filling in your [Plex](https://www.plex.tv/) URL and Token is mandatory as Kometa cannot run without access to a Plex Media Server.
+A [Plex](https://www.plex.tv/) URL and token are required for every library that uses Plex. Put them in this global `plex` block, in that library's `plex` block, or on a [`media_servers`](silo.md) entry with `type: plex`. A config whose libraries all select another server, such as Silo, Jellyfin, or Emby, can omit `plex`.
 
 A `plex` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `plex` mapping individually per library.
 

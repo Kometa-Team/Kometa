@@ -7,6 +7,14 @@
     "plex": {
       "$ref": "#/definitions/plex-server"
     },
+    "media_servers": {
+      "description": "Named media servers. A library selects one with server. Libraries that omit server use plex.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/definitions/media-server"
+      }
+    },
     "tmdb": {
       "$ref": "#/definitions/tmdb-api"
     },
@@ -70,6 +78,9 @@
     "flicklist": {
       "$ref": "#/definitions/flicklist-api"
     },
+    "listrr": {
+      "$ref": "#/definitions/listrr-api"
+    },
     "wetrakr": {
       "$ref": "#/definitions/wetrakr-api"
     },
@@ -90,7 +101,6 @@
     }
   },
   "required": [
-    "plex",
     "tmdb"
   ],
   "definitions": {
@@ -317,7 +327,7 @@
       ]
     },
     "plex-server": {
-      "description": "Describes the primary Plex server to which Kometa can connect.\nThis attribute is REQUIRED.  It can be overridden at the library level.",
+      "description": "Plex server used by libraries that do not set server.\nProvide a URL and token here, on the library, or with a media_servers entry of type plex. Omit this block when every library selects another server.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -394,6 +404,82 @@
         "url"
       ],
       "title": "plex"
+    },
+    "media-server": {
+      "description": "A named media server. type selects the server. A library uses the name with server.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Media server type.",
+          "type": "string",
+          "enum": ["plex", "silo", "jellyfin", "emby"]
+        },
+        "url": {
+          "description": "Server URL. For Silo, /api/v2 is added when the URL does not already end with it.",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "token": {
+          "description": "Bearer session token or API key.",
+          "type": "string",
+          "minLength": 1
+        },
+        "timeout": {
+          "description": "Connection timeout in seconds.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "verify_ssl": {
+          "description": "Turn SSL verification on or off for this server.",
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "db_cache": {
+          "description": "Plex database cache size in MB. Used when type is plex.",
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "string",
+              "pattern": "^$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile_name": {
+          "description": "Silo profile name, matched case-insensitively against profiles available to the token. Set either profile_name or profile_id, not both. Duplicate names require profile_id.",
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "profile_id": {
+          "description": "Silo profile id. Catalog reads send it as the X-Profile-Id header. Set either profile_id or profile_name, not both.",
+          "type": "string",
+          "minLength": 1
+        },
+        "pace_requests": {
+          "description": "Silo only. Space requests at least 0.5 seconds apart to reduce rate-limit responses. Disabled by default; automatic 429 retries remain enabled.",
+          "type": "boolean",
+          "default": false
+        },
+        "user": {
+          "description": "Jellyfin or Emby user id. Catalog and playlist calls use this user. When omitted, Kometa uses the first administrator.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["type", "url", "token"],
+      "title": "media-server"
     },
     "plex-server-lib": {
       "description": "Describes the Plex server where this library is found.",
@@ -1208,6 +1294,17 @@
       },
       "required": [],
       "title": "flicklist"
+    },
+    "listrr-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apikey": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "listrr"
     },
     "wetrakr-api": {
       "type": "object",
@@ -4749,6 +4846,7 @@
       "additionalProperties": false,
       "patternProperties": {
         "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|seerr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+          "not": {"required": ["server", "servers"]},
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4778,6 +4876,25 @@
             "library_name": {
               "description": "Used to specify the Library's name.\nRequired only when trying to use multiple servers with the same name. Each library that the user wants Kometa to interact with must be documented with a library attribute. A library attribute is represented by the mapping name (i.e. Movies or TV Shows), this must have a unique name that correlates with a library of the same name within the Plex Media Server. In the situation that two servers are being connected to which both have libraries of the same name, the library_name attribute can be utilized to specify the real Library Name, whilst the library attribute's mapping name can be made into a placeholder.",
               "type": "string"
+            },
+            "silo_shelves": {
+              "description": "Automatically group Silo collections using a collection file's separator heading.",
+              "type": "boolean",
+              "default": false
+            },
+            "servers": {
+              "description": "Named server targets with per-target library overrides. Mutually exclusive with server.",
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "object",
+                "not": {"anyOf": [{"required": ["server"]}, {"required": ["servers"]}]}
+              }
+            },
+            "server": {
+              "description": "Name of an entry under media_servers. Omit to use the plex server.",
+              "type": "string",
+              "minLength": 1
             },
             "report_path": {
               "description": "Location to save the YAML Report file for a library.\nThe report_path attribute is used to define where to save the YAML Report file. This file is used to store information about what media is added, removed, filtered, and missing from the Plex library compared to what is expected from the Collection, Metadata, Overlay or Playlist file. If your Collection file creates a collection with Movie 1, Movie 2 and Movie 3 but your Plex library only has Movie 1 and Movie 3, then the missing YAML file will be updated to inform the user that Movie 2 was missing from the library.",
@@ -5310,6 +5427,26 @@
                     "audience": {
                       "$ref": "#/definitions/mass-metadata-scheduled-source"
                     },
+                    "silo_imdb": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tmdb": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tomatoes": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_tomatoesaudience": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
+                    "silo_user": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source",
+                      "description": "Silo-only rating target; accepts a source, fallback list, 0-10 score, or clear."
+                    },
                     "episode_user": {
                       "$ref": "#/definitions/mass-metadata-scheduled-source"
                     },
@@ -5703,6 +5840,26 @@
                 }
               ]
             },
+            "mass_silo_imdb_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_imdb."
+            },
+            "mass_silo_tmdb_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tmdb."
+            },
+            "mass_silo_tomatoes_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tomatoes."
+            },
+            "mass_silo_tomatoesaudience_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_tomatoesaudience."
+            },
+            "mass_silo_user_rating_update": {
+              "$ref": "#/definitions/mass-metadata-source",
+              "description": "Silo-only native rating update. Prefer mass_metadata_update.ratings.silo_user."
+            },
             "mass_audience_rating_update": {
               "anyOf": [
                 {
@@ -5732,6 +5889,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -5775,6 +5940,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -5827,6 +6000,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -5870,6 +6051,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -5922,6 +6111,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -5965,6 +6162,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -6017,6 +6222,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -6060,6 +6273,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -6112,6 +6333,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -6155,6 +6384,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -6207,6 +6444,14 @@
                     "omdb_metascore",
                     "omdb_tomatoes",
                     "plex_imdb",
+                    "jellyfin_community",
+                    "jellyfin_audience",
+                    "jellyfin_critic",
+                    "jellyfin_user",
+                    "emby_community",
+                    "emby_audience",
+                    "emby_critic",
+                    "emby_user",
                     "plex_tmdb",
                     "plex_tomatoes",
                     "plex_tomatoesaudience",
@@ -6250,6 +6495,14 @@
                           "omdb_metascore",
                           "omdb_tomatoes",
                           "plex_imdb",
+                          "jellyfin_community",
+                          "jellyfin_audience",
+                          "jellyfin_critic",
+                          "jellyfin_user",
+                          "emby_community",
+                          "emby_audience",
+                          "emby_critic",
+                          "emby_user",
                           "plex_tmdb",
                           "plex_tomatoes",
                           "plex_tomatoesaudience",
@@ -6583,7 +6836,7 @@
                   "type": "boolean"
                 },
                 "less": {
-                  "type": "integer"
+                  "oneOf": [{"type": "integer", "minimum": 1}, {"const": "all"}]
                 },
                 "ignore_empty_smart_collections": {
                   "type": "boolean"
@@ -16072,9 +16325,22 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience",
+            "silo_user",
+            "jellyfin_community",
+            "jellyfin_audience",
+            "jellyfin_critic",
+            "jellyfin_user",
+            "emby_community",
+            "emby_audience",
+            "emby_critic",
+            "emby_user"
           ]
         },
         "rating1_image": {
@@ -16153,9 +16419,22 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience",
+            "silo_user",
+            "jellyfin_community",
+            "jellyfin_audience",
+            "jellyfin_critic",
+            "jellyfin_user",
+            "emby_community",
+            "emby_audience",
+            "emby_critic",
+            "emby_user"
           ]
         },
         "rating2_image": {
@@ -16234,9 +16513,22 @@
             "anidb_score",
             "mal",
             "plex_imdb",
+            "silo_imdb",
             "plex_tmdb",
+            "silo_tmdb",
             "plex_tomatoes",
-            "plex_tomatoesaudience"
+            "silo_tomatoes",
+            "plex_tomatoesaudience",
+            "silo_tomatoesaudience",
+            "silo_user",
+            "jellyfin_community",
+            "jellyfin_audience",
+            "jellyfin_critic",
+            "jellyfin_user",
+            "emby_community",
+            "emby_audience",
+            "emby_critic",
+            "emby_user"
           ]
         },
         "rating3_image": {

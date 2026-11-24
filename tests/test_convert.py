@@ -46,6 +46,74 @@ class TestConvert:
         assert adapter.get_id(item, library) == ("movie", [1049471], ["tt23724682"])
         adapter.cache.update_guid_map.assert_called_once_with(item.guid, "1049471", "tt23724682", None, "movie")
 
+    @pytest.mark.parametrize(
+        "identifier, expected",
+        [("tvdb_113561", ("thetvdb", "113561")), ("tmdb_1437", ("themoviedb", "1437")), ("imdb_tt0579539", ("imdb", "tt0579539"))],
+    )
+    def test_scan_nfo_series_guid(self, adapter, identifier, expected):
+        assert adapter.scan_guid(f"tv.plex.agents.nfo.series://show/{identifier}") == expected
+
+    @pytest.mark.parametrize("identifier", ["tvdb_0", "tvdb_bad", "tvdb_-1", "tvdb_123/extra", "tmdb_0", "imdb_bad", "local_123", ""])
+    def test_scan_nfo_series_does_not_accept_malformed_or_local_ids(self, adapter, identifier):
+        assert adapter.scan_guid(f"tv.plex.agents.nfo.series://show/{identifier}") == ("series", "show")
+
+    @pytest.mark.parametrize(
+        "guid, expected",
+        [
+            ("tv.plex.agents.nfo.series://season/tvdb_78874_1", ("series", "season")),
+            ("tv.plex.agents.nfo.series://episode/imdb_tt0579539", ("series", "episode")),
+        ],
+    )
+    def test_scan_nfo_series_does_not_treat_seasons_or_episodes_as_shows(self, adapter, guid, expected):
+        assert adapter.scan_guid(guid) == expected
+
+    @staticmethod
+    def _nfo_show(identifier):
+        from types import SimpleNamespace
+
+        item = SimpleNamespace(guid=f"tv.plex.agents.nfo.series://show/{identifier}", ratingKey=123, title="Animaniacs")
+        library = SimpleNamespace(is_movie=False, is_show=True, is_other=False)
+        return item, library
+
+    def test_nfo_series_tvdb_guid_maps_and_caches_show(self, adapter, monkeypatch):
+        import modules.convert as convert_module
+
+        monkeypatch.setattr(convert_module, "logger", MagicMock())
+        adapter.cache.query_guid_map.return_value = (None, None, None, None)
+        adapter.tvdb_to_imdb = MagicMock(return_value="tt0579539")
+        item, library = self._nfo_show("tvdb_113561")
+
+        assert adapter.get_id(item, library) == ("show", [113561], ["tt0579539"])
+        adapter.tvdb_to_imdb.assert_called_once_with(113561)
+        adapter.cache.update_guid_map.assert_called_once_with(item.guid, "113561", "tt0579539", None, "show")
+
+    def test_nfo_series_tmdb_guid_maps_and_caches_show(self, adapter, monkeypatch):
+        import modules.convert as convert_module
+
+        monkeypatch.setattr(convert_module, "logger", MagicMock())
+        adapter.cache.query_guid_map.return_value = (None, None, None, None)
+        adapter.tmdb_to_tvdb = MagicMock(return_value=113561)
+        adapter.tvdb_to_imdb = MagicMock(return_value="tt0579539")
+        item, library = self._nfo_show("tmdb_1437")
+
+        assert adapter.get_id(item, library) == ("show", [113561], ["tt0579539"])
+        adapter.tmdb_to_tvdb.assert_called_once_with(1437)
+        adapter.cache.update_guid_map.assert_called_once_with(item.guid, "113561", "tt0579539", None, "show")
+
+    def test_nfo_series_imdb_guid_without_tvdb_maps_and_caches_imdb_only_show(self, adapter, monkeypatch):
+        import modules.convert as convert_module
+
+        monkeypatch.setattr(convert_module, "logger", MagicMock())
+        adapter.cache.query_guid_map.return_value = (None, None, None, None)
+        adapter.imdb_to_tmdb = MagicMock(return_value=(1437, "show"))
+        adapter.tmdb_to_tvdb = MagicMock(return_value=None)
+        item, library = self._nfo_show("imdb_tt0579539")
+
+        assert adapter.get_id(item, library) == ("show", [], ["tt0579539"])
+        adapter.imdb_to_tmdb.assert_called_once_with("tt0579539")
+        adapter.tmdb_to_tvdb.assert_called_once_with(1437)
+        adapter.cache.update_guid_map.assert_called_once_with(item.guid, "", "tt0579539", None, "show")
+
     def test_imdb_to_tmdb_cache_hit(self, adapter):
         adapter.cache.query_imdb_to_tmdb_map.return_value = (550, False, None)
         tmdb_id, _ = adapter.imdb_to_tmdb("tt123", fail=False)

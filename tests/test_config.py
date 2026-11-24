@@ -8,14 +8,18 @@ to verify the config parsing and validation logic in isolation.
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
+from jsonschema import Draft7Validator, ValidationError
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 import modules.config as config_module
 from modules.config import ConfigFile
+from modules.media_server import Capability, PlexMediaServer
 from modules.util import Failed
 from tests.conftest import FakeLogger, FakeRequests, InMemoryYAMLRequests
 
@@ -106,6 +110,7 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
         "modules.validator",
         "modules.util",
         "modules.config",
+        "modules.silo",
     ]:
         mod = sys.modules.get(mod_name)
         if mod and hasattr(mod, "logger"):
@@ -173,13 +178,300 @@ def make_config(
     attrs: dict | None = None,
     secrets: dict | None = None,
     real_yaml: bool = False,
+    requests=None,
 ) -> ConfigFile:
     """Build a ConfigFile from *config_yaml* with all dependencies mocked; the config file is served from memory unless real_yaml=True (needed to read the saved file back)."""
     config_path = tmp_path / "config.yml"
     config_path.write_text(config_yaml, encoding="utf-8")
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
-    requests = FakeRequests() if real_yaml else InMemoryYAMLRequests()
+    requests = requests or (FakeRequests() if real_yaml else InMemoryYAMLRequests())
     return ConfigFile(requests, str(tmp_path), merged_attrs, secrets or {})
+
+
+def test_config_attaches_a_plex_media_server(tmp_path, monkeypatch):
+    seen = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        seen.append(args[1])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    make_config(tmp_path)
+
+    server = seen[0]["server"]
+    assert isinstance(server, PlexMediaServer)
+    assert server.url == "http://localhost:32400"
+    assert server.token == "fake-plex-token"
+    assert server.type_name == "plex"
+    assert server.supports(Capability.CREATE_COLLECTION)
+    assert not server.supports(Capability.SMART_COLLECTION_WORKAROUND)
+
+
+def test_per_library_plex_block_is_the_media_server(tmp_path, monkeypatch):
+    seen = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        seen.append(args[1])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    config_yaml = BASE_CONFIG.replace(
+        "libraries:\n  Movies:\n    collection_files: []",
+        "libraries:\n  Movies:\n    collection_files: []\n    plex:\n      url: http://override:32400\n      token: override-token\n      timeout: 15\n      verify_ssl: false\n      db_cache: 80",
+    )
+    make_config(tmp_path, config_yaml=config_yaml)
+
+    server = seen[0]["server"]
+    assert isinstance(server, PlexMediaServer)
+    assert server.url == "http://override:32400"
+    assert server.token == "override-token"
+    assert server.timeout == 15
+    assert server.verify_ssl is False
+    assert server.db_cache == 80
+    assert seen[0]["plex"]["url"] == server.url
+    assert seen[0]["plex"]["token"] == server.token
+
+
+def _library_double(mapping_name):
+    library = MagicMock()
+    library.collections = []
+    library.collection_names = []
+    library.collection_files = ["collections/test.yml"]
+    library.metadata_files = []
+    library.overlay_files = []
+    library.library_operation = None
+    library.images_files = []
+    library.original_mapping_name = mapping_name
+    library.type = "Movie"
+    library.scan_files = MagicMock()
+    return library
+
+
+def test_silo_library_uses_the_named_server_and_skips_plex(tmp_path, monkeypatch):
+    plex_calls = []
+    silo_calls = []
+    original = config_module.Plex
+
+    def capture_plex(*args, **kwargs):
+        plex_calls.append(args[1])
+        return original(*args, **kwargs)
+
+    def capture_silo(*args, **kwargs):
+        silo_calls.append(args[1])
+        return _library_double(args[1]["mapping_name"])
+
+    monkeypatch.setattr(config_module, "Plex", capture_plex)
+    monkeypatch.setattr(config_module, "Silo", capture_silo)
+    config_yaml = """
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+  Films:
+    server: Shelf
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+plex:
+  url: http://localhost:32400
+  token: fake-plex-token
+media_servers:
+  Shelf:
+    type: silo
+    url: http://localhost:8090
+    token: silo-token
+    profile_id: profile-1
+    timeout: 20
+    verify_ssl: false
+"""
+    config = make_config(tmp_path, config_yaml=config_yaml)
+
+    assert len(plex_calls) == 1
+    assert plex_calls[0]["mapping_name"] == "Movies"
+    assert len(silo_calls) == 1
+    server = silo_calls[0]["server"]
+    assert isinstance(server, config_module.SiloMediaServer)
+    assert server.name == "Shelf"
+    assert server.url == "http://localhost:8090"
+    assert server.token == "silo-token"
+    assert server.profile_id == "profile-1"
+    assert server.timeout == 20
+    assert server.verify_ssl is False
+    assert "plex" not in silo_calls[0]
+    assert {library.original_mapping_name for library in config.libraries} == {"Movies", "Films"}
+
+
+def test_named_plex_server_overrides_the_library_connection(tmp_path, monkeypatch):
+    seen = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        seen.append(args[1])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    config_yaml = BASE_CONFIG.replace(
+        "libraries:\n  Movies:\n    collection_files: []",
+        "libraries:\n  Movies:\n    server: Other\n    collection_files: []\n    plex:\n      url: http://ignored:32400\n      token: ignored-token",
+    )
+    config_yaml += """
+media_servers:
+  Other:
+    type: plex
+    url: http://named:32400
+    token: named-token
+    timeout: 12
+    verify_ssl: false
+    db_cache: 64
+"""
+    make_config(tmp_path, config_yaml=config_yaml)
+    server = seen[0]["server"]
+    assert isinstance(server, PlexMediaServer)
+    assert server.name == "Other"
+    assert seen[0]["plex"]["url"] == "http://named:32400"
+    assert seen[0]["plex"]["token"] == "named-token"
+    assert seen[0]["plex"]["timeout"] == 12
+    assert seen[0]["plex"]["verify_ssl"] is False
+    assert seen[0]["plex"]["db_cache"] == 64
+
+
+def test_unknown_server_name_skips_that_library(tmp_path, monkeypatch):
+    plex_calls = []
+    original = config_module.Plex
+
+    def capture(*args, **kwargs):
+        plex_calls.append(args[1]["mapping_name"])
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    config_yaml = BASE_CONFIG.replace(
+        "libraries:\n  Movies:\n    collection_files: []",
+        "libraries:\n  Movies:\n    collection_files: []\n  Films:\n    server: Missing\n    collection_files: []",
+    )
+    config = make_config(tmp_path, config_yaml=config_yaml)
+    assert plex_calls == ["Movies"]
+    assert [library.original_mapping_name for library in config.libraries] == ["Movies"]
+
+
+def test_unsupported_media_server_type_fails_config(tmp_path):
+    config_yaml = BASE_CONFIG + """
+media_servers:
+  Shelf:
+    type: kodi
+    url: http://localhost:8096
+    token: token
+"""
+    with pytest.raises(Failed, match="not supported"):
+        make_config(tmp_path, config_yaml=config_yaml)
+
+
+def test_silo_library_connects_without_a_plex_block(tmp_path, monkeypatch):
+    silo_calls = []
+
+    def capture_silo(*args, **kwargs):
+        silo_calls.append(args[1])
+        return _library_double(args[1]["mapping_name"])
+
+    def reject_plex(*args, **kwargs):
+        raise AssertionError("Plex was opened for a Silo library")
+
+    monkeypatch.setattr(config_module, "Silo", capture_silo)
+    monkeypatch.setattr(config_module, "Plex", reject_plex)
+    config = make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+libraries:
+  Films:
+    server: Shelf
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+media_servers:
+  Shelf:
+    type: silo
+    url: http://localhost:8090
+    token: silo-token
+    profile_id: profile-1
+""",
+    )
+
+    assert len(silo_calls) == 1
+    server = silo_calls[0]["server"]
+    assert isinstance(server, config_module.SiloMediaServer)
+    assert server.url == "http://localhost:8090"
+    assert server.token == "silo-token"
+    assert "plex" not in silo_calls[0]
+    assert [library.original_mapping_name for library in config.libraries] == ["Films"]
+
+
+def test_jellyfin_library_connects_without_a_plex_block(tmp_path, monkeypatch):
+    jellyfin_calls = []
+
+    def capture_jellyfin(*args, **kwargs):
+        jellyfin_calls.append(args[1])
+        return _library_double(args[1]["mapping_name"])
+
+    def reject_plex(*args, **kwargs):
+        raise AssertionError("Plex was opened for a Jellyfin library")
+
+    monkeypatch.setattr(config_module, "Jellyfin", capture_jellyfin)
+    monkeypatch.setattr(config_module, "Plex", reject_plex)
+    config = make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+libraries:
+  Films:
+    server: Cinema
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+media_servers:
+  Cinema:
+    type: jellyfin
+    url: http://localhost:8096
+    token: jellyfin-token
+    user: user-1
+""",
+    )
+
+    assert len(jellyfin_calls) == 1
+    server = jellyfin_calls[0]["server"]
+    assert isinstance(server, config_module.JellyfinMediaServer)
+    assert server.user_id == "user-1"
+    assert "plex" not in jellyfin_calls[0]
+    assert [library.original_mapping_name for library in config.libraries] == ["Films"]
+
+
+def test_config_schema_accepts_silo_without_a_plex_block():
+    schema = json.loads((Path(__file__).resolve().parents[1] / "json-schema" / "config-schema.json").read_text(encoding="utf-8"))
+    validator = Draft7Validator(schema)
+    validator.validate(
+        {
+            "tmdb": {"apikey": "key"},
+            "media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}},
+            "libraries": {"Films": {"server": "Shelf", "collection_files": []}},
+        }
+    )
+    validator.validate(
+        {
+            "tmdb": {"apikey": "key"},
+            "media_servers": {
+                "Cinema": {"type": "jellyfin", "url": "http://localhost:8096", "token": "jellyfin-token", "user": "user-1"},
+                "Theater": {"type": "emby", "url": "http://localhost:8096", "token": "emby-token"},
+            },
+            "libraries": {"Films": {"server": "Cinema", "collection_files": []}},
+        }
+    )
+    validator.validate({"plex": {"url": "http://localhost:32400", "token": "token"}, "tmdb": {"apikey": "key"}})
+    with pytest.raises(ValidationError, match="'tmdb' is a required property"):
+        validator.validate({"media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}}})
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -784,6 +1076,63 @@ def test_library_item_override_inherits_collections_only_for_mappings(tmp_path, 
     assert config.libraries[0].collection_asset_directory == ([str(roots["collections"])] if local_grouped else [])
 
 
+@pytest.mark.parametrize("apikey", ["", "   ", "\t"])
+def test_blank_listrr_apikey_stays_disabled_without_a_request(tmp_path, apikey):
+    class RecordingRequests(FakeRequests):
+        def __init__(self):
+            super().__init__()
+            self.urls = []
+
+        def get(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+    requests = RecordingRequests()
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + f"\nlistrr:\n  apikey: '{apikey}'\n", requests=requests)
+    assert config.Listrr is None
+    assert requests.urls == []
+    assert any("apikey is blank" in message for message in config_module.logger.warning_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
+
+
+def test_listrr_apikey_whitespace_is_stripped_before_connect(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeListrr:
+        def __init__(self, requests, apikey):
+            captured["apikey"] = apikey
+
+        def test_connection(self):
+            captured["tested"] = True
+
+    monkeypatch.setattr(config_module, "Listrr", FakeListrr)
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: '  abc  '\n")
+    assert captured == {"apikey": "abc", "tested": True}
+    assert config.Listrr is not None
+
+
+def test_listrr_connection_error_disables_listrr_without_aborting_config(tmp_path):
+    from requests.exceptions import ConnectionError
+
+    class DownRequests(FakeRequests):
+        def get(self, url, headers=None, **kwargs):
+            if "listrr.pro" in str(url):
+                raise ConnectionError("timed out")
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            return self.get(url, headers=headers)
+
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: real-key\n", requests=DownRequests())
+    assert config.Listrr is None
+    assert any("Request failed" in message for message in config_module.logger.error_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
+
+
 @pytest.mark.parametrize("grouped", [False, True])
 def test_config_skips_missing_asset_roots(tmp_path, grouped):
     root = tmp_path / "assets"
@@ -886,3 +1235,113 @@ mal:
         assert config.MyAnimeList is None
         assert calls == []
         assert any("mal sub-attribute client_secret is blank" in message for message in config_module.logger.warning_messages)
+
+
+def test_native_rating_targets_expand_and_validate_for_silo(tmp_path, monkeypatch):
+    captured = []
+    monkeypatch.setattr(config_module, "Silo", lambda config, params: captured.append(params) or _library_double(params["mapping_name"]))
+    make_config(
+        tmp_path,
+        config_yaml="""
+settings:
+  cache: false
+media_servers:
+  Shelf:
+    type: silo
+    url: http://silo:8090
+    token: fake
+libraries:
+  Movies:
+    server: Shelf
+    collection_files: []
+    operations:
+      mass_metadata_update:
+        ratings:
+          silo_imdb: 0
+          silo_tmdb: tmdb
+          silo_tomatoes:
+            source: [imdb, clear]
+          user: 7
+          critic: imdb
+tmdb:
+  apikey: fake
+""",
+    )
+    assert captured
+    assert captured[0]["mass_silo_imdb_rating_update"] == [0.0], config_module.logger.error_messages
+    assert captured[0]["mass_silo_tmdb_rating_update"] == ["tmdb"]
+    assert captured[0]["mass_silo_tomatoes_rating_update"] == ["imdb", "clear"]
+    assert captured[0]["mass_silo_user_rating_update"] == [7.0]
+    assert captured[0]["mass_critic_rating_update"] is None
+    assert any("ratings.critic is unsupported on Silo" in message for message in config_module.logger.warning_messages)
+
+
+@pytest.mark.parametrize("kind,class_name", [("silo", "Silo"), ("jellyfin", "Jellyfin"), ("emby", "Emby")])
+def test_native_mass_metadata_options_are_supported_or_reported(tmp_path, monkeypatch, kind, class_name):
+    captured = []
+    monkeypatch.setattr(config_module, class_name, lambda config, params: captured.append(params) or _library_double(params["mapping_name"]))
+    make_config(
+        tmp_path,
+        config_yaml=f"""
+settings:
+  cache: false
+media_servers:
+  Native:
+    type: {kind}
+    url: http://native:8090
+    token: fake
+libraries:
+  Movies:
+    server: Native
+    collection_files: []
+    operations:
+      mass_metadata_update:
+        genre:
+          source: [[Comedy]]
+          mappings:
+            Drama: Dramatic
+        content_rating:
+          source: PG
+        original_title: tmdb
+        studio: Example
+        originally_available: '2020-01-02'
+        added_at: '2020-01-02'
+        labels:
+          severity: none
+        collections:
+          mode: hide
+        poster:
+          source: [plex, tmdb]
+        square_art:
+          source: tmdb
+        backup:
+          path: '{tmp_path}/metadata.yml'
+tmdb:
+  apikey: fake
+""",
+    )
+    assert captured
+    params = captured[0]
+    assert params["mass_genre_update"] == [["Comedy"]]
+    assert params["mass_original_title_update"] == ["tmdb"]
+    assert params["mass_collection_mode"] is None
+    assert params["mass_poster_update"]["sources"] == ["tmdb"]
+    assert bool(params["mass_added_at_update"]) is (kind != "silo")
+    assert bool(params["mass_imdb_parental_labels"]) is (kind != "silo")
+    assert bool(params["mass_square_art_update"]) is (kind != "silo")
+    assert any("not supported" in message for message in config_module.logger.warning_messages)
+
+
+@pytest.mark.parametrize("value,expected", [("all", "all"), ("5", 5), ("99999", 99999)])
+def test_delete_collection_size_accepts_all_and_numeric_thresholds(tmp_path, monkeypatch, value, expected):
+    captured = []
+    original = config_module.Plex
+
+    def capture(config, params):
+        captured.append(params["delete_collections"])
+        return original(config, params)
+
+    monkeypatch.setattr(config_module, "Plex", capture)
+    yaml = BASE_CONFIG.replace("    collection_files: []", f"    collection_files: []\n    operations:\n      delete_collections:\n        less: {value}")
+    make_config(tmp_path, config_yaml=yaml)
+    assert captured[0]["less"] == expected

@@ -6,6 +6,8 @@ hide:
 
 Configuring [Tautulli](https://tautulli.com/) is optional but can allow you to create Collections based on Tautulli's Watch Statistics.
 
+Tautulli statistics apply only to Plex libraries. Kometa skips Tautulli connections for Silo, Jellyfin, and Emby libraries; using a Tautulli builder on these libraries produces a Plex-only error and skips the definition.
+
 A `tautulli` mapping can be either in the root of the config file as global mapping for all libraries, or you can specify the `tautulli` mapping individually per library.
 
 Below is a `tautulli` mapping example and the full set of attributes:

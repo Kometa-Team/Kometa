@@ -1,0 +1,16 @@
+# A local category fixture: no separator object is created on any server.
+templates:
+  separator:
+    default:
+      collection_section: "060"
+    run_definition: false
+    blank_collection: true
+collections:
+  Kometa Multi-Server Validation Shelf:
+    template:
+      name: separator
+  Kometa Multi-Server Shelf Automatic:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync

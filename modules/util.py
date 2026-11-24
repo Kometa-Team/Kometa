@@ -134,6 +134,10 @@ class Failed(Exception):
     pass
 
 
+class CollectionNotFound(Failed):
+    """A listed collection disappeared before it could be read."""
+
+
 class PlexImageUploadError(Failed):
     """A temporary Plex image upload error persisted after bounded retries."""
 

@@ -1,0 +1,11 @@
+playlists:
+  Kometa Multi-Server Validation Playlist:
+    libraries:
+      - Movies@my-plex
+    plex_search:
+      all:
+        year.gte: 1800
+      sort_by: title.asc
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync

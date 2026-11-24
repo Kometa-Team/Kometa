@@ -121,3 +121,11 @@ python scripts/verify_runtime_dependencies.py requirements.txt
 ```
 
 It exits 0 when everything matches, 1 with one line per mismatch, and 2 on bad usage. The `Dockerfile` runs it after the source copy, so a build on a stale base fails instead of publishing. Run it with the interpreter that holds the dependencies (`/.venv/bin/python3` in the image).
+
+## `validate_multi_server.py` — shared-library validation
+
+Runs fixture-driven offline parser and isolation checks, prepares private live configurations from existing connections, and runs bounded live smoke cases with retained logs. See [the validation guide](../tests/fixtures/multi_server/README.md) for commands, coverage, known gaps, and manual checks.
+
+Explicit `operations` and `operations-selected` cases export local metadata backups. Explicit `overlays` and `overlays-selected` cases change posters in dedicated test libraries and retain original artwork backups. The default collection and playlist sequence is unchanged.
+
+The explicit `shelves` case groups four validation collections on two Silo shelves using direct, template, and automatic category assignments, verifies section ordering, and also builds those collections on Plex and Emby.

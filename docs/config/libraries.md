@@ -6,13 +6,51 @@ hide:
 ---
 # Library Attributes
 
-Within the [Configuration File](overview.md), the `libraries` attribute specifies the Plex libraries that the user wants Kometa to act on.
+Within the [Configuration File](overview.md), the `libraries` attribute specifies the libraries that the user wants Kometa to act on. A library uses the `plex` server unless it sets [`server`](silo.md) to a named `media_servers` entry. Omit `plex` when every library selects another server.
 
 Attributes are used to instruct Kometa what actions to take, such as "load the following libraries" or "execute the following Collection Definition files".
 These attributes can be specified individually per library, or can be inherited from the global value if it has been set.
 If an attribute is specified at both the library and global level, then the library level attribute will take priority.
 
+## Shared libraries across servers
+
+Use `servers` to run a shared library definition independently on several named `media_servers` entries:
+
+```yaml
+libraries:
+  Movies:
+    servers:
+      my-plex: {}
+      my-silo:
+        library_name: Cinema
+      my-emby:
+        library_name: Films
+    collection_files:
+      - file: config/chaz-people.yml
+```
+
+Each target inherits the shared attributes. Its overrides replace entire attributes, including lists and nested mappings.
+The default remote library name is the shared key (`Movies` here). Use either `server` or `servers`, never both.
+Each target must have an override dictionary; use `{}` when no overrides are needed.
+
+Targets have unique mapping names such as `Movies@my-silo`, used for default reports, overlay backups, and caches.
+Explicit output paths should be overridden per target to avoid sharing files.
+Select all targets with `--libraries Movies`, or select one with `--libraries Movies@my-silo`.
+You can also combine the shared name with a server filter:
+
+```bash
+python kometa.py -rl "Movies" --silo-only
+python kometa.py -rl "Movies" --run-servers "my-silo"
+```
+
+`--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only` select a server type; use only one at a time. `--run-servers` (`-rs`) selects exact names from `media_servers`, with `|` separating multiple names. Type and name filters intersect with library selection. For example, two Silo servers both match `--silo-only`, while `--run-servers my-silo` selects just that named connection. `--plex-only` also includes legacy Plex libraries without a named server. Unknown names and filters that select no libraries produce an error before library connections begin.
+
+Playlist library references must use the target mapping name; existing playlist server restrictions still apply.
+Each target runs against its own catalog and supports the features available through its server adapter.
+
 ## Attributes
+
+The Silo-only `silo_shelves` library setting defaults to `false`. Enable it to group a collection file's collections under its separator heading instead of creating a separator. Explicit `silo_shelf` collection assignments work independently. See [Silo collection shelves](silo.md#collection-shelves) for configuration and preservation rules.
 
 The available attributes for each library are as follows:
 
@@ -56,6 +94,36 @@ The available attributes for each library are as follows:
 
         * In this example, `"Movies01"`, `"TV Shows"`, and `"Anime"` will all use the global plex server (**http://192.168.1.12:32400**) which is defined using the global
           `plex` mapping. `"Movies02"` will use the plex server **http://192.168.1.35:32400** which is defined under its `plex` mapping over the global mapping.
+
+??? blank "`server` - Used to select a named media server.<a class="headerlink" href="#server" title="Permanent link">¶</a>"
+
+    <div id="server" />The `server` attribute selects an entry from [`media_servers`](silo.md). Leave it unset to use the `plex` server. Jellyfin and Emby entries are described in [Jellyfin and Emby](jellyfin.md).
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `server`
+
+    **Accepted Values:** The name of a `media_servers` entry. The entry `type` may be `plex`, `silo`, `jellyfin`, or `emby`.
+
+    **Default Value:** The `plex` server
+
+    ???+ example "Example"
+
+        ```yaml
+        media_servers:
+          Shelf:
+            type: silo
+            url: http://192.168.1.12:8090
+            token: ####################
+        libraries:
+          Movies:
+            collection_files:
+              - default: basic
+          Films:
+            server: Shelf
+            collection_files:
+              - default: basic
+        ```
 
 ??? blank "`language` - Used to define the language for generated collection titles and metadata.<a class="headerlink" href="#language" title="Permanent link">¶</a>"
 

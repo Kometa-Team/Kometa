@@ -396,3 +396,10 @@ def test_plex_bulk_edit_batch_size_schema_rejects_invalid_values(value):
     schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
     validator = Draft7Validator({"$ref": "#/definitions/operations", "definitions": schema["definitions"]})
     assert list(validator.iter_errors({"plex_bulk_edit_batch_size": value}))
+
+
+def test_silo_mass_rating_configuration_matches_schema():
+    schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
+    operation_schema = {"$ref": "#/definitions/operations", "definitions": schema["definitions"]}
+    value = {"mass_metadata_update": {"ratings": {"silo_imdb": 0, "silo_tmdb": {"source": ["tmdb", 8], "schedule": "daily"}, "silo_tomatoes": "mdb_tomatoes", "silo_tomatoesaudience": "clear", "silo_user": 7}}}
+    Draft7Validator(operation_schema).validate(value)
