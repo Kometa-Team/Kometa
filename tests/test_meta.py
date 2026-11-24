@@ -80,6 +80,46 @@ def test_people_cache_scope_includes_server_library_profile_user_and_item():
     assert "secret" not in key
 
 
+def test_dynamic_collection_duplicate_check_uses_per_key_name(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    data = {
+        "templates": {"named": {"name": "<<name_<<key>>>", "custom": "<<value>>"}},
+        "dynamic_collections": {
+            "Universes": {
+                "type": "custom",
+                "data": {"arrow": "Arrowverse"},
+                "template": ["named"],
+            }
+        },
+    }
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: data)
+    library = SimpleNamespace(type="Show", name="Shows", collections=[], metadatas=[], is_music=False, is_movie=False, is_show=True, agent="tv.plex.agents.series")
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[])
+
+    metadata = MetadataFile(config, library, "File", "universe.yml", {"name_arrow": "Arrowverse Universe"}, None, "collection")
+
+    assert list(metadata.collections) == ["Arrowverse Universe"]
+    assert metadata.collections["Arrowverse Universe"]["name"] == "Arrowverse Universe"
+    library.collections.extend(metadata.collections)
+    franchise_data = {
+        "templates": data["templates"],
+        "dynamic_collections": {
+            "Franchises": {
+                "type": "custom",
+                "data": {"1412": "Arrowverse"},
+                "template": ["named"],
+            }
+        },
+    }
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: franchise_data)
+
+    franchise = MetadataFile(config, library, "File", "franchise.yml", {}, None, "collection")
+
+    assert list(franchise.collections) == ["Arrowverse"]
+    assert "Skipping duplicate collection" not in logger.warning_messages
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
