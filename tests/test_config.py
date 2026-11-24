@@ -9,6 +9,7 @@ to verify the config parsing and validation logic in isolation.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -1345,3 +1346,76 @@ def test_delete_collection_size_accepts_all_and_numeric_thresholds(tmp_path, mon
     yaml = BASE_CONFIG.replace("    collection_files: []", f"    collection_files: []\n    operations:\n      delete_collections:\n        less: {value}")
     make_config(tmp_path, config_yaml=yaml)
     assert captured[0]["less"] == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("true", "{default}"),
+        ("\n        path: {tmp}/report.yml", "{tmp}/report.yml"),
+        ("false", None),
+        ("\n        path: {tmp}/missing/report.yml", None),
+        ("nonsense", None),
+    ],
+)
+def test_config_parses_unused_assets_report(tmp_path, monkeypatch, value, expected):
+    seen = []
+
+    def connect(config, params):
+        seen.append(params)
+        lib = MagicMock()
+        lib.name = params["name"]
+        lib.collection_files = ["placeholder.yml"]
+        return lib
+
+    monkeypatch.setattr(config_module, "Plex", connect)
+    config_yaml = f"""
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      unused_assets_report: {value.format(tmp=tmp_path)}
+tmdb:
+  apikey: fake-tmdb-key
+plex:
+  url: http://localhost:32400
+  token: fake-plex-token
+"""
+    make_config(tmp_path, config_yaml=config_yaml)
+
+    (params,) = seen
+    if expected is None:
+        assert not params["unused_assets_report"]
+    else:
+        default = os.path.join(str(tmp_path), "Movies_Unused_Assets.yml")
+        assert params["unused_assets_report"] == {"path": expected.format(tmp=tmp_path, default=default)}
+
+
+def test_playlist_files_scheduled_out_are_loaded_only_for_their_names(tmp_path, monkeypatch):
+    monkeypatch.setattr(config_module, "Plex", lambda config, params: MagicMock(collection_files=["placeholder.yml"]))
+    (tmp_path / "daily.yml").write_text("playlists:\n  Daily Mix:\n    libraries: Movies\n    plex_all: true\n")
+    (tmp_path / "weekly.yml").write_text("playlists:\n  Weekly Mix:\n    name_mapping: weekly-art\n    libraries: Movies\n    plex_all: true\n")
+    config_yaml = f"""
+settings:
+  cache: false
+playlist_files:
+  - file: {tmp_path / "daily.yml"}
+  - file: {tmp_path / "weekly.yml"}
+    schedule: never
+libraries:
+  Movies:
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+plex:
+  url: http://localhost:32400
+  token: fake-plex-token
+"""
+    config = make_config(tmp_path, config_yaml=config_yaml, real_yaml=True)
+
+    assert config.playlist_names == ["Daily Mix"]
+    assert [list(playlist_file.playlists) for playlist_file in config.playlist_files] == [["Daily Mix"]]
+    assert [list(playlist_file.playlists) for playlist_file in config.unscheduled_playlist_files] == [["Weekly Mix"]]
+    assert config.incomplete_playlist_files == []

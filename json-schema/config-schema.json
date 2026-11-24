@@ -6900,6 +6900,23 @@
                 }
               },
               "required": []
+            },
+            "unused_assets_report": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": []
+                }
+              ]
             }
           },
           "required": [],
