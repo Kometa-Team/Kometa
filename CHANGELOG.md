@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
+- Sinhala (Sri Lanka), Southern Soho (Lesotho), Armenian (Armenia), and Dzongkha (Bhutan) added to Defaults > Overlays > Languages files
 ### Added
 
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
