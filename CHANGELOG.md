@@ -10,9 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support Silo collection promotion with `visible_library`, `visible_home`, and `visible_shared` using native section rows and acting-profile overrides, with optional multi-server promotion validation cases.
-
+- Sinhala (Sri Lanka), Southern Soho (Lesotho), Armenian (Armenia), and Dzongkha (Bhutan) added to defaults > overlays > languages
 - Filter library runs by named servers with `--run-servers` or by backend with `--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only`, including environment variable support and combined library selection.
-
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
@@ -20,8 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Recognize TVDb, TMDb and IMDb identifiers embedded in Plex NFO Series agent GUIDs when mapping TV and anime libraries. #3879
+- Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
+- Avoid rescanning active collection files for configured-name tracking, and honor per-key dynamic collection names when detecting duplicates across files.
 - Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
-
 - Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
 - Check multi-server validation file permissions only on POSIX systems, while retaining isolation and overwrite tests on Windows.
 - Group packaged chart defaults on Silo's shared Chart Collections shelf without requiring a separate chart separator, preserving section and name overrides.
