@@ -10,11 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
-
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
-
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
-
 - Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
 
 ### Fixed
@@ -22,60 +19,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
 
 - Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
-
 - Check multi-server validation file permissions only on POSIX systems, while retaining isolation and overwrite tests on Windows.
-
 - Group packaged chart defaults on Silo's shared Chart Collections shelf without requiring a separate chart separator, preserving section and name overrides.
-
 - Merge collections with the same Silo shelf name even when their section values differ; use the lowest section for ordering.
-
 - Group packaged awards defaults on Silo's shared Award Collections shelf, even when the separate award separator is omitted, preserving section and name overrides.
-
 - Retry Silo collection reads interrupted by revision changes and recover a stale collection PATCH once when the fields being updated are unchanged, preserving concurrent edits to those fields.
-
 - Skip unsupported playlist reports on native media servers during mixed-server runs.
-
 - Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
-
 - Honor targeted native catalog and asset updates after shared API changes, restore native adapter test coverage, and correct type annotations without increasing the Pyright baseline.
-
 - Measure disabled timing instrumentation overhead using CPU time so parallel CI scheduling does not cause false failures.
-
 - Check Jellyfin/Emby backdrop lists before retrying interrupted remote downloads; stop on changed or unverifiable lists to avoid duplicate additions, and include artwork type in image-operation errors.
-
 - Retry Jellyfin/Emby catalog reads after Cloudflare 520–524 responses and retry remote fixed-slot artwork replacements after transient connection failures, without replaying backdrop additions.
-
 - Treat invalid Jellyfin/Emby TMDb and TVDb provider IDs such as `UNKNOWN` as missing so metadata lookups can use another provider instead of crashing.
-
 - Skip redundant overlay tag removal when the tag is absent and batch Jellyfin/Emby catalog cache updates during overlay removal while keeping server writes synchronous.
-
 - Warn and skip Plex collection visibility modes on native servers so shared operation settings do not produce configuration errors.
-
 - Validate Jellyfin/Emby cached catalog membership against a fresh lightweight listing before reuse, and restart interrupted catalog scans to exclude removed items.
-
 - Combine pending Jellyfin/Emby operation metadata changes into one request per item using loaded item data, batch local cache patches in groups of 100, and report write progress and failures. Personal ratings retain their separate endpoint.
-
 - Accept the shared operations reload element-exclusion argument on Jellyfin, Emby, and Silo; Plex XML exclusions do not alter native JSON reads.
-
 - Render native episode overlays on the landscape canvas instead of stretching episode artwork into portrait dimensions.
-
 - Map Jellyfin/Emby runtime ticks to milliseconds for runtime text overlays on movies, shows, seasons, and episodes.
-
 - Reuse Jellyfin/Emby cached catalogs for overlay cleanup tag and backup checks instead of repeating server searches; include tag filters in request diagnostics.
-
 - Preserve Jellyfin/Emby catalogs across overlay artwork writes and patch only matching cached items after metadata/user-state writes without extending cache expiry.
-
 - Support `plex_all` season and episode selection on Jellyfin, Emby, and Silo using the cached catalog without fetching media details for every item.
-
 - Skip Jellyfin TV studio dynamic collections with a warning rather than duplicating network collections.
-
 - Route Jellyfin collection reads before metadata writes through the user-data-free listing endpoint as well as collection reloads.
-
 - Use a single fresh paginated Jellyfin/Emby collection listing for collection operations instead of reloading each box set, and request only collection metadata fields.
-
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
-
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
+- Skip `docker-bake.hcl` in Docker source integrity scans while continuing to verify it in source checkouts.
 
 ### Docs
 
