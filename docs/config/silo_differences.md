@@ -15,7 +15,8 @@ Use `silo_all` for native all-item builders. Supported `plex_all` and `plex_sear
 | Smart collections | Silo accepts its own query documents under `smart_filter`. Supported rules can create native smart collections. Rules requiring local evaluation become ordinary collections rebuilt on Kometa runs, with the fallback logged. |
 | Plex smart-filter addresses | Not accepted. Use native query documents or supported metadata rules. |
 | Item labels | No equivalent is exposed by the adapter. Label-based selectors and writes are unavailable. |
-| Collection sort titles, labels, and visibility | These options warn and skip; supported metadata and artwork continue. Plex visibility settings do not control Silo's home screen or sharing. |
+| Collection sort titles and labels | These options warn and skip; supported metadata and artwork continue. |
+| Collection visibility | `visible_library` manages a library section, `visible_home` manages the acting profile's Home row, and `visible_shared` manages the default Home row for other profiles. Personal overrides remain in effect. See [promotion settings](silo.md). |
 | Configured collection tracking | Collection names are compared with the current configuration. This does not record who created a collection. |
 | Managed collection tracking | No `Kometa` or `PMM` ownership label is written. Silo collections are treated as unmanaged by the shared label-based checks. |
 | Playlists and item deletion | Unsupported by this adapter. Deleting a collection is a separate supported operation. |
