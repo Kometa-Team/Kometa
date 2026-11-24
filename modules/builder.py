@@ -265,7 +265,7 @@ boolean_details = [
     "create_asset_folders",
 ]
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
-string_details = ["sort_title", "content_rating", "name_mapping"]
+string_details = ["sort_title", "content_rating", "name_mapping", "silo_shelf"]
 ignored_details = [
     "asset_directory",
     "smart_filter",
@@ -1108,6 +1108,8 @@ class CollectionBuilder:
                 if attr.lower() not in methods:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
+
+        self._inherit_silo_shelf(methods)
 
         if library is not None and not self.overlay:
             self._adapt_local_smart_filter(library, self.data, methods)
@@ -2331,6 +2333,13 @@ class CollectionBuilder:
             else:
                 logger.error(f"{self.Type} Error: Square Art Path Does Not Exist: {os.path.abspath(method_data)}")
 
+    def _inherit_silo_shelf(self, methods):
+        if not self.playlist and not self.overlay and "silo_shelf" not in methods:
+            default_shelf = getattr(self.metadata, "silo_default_shelf", None)
+            if isinstance(default_shelf, str) and default_shelf:
+                self.data["silo_shelf"] = default_shelf
+                methods["silo_shelf"] = "silo_shelf"
+
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
             self.url_theme = method_data
@@ -2401,6 +2410,16 @@ class CollectionBuilder:
             default = self.details[method_name] if method_name in self.details else None
             self.details[method_name] = util.parse(self.Type, method_name, method_data, datatype="bool", default=default)
         elif method_name in string_details:
+            if method_name == "silo_shelf":
+                if self.playlist or self.overlay or not isinstance(method_data, str) or not method_data.strip():
+                    raise BuilderValidationError("Collection Error: silo_shelf must be a nonempty string on a collection")
+                if getattr(getattr(self.library, "server", None), "type_name", "plex") != "silo":
+                    logger.warning("Collection Warning: silo_shelf only applies to Silo; skipping")
+                    return
+                method_data = method_data.strip()
+                section = getattr(getattr(self, "metadata", None), "silo_default_shelf_section", None)
+                if isinstance(section, int) and not isinstance(section, bool):
+                    self.details["_silo_shelf_section"] = section
             self.details[method_name] = str(method_data)
 
     def _item_details(self, method_name, method_data, method_mod, method_final, methods):
@@ -6126,6 +6145,13 @@ class CollectionBuilder:
         logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
         logger.info("")
 
+        silo = getattr(getattr(self.library, "server", None), "type_name", None) == "silo"
+        if silo:
+            for attribute in ("item_label", "item_label.remove", "item_label.sync", "non_item_remove_label"):
+                if attribute in self.item_details:
+                    logger.warning(f"Silo Warning: {attribute} is not supported by this server; skipping")
+                    self.item_details.pop(attribute)
+
         add_tags = self.item_details["item_label"] if "item_label" in self.item_details else None
         remove_tags = self.item_details["item_label.remove"] if "item_label.remove" in self.item_details else None
         sync_tags = self.item_details["item_label.sync"] if "item_label.sync" in self.item_details else None
@@ -6159,7 +6185,7 @@ class CollectionBuilder:
         rating_batch_items = {}
         for item in self.items:
             item = self.library.reload(item)
-            current_labels = [la.tag for la in self.library.item_labels(item)]
+            current_labels = (["Overlay"] if self.library.item_has_overlay(item) else []) if silo else [la.tag for la in self.library.item_labels(item)]
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
             if add_tags or remove_tags or sync_tags is not None:

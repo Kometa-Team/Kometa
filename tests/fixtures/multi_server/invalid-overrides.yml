@@ -1,0 +1,9 @@
+# Known schema gap: overrides should reject these, but currently accept them.
+unknown-attribute:
+  servers:
+    my-plex:
+      library_naem: Movies
+wrong-type:
+  servers:
+    my-plex:
+      collection_files: 42

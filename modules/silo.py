@@ -14,6 +14,7 @@ import re
 import time
 import uuid
 from collections.abc import Iterable
+from copy import deepcopy
 from threading import Lock
 from types import SimpleNamespace
 from typing import TypeVar, cast
@@ -43,6 +44,12 @@ _REQUEST_PACERS_LOCK = Lock()
 IMAGE_EXTENSIONS = {".jpg", ".png", ".webp"}
 ARTWORK_KINDS = {"poster": "poster", "background": "backdrop", "backdrop": "backdrop", "logo": "logo"}
 IMAGE_SOURCES = {"tmdb": "TMDb", "tvdb": "TVDb", "trakt": "Trakt", "ytmusic": "YouTube Music"}
+
+
+class SiloHTTPError(Failed):
+    def __init__(self, message, status_code):
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def _resolution_value(value):
@@ -167,6 +174,7 @@ class SiloClient:
         if server.verify_ssl is False:
             self.session.verify = False
         self._listing_profiles = False
+        self._collection_snapshots = {}
         parsed = urlsplit(self.base)
         server_key = parsed._replace(scheme=parsed.scheme.lower(), netloc=parsed.netloc.lower()).geturl()
         self._request_pacer = None
@@ -203,8 +211,12 @@ class SiloClient:
                 detail = self._missing_profile_detail()
             elif len(detail) > 300:
                 detail = detail[:300]
-            error_type = CollectionNotFound if response.status_code == 404 and method.upper() == "GET" and re.fullmatch(r"/admin/collections/[^/]+", path) else Failed
-            raise error_type(f"Silo Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}")
+            message = f"Silo Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}"
+            if response.status_code == 404 and method.upper() == "GET" and re.fullmatch(r"/admin/collections/[^/]+", path):
+                raise CollectionNotFound(message)
+            if response.status_code in (409, 412):
+                raise SiloHTTPError(message, response.status_code)
+            raise Failed(message)
         if method.upper() in ("POST", "PATCH", "PUT", "DELETE") and path.startswith(("/admin/items/", "/ratings/")):
             for cache, scope in getattr(self, "_persistent_catalog_caches", {}).values():
                 cache.invalidate_silo_responses(scope)
@@ -283,16 +295,98 @@ class SiloClient:
     def list_collections(self, library_id):
         return self._items("GET", "/admin/collections", params={"library_id": library_id})
 
+    def list_shelves(self, library_id):
+        return self._items("GET", f"/admin/libraries/{_path_id(library_id)}/collection-groups")
+
+    def create_shelf(self, library_id, name):
+        data, _ = self.request("POST", f"/admin/libraries/{_path_id(library_id)}/collection-groups", json_body={"name": name, "default_sort_mode": "name_asc"})
+        return data
+
+    def place_on_shelf(self, library_id, shelf_id, collection_id):
+        path = f"/admin/collection-groups/{_path_id(shelf_id)}/collections/order"
+        query = {"library_id": library_id}
+        order, headers = self.request("GET", path, params=query)
+        if not isinstance(order, dict) or order.get("has_more") or not isinstance(order.get("ordered_ids"), list):
+            raise Failed("Silo Error: Cannot place collection on shelf without its complete current order")
+        ids = order["ordered_ids"]
+        if str(collection_id) in [str(value) for value in ids]:
+            return False
+        etag = headers.get("ETag") or headers.get("Etag")
+        if not etag:
+            raise Failed("Silo Error: Shelf order response has no ETag; refusing to overwrite shelf membership")
+        self.request("PUT", path, params={**query, "move_omitted": "reject"}, json_body={"ordered_ids": [*ids, collection_id]}, headers={"If-Match": etag})
+        return True
+
+    def order_shelves(self, library_id, sections):
+        path = f"/admin/libraries/{_path_id(library_id)}/collection-groups/order"
+        order, headers = self.request("GET", path)
+        if not isinstance(order, dict) or order.get("has_more") or not isinstance(order.get("ordered_ids"), list):
+            raise Failed("Silo Error: Cannot sort shelves without their complete current order")
+        ids = order["ordered_ids"]
+        if not set(sections).issubset(ids):
+            raise Failed("Silo Error: Managed shelf missing from current order; rerun to refresh it")
+        managed = sorted((shelf_id for shelf_id in ids if shelf_id in sections), key=lambda shelf_id: sections[shelf_id])
+        remaining = [shelf_id for shelf_id in ids if shelf_id not in sections]
+        names = {"ungrouped": "No heading"}
+        if any(shelf_id not in names for shelf_id in remaining):
+            # Read names after the order's validator so concurrent renames also
+            # invalidate the guarded write below.
+            for shelf in self.list_shelves(library_id):
+                if isinstance(shelf.get("name"), str) and shelf["name"].strip():
+                    names[shelf["id"]] = shelf["name"]
+        if any(shelf_id not in names for shelf_id in remaining):
+            raise Failed("Silo Error: Shelf name missing from current listing; refusing to sort shelves")
+        desired = managed + sorted(remaining, key=lambda shelf_id: (names[shelf_id].casefold(), names[shelf_id], shelf_id))
+        if desired == ids:
+            return False
+        etag = headers.get("ETag") or headers.get("Etag")
+        if not etag:
+            raise Failed("Silo Error: Shelf order response has no ETag; refusing to overwrite shelf order")
+        self.request("PUT", path, json_body={"ordered_ids": desired}, headers={"If-Match": etag})
+        return True
+
     def get_collection(self, collection_id):
-        data, headers = self.request("GET", f"/admin/collections/{_path_id(collection_id)}")
-        return data, headers.get("ETag") or headers.get("Etag")
+        for attempt in range(3):
+            try:
+                data, headers = self.request("GET", f"/admin/collections/{_path_id(collection_id)}")
+            except SiloHTTPError as error:
+                if error.status_code != 409 or attempt == 2:
+                    raise
+                logger.debug(f"Silo collection {collection_id} changed during read; fetching again ({attempt + 1}/2)")
+                time.sleep(0.25 * (attempt + 1))
+                continue
+            etag = headers.get("ETag") or headers.get("Etag")
+            self._collection_snapshots[str(collection_id)] = (deepcopy(data), etag)
+            return data, etag
+        raise Failed(f"Silo Error: Could not read a stable collection {collection_id}")
 
     def create_collection(self, payload):
         data, headers = self.request("POST", "/admin/collections", json_body=payload)
         return data, headers.get("ETag") or headers.get("Etag")
 
     def update_collection(self, collection_id, payload, etag):
-        data, headers = self.request("PATCH", f"/admin/collections/{_path_id(collection_id)}", json_body=payload, headers={"If-Match": etag or "*"})
+        snapshot = self._collection_snapshots.get(str(collection_id))
+        try:
+            data, headers = self.request("PATCH", f"/admin/collections/{_path_id(collection_id)}", json_body=payload, headers={"If-Match": etag or "*"})
+        except SiloHTTPError as error:
+            if error.status_code != 412 or not etag or etag == "*" or not snapshot or snapshot[1] != etag or not isinstance(snapshot[0], dict):
+                raise
+            current, fresh_etag = self.get_collection(collection_id)
+            if not isinstance(current, dict) or not fresh_etag or fresh_etag == "*":
+                raise error
+            pending = {}
+            for field, desired in payload.items():
+                if current.get(field) == desired:
+                    continue
+                if current.get(field) != snapshot[0].get(field):
+                    # Another writer edited the same field. Preserve their edit and
+                    # surface the original conflict instead of forcing our value.
+                    raise error
+                pending[field] = desired
+            if not pending:
+                return current, fresh_etag
+            logger.debug(f"Silo collection {collection_id} revision changed; retrying unchanged fields against its current ETag")
+            data, headers = self.request("PATCH", f"/admin/collections/{_path_id(collection_id)}", json_body=pending, headers={"If-Match": fresh_etag})
         return data, headers.get("ETag") or headers.get("Etag")
 
     def delete_collection(self, collection_id, etag):
@@ -676,26 +770,55 @@ class Silo(Library):
     def update_collection_details(self, collection, summary, details):
         """Apply native collection metadata without Plex's automatic label edits."""
         self.item_reload(collection)
-        for field in ("sort_title", "label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared"):
+        for field in ("sort_title", "label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared", "content_rating", "collection_mode", "collection_filtering"):
             if field in details:
                 logger.warning(f"Silo Warning: Collection {field} is not supported by this adapter; skipping {field}")
-        for field in ("content_rating", "collection_mode", "collection_filtering"):
-            if field in details:
-                raise Failed(f"Silo Error: Collection metadata attribute {field} is not supported")
         payload = {}
         if summary and str(summary) != collection.summary:
             payload["description"] = str(summary)
         if "collection_order" in details:
             order = details["collection_order"]
-            sort_config = self._collection_sort_config(order)
-            if sort_config != (collection.data.get("sort_config") or {}):
-                payload["sort_config"] = sort_config
-        if not payload:
-            return []
-        data, etag = self.client.update_collection(collection.id, payload, collection.etag)
-        collection.apply({**payload, **(data or {})}, etag=etag)
-        logger.info("Collection metadata updated")
-        return ["Metadata"]
+            try:
+                sort_config = self._collection_sort_config(order)
+            except Failed:
+                logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+            else:
+                if sort_config != (collection.data.get("sort_config") or {}):
+                    payload["sort_config"] = sort_config
+        updated = []
+        if payload:
+            data, etag = self.client.update_collection(collection.id, payload, collection.etag)
+            collection.apply({**payload, **(data or {})}, etag=etag)
+            logger.info("Collection metadata updated")
+            updated.append("Metadata")
+        if "silo_shelf" in details:
+            name = details["silo_shelf"]
+            shelves = self.client.list_shelves(self.library_id)
+            matches = [shelf for shelf in shelves if str(shelf.get("name", "")).casefold() == name.casefold()]
+            if len(matches) > 1 or matches and matches[0].get("kind") != "regular":
+                raise Failed(f"Silo Error: Shelf '{name}' is ambiguous or reserved; choose a regular shelf")
+            shelf = matches[0] if matches else self.client.create_shelf(self.library_id, name)
+            if not isinstance(shelf, dict) or not shelf.get("id"):
+                raise Failed(f"Silo Error: Shelf '{name}' response has no ID")
+            sections: dict[str, int] = getattr(self, "_silo_shelf_sections", {})
+            self._silo_shelf_sections = sections
+            section = details.get("_silo_shelf_section")
+            changed = self.client.place_on_shelf(self.library_id, shelf["id"], collection.id)
+            if section is not None:
+                previous_section = sections.get(shelf["id"])
+                if previous_section is not None:
+                    section = min(section, previous_section)
+                sections[shelf["id"]] = section
+            if self.client.order_shelves(self.library_id, sections):
+                changed = True
+            if section is not None:
+                logger.info(f"Silo Shelf Section: {self.original_mapping_name} | {name} | {section}")
+                if len(sections) > 1:
+                    logger.info(f"Silo Shelf Order: {self.original_mapping_name} | {','.join(str(value) for value in sorted(sections.values()))}")
+            logger.info(f"Silo Shelf: {self.original_mapping_name} | {name} | {collection.title} | {'Assigned' if changed else 'Unchanged'}")
+            if changed:
+                updated.append("Shelf")
+        return updated
 
     @staticmethod
     def _collection_sort_config(order):
@@ -714,17 +837,24 @@ class Silo(Library):
     def sort_collection_items(self, collection, items, order):
         if isinstance(order, list):
             if len(order) != 1:
-                raise Failed("Silo Error: Collection sorting accepts one sort field")
-            config = self._collection_sort_config(order[0])
+                logger.warning("Silo Warning: Collection sorting accepts one sort field; skipping collection_order")
+                return
+            try:
+                config = self._collection_sort_config(order[0])
+            except Failed:
+                logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+                return
             self.item_reload(collection)
             if config != collection.data.get("sort_config"):
                 data, etag = self.client.update_collection(collection.id, {"sort_config": config}, collection.etag)
                 collection.apply({"sort_config": config, **(data or {})}, etag=etag)
             return
         if order not in ("custom", "custom.asc", "custom.desc"):
-            raise Failed(f"Silo Error: Unsupported custom collection order: {order}")
+            logger.warning(f"Silo Warning: Collection order {order} is not supported; skipping collection_order")
+            return
         if collection.smart:
-            raise Failed("Silo Error: Explicit item ordering requires a manual collection")
+            logger.warning("Silo Warning: Explicit item ordering requires a manual collection; skipping collection_order")
+            return
         members = self.client.collection_items(collection.id)
         if any(not (row.get("media_item_id") or row.get("content_id")) or not isinstance(row.get("position"), int) for row in members):
             raise Failed("Silo Error: Invalid collection membership response; sorting aborted before changes")
@@ -750,11 +880,10 @@ class Silo(Library):
                 raise
 
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
-        if attr in ("label", "labels"):
-            self.require(Capability.GET_ITEM_LABELS)
         field = TAG_FIELDS.get(attr)
         if field is None:
-            raise Failed(f"Silo Error: {self._silo().display_name} cannot edit {attr.replace('_', ' ')}")
+            logger.warning(f"Silo Warning: Metadata attribute {attr} is not supported; skipping")
+            return
         self.require(Capability.SYNC_TAGS)
         current = list(getattr(obj, field, None) or [])
         if sync_tags is not None:

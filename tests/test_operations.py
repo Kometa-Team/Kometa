@@ -536,7 +536,8 @@ class TestRemoveTitleParenthesesBatching:
 
         Operations(config=MagicMock(), library=library).run_operations()
 
-        logger.error.assert_called_once_with("Config Error: split_duplicates is not supported by silo: Silo grouping repair requires explicit file and target selections")
+        logger.warning.assert_called_once_with("Config Warning: split_duplicates is not supported by silo: Silo grouping repair requires explicit file and target selections; skipping unsupported setting")
+        logger.error.assert_not_called()
         library.search.assert_not_called()
         library.refresh_item_cache_and_mappings.assert_not_called()
         library.get_all.assert_called_once_with(target_keys=None)

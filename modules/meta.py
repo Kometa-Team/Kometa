@@ -138,6 +138,7 @@ class DataFile:
             return data
 
     def load_file(self, file_type, file_path, overlay=False, translation=False, images=False, folder=""):
+        main_default = file_type == "Default" and file_path == self.path and not (overlay or translation or images)
         if translation:
             if file_path.endswith(".yml"):
                 file_path = file_path[:-4]
@@ -191,6 +192,8 @@ class DataFile:
                     raise Failed(f"File Error: File does not exist {content_path}")
             # This branch is a local, never-saved file load (Default/Repo-sourced collection/overlay/playlist content) - safe to use the faster read_only loader.
             yaml = self.config.Requests.file_yaml(content_path, check_empty=True, read_only=True)
+            if main_default:
+                self._default_collection_path = content_path
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
             data, trakt_found = util.remove_trakt(yaml.data)
@@ -246,7 +249,7 @@ class DataFile:
                     add_translation(os.path.abspath(f"{dir_path}/{file}"), file[:-4])
         return translations, key_names, variables
 
-    def apply_template(self, call_name, mapping_name, data, template_call, extra_variables):
+    def apply_template(self, call_name, mapping_name, data, template_call, extra_variables, resolved_variables=None):
         if not self.templates:
             raise Failed(f"{self.data_type} Error: No templates found")
         elif not template_call:
@@ -637,6 +640,11 @@ class DataFile:
                                 continue
                     logger.trace(f"Current Final: {new_attributes}")
                     logger.trace("")
+                    if resolved_variables is not None:
+                        for variable in resolved_variables:
+                            if variable in variables or variable in default:
+                                resolved_variables[variable] = check_for_var(variable, f"<<{variable}>>", False)
+
             logger.separator("Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)
@@ -655,6 +663,38 @@ class DataFile:
 
 
 class MetadataFile(DataFile):
+    def _silo_default_shelf(self, data, shared_fallback=True):
+        """Resolve the category heading before disabled separators are discarded."""
+        self.silo_default_shelf_section = None
+        if not getattr(self.library, "silo_shelves", False) or getattr(getattr(self.library, "server", None), "type_name", None) != "silo":
+            return None
+        headings = []
+        for name, attributes in (data.get("collections") or {}).items():
+            if not isinstance(attributes, dict):
+                continue
+            calls = util.get_list(attributes.get("template"), split=False) or []
+            if any(isinstance(call, dict) and call.get("name") == "separator" for call in calls):
+                context = {"collection_section": None}
+                resolved = self.apply_template(attributes.get("name"), name, copy.deepcopy(attributes), copy.deepcopy(calls), copy.deepcopy(attributes.get("variables") or {}), resolved_variables=context)
+                section = context["collection_section"]
+                if section is not None:
+                    if isinstance(section, bool) or not str(section).isascii() or not str(section).isdecimal():
+                        raise Failed("Silo Error: collection_section must be a nonnegative integer for shelf ordering")
+                    self.silo_default_shelf_section = int(section)
+                headings.append(attributes.get("name") or resolved.get("name") or name)
+        if len(headings) > 1:
+            raise Failed("Silo Error: Automatic shelves require one separator per collection file; use explicit silo_shelf attributes for multiple categories")
+        if not headings and shared_fallback:
+            default_path = getattr(self, "_default_collection_path", None)
+            defaults_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "defaults")
+            if isinstance(default_path, str):
+                for category, separator_name in (("award", "separator_award"), ("chart", "separator_chart")):
+                    if os.path.dirname(default_path) == os.path.join(defaults_dir, category):
+                        # These defaults share a standalone category separator.
+                        separator = self.load_file("Default", f"{category}/{separator_name}")
+                        return self._silo_default_shelf(separator, shared_fallback=False)
+        return headings[0] if headings else None
+
     def _active_collection_definitions(self, data):
         """Do not let explicitly disabled definitions reserve duplicate names."""
         if getattr(self, "configured_names_only", False):
@@ -686,6 +726,10 @@ class MetadataFile(DataFile):
                 logger.info(f"Config: Skipping disabled collection definition: {name}")
             else:
                 active[name] = attributes
+        if collections and not active:
+            # Filtering intentionally disabled definitions is not a blank YAML
+            # attribute. Omit the key so get_dict does not report a false error.
+            return {key: value for key, value in data.items() if key != "collections"}
         return {**data, "collections": active}
 
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
@@ -697,6 +741,7 @@ class MetadataFile(DataFile):
         self.configured_names_only = configured_names_only
         self.data_type = "Collection"
         self.library = library
+        self.silo_default_shelf = None
         self.metadata = None
         self.collections = None
         self.music_playlists = {}
@@ -853,6 +898,7 @@ class MetadataFile(DataFile):
             logger.info("Images File Loaded Successfully")
         elif file_type == "Data":
             self.templates = get_dict("templates", path)
+            self.silo_default_shelf = self._silo_default_shelf(path)
             self.collections = get_dict("collections", self._active_collection_definitions(path), library.collections)
         else:
             data = self.load_file(self.type, self.path)
@@ -861,6 +907,7 @@ class MetadataFile(DataFile):
             self.templates = get_dict("templates", data)
             self.external_templates(data)
             if self.file_style == "collection":
+                self.silo_default_shelf = self._silo_default_shelf(data)
                 self.collections = get_dict("collections", self._active_collection_definitions(data), library.collections)
                 self.music_playlists = get_dict("music_playlists", data)
                 if self.music_playlists and not library.is_music:
@@ -1468,7 +1515,10 @@ class MetadataFile(DataFile):
                                 new_call = og_call.copy()
                                 new_call["name"] = template_name
                                 template_call.append(new_call)
-                            if key in title_override:
+                            key_name_override_var = f"name_{key}"
+                            if key_name_override_var in self.temp_vars and isinstance(self.temp_vars[key_name_override_var], str):
+                                collection_title = self.temp_vars[key_name_override_var].replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                            elif key in title_override:
                                 collection_title = title_override[key]
                             else:
                                 # Sync-key priority: name_format (user override) → translation_key → title_format
@@ -1510,7 +1560,7 @@ class MetadataFile(DataFile):
                                 col = {"template": template_call, "append_label": str(map_name)}
                                 # Only set col["name"] for name_format/title_override — lets builder.py resolve translation naturally while still matching our sync key.
                                 _name_fmt_check = og_call.get("name_format") or self.temp_vars.get("name_format")
-                                if key in title_override or isinstance(_name_fmt_check, str):
+                                if key_name_override_var in self.temp_vars or key in title_override or isinstance(_name_fmt_check, str):
                                     col["name"] = collection_title
                                 if test:
                                     col["test"] = True

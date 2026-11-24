@@ -16,7 +16,7 @@ def test_native_targets_are_rejected_on_other_servers(server):
     configure_rating_updates(params, server, logger)
     assert params["mass_silo_imdb_rating_update"] is None
     assert params["mass_user_rating_update"] == ["imdb"]
-    assert "unsupported" in logger.error.call_args.args[0]
+    assert "unsupported" in logger.warning.call_args.args[0]
 
 
 @pytest.mark.parametrize("server,source", [("silo", "plex_imdb"), ("emby", "silo_imdb"), ("jellyfin", "silo_tmdb"), ("plex", "silo_user")])
@@ -25,7 +25,7 @@ def test_incompatible_sources_are_reported_and_fallbacks_retained(server, source
     logger = MagicMock()
     configure_rating_updates(params, server, logger)
     assert params.get("mass_silo_user_rating_update" if server == "silo" else "mass_user_rating_update") == ["imdb"]
-    logger.error.assert_called_once()
+    logger.warning.assert_called_once()
 
 
 def test_silo_generic_slots_are_not_guessed_and_explicit_user_wins():
@@ -34,7 +34,8 @@ def test_silo_generic_slots_are_not_guessed_and_explicit_user_wins():
     configure_rating_updates(params, "silo", logger)
     assert params["mass_silo_user_rating_update"] == ["tmdb"]
     assert all(params[key] is None for key in params if key != "mass_silo_user_rating_update")
-    assert logger.error.call_count == 4
+    assert logger.warning.call_count == 3
+    logger.error.assert_called_once()
 
 
 @pytest.mark.parametrize("target,score,expected", [("silo_user", 0, 1), ("silo_user", 7, 4), ("silo_user", 9.9, 5), ("silo_tomatoes", 7.45, 75), ("silo_tomatoesaudience", 0, 0), ("silo_imdb", 7.4, 7.4), ("silo_tmdb", 0, 0), ("silo_user", None, None)])
@@ -76,7 +77,7 @@ def test_unsupported_silo_actions_are_reported_before_scanning(option):
     params = {"mass_silo_imdb_rating_update": [option]}
     configure_rating_updates(params, "silo", logger)
     assert params["mass_silo_imdb_rating_update"] is None
-    assert "unsupported" in logger.error.call_args.args[0]
+    assert "unsupported" in logger.warning.call_args.args[0]
 
 
 def test_native_clear_source_is_reported_on_plex():
@@ -84,7 +85,7 @@ def test_native_clear_source_is_reported_on_plex():
     logger = MagicMock()
     configure_rating_updates(params, "plex", logger)
     assert params["mass_user_rating_update"] is None
-    logger.error.assert_called_once()
+    logger.warning.assert_called_once()
 
 
 def test_clear_skips_a_known_unrated_profile():
@@ -127,7 +128,7 @@ def test_stored_rating_sources_are_rejected_on_other_servers(server):
     else:
         expected = (["jellyfin_critic"] if server == "jellyfin" else ["emby_community"] if server == "emby" else []) + ["imdb"]
         assert params["mass_audience_rating_update"] == expected
-    assert logger.error.called
+    assert logger.warning.called
 
 
 def test_jellyfin_personal_score_clear_is_rejected_but_critic_clear_remains():
@@ -135,7 +136,7 @@ def test_jellyfin_personal_score_clear_is_rejected_but_critic_clear_remains():
     logger = MagicMock()
     configure_rating_updates(params, "jellyfin", logger)
     assert params == {"mass_user_rating_update": None, "mass_episode_user_rating_update": None, "mass_critic_rating_update": ["clear"]}
-    assert logger.error.call_count == 2
+    assert logger.warning.call_count == 2
 
 
 def test_jellyfin_rating_lock_controls_fail_during_configuration():
@@ -144,4 +145,4 @@ def test_jellyfin_rating_lock_controls_fail_during_configuration():
     configure_rating_updates(params, "jellyfin", logger)
     assert params["mass_critic_rating_update"] == ["tmdb"]
     assert params["mass_audience_rating_update"] == ["remove"]
-    assert logger.error.call_count == 3
+    assert logger.warning.call_count == 3

@@ -53,6 +53,7 @@ BoxOfficeMojo's
 boxset
 BPjM
 BritBox
+bt
 Bullmoose
 bullmoose
 bw
@@ -123,6 +124,7 @@ dsm
 DTS
 durations
 DV
+Dzongkha
 ee
 eedd
 EG
@@ -186,6 +188,7 @@ href
 https
 HU
 Hulu
+hy
 ICheckMovies
 iex
 Im
@@ -249,6 +252,7 @@ LinuxServer
 Linuxserver
 linuxserver
 linuxserver's
+lk
 localhost
 Logscan
 lookback
@@ -433,6 +437,7 @@ SIMKL
 Silo
 Silo's
 silo
+Sinhala
 pzyzbyx
 Simkl
 simkl

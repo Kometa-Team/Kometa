@@ -90,6 +90,7 @@ class Library(ABC):
         self.xml_library_id = int(self.image_table_name.rsplit("_", 1)[1]) if self.image_table_name else None
         self.xml_updates = []
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
+        self.silo_shelves = params.get("silo_shelves", False)
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
         self.report_data = {}
@@ -275,6 +276,8 @@ class Library(ABC):
 
     def scan_configured_collection_names(self):
         for file_entry in self.configured_collection_files:
+            if file_entry in self.scanned_collection_files:
+                continue
             file_type, metadata_file, temp_vars, asset_directory = file_entry
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
@@ -295,7 +298,9 @@ class Library(ABC):
                     meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
+                        self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
                     self.collection_files.append(meta_obj)
+                    self.configured_collection_metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
                     logger.info("Collection File Failed To Load")
