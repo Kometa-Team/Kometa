@@ -472,6 +472,8 @@ def test_config_schema_accepts_silo_without_a_plex_block():
     validator.validate({"plex": {"url": "http://localhost:32400", "token": "token"}, "tmdb": {"apikey": "key"}})
     with pytest.raises(ValidationError, match="'tmdb' is a required property"):
         validator.validate({"media_servers": {"Shelf": {"type": "silo", "url": "http://localhost:8090", "token": "silo-token"}}})
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Config file discovery
 # ═══════════════════════════════════════════════════════════════════════
@@ -1074,8 +1076,8 @@ def test_library_item_override_inherits_collections_only_for_mappings(tmp_path, 
     assert config.libraries[0].collection_asset_directory == ([str(roots["collections"])] if local_grouped else [])
 
 
-@pytest.mark.parametrize("api_key", ["", "   ", "\t"])
-def test_blank_listrr_api_key_stays_disabled_without_a_request(tmp_path, api_key):
+@pytest.mark.parametrize("apikey", ["", "   ", "\t"])
+def test_blank_listrr_apikey_stays_disabled_without_a_request(tmp_path, apikey):
     class RecordingRequests(FakeRequests):
         def __init__(self):
             super().__init__()
@@ -1090,26 +1092,26 @@ def test_blank_listrr_api_key_stays_disabled_without_a_request(tmp_path, api_key
             return super().get(url)
 
     requests = RecordingRequests()
-    config = make_config(tmp_path, config_yaml=BASE_CONFIG + f"\nlistrr:\n  api_key: '{api_key}'\n", requests=requests)
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + f"\nlistrr:\n  apikey: '{apikey}'\n", requests=requests)
     assert config.Listrr is None
     assert requests.urls == []
-    assert any("api_key is blank" in message for message in config_module.logger.warning_messages)
+    assert any("apikey is blank" in message for message in config_module.logger.warning_messages)
     assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
 
 
-def test_listrr_api_key_whitespace_is_stripped_before_connect(tmp_path, monkeypatch):
+def test_listrr_apikey_whitespace_is_stripped_before_connect(tmp_path, monkeypatch):
     captured = {}
 
     class FakeListrr:
-        def __init__(self, requests, api_key):
-            captured["api_key"] = api_key
+        def __init__(self, requests, apikey):
+            captured["apikey"] = apikey
 
         def test_connection(self):
             captured["tested"] = True
 
     monkeypatch.setattr(config_module, "Listrr", FakeListrr)
-    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  api_key: '  abc  '\n")
-    assert captured == {"api_key": "abc", "tested": True}
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: '  abc  '\n")
+    assert captured == {"apikey": "abc", "tested": True}
     assert config.Listrr is not None
 
 
@@ -1125,7 +1127,7 @@ def test_listrr_connection_error_disables_listrr_without_aborting_config(tmp_pat
         def get_once(self, url, headers=None, **kwargs):
             return self.get(url, headers=headers)
 
-    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  api_key: real-key\n", requests=DownRequests())
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: real-key\n", requests=DownRequests())
     assert config.Listrr is None
     assert any("Request failed" in message for message in config_module.logger.error_messages)
     assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)

@@ -1,7 +1,3 @@
----
-hide:
-  - toc
----
 # Listrr Builders
 
 You can find every movie or show currently in a [Listrr](https://listrr.pro/) list.

@@ -1,7 +1,3 @@
----
-hide:
-  - toc
----
 # Listrr List
 
 Finds every item in one or more Listrr lists.
