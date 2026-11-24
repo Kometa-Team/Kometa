@@ -72,7 +72,7 @@ class DocumentationNavigationTests(unittest.TestCase):
 
     def test_merged_services_and_help_are_not_hidden_from_contents(self):
         merged = [page for page in self.pages if page.startswith("files/builders/") and "/categories/" not in page and page != "files/builders/index.md"]
-        self.assertEqual(len(merged), 34)
+        self.assertEqual(len(merged), 36)
         for page in [*merged, "kometa/help.md"]:
             with self.subTest(page=page):
                 self.assertNotIn("  - toc", (SOURCE / page).read_text(encoding="utf-8"))
