@@ -221,6 +221,7 @@ def main():
                 "tests/test_multi_server_validation.py",
                 "tests/test_multi_server_harness.py",
                 "tests/test_library_config.py",
+                "tests/test_server_selection.py",
                 "tests/test_media_server.py",
                 "tests/test_schema_validation.py",
                 "tests/test_silo_shelves.py",

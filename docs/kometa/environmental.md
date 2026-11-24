@@ -407,6 +407,32 @@ Choose the variables you need from the reference below. Kometa loads the file at
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-libraries "Movies - 4K|TV Shows - 4K"
             ```
 
+??? info "Run Servers &middot; `-rs`/`--run-servers` &middot; `KOMETA_RUN_SERVERS`<a class='operation-admonition-link' data-copy-permalink='true' href='#run-servers' title='Copy link'>¶</a>"
+
+    <div id="run-servers" />Start an immediate run for libraries on the named `media_servers` connections, bypassing their library schedules as `--run-libraries` does. Use a pipe-separated list for multiple names. Combine with `-rl` to narrow the libraries further.
+
+    **Shell Flags:** `-rs` or `--run-servers`
+
+    **Environment Variable:** `KOMETA_RUN_SERVERS`
+
+    ```bash
+    python kometa.py -rl "Movies" --run-servers "my-silo"
+    python kometa.py --run-servers "my-silo|my-emby"
+    ```
+
+??? info "Server Type Filters &middot; `--plex-only` / `--silo-only` / `--emby-only` / `--jellyfin-only`"
+
+    Select only libraries using that server type, before their library connections are created. Choose at most one type-only flag. Named-server and library filters further restrict the same selection; they do not add extra targets.
+
+    **Environment Variables:** `KOMETA_PLEX_ONLY`, `KOMETA_SILO_ONLY`, `KOMETA_EMBY_ONLY`, `KOMETA_JELLYFIN_ONLY` (boolean).
+
+    ```bash
+    python kometa.py -rl "Movies" --silo-only
+    python kometa.py --run --plex-only --collections-only
+    ```
+
+    Type filters alone do not start an immediate run or bypass library schedules. Use `--run`, `-rl`, or `--run-servers` to start immediately. `--plex-only` includes the legacy top-level Plex connection; exact `--run-servers` selection applies only to named `media_servers` entries.
+
 ??? info "Run Files &middot; `-rf`/`--run-files` &middot; `KOMETA_RUN_FILES`<a class='operation-admonition-link' data-copy-permalink='true' href='#run-files' title='Copy link'>¶</a>"
 
     <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files,

@@ -317,6 +317,8 @@ class ConfigFile:
         self.requested_libraries = None
         if "libraries" in attrs and attrs["libraries"]:
             self.requested_libraries = [s.strip() for s in attrs["libraries"].split("|")]
+        self.requested_servers = [name.strip() for name in attrs["servers"].split("|")] if attrs.get("servers") is not None else None
+        self.requested_server_types = attrs.get("server_types") or None
         self.requested_files = None
         if "files" in attrs and attrs["files"]:
             self.requested_files = []
@@ -1545,7 +1547,7 @@ class ConfigFile:
             self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries):
+            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries, self.requested_servers, self.requested_server_types):
                 params = {o: None for o in library_operations}
                 params["mass_logo_update"] = None
                 params["mass_square_art_update"] = None
@@ -2174,7 +2176,7 @@ class ConfigFile:
 
                 params["skip_library"] = False
                 params["schedule_mode"] = self.runtime_mode or "full"
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
+                if lib and "schedule" in lib and not self.requested_libraries and not self.requested_servers and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:
