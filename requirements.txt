@@ -6,7 +6,7 @@ anyio==4.16.0
     # via
     #   httpx
     #   httpx2
-apprise==2.2.0
+apprise==2.3.0
     # via kometa
 arrapi==1.5.1
     # via kometa
