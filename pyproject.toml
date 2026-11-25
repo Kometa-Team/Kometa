@@ -124,7 +124,7 @@ bootstrap = ["uv==0.13.8"]
 # Documentation builds only; excluded from application/runtime installs.
 docs = [
     "kometa-docs-include",
-    "bracex==3.2.3",
+    "bracex==3.2.4",
     "click==8.5.1",
     "colorama==0.4.6 ; sys_platform == 'win32'",
     "deepmerge==4.0.0",
