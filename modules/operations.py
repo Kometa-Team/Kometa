@@ -11,6 +11,7 @@ from plexapi.exceptions import NotFound
 from plexapi.video import Episode, Movie, Season, Show
 
 from modules import anidb, plex, timings, tvdb, util
+from modules.asset_audit import run_unused_assets_report
 from modules.media_server import Capability
 from modules.native_metadata import apply_edit, backup_metadata, current_value, is_native
 from modules.rating_operations import BROWSER_RATING_FIELDS, SILO_OPERATIONS, browser_rating_value, update_silo_ratings
@@ -110,8 +111,8 @@ def _apply_collection_name_vars(value, variables, key_name=None, limit=None):
     return output
 
 
-def _configured_collection_name_aliases(config, library, metadata_file, mapping_name, collection_data):
-    """Resolve names which may identify one configured collection in Plex."""
+def _configured_collection_name_aliases(config, library, metadata_file, mapping_name, collection_data, include_name_mapping=False):
+    """Resolve names which may identify one configured collection in Plex; ``include_name_mapping`` adds the asset folder name."""
     aliases = {str(mapping_name)}
     if not isinstance(collection_data, dict):
         return aliases
@@ -130,6 +131,9 @@ def _configured_collection_name_aliases(config, library, metadata_file, mapping_
             if attribute.lower() not in methods:
                 data[attribute] = value
                 methods[attribute.lower()] = attribute
+
+    if include_name_mapping and "name_mapping" in methods and data[methods["name_mapping"]]:
+        aliases.add(str(data[methods["name_mapping"]]))
 
     language = metadata_file.language
     if "language" in methods and data[methods["language"]]:
@@ -186,13 +190,16 @@ class Operations:
         self.config = config
         self.library = library
 
-    def _configured_collection_names(self):
+    def _configured_collection_names(self, for_assets=False):
+        """Names configured collections may use; ``for_assets`` adds ``name_mapping`` and raises instead of skipping unresolvable names."""
         configured_names = set(self.library.collection_names)
         for metadata_file in self.library.configured_collection_metadata_files:
             for mapping_name, collection_data in (metadata_file.collections or {}).items():
                 try:
-                    configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
+                    configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data, include_name_mapping=for_assets))
                 except Exception as e:
+                    if for_assets:
+                        raise Failed(f"could not resolve the names of collection {mapping_name}: {e}") from e
                     logger.debug(f"Configured name resolution failed for {mapping_name}: {e}")
         return configured_names
 
@@ -324,6 +331,7 @@ class Operations:
         logger.info(f"Genre Mapper: {self.library.genre_mapper}")
         logger.info(f"Content Rating Mapper: {self.library.content_rating_mapper}")
         logger.info(f"Metadata Backup: {self.library.metadata_backup}")
+        logger.info(f"Unused Assets Report: {self.library.unused_assets_report}")
         logger.info(f"Ignore Labels: {self.library.ignore_labels}")
         logger.info(f"Respect Ignore IDs: {self.library.respect_ignore_ids}")
         logger.info(f"Item Operation: {self.library.items_library_operation}")
@@ -2037,6 +2045,13 @@ class Operations:
             logger.exorcise()
             yaml.save()
             logger.info(f"{len(yaml.data['metadata'])} {self.library.type}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
+
+        if self.library.unused_assets_report:
+            if target_keys is not None:
+                logger.info("")
+                logger.info("Unused Assets Report skipped: targeted runs only load some items")
+            else:
+                run_unused_assets_report(self.config, self.library, lambda lib: lib.Operations._configured_collection_names(for_assets=True), logger)
 
         operation_run_time = str(datetime.now() - operation_start).split(".")[0]
         logger.info("")

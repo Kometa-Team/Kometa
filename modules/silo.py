@@ -973,13 +973,13 @@ class Silo(Library):
         name = item if isinstance(item, (str, SiloItem)) else item.title
         return Plex.asset_search_paths(cast("Plex", self), name, item_dir=item_dir, folder_name=folder_name, asset_directory=asset_directory, folders_only=folders_only)
 
-    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None, read_only=False):
         # The filesystem resolver also accepts a title; it makes no Plex requests.
         from modules.plex import Plex
 
         directories = self.asset_directories(item) if asset_directory is None else asset_directory
         name = item if isinstance(item, (str, SiloItem)) else item.title
-        return Plex.find_item_assets(cast("Plex", self), name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name)
+        return Plex.find_item_assets(cast("Plex", self), name, item_asset_directory=item_asset_directory, asset_directory=directories, folder_name=folder_name, read_only=read_only)
 
     def item_posters(self, item, providers=None):
         if providers == []:

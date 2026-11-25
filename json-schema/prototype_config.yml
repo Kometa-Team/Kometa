@@ -150,6 +150,8 @@ libraries:
         - bang
         sync_tags: true
         add_blank_entries: false
+      unused_assets_report:
+        path: config/Movie_Unused_Assets.yml
 
   New-Style Movies:                                 # Must match a library name in your Plex
     run_order:

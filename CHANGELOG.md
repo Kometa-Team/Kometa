@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add the `unused_assets_report` library operation, which writes a YAML list of asset files and folders that no item, collection or playlist uses, checking every library that shares the asset directories and never changing them.
 - Support Silo collection promotion with `visible_library`, `visible_home`, and `visible_shared` using native section rows and acting-profile overrides, with optional multi-server promotion validation cases.
 - Sinhala (Sri Lanka), Southern Soho (Lesotho), Armenian (Armenia), and Dzongkha (Bhutan) added to defaults > overlays > languages
 - Filter library runs by named servers with `--run-servers` or by backend with `--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only`, including environment variable support and combined library selection.
