@@ -510,6 +510,7 @@ def make_title_test_library(items):
         "show_unmanaged",
         "show_unconfigured",
         "metadata_backup",
+        "unused_assets_report",
         "label_operations",
     ]:
         setattr(library, flag, False)
@@ -751,6 +752,7 @@ def make_mass_edit_library(items, **mass_update_overrides):
         "show_unmanaged",
         "show_unconfigured",
         "metadata_backup",
+        "unused_assets_report",
         "label_operations",
     ]:
         setattr(library, flag, False)

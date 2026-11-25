@@ -726,6 +726,10 @@ class MetadataFile(DataFile):
                 logger.info(f"Config: Skipping disabled collection definition: {name}")
             else:
                 active[name] = attributes
+        if collections and not active:
+            # Filtering intentionally disabled definitions is not a blank YAML
+            # attribute. Omit the key so get_dict does not report a false error.
+            return {key: value for key, value in data.items() if key != "collections"}
         return {**data, "collections": active}
 
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
@@ -1511,7 +1515,10 @@ class MetadataFile(DataFile):
                                 new_call = og_call.copy()
                                 new_call["name"] = template_name
                                 template_call.append(new_call)
-                            if key in title_override:
+                            key_name_override_var = f"name_{key}"
+                            if key_name_override_var in self.temp_vars and isinstance(self.temp_vars[key_name_override_var], str):
+                                collection_title = self.temp_vars[key_name_override_var].replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                            elif key in title_override:
                                 collection_title = title_override[key]
                             else:
                                 # Sync-key priority: name_format (user override) → translation_key → title_format
@@ -1553,7 +1560,7 @@ class MetadataFile(DataFile):
                                 col = {"template": template_call, "append_label": str(map_name)}
                                 # Only set col["name"] for name_format/title_override — lets builder.py resolve translation naturally while still matching our sync key.
                                 _name_fmt_check = og_call.get("name_format") or self.temp_vars.get("name_format")
-                                if key in title_override or isinstance(_name_fmt_check, str):
+                                if key_name_override_var in self.temp_vars or key in title_override or isinstance(_name_fmt_check, str):
                                     col["name"] = collection_title
                                 if test:
                                     col["test"] = True

@@ -1,0 +1,25 @@
+collections:
+  Kometa Multi-Server Visibility Library:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync
+    visible_library: false
+    visible_home: false
+    visible_shared: false
+  Kometa Multi-Server Visibility Home:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync
+    visible_library: false
+    visible_home: false
+    visible_shared: false
+  Kometa Multi-Server Visibility Shared:
+    plex_all: true
+    limit: 3
+    minimum_items: 1
+    sync_mode: sync
+    visible_library: false
+    visible_home: false
+    visible_shared: false

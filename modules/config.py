@@ -21,6 +21,7 @@ from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.library_config import expand_libraries
 from modules.lidarr import Lidarr
+from modules.listrr import Listrr
 from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.media_server import PlexMediaServer, build_media_server
@@ -278,6 +279,7 @@ library_operations = {
     "mass_image_update": "dict",
     "mass_metadata_update": "dict",
     "metadata_backup": "dict",
+    "unused_assets_report": "dict",
     "delete_collections": "dict",
     "genre_mapper": "dict",
     "content_rating_mapper": "dict",
@@ -317,6 +319,8 @@ class ConfigFile:
         self.requested_libraries = None
         if "libraries" in attrs and attrs["libraries"]:
             self.requested_libraries = [s.strip() for s in attrs["libraries"].split("|")]
+        self.requested_servers = [name.strip() for name in attrs["servers"].split("|")] if attrs.get("servers") is not None else None
+        self.requested_server_types = attrs.get("server_types") or None
         self.requested_files = None
         if "files" in attrs and attrs["files"]:
             self.requested_files = []
@@ -1283,6 +1287,10 @@ class ConfigFile:
 
             self.playlist_names = []
             self.playlist_files = []
+            # Playlist files scheduled out of this run, loaded only so their names are known.
+            self.unscheduled_playlist_files = []
+            # Playlist files whose names are unknown this run.
+            self.incomplete_playlist_files = []
             if "playlist_files" not in self.data:
                 logger.info("playlist_files attribute not found")
             elif not self.data["playlist_files"]:
@@ -1297,6 +1305,14 @@ class ConfigFile:
                 )
                 if not files and not had_scheduled:
                     raise Failed("Config Error: No Paths Found for playlist_files")
+                if had_scheduled:
+                    # Like configured collection files: read the names of files scheduled out of this run without running them.
+                    all_files, _ = util.load_files(self.data["playlist_files"], "playlist_files")
+                    for file_type, playlist_file, temp_vars, asset_directory in [entry for entry in all_files if entry not in files]:
+                        try:
+                            self.unscheduled_playlist_files.append(PlaylistFile(self, file_type, playlist_file, temp_vars, asset_directory))
+                        except (Failed, NotScheduled):
+                            self.incomplete_playlist_files.append(str(playlist_file))
                 for file_type, playlist_file, temp_vars, asset_directory in files:
                     try:
                         playlist_obj = PlaylistFile(self, file_type, playlist_file, temp_vars, asset_directory)
@@ -1305,9 +1321,11 @@ class ConfigFile:
                     except Failed as e:
                         logger.info("Playlist File Failed To Load")
                         logger.error(e)
+                        self.incomplete_playlist_files.append(str(playlist_file))
                     except NotScheduled as e:
                         logger.info("")
                         logger.separator(f"Skipping {e} Playlist File")
+                        self.incomplete_playlist_files.append(str(playlist_file))
 
             self.TVDb = TVDb(self.Requests, self.Cache, self.general["tvdb_language"], self.general["cache_expiration"])
             self.IMDb = IMDb(self.Requests, self.Cache, self.default_dir)
@@ -1410,6 +1428,29 @@ class ConfigFile:
                 logger.info(f"FlickList Connection {'Failed' if self.FlickList is None else 'Successful'}")
             else:
                 logger.info("flicklist attribute not found")
+
+            logger.separator()
+
+            self.Listrr = None
+            if "listrr" in self.data:
+                logger.info("Connecting to Listrr...")
+                try:
+                    apikey = check_for_attribute(self.data, "apikey", parent="listrr", throw=True)
+                    if isinstance(apikey, str):
+                        apikey = apikey.strip()
+                        if not apikey:
+                            raise Failed("Config Error: listrr sub-attribute apikey is blank")
+                    listrr_obj = Listrr(self.Requests, apikey)
+                    listrr_obj.test_connection()
+                    self.Listrr = listrr_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"Listrr Connection {'Failed' if self.Listrr is None else 'Successful'}")
+            else:
+                logger.info("listrr attribute not found")
 
             logger.separator()
 
@@ -1542,10 +1583,12 @@ class ConfigFile:
                     self.media_servers[str(server_name)] = build_media_server(str(server_name), server_data)
 
             self.libraries = []
+            # Libraries whose connection failed; reports that must see every library check this.
+            self.failed_libraries = []
             self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
-            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries):
+            for library_name, lib in expand_libraries(libs, self.media_servers, self.requested_libraries, self.requested_servers, self.requested_server_types):
                 params = {o: None for o in library_operations}
                 params["mass_logo_update"] = None
                 params["mass_square_art_update"] = None
@@ -1956,6 +1999,19 @@ class ConfigFile:
                                     logger.error(f"Config Error: {op} {e}")
                             elif op == "mass_collection_mode":
                                 section_final[op] = util.check_collection_mode(config_op[op])
+                            elif op == "unused_assets_report":
+                                report_input = {} if config_op[op] is True else config_op[op]
+                                if report_input is False or report_input is None:
+                                    continue
+                                if not isinstance(report_input, dict):
+                                    logger.error("Config Error: unused_assets_report must be true or a dictionary with a path attribute")
+                                    continue
+                                report_path = report_input.get("path") or os.path.join(default_dir, f"{str(library_name)}_Unused_Assets.yml")
+                                report_folder = os.path.dirname(os.path.abspath(report_path))
+                                if not os.path.isdir(report_folder):
+                                    logger.error(f"Config Error: unused_assets_report folder {report_folder} does not exist")
+                                    continue
+                                section_final[op] = {"path": report_path}
                             elif data_type == "dict":
                                 input_dict = config_op[op]
                                 if (
@@ -2174,7 +2230,7 @@ class ConfigFile:
 
                 params["skip_library"] = False
                 params["schedule_mode"] = self.runtime_mode or "full"
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
+                if lib and "schedule" in lib and not self.requested_libraries and not self.requested_servers and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:
@@ -2451,6 +2507,7 @@ class ConfigFile:
                     logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
+                    self.failed_libraries.append(display_name)
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):

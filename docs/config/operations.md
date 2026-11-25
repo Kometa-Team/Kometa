@@ -703,6 +703,104 @@ Several of these operations perform **mass** updates; these are just that, **mas
               assets_for_all_collections: false
         ```
 
+###### Unused assets report
+
+??? info "`unused_assets_report` - Lists asset files and folders that no item, collection or playlist uses."
+    Checks this library's asset directories and writes a YAML report of the artwork Kometa would never upload. This
+    operation only writes the report; it never moves, renames or deletes anything in your asset directories.
+
+    Kometa decides what is in use the same way a normal run finds assets, so `asset_folders`, `asset_depth` and
+    `dimensional_asset_rename` are all respected. A file counts as used when any of these would pick it up:
+
+    * any movie, show, season, episode, artist or album in **every** library that shares one of the asset
+      directories, so a shared `config/assets` folder does not report your TV artwork from the Movies library.
+      Libraries count as sharing when they use the same folder, or one library's folder is inside the other's.
+    * any collection defined in those libraries' collection files, including disabled definitions, collections in
+      files not scheduled for this run, and `name_mapping`
+    * any collection that already exists on the server
+    * any playlist defined in your playlist files, including files not scheduled for this run, and `name_mapping`
+
+    Collections and playlists are checked in every asset directory, collection asset directory, and `asset_directory`
+    set on a file or definition, so artwork for them is never reported because of where it was placed.
+
+    Images that a config file points to directly, such as `file_poster` or an overlay `file`, are not counted. Keep
+    those outside your asset directories, or check the report for them before deleting.
+
+    The report lists each entry with its path, size and one of these reasons:
+
+    | Reason                                                  | Example                                                   |
+    |:--------------------------------------------------------|:----------------------------------------------------------|
+    | No item, collection or playlist uses this folder        | `Old Movie (1999)/`, or a subfolder inside an item folder |
+    | No matching season or episode in the library            | `Show (2008)/Season07.jpg`                                |
+    | Another file with the same name is used instead         | `poster.png` when `poster.jpg` is used                    |
+    | Kometa does not use this file name in this folder       | `Movie (2001)/poster_old.jpg`                             |
+    | Loose file outside any asset folder                     | `assets/random.jpg` when `asset_folders` is enabled       |
+    | No item, collection or playlist matches this file name  | `Gone (1990).jpg` when `asset_folders` is disabled        |
+
+    Only image files (`.jpg`, `.jpeg`, `.png`, `.webp` and `.tbn`) are listed. Folders and files whose names start
+    with `.` or `@` (such as Synology `@eaDir` folders) are skipped.
+
+    No report is written when Kometa cannot see everything that might use the artwork, so a partial list never marks
+    artwork that is still in use. That happens when:
+
+    * the run is limited with `--run-libraries`, `--run-servers` or a server-type filter such as `--plex-only`
+    * any library fails to connect
+    * any collection file of a sharing library, or any playlist file, fails to load
+    * a sharing library's items or collections cannot be loaded
+    * the run only targets some items
+
+    The log says which of these stopped the report.
+
+    ???+ tip "Review before deleting"
+
+        Collections created by dynamic collections only count as used once they exist on the server. Run your
+        collections at least once before acting on the report, and review it before deleting anything.
+
+    This operation looks up every season and episode, so it takes about as long as `assets_for_all`.
+
+    **Attribute:** `unused_assets_report`
+
+    **Accepted Values:** `true`, or a dictionary with the attribute below.
+
+    | Attribute | Description                                                                                       |
+    |:----------|:--------------------------------------------------------------------------------------------------|
+    | `path`    | Where to save the report. **Default:** `<<library_name>>_Unused_Assets.yml` in your config folder. |
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              unused_assets_report:
+                path: config/Movies_Unused_Assets.yml
+        ```
+
+        Produces a report like:
+
+        ```yaml
+        library: Movies
+        generated: '2026-11-24 05:00:00'
+        asset_directories:
+        - /config/assets
+        libraries_checked:
+        - Movies
+        - TV Shows
+        summary:
+          unused_folders: 1
+          unused_files: 1
+          total_size: 2.4 MB
+        unused_folders:
+        - path: /config/assets/Old Movie (1999)
+          files: 2
+          size: 2.1 MB
+          reason: No item, collection or playlist uses this folder
+        unused_files:
+        - path: /config/assets/Movie (2001)/poster.png
+          size: 310.2 KB
+          reason: 'Another file with the same name is used instead: poster.jpg'
+        ```
+
 ###### Delete collections
 
 ??? info "`delete_collections` - Deletes collections based on a set of given attribute."

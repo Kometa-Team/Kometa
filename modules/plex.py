@@ -2631,7 +2631,8 @@ class Plex(Library):
         names = ["poster", "cover", "default", "folder", "movie"] if self.asset_folders and file_name == "poster" else [file_name]
         return ", ".join(os.path.join(ad, f"{name}.*") for ad in directories for name in names)
 
-    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None, read_only=False):
+        """Resolve an item's asset files; ``read_only`` never creates folders or renames files and reports what a real run would use."""
         poster = None
         background = None
         logo = None
@@ -2702,7 +2703,7 @@ class Plex(Library):
                     break
             if not item_asset_directory:
                 if self.asset_folders:
-                    if self.create_asset_folders and asset_directory:
+                    if self.create_asset_folders and asset_directory and not read_only:
                         item_asset_directory = os.path.join(asset_directory[0], folder_name)  # type: ignore[arg-type]
                         os.makedirs(item_asset_directory, exist_ok=True)
                         logger.warning(f"Asset Warning: Asset Directory Not Found and Created: {item_asset_directory}")
@@ -2760,12 +2761,14 @@ class Plex(Library):
                         with Image.open(file) as image:
                             _w, _h = image.size
                         if not poster and _h >= _w:
-                            new_path = os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
-                            os.rename(file, new_path)
+                            new_path = file if read_only else os.path.join(os.path.dirname(file), f"poster{os.path.splitext(file)[1].lower()}")
+                            if not read_only:
+                                os.rename(file, new_path)
                             poster = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, is_url=False)
                         elif not background and _w > _h:
-                            new_path = os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
-                            os.rename(file, new_path)
+                            new_path = file if read_only else os.path.join(os.path.dirname(file), f"background{os.path.splitext(file)[1].lower()}")
+                            if not read_only:
+                                os.rename(file, new_path)
                             background = ImageData("asset_directory", os.path.abspath(new_path), prefix=prefix, image_type="background", is_url=False)
                         if poster and background:
                             break

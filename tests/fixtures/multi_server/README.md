@@ -126,6 +126,19 @@ On Silo, the first three land on **Kometa Multi-Server Validation Shelf** (secti
 
 Repeat from a newly prepared run directory to check shelf reuse: membership messages should say `Unchanged`. Inspect Silo's Collections tab to verify both shelves, their order, and all four collections, and confirm any existing shelf members are still present. These log checks do not independently read back the full remote shelves after the run. Delete the four named validation collections on each server afterward, then remove the two validation shelves manually if no longer needed. Existing shelves are never deleted automatically. The `shelves` case is excluded from the default sequence.
 
+## Silo collection promotion
+
+The optional `visibility` case selects only `Movies@my-silo` and builds three collections with up to three items each. **Kometa Multi-Server Visibility Library** enables only `visible_library`, **Kometa Multi-Server Visibility Home** enables only the acting profile's Home row, and **Kometa Multi-Server Visibility Shared** enables only the default row for other profiles. This case changes Home/library layouts; other profiles may see the shared default unless they have hidden it. Plex and Emby are not selected.
+
+```bash
+.venv/bin/python scripts/validate_multi_server.py live \
+  --directory config/multi-server-validation-03 --case visibility
+.venv/bin/python scripts/validate_multi_server.py live \
+  --directory config/multi-server-validation-03 --case visibility-disabled
+```
+
+Run `visibility-disabled` afterward to turn off all three promotions on those same collections. Repeat either case from a fresh prepared run directory to check reuse and `Unchanged` messages. Both cases require collection completions, a Silo visibility confirmation for every collection, and no logged errors. Offline tests exercise all flag combinations, transitions, repeated runs, `ETag` conflicts, and preservation of unrelated profile overrides. The live log checks do not independently fetch the rendered layouts: inspect the acting profile's Home, the library landing page, and another profile's Home, then check that the disabled case removes the promoted rows. Existing user hide/reorder overrides still apply. Delete the three validation collections manually after testing; disabled administrator rows are retained for reuse and can be removed manually in Silo.
+
 ## Inspect after a live run
 
 - On each server, confirm the validation collection exists in the configured library, contains no more than three items, and contains items belonging to that server. Compare the selected-target case against the shared case: the other targets should not be modified by the selected run.

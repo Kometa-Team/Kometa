@@ -302,6 +302,16 @@ class Convert:
             imdb_match = re.fullmatch(r"/imdb_(tt[0-9]+)", guid.path)
             if imdb_match:
                 return "imdb", imdb_match.group(1)
+        if guid.scheme == "tv.plex.agents.nfo.series" and guid.netloc == "show":
+            tvdb_match = re.fullmatch(r"/tvdb_([0-9]+)", guid.path)
+            if tvdb_match and int(tvdb_match.group(1)) > 0:
+                return "thetvdb", tvdb_match.group(1)
+            tmdb_match = re.fullmatch(r"/tmdb_([0-9]+)", guid.path)
+            if tmdb_match and int(tmdb_match.group(1)) > 0:
+                return "themoviedb", tmdb_match.group(1)
+            imdb_match = re.fullmatch(r"/imdb_(tt[0-9]+)", guid.path)
+            if imdb_match:
+                return "imdb", imdb_match.group(1)
         return guid.scheme.split(".")[-1], guid.netloc
 
     @staticmethod

@@ -80,6 +80,46 @@ def test_people_cache_scope_includes_server_library_profile_user_and_item():
     assert "secret" not in key
 
 
+def test_dynamic_collection_duplicate_check_uses_per_key_name(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    data = {
+        "templates": {"named": {"name": "<<name_<<key>>>", "custom": "<<value>>"}},
+        "dynamic_collections": {
+            "Universes": {
+                "type": "custom",
+                "data": {"arrow": "Arrowverse"},
+                "template": ["named"],
+            }
+        },
+    }
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: data)
+    library = SimpleNamespace(type="Show", name="Shows", collections=[], metadatas=[], is_music=False, is_movie=False, is_show=True, agent="tv.plex.agents.series")
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]), requested_files=[])
+
+    metadata = MetadataFile(config, library, "File", "universe.yml", {"name_arrow": "Arrowverse Universe"}, None, "collection")
+
+    assert list(metadata.collections) == ["Arrowverse Universe"]
+    assert metadata.collections["Arrowverse Universe"]["name"] == "Arrowverse Universe"
+    library.collections.extend(metadata.collections)
+    franchise_data = {
+        "templates": data["templates"],
+        "dynamic_collections": {
+            "Franchises": {
+                "type": "custom",
+                "data": {"1412": "Arrowverse"},
+                "template": ["named"],
+            }
+        },
+    }
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: franchise_data)
+
+    franchise = MetadataFile(config, library, "File", "franchise.yml", {}, None, "collection")
+
+    assert list(franchise.collections) == ["Arrowverse"]
+    assert "Skipping duplicate collection" not in logger.warning_messages
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
@@ -604,6 +644,7 @@ def test_disabled_actor_separator_does_not_block_later_enabled_default(monkeypat
     config = SimpleNamespace(requested_files=[], GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]))
     first = MetadataFile(config, library, "File", "actor.yml", {"use_separator": False}, None, "collection")
     assert first.collections == {}
+    assert not logger.error_messages
     library.collections.extend(first.collections)
     second = MetadataFile(config, library, "File", "actor.yml", {}, None, "collection")
     assert list(second.collections) == ["Actors Collections"]
@@ -612,6 +653,33 @@ def test_disabled_actor_separator_does_not_block_later_enabled_default(monkeypat
     assert any("Skipping duplicate" in message for message in logger.warning_messages)
     configured = MetadataFile(config, SimpleNamespace(**{**vars(library), "collections": []}), "File", "actor.yml", {"use_separator": False}, None, "collection", configured_names_only=True)
     assert "Actors Collections" in configured.collections
+
+
+@pytest.mark.parametrize("enabled", [False, "false", "False"])
+def test_filtering_all_disabled_collections_preserves_dynamic_definitions_without_blank_error(monkeypatch, enabled):
+    from modules.meta import get_dict
+
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    metadata = MetadataFile.__new__(MetadataFile)
+    data = {"collections": {"Disabled": {"run_definition": enabled}}, "dynamic_collections": {"Seasonal": {"type": "custom"}}}
+    filtered = metadata._active_collection_definitions(data)
+    assert get_dict("collections", filtered) == {}
+    assert filtered["dynamic_collections"] == data["dynamic_collections"]
+    assert "Disabled" in data["collections"]
+    assert metadata._disabled_collection_definitions == {"Disabled"}
+    assert not logger.error_messages
+
+
+@pytest.mark.parametrize("blank", [None, {}])
+def test_explicitly_blank_collections_still_report_error_after_filtering(monkeypatch, blank):
+    from modules.meta import get_dict
+
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    metadata = MetadataFile.__new__(MetadataFile)
+    assert get_dict("collections", metadata._active_collection_definitions({"collections": blank})) == {}
+    assert logger.error_messages == ["Config Error: collections attribute is blank"]
 
 
 class TestStreamingTemplate:
