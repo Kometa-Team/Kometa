@@ -20,6 +20,10 @@ from modules.rating_operations import SILO_OPERATIONS
 from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled, PlexImageUploadError
 
+# Above this many rating keys a diff run's overlays gather library-wide instead:
+# the keys travel in request URLs, and a large diff gains little from targeting.
+DIFF_TARGET_KEY_LIMIT = 500
+
 logger = util.logger
 
 
@@ -838,6 +842,24 @@ class Library(ABC):
 
             return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
         raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<positive integer>[m|h|d]), index(<range>), or items(<ids>)")
+
+    def diff_target_keys(self, items):
+        """Return the rating keys a diff run's overlays can be limited to, or None to gather library-wide.
+
+        Shows expand to their seasons and episodes, because season- and episode-level
+        overlay searches match those keys rather than the show's.
+        """
+        if self.schedule_mode != "diff" or getattr(self, "is_music", False) or self.remove_overlays:
+            return None
+        keys = set()
+        for item in items:
+            keys.add(item.ratingKey)
+            if getattr(self, "is_show", False):
+                for method_name in ("seasons", "episodes"):
+                    keys.update(subitem.ratingKey for subitem in self.cached_item_subitems(item, method_name))
+            if len(keys) > DIFF_TARGET_KEY_LIMIT:
+                return None
+        return keys
 
     @property
     def has_schedule_scope(self):

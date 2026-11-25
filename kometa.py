@@ -1020,6 +1020,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
 
             if not temp_items:
                 target_keys = None
+                overlay_target_keys = None
                 if library.has_schedule_scope and library.schedule_mode.startswith("items(") and library.schedule_mode.endswith(")"):
                     identifiers = set()
                     for value in library.schedule_mode[6:-1].split("|"):
@@ -1035,6 +1036,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 if library.has_schedule_scope:
                     temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
                     logger.info(f"Library Schedule Mode: {library.schedule_mode} ({len(temp_items)} items in scope)")
+                overlay_target_keys = target_keys if target_keys is not None else library.diff_target_keys(temp_items)
                 if config.Cache and target_keys is None:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
@@ -1152,7 +1154,12 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
                     library_status[library.original_mapping_name]["Library Operations"] = library.Operations.run_operations(target_keys=target_keys)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.original_mapping_name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=target_keys)
+                    if overlay_target_keys is not None and not overlay_target_keys:
+                        logger.info("")
+                        logger.separator(f"Skipping {library.original_mapping_name} Library Overlays: no items in scope for schedule mode {library.schedule_mode}")
+                        library_status[library.original_mapping_name]["Library Overlay Files"] = "0:00:00"
+                    else:
+                        library_status[library.original_mapping_name]["Library Overlay Files"] = library.Overlays.run_overlays(target_keys=overlay_target_keys)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))

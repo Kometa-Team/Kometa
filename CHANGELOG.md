@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
+
+- Limit overlay gathering in `diff` schedule runs to the newly seen items (and, in show libraries, their seasons and episodes) instead of searching the whole library for every overlay, and skip overlays when nothing is new.
+
 - Recognize TVDb, TMDb and IMDb identifiers embedded in Plex NFO Series agent GUIDs when mapping TV and anime libraries. #3879
 - Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
 - Avoid rescanning active collection files for configured-name tracking, and honor per-key dynamic collection names when detecting duplicates across files.

@@ -1308,12 +1308,17 @@ class CollectionBuilder:
             for playlist_library in self.libraries:
                 self._validate_smart_server(playlist_library, methods)
 
-        try:
-            self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
-        except Failed as error:
-            if not self.playlist and getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby") and not isinstance(error, util.CollectionNotFound):
-                raise BuilderValidationError(f"Collection Error: Could not determine whether '{self.name}' exists: {error}") from error
+        # An overlay never builds a collection (build_collection is always False below), so skip
+        # looking one up: a missed title search falls back to listing every collection in the library.
+        if self.overlay:
             self.obj = None
+        else:
+            try:
+                self.obj = self.library.get_playlist(self.name) if self.playlist else self.library.get_collection(self.name, force_search=True)
+            except Failed as error:
+                if not self.playlist and getattr(getattr(self.library, "server", None), "type_name", None) in ("jellyfin", "emby") and not isinstance(error, util.CollectionNotFound):
+                    raise BuilderValidationError(f"Collection Error: Could not determine whether '{self.name}' exists: {error}") from error
+                self.obj = None
 
         self.only_run_on_create = False
         if "only_run_on_create" in methods and not self.playlist:
