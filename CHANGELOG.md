@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
 - Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
 
 - Limit overlay gathering in `diff` schedule runs to the newly seen items (and, in show libraries, their seasons and episodes) instead of searching the whole library for every overlay, and skip overlays when nothing is new.
