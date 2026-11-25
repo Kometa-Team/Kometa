@@ -571,6 +571,8 @@ Use `tmdb:<id>` for movies, `tvdb:<id>` for shows, `imdb:tt<id>` for either, or 
 
 For a non-`full` mode, Kometa limits metadata updates, overlays, item operations, and collection additions to items in scope. Existing collection members outside the selected items are left alone. That makes scoped runs faster, but they do not fully reconcile changing collections.
 
+Provider-ID mappings still cover the full library, so playlists built from external lists can resolve existing items outside the selected scope. Playlist sync and missing-item handling use those full mappings.
+
 
 ???+ warning "Scoped runs do not clean up everything"
 

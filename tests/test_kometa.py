@@ -28,6 +28,90 @@ def _module_ast() -> ast.Module:
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
 
 
+@pytest.mark.parametrize("mode", ["added(1d)", "diff", "index(A-F)", "items(tmdb:101)", "items(plex:1)"])
+@pytest.mark.parametrize("scope", [{1}, set()])
+@pytest.mark.parametrize("id_type", ["imdb", "tmdb"])
+def test_scoped_loading_preserves_playlist_members_and_missing_detection(mode, scope, id_type, monkeypatch):
+    import modules.builder as builder_module
+    from modules.library import Library
+    from tests.conftest import FakeLogger
+    from tests.factories import make_builder
+
+    class Movie:
+        def __init__(self, key):
+            self.ratingKey = key
+            self.key = f"/library/metadata/{key}"
+            self.guid = f"plex://movie/{key}"
+            self.title = f"Movie {key}"
+
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+    monkeypatch.setattr(builder_module, "Movie", Movie)
+    monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+    monkeypatch.setitem(Library.map_guids.__globals__, "logger", logger)
+    items = [Movie(1), Movie(2)]
+    config = SimpleNamespace(Cache=None, Convert=SimpleNamespace(get_id=lambda item, library: ("movie", [100 + item.ratingKey], [f"tt{item.ratingKey}"])))
+    library = SimpleNamespace(
+        name="Movies",
+        original_mapping_name="Movies",
+        config=config,
+        has_schedule_scope=True,
+        schedule_mode=mode,
+        scheduled_item_keys=scope,
+        is_music=False,
+        cached_items={},
+        type="Movie",
+        movie_map={},
+        show_map={},
+        imdb_map={},
+        movie_rating_key_map={},
+        show_rating_key_map={},
+        imdb_rating_key_map={},
+        anidb_map={},
+        mal_map={},
+        plex_map_levels=set(),
+        map_plex_ids=MagicMock(),
+        cache_imdb_ratings=MagicMock(),
+        cache_imdb_genres=MagicMock(),
+        get_all=MagicMock(side_effect=lambda **kwargs: items[:1] if kwargs.get("target_keys") else items),
+        _schedule_item_keys=lambda loaded: scope,
+        diff_target_keys=lambda loaded: None,
+        fetch_item=lambda key: items[key - 1],
+        get_collection_name_and_items=lambda *args: ("Playlist", items),
+        is_scheduled_item=lambda item: item.ratingKey in scope,
+    )
+    library.get_cached_items = lambda **kwargs: Library.get_cached_items(library, **kwargs)
+    library.cache_items = lambda **kwargs: Library.cache_items(library, **kwargs)
+    library.map_guids = lambda loaded: Library.map_guids(library, loaded)
+    function = next(node for node in _module_ast().body if isinstance(node, ast.FunctionDef) and node.name == "run_libraries")
+    loading = next(node for node in ast.walk(function) if isinstance(node, ast.If) and ast.unparse(node.test) == "not temp_items")
+    mapping = next(node for node in ast.walk(function) if isinstance(node, ast.If) and ast.unparse(node.test) == "not library.is_music")
+    namespace = {"library": library, "config": config, "logger": logger, "temp_items": None, "schedule_list_key": None, "re": re}
+    exec(compile(ast.Module(body=[loading, mapping], type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+
+    assert namespace["temp_items"] == [item for item in items if item.ratingKey in scope]
+    assert library.scheduled_item_keys == scope
+    assert library.movie_map == {101: [1], 102: [2]}
+    assert library.imdb_map == {"tt1": [1], "tt2": [2]}
+    if mode == "items(plex:1)":
+        assert library.get_all.call_args_list[0].kwargs == {"ignore_schedule_scope": True, "target_keys": {1}}
+    assert library.get_all.call_args_list[-1].kwargs == {"ignore_schedule_scope": True, "target_keys": None}
+
+    ids = [(f"tt{item.ratingKey}" if id_type == "imdb" else 100 + item.ratingKey, id_type) for item in items]
+    playlist = make_builder(library=library, libraries=[library], playlist=True, parts_collection=False, config=config, limit=0, beginning_count=2, remove_item_map={item.ratingKey: item for item in items})
+    playlist.details["changes_webhooks"] = False
+    playlist.filter_and_save_items(ids)
+    assert playlist.found_items == items
+    assert playlist.missing_movies == []
+    assert playlist.missing_shows == []
+    assert playlist.add_to_collection() == (0, 2)
+    assert playlist.sync_collection() == 0
+
+    collection = make_builder(library=library, libraries=[library], parts_collection=False, config=config)
+    collection.filter_and_save_items(ids)
+    assert collection.found_items == namespace["temp_items"]
+
+
 def test_playlist_reports_skip_native_servers_and_deduplicate_plex():
     first = SimpleNamespace(PlexServer=SimpleNamespace(machineIdentifier="first", friendlyName="First"), users=[], playlist_report=MagicMock(return_value={"Movies": ["owner"]}))
     duplicate = SimpleNamespace(server=SimpleNamespace(type_name="plex"), PlexServer=first.PlexServer, playlist_report=MagicMock())
