@@ -29,6 +29,7 @@ import time
 import unicodedata
 import zipfile
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Any
 
@@ -290,22 +291,60 @@ def manifest_from_zip(zip_source, commit: str, profile: str, commit_object: byte
     return manifest
 
 
-def _read_identity(root: Path) -> str:
+IDENTITY_WARNING = "KOMETA_GIT_SHA in the container environment does not match this image (probably left from an older image); remove it from the container settings"
+
+
+def _read_hint(root: Path) -> str | None:
+    hint = root / ".kometa_sha"
+    if _is_link(hint):
+        raise Unavailable("authoritative build identity unavailable")
+    try:
+        if hint.is_file():
+            return hint.read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeError):
+        # An unreadable hint is treated as absent; identity validation still applies.
+        pass
+    return None
+
+
+def _read_identity(root: Path, profile: str = "source") -> tuple[str, str | None]:
+    """Return the commit to compare against and an optional identity warning."""
     # Git HEAD belongs to this installation, not the caller's working directory.
     git_commit = timings.git_sha(root, use_env=False)
     env_commit = os.environ.get("KOMETA_GIT_SHA") or None
     if git_commit and env_commit and git_commit != env_commit:
         raise Unavailable("conflicting build identities")
-    commit = git_commit or env_commit
+    commit = git_commit
+    warning = None
+    if not commit and profile == "docker":
+        # The image's hint was validated against VERSION at build time; container
+        # managers can keep an older image's KOMETA_GIT_SHA after an image update.
+        hint_commit = _read_hint(root)
+        if hint_commit and SHA.fullmatch(hint_commit):
+            commit = hint_commit
+            if env_commit and env_commit != hint_commit:
+                warning = IDENTITY_WARNING
+        else:
+            commit = env_commit or hint_commit
     if not commit:
-        hint = root / ".kometa_sha"
-        if _is_link(hint):
-            raise Unavailable("authoritative build identity unavailable")
-        if hint.is_file():
-            commit = hint.read_text(encoding="utf-8").strip()
+        commit = env_commit or _read_hint(root)
     if not isinstance(commit, str) or not SHA.fullmatch(commit):
         raise Unavailable("authoritative build identity unavailable")
-    return commit
+    return commit, warning
+
+
+def _commit_date(manifest: dict[str, Any]) -> str | None:
+    """Committer date (UTC) of the baseline commit, from its stored commit object."""
+    try:
+        for line in base64.b64decode(manifest["commit_object"]).decode("utf-8", "replace").splitlines():
+            if not line:
+                break
+            if line.startswith("committer "):
+                timestamp = int(line.rsplit(" ", 2)[-2])
+                return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime("%Y-%m-%d")
+    except (KeyError, ValueError, TypeError, IndexError, OverflowError, OSError):
+        pass
+    return None
 
 
 class Upstream:
@@ -552,12 +591,13 @@ def _compare(root: Path, manifest: dict[str, Any], profile: str, runtime: Path) 
 def check_integrity(root: Path, config_dir: Path, profile: str = "source", upstream=None, allow_network: bool = True) -> dict[str, Any]:
     """Never treat an incomplete inspection or unavailable baseline as modified."""
     reason = "authoritative build identity unavailable"
+    warning = None
     try:
         root = Path(root).resolve()
         runtime = Path(config_dir).resolve()
         if profile not in {"source", "docker"}:
             raise Unavailable("installation profile unavailable")
-        commit = _read_identity(root)
+        commit, warning = _read_identity(root, profile)
         reason = "authoritative manifest unavailable"
         cache = runtime / CACHE_DIR / f"{REPOSITORY.replace('/', '-')}-{commit}-{profile}-v{SCHEMA}.json"
         manifest = None
@@ -588,16 +628,31 @@ def check_integrity(root: Path, config_dir: Path, profile: str = "source", upstr
                 # A read-only config directory must not invalidate a comparison.
                 pass
         reason = "installation could not be inspected"
-        return _compare(root, manifest, profile, runtime)
+        report = _compare(root, manifest, profile, runtime)
+        report["commit"] = commit
+        report["commit_date"] = _commit_date(manifest)
+        if warning:
+            report["identity_warning"] = warning
+        return report
     except Unavailable as error:
         reason = str(error)
+        report = {"state": "Not Verified", "reason": reason, "modified": [], "missing": [], "added": []}
     except Exception as error:
         # Diagnostic boundary: filesystem/network/metadata errors cannot block runs.
-        return {"state": "Not Verified", "reason": reason, "diagnostic": type(error).__name__, "modified": [], "missing": [], "added": []}
-    return {"state": "Not Verified", "reason": reason, "modified": [], "missing": [], "added": []}
+        report = {"state": "Not Verified", "reason": reason, "diagnostic": type(error).__name__, "modified": [], "missing": [], "added": []}
+    if warning:
+        report["identity_warning"] = warning
+    return report
 
 
 def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
+    lines = _format_state(report, limit)
+    if report.get("identity_warning") == IDENTITY_WARNING:
+        lines.append(f"Warning: {IDENTITY_WARNING}")
+    return lines
+
+
+def _format_state(report: dict[str, Any], limit: int) -> list[str]:
     if report["state"] == "Verified":
         return ["Source Integrity: Verified"]
     if report["state"] == "Not Verified":
@@ -610,6 +665,11 @@ def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
     if report["state"] != "Modified":
         return ["Source Integrity: Check unavailable (result unavailable; local files were not verified)"]
     lines = ["Source Integrity: MODIFIED"]
+    commit = report.get("commit")
+    if isinstance(commit, str) and SHA.fullmatch(commit):
+        date = report.get("commit_date")
+        dated = f", committed {date}" if isinstance(date, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date) else ""
+        lines.append(f"Compared with: {REPOSITORY}@{commit[:12]}{dated}")
     for category in ("modified", "missing", "added"):
         if report[category]:
             lines.append(f"{category.title()}:")
@@ -670,6 +730,13 @@ def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str
                 report["reason"] = "startup time limit reached"
         except Exception:
             report["reason"] = "integrity check could not be started"
+        if report.get("state") != "Modified" and "identity_warning" not in report:
+            # Keep the stale-identity hint visible when the comparison did not finish.
+            try:
+                if _read_identity(Path(root).resolve(), profile)[1]:
+                    report = {**report, "identity_warning": IDENTITY_WARNING}
+            except Exception:  # nosec B110
+                pass
     for line in format_integrity(report):
         logger.info(f"    {line}")
     if report.get("diagnostic"):
