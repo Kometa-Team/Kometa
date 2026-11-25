@@ -28,7 +28,7 @@ pyyaml==6.0.3
     #   zensical
 tomli==2.5.0
     # via zensical
-wcmatch==12.0.1
+wcmatch==12.0.4
     # via kometa-docs-include
 zensical==0.1.1
     # via kometa-docs-include
