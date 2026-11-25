@@ -178,5 +178,5 @@ urllib3==2.8.0
     # via
     #   apprise
     #   requests
-ytmusicapi==1.12.3
+ytmusicapi==1.12.4
     # via kometa
