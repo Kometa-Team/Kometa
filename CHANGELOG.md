@@ -8,9 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- Add the `unused_assets_report` library operation, which writes a YAML list of asset files and folders that no item, collection or playlist uses, checking every library that shares the asset directories and never changing them.
+- Support Silo collection promotion with `visible_library`, `visible_home`, and `visible_shared` using native section rows and acting-profile overrides, with optional multi-server promotion validation cases.
 - Sinhala (Sri Lanka), Southern Soho (Lesotho), Armenian (Armenia), and Dzongkha (Bhutan) added to defaults > overlays > languages
 - Filter library runs by named servers with `--run-servers` or by backend with `--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only`, including environment variable support and combined library selection.
-
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
@@ -18,8 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
+- Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
+- Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
 
+- Limit overlay gathering in `diff` schedule runs to the newly seen items (and, in show libraries, their seasons and episodes) instead of searching the whole library for every overlay, and skip overlays when nothing is new.
+
+- Recognize TVDb, TMDb and IMDb identifiers embedded in Plex NFO Series agent GUIDs when mapping TV and anime libraries. #3879
+- Reject empty native search groups, restore Silo personal-rating badge builders and native diff-schedule IDs, correct season-number filters, and isolate native overlay value caches by server, library, and acting profile/user.
+- Avoid rescanning active collection files for configured-name tracking, and honor per-key dynamic collection names when detecting duplicates across files.
+- Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
 - Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
 - Check multi-server validation file permissions only on POSIX systems, while retaining isolation and overwrite tests on Windows.
 - Group packaged chart defaults on Silo's shared Chart Collections shelf without requiring a separate chart separator, preserving section and name overrides.
@@ -159,6 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
 - Add `music_playlists` to Music library collection files for building Music Playlists.
+- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.apikey` and reads list membership from the Listrr API.
 - Add Last.fm connector and various music builders.
 - Add YouTube Music builders for music libraries and operation for updating artist images
 - Log the current value when an item or episode rating already matches the requested rating.
@@ -172,6 +182,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The config schema no longer requires a root `plex` block. Libraries that use Plex still need a URL and token, from `plex` or from a `media_servers` entry. A Silo library can omit `plex`. (#3351)
 
 ### Fixed
+
+- Send a configured IMDb chart `limit` to Kometa Utilities so the chart response follows that size instead of the service default.
 
 - Save Jellyfin/Emby catalog pages as they arrive and reuse completed pages after interrupted loads, without exposing partial catalogs to filters.
 
@@ -348,6 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolve `label` filters in Music libraries to the selected artist, album, or track label field.
 - Accept a Kometa Utilities "Use Kometa App" MyAnimeList block that omits `client_secret`, and refresh that official app without sending a client secret.
 - Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
+- Say that an unconfigured `listrr_list` or `listrr_list_details` builder requires Listrr to be configured, matching the other service builders.
+- Read several `listrr_list` values as one builder so playlists and `collection_order: custom` can combine Listrr lists, and keep a Listrr timeout, rate limit, or blank API key from stopping the rest of the run.
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Validate People-Images poster URLs before selection so missing images allow an available TMDb poster to be selected; cache validation misses for the current run and distinguish temporary validation failures from confirmed missing images. #3715
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.

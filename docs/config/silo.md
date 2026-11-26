@@ -39,7 +39,7 @@ libraries:
 
 With Kometa's cache enabled, Silo catalogs, full item details, and resolved TMDb, TVDb, and IMDb IDs persist between runs and refresh according to `cache_expiration`. This includes season and episode catalogs. Audio-language, subtitle-language, resolution, and other selectors reuse the same saved detail response rather than fetching each field separately. Detail responses are saved individually, so an interrupted scan can reuse its completed requests on the next run. Cache entries are scoped to server, credentials, profile, and library. Explicit catalog reloads bypass the saved catalog, and forced item reloads bypass saved details. Successful item metadata, artwork, refresh, and rating writes invalidate persisted catalog/detail data for that scope. External library changes, including additions and playback state, become visible when the cached data expires or is explicitly refreshed. Disabling the cache keeps only in-run reuse.
 
-Collection summary updates use Silo's native description field. Kometa does not add its automatic collection label on Silo. Collection `sort_title` is skipped with a warning. Explicit collection label, content rating, Plex collection mode, filtering, and visibility options are skipped with warnings.
+Collection summary updates use Silo's native description field. Kometa does not add its automatic collection label on Silo. Collection `sort_title` is skipped with a warning. Explicit collection label, content rating, Plex collection mode, and filtering options are skipped with warnings.
 
 `collection_order: release` and `alpha` set Silo's native default sort. `custom`/`custom.asc` preserve the builder's order, and `custom.desc` reverses it; extra members retained in append mode follow the builder's items. Custom ordering changes manual member positions by removing and re-adding members whose positions differ, because Silo's add endpoint preserves existing positions. If a re-add fails, Kometa attempts to restore that member at its old position. These requests are not atomic: an interruption can leave a partial order, and a failed restoration can leave a missing member. Rerun Kometa to reconcile membership and ordering. Do not edit the same collection concurrently while sorting.
 
@@ -53,7 +53,7 @@ Silo dynamic actor collections read cast metadata; director, writer, and produce
 
 Collections using the `separator` template are skipped with a note on Silo because collection sort titles are unavailable. Other collections in the same defaults file continue to run. Existing separators are not automatically deleted.
 
-Collection `sort_title`, `label`, `label.remove`, `label.sync`, `visible_library`, `visible_home`, and `visible_shared` settings warn and skip on Silo. Supported metadata and artwork continue updating, including artwork on yearly award and seasonal collections. Plex visibility settings do not change Silo's home-screen placement or sharing.
+Collection `sort_title`, `label`, `label.remove`, and `label.sync` settings warn and skip on Silo. Supported metadata and artwork continue updating, including artwork on yearly award and seasonal collections. Collection visibility settings manage native sections as described below.
 
 Dynamic language collections (`default: audio_language` and `default: subtitle_language`) discover language codes across all file versions and tracks, reusing item details within the run. Subtitle discovery includes embedded and external tracks. Missing track languages are ignored. Smart filters support `audio_language` and `subtitle_language` with `.is`/`.not` modifiers and language-code lists.
 
@@ -122,6 +122,32 @@ Silo smart collections accept native query documents under `smart_filter`. Komet
 Network dynamic collections discover networks from native show metadata and use Silo network filters; they do not require a Plex TV agent.
 
 Episode collections accept `type: episodes` (or `episode`) within a show library. `episode_air_date` matches episode air dates, with release dates as a fallback. On show or season selectors it matches any dated child episode, using the shared episode catalog. These filters are rebuilt locally when they cannot be expressed as a native smart query.
+
+### Collection promotion
+
+Collection promotion uses Silo's section APIs. These attributes accept booleans or [schedules](schedule.md), including the visibility template variables supplied by defaults:
+
+| Attribute | Silo behavior |
+| :--- | :--- |
+| `visible_library` | Enable or disable a collection-backed row on this library's landing page. |
+| `visible_home` | Show or hide the collection row on the acting profile's Home page. |
+| `visible_shared` | Enable or disable the administrator's default collection row on Home for other profiles. Their own hidden/reordered settings remain in effect. |
+
+```yaml
+collections:
+  Featured Movies:
+    silo_all: true
+    limit: 10
+    visible_library: true
+    visible_home: true
+    visible_shared: false
+```
+
+The example promotes the collection on the library landing page and the acting profile's Home without adding a default Home row for other profiles. Setting only one visibility attribute preserves the other Home setting; omitted attributes leave existing placement alone. Scheduled values turn the corresponding promotion on or off on each run. These settings do not change collection access permissions, personal collection sharing, or Collections-tab shelf membership.
+
+Kometa reuses an existing collection-backed administrator row for the collection and scope, preserving its position and display settings. Multiple matching rows are ambiguous and produce an error before that scope is changed. Disabled rows are retained for reuse. When Home is enabled only for the acting profile, Kometa creates a profile-owned row with a stable identifier; switching to a shared row removes that managed personal row. Other personal rows are preserved.
+
+An acting administrator profile and Silo's v2 admin/profile section APIs are required. Administrator updates use the current `ETag`. The profile API replaces the complete override set and has no conditional-write facility: Kometa preserves unrelated settings and checks for changes immediately before writing, but edits made in the interval between that check and the write cannot be detected. Avoid editing that profile's Home layout during a Kometa visibility run. Other profiles' overrides are never replaced.
 
 ### Collection shelves
 

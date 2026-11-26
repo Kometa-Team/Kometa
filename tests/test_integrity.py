@@ -92,7 +92,14 @@ def test_missing_and_added(installation):
     assert report["state"] == "Modified"
     assert report["missing"] == ["fonts/font.ttf"]
     assert report["added"] == ["modules/test_patch.py"]
-    assert integrity.format_integrity(report) == ["Source Integrity: MODIFIED", "Missing:", "  fonts/font.ttf", "Added:", "  modules/test_patch.py"]
+    assert integrity.format_integrity(report) == [
+        "Source Integrity: MODIFIED",
+        f"Compared with: Kometa-Team/Kometa@{installation[2][:12]}, committed 1970-01-01",
+        "Missing:",
+        "  fonts/font.ttf",
+        "Added:",
+        "  modules/test_patch.py",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -235,6 +242,126 @@ def test_identity_hints(installation, monkeypatch, hint):
     report = integrity.check_integrity(root, config, upstream=client)
     assert report["state"] == ("Verified" if hint in {"env", "sha_file", "empty_env_sha_file"} else "Not Verified")
     assert client.baseline.call_count == (1 if hint in {"env", "sha_file", "empty_env_sha_file"} else 0)
+
+
+@pytest.mark.parametrize("env", [None, "same", "stale"])
+def test_docker_prefers_baked_identity_over_environment(installation, monkeypatch, env):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text(commit)
+    if env:
+        monkeypatch.setenv("KOMETA_GIT_SHA", commit if env == "same" else "b" * 40)
+    report = integrity.check_integrity(root, config, "docker", client)
+    assert report["state"] == "Verified"
+    assert client.baseline.call_args.args[0] == commit
+    assert report["commit"] == commit
+    if env == "stale":
+        assert report["identity_warning"] == integrity.IDENTITY_WARNING
+        assert integrity.format_integrity(report) == ["Source Integrity: Verified", f"Warning: {integrity.IDENTITY_WARNING}"]
+    else:
+        assert "identity_warning" not in report
+        assert integrity.format_integrity(report) == ["Source Integrity: Verified"]
+
+
+def test_source_install_keeps_environment_identity(installation, monkeypatch):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text("b" * 40)
+    monkeypatch.setenv("KOMETA_GIT_SHA", commit)
+    report = integrity.check_integrity(root, config, upstream=client)
+    assert report["state"] == "Verified"
+    assert "identity_warning" not in report
+
+
+def test_docker_invalid_hint_falls_back_to_environment(installation, monkeypatch):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text("invalid")
+    monkeypatch.setenv("KOMETA_GIT_SHA", commit)
+    report = integrity.check_integrity(root, config, "docker", client)
+    assert report["state"] == "Verified"
+    assert "identity_warning" not in report
+
+
+def test_docker_stale_environment_warning_survives_unavailable_baseline(installation, monkeypatch):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text(commit)
+    monkeypatch.setenv("KOMETA_GIT_SHA", "b" * 40)
+    report = integrity.check_integrity(root, config, "docker", client, allow_network=False)
+    assert report["state"] == "Not Verified"
+    assert integrity.format_integrity(report)[-1] == f"Warning: {integrity.IDENTITY_WARNING}"
+
+
+@pytest.mark.parametrize("hint", ["undecodable", "symlink"])
+def test_docker_unusable_hint_with_environment(installation, monkeypatch, hint):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    monkeypatch.setenv("KOMETA_GIT_SHA", commit)
+    if hint == "undecodable":
+        (root / ".kometa_sha").write_bytes(b"\xff\xfe")
+    else:
+        (root / ".kometa_sha").symlink_to(root / "VERSION")
+    report = integrity.check_integrity(root, config, "docker", client)
+    # An unreadable hint is ignored; a symlinked hint is still refused as tampering.
+    assert report["state"] == ("Verified" if hint == "undecodable" else "Not Verified")
+
+
+def test_docker_malformed_environment_still_warns(installation, monkeypatch):
+    root, config, commit, client = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text(commit)
+    monkeypatch.setenv("KOMETA_GIT_SHA", "latest")
+    report = integrity.check_integrity(root, config, "docker", client)
+    assert report["state"] == "Verified"
+    assert report["identity_warning"] == integrity.IDENTITY_WARNING
+
+
+def test_cached_manifest_reports_commit_date(installation):
+    check(installation)
+    (installation[0] / "kometa.py").write_bytes(b"# changed\n")
+    report = integrity.check_integrity(installation[0], installation[1], allow_network=False)
+    assert report["state"] == "Modified"
+    assert report["commit_date"] == "1970-01-01"
+
+
+def test_startup_timeout_keeps_identity_warning(installation, monkeypatch):
+    import threading
+
+    root, config, commit, _ = installation
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: None)
+    (root / ".kometa_sha").write_text(commit)
+    monkeypatch.setenv("KOMETA_GIT_SHA", "b" * 40)
+    release = threading.Event()
+    monkeypatch.setattr(integrity, "check_integrity", lambda *args: (release.wait(3), {"state": "Verified"})[1])
+    monkeypatch.setattr(integrity, "STARTUP_TIMEOUT", 0.02)
+    logger = MagicMock()
+    try:
+        report = integrity.log_integrity(root, config, logger, "docker")
+    finally:
+        release.set()
+    assert [call.args[0] for call in logger.info.call_args_list] == [
+        "    Source Integrity: Check unavailable (startup time limit reached; local files were not verified)",
+        f"    Warning: {integrity.IDENTITY_WARNING}",
+    ]
+    footer = MagicMock()
+    integrity.log_integrity_summary(report, footer)
+    assert footer.info.call_args_list[-1].args[0] == f"Warning: {integrity.IDENTITY_WARNING}"
+
+
+def test_compared_commit_line_is_validated():
+    base = {"state": "Modified", "modified": ["kometa.py"], "missing": [], "added": []}
+    assert integrity.format_integrity({**base, "commit": "a" * 40, "commit_date": "2026-10-10"})[1] == "Compared with: Kometa-Team/Kometa@aaaaaaaaaaaa, committed 2026-10-10"
+    assert integrity.format_integrity({**base, "commit": "a" * 40, "commit_date": "bad\nline"})[1] == "Compared with: Kometa-Team/Kometa@aaaaaaaaaaaa"
+    assert integrity.format_integrity({**base, "commit": "not a sha"})[1] == "Modified:"
+    assert integrity.format_integrity({**base, "identity_warning": "forged"})[-1] == "  kometa.py"
+
+
+def test_commit_date_reads_committer_timestamp():
+    raw = b"tree " + b"a" * 40 + b"\nauthor A <a@example.com> 1 +0000\ncommitter C <c@example.com> 1760054400 +0200\n\ncommitter in message 0 +0000\n"
+    assert integrity._commit_date({"commit_object": base64.b64encode(raw).decode()}) == "2025-10-10"
+    assert integrity._commit_date({}) is None
+    assert integrity._commit_date({"commit_object": "!!"}) is None
 
 
 @pytest.mark.parametrize("directory", [False, True])

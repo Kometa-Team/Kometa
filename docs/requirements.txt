@@ -20,7 +20,7 @@ pathspec==1.1.1
     # via zensical
 pygments==2.21.0
     # via zensical
-pymdown-extensions==13.0
+pymdown-extensions==13.1
     # via zensical
 pyyaml==6.0.3
     # via
@@ -28,7 +28,7 @@ pyyaml==6.0.3
     #   zensical
 tomli==2.5.0
     # via zensical
-wcmatch==12.0.1
+wcmatch==12.0.4
     # via kometa-docs-include
 zensical==0.1.1
     # via kometa-docs-include

@@ -20,6 +20,10 @@ from modules.rating_operations import SILO_OPERATIONS
 from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled, PlexImageUploadError
 
+# Above this many rating keys a diff run's overlays gather library-wide instead:
+# the keys travel in request URLs, and a large diff gains little from targeting.
+DIFF_TARGET_KEY_LIMIT = 500
+
 logger = util.logger
 
 
@@ -49,6 +53,8 @@ class Library(ABC):
         self.collection_files = []
         # Includes parsed files which are configured but scheduled out of this run.
         self.configured_collection_metadata_files = []
+        # Collection files whose configured names could not be read this run.
+        self.incomplete_collection_files = []
         self.metadata_files = []
         self.overlay_files = []
         self.images_files = []
@@ -163,6 +169,7 @@ class Library(ABC):
         self.reset_overlays = params["reset_overlays"]
         self.mass_collection_mode = params["mass_collection_mode"]
         self.metadata_backup = params["metadata_backup"]
+        self.unused_assets_report = params.get("unused_assets_report")
         self.genre_mapper = params["genre_mapper"]
         self.content_rating_mapper = params["content_rating_mapper"]
         self.changes_webhooks = params["changes_webhooks"]
@@ -224,6 +231,7 @@ class Library(ABC):
             or self.show_unmanaged
             or self.show_unconfigured
             or self.metadata_backup
+            or self.unused_assets_report
             or self.update_blank_track_titles
             else False
         )
@@ -274,8 +282,11 @@ class Library(ABC):
         labels = current_labels if current_labels is not None else [la.tag for la in self.item_labels(item)]
         return any(label in labels for label in self.ignore_labels)
 
-    def scan_configured_collection_names(self):
+    def scan_configured_collection_names(self, scheduled_only=False):
+        """Read configured names from files that are not run this time, or with ``scheduled_only`` from the files that are."""
         for file_entry in self.configured_collection_files:
+            if (file_entry in self.scanned_collection_files) != scheduled_only:
+                continue
             file_type, metadata_file, temp_vars, asset_directory = file_entry
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
@@ -283,9 +294,10 @@ class Library(ABC):
                 if meta_obj.collections:
                     self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
             except NotScheduled:
-                pass
+                self.incomplete_collection_files.append(str(metadata_file))
             except Failed as e:
                 logger.debug(f"Configured collection names failed to load from {metadata_file}: {e}")
+                self.incomplete_collection_files.append(str(metadata_file))
 
     def scan_files(self, operations_only, overlays_only, collection_only, metadata_only):
         self.scan_configured_collection_names()
@@ -296,13 +308,20 @@ class Library(ABC):
                     meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
+                        self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
                     self.collection_files.append(meta_obj)
+                    self.configured_collection_metadata_files.append(meta_obj)
                 except Failed as e:
                     logger.error(e)
                     logger.info("Collection File Failed To Load")
+                    self.incomplete_collection_files.append(str(metadata_file))
                 except NotScheduled as e:
                     logger.info("")
                     logger.separator(f"Skipping {e} Collection File")
+                    self.incomplete_collection_files.append(str(metadata_file))
+        elif getattr(self, "unused_assets_report", None):
+            # Collection files are not run in this mode, but the report still needs every configured name.
+            self.scan_configured_collection_names(scheduled_only=True)
         if not operations_only and not overlays_only and not collection_only:
             for file_type, metadata_file, temp_vars, asset_directory in self.scanned_metadata_files:
                 try:
@@ -823,6 +842,24 @@ class Library(ABC):
 
             return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
         raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<positive integer>[m|h|d]), index(<range>), or items(<ids>)")
+
+    def diff_target_keys(self, items):
+        """Return the rating keys a diff run's overlays can be limited to, or None to gather library-wide.
+
+        Shows expand to their seasons and episodes, because season- and episode-level
+        overlay searches match those keys rather than the show's.
+        """
+        if self.schedule_mode != "diff" or getattr(self, "is_music", False) or self.remove_overlays:
+            return None
+        keys = set()
+        for item in items:
+            keys.add(item.ratingKey)
+            if getattr(self, "is_show", False):
+                for method_name in ("seasons", "episodes"):
+                    keys.update(subitem.ratingKey for subitem in self.cached_item_subitems(item, method_name))
+            if len(keys) > DIFF_TARGET_KEY_LIMIT:
+                return None
+        return keys
 
     @property
     def has_schedule_scope(self):

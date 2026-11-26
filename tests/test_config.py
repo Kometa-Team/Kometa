@@ -9,6 +9,7 @@ to verify the config parsing and validation logic in isolation.
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
@@ -178,12 +179,13 @@ def make_config(
     attrs: dict | None = None,
     secrets: dict | None = None,
     real_yaml: bool = False,
+    requests=None,
 ) -> ConfigFile:
     """Build a ConfigFile from *config_yaml* with all dependencies mocked; the config file is served from memory unless real_yaml=True (needed to read the saved file back)."""
     config_path = tmp_path / "config.yml"
     config_path.write_text(config_yaml, encoding="utf-8")
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
-    requests = FakeRequests() if real_yaml else InMemoryYAMLRequests()
+    requests = requests or (FakeRequests() if real_yaml else InMemoryYAMLRequests())
     return ConfigFile(requests, str(tmp_path), merged_attrs, secrets or {})
 
 
@@ -1075,6 +1077,63 @@ def test_library_item_override_inherits_collections_only_for_mappings(tmp_path, 
     assert config.libraries[0].collection_asset_directory == ([str(roots["collections"])] if local_grouped else [])
 
 
+@pytest.mark.parametrize("apikey", ["", "   ", "\t"])
+def test_blank_listrr_apikey_stays_disabled_without_a_request(tmp_path, apikey):
+    class RecordingRequests(FakeRequests):
+        def __init__(self):
+            super().__init__()
+            self.urls = []
+
+        def get(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+    requests = RecordingRequests()
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + f"\nlistrr:\n  apikey: '{apikey}'\n", requests=requests)
+    assert config.Listrr is None
+    assert requests.urls == []
+    assert any("apikey is blank" in message for message in config_module.logger.warning_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
+
+
+def test_listrr_apikey_whitespace_is_stripped_before_connect(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeListrr:
+        def __init__(self, requests, apikey):
+            captured["apikey"] = apikey
+
+        def test_connection(self):
+            captured["tested"] = True
+
+    monkeypatch.setattr(config_module, "Listrr", FakeListrr)
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: '  abc  '\n")
+    assert captured == {"apikey": "abc", "tested": True}
+    assert config.Listrr is not None
+
+
+def test_listrr_connection_error_disables_listrr_without_aborting_config(tmp_path):
+    from requests.exceptions import ConnectionError
+
+    class DownRequests(FakeRequests):
+        def get(self, url, headers=None, **kwargs):
+            if "listrr.pro" in str(url):
+                raise ConnectionError("timed out")
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            return self.get(url, headers=headers)
+
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  apikey: real-key\n", requests=DownRequests())
+    assert config.Listrr is None
+    assert any("Request failed" in message for message in config_module.logger.error_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
+
+
 @pytest.mark.parametrize("grouped", [False, True])
 def test_config_skips_missing_asset_roots(tmp_path, grouped):
     root = tmp_path / "assets"
@@ -1287,3 +1346,76 @@ def test_delete_collection_size_accepts_all_and_numeric_thresholds(tmp_path, mon
     yaml = BASE_CONFIG.replace("    collection_files: []", f"    collection_files: []\n    operations:\n      delete_collections:\n        less: {value}")
     make_config(tmp_path, config_yaml=yaml)
     assert captured[0]["less"] == expected
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        ("true", "{default}"),
+        ("\n        path: {tmp}/report.yml", "{tmp}/report.yml"),
+        ("false", None),
+        ("\n        path: {tmp}/missing/report.yml", None),
+        ("nonsense", None),
+    ],
+)
+def test_config_parses_unused_assets_report(tmp_path, monkeypatch, value, expected):
+    seen = []
+
+    def connect(config, params):
+        seen.append(params)
+        lib = MagicMock()
+        lib.name = params["name"]
+        lib.collection_files = ["placeholder.yml"]
+        return lib
+
+    monkeypatch.setattr(config_module, "Plex", connect)
+    config_yaml = f"""
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      unused_assets_report: {value.format(tmp=tmp_path)}
+tmdb:
+  apikey: fake-tmdb-key
+plex:
+  url: http://localhost:32400
+  token: fake-plex-token
+"""
+    make_config(tmp_path, config_yaml=config_yaml)
+
+    (params,) = seen
+    if expected is None:
+        assert not params["unused_assets_report"]
+    else:
+        default = os.path.join(str(tmp_path), "Movies_Unused_Assets.yml")
+        assert params["unused_assets_report"] == {"path": expected.format(tmp=tmp_path, default=default)}
+
+
+def test_playlist_files_scheduled_out_are_loaded_only_for_their_names(tmp_path, monkeypatch):
+    monkeypatch.setattr(config_module, "Plex", lambda config, params: MagicMock(collection_files=["placeholder.yml"]))
+    (tmp_path / "daily.yml").write_text("playlists:\n  Daily Mix:\n    libraries: Movies\n    plex_all: true\n")
+    (tmp_path / "weekly.yml").write_text("playlists:\n  Weekly Mix:\n    name_mapping: weekly-art\n    libraries: Movies\n    plex_all: true\n")
+    config_yaml = f"""
+settings:
+  cache: false
+playlist_files:
+  - file: {tmp_path / "daily.yml"}
+  - file: {tmp_path / "weekly.yml"}
+    schedule: never
+libraries:
+  Movies:
+    collection_files: []
+tmdb:
+  apikey: fake-tmdb-key
+plex:
+  url: http://localhost:32400
+  token: fake-plex-token
+"""
+    config = make_config(tmp_path, config_yaml=config_yaml, real_yaml=True)
+
+    assert config.playlist_names == ["Daily Mix"]
+    assert [list(playlist_file.playlists) for playlist_file in config.playlist_files] == [["Daily Mix"]]
+    assert [list(playlist_file.playlists) for playlist_file in config.unscheduled_playlist_files] == [["Weekly Mix"]]
+    assert config.incomplete_playlist_files == []
