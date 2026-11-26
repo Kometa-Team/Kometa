@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix library connections that returned HTTP 401 on Jellyfin 12 with legacy authorization disabled by also sending the key in the `Authorization` header.
 - Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
 - Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
 

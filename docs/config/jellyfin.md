@@ -16,6 +16,8 @@ Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token
 
 Connection logs include the remote server name, version, and available OS information from `/System/Info`. Missing OS details are logged as not reported. Failure to read this optional information warns without preventing library setup.
 
+Jellyfin 12 and later ignore `X-Emby-Token` unless legacy authorization is enabled, so Kometa also sends the key to Jellyfin as `Authorization: MediaBrowser Token="<key>"`. If the server redirects a request to another host, port, or scheme, that header is dropped, so set `url` to the final address. A redirect from `http` on port 80 to `https` on port 443 keeps it. Do not put `user:password@` in `url`. Those credentials replace the `Authorization` header, so Jellyfin 12 does not receive the key.
+
 Movie and TV libraries can build boxset collections and playlists. Kometa can edit titles, summaries, tags, genres, and studios, and it can upload poster, backdrop, logo, banner, and overlay images. A local file is uploaded as bytes. A URL is sent to the server, which downloads it. Plex smart-filter addresses are not accepted. A collection that needs a dynamic Plex filter stops with an error for that collection.
 
 Jellyfin collection sort titles use its custom sort-name field, including separator collections. If Jellyfin or Emby reports no primary image, Kometa retries the configured poster even when its local artwork cache records an earlier upload.

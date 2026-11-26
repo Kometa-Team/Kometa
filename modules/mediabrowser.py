@@ -146,6 +146,9 @@ class MediaBrowserClient:
         self.user_id = server.user_id
         self.session = session or ServerSession(self.base, server.type_label)
         self.session.headers["X-Emby-Token"] = server.token
+        if server.type_name == "jellyfin":
+            # Jellyfin 12 no longer reads X-Emby-Token by default; it takes the key from the Authorization header.
+            self.session.headers["Authorization"] = f'MediaBrowser Token="{server.token}"'
         self.session.headers["Accept"] = "application/json"
         if server.verify_ssl is False:
             self.session.verify = False
