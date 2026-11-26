@@ -8,7 +8,12 @@ every backend matches Plex.
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
+from urllib.parse import urlsplit
 
+import requests
+from requests.utils import default_headers
+
+from modules import util
 from modules.util import Failed
 
 
@@ -23,6 +28,77 @@ def log_server_connection(logger, server, load_info):
     os_name = info.get("os")
     os_version = f" version {info['os_version']}" if info.get("os_version") else ""
     logger.info(f"Running on {os_name}{os_version}" if os_name else "Operating system: not reported")
+
+
+def _request_url(url: str) -> str:
+    """Return the URL as ``requests`` stores it on a prepared request, so two spellings of one address compare equal."""
+    try:
+        return str(requests.Request("GET", str(url)).prepare().url)
+    except (requests.exceptions.RequestException, ValueError):
+        return str(url)
+
+
+class ServerSession(requests.Session):
+    """A session for one media server. ``headers`` carries the server credential.
+
+    A library lends this session to image downloads of URLs from the configuration. A request that leaves the server
+    address gets the headers of a plain ``requests`` session instead of the headers added to this session, so the
+    credential stays on the server. A header that a caller passes for that one request stays. No header names are
+    listed, so a header that a later change adds is scoped from its first commit. ``requests`` drops ``Authorization``
+    on a redirect to another origin and keeps every other header. The rule here runs before each request and again
+    on each redirect.
+    """
+
+    def __init__(self, base: str, label: str) -> None:
+        super().__init__()
+        self.base = _request_url(base)
+        self.label = label
+        self.warned_off_server = False
+
+    def prepare_request(self, request: requests.Request) -> requests.PreparedRequest:
+        prepared = super().prepare_request(request)
+        self._use_plain_headers(prepared, self.base)
+        return prepared
+
+    def rebuild_auth(self, prepared_request: requests.PreparedRequest, response: requests.Response) -> None:
+        carried = self._carries_added_headers(prepared_request)
+        try:
+            super().rebuild_auth(prepared_request, response)
+            previous = str(getattr(getattr(response, "request", None), "url", None) or self.base)
+            if self._use_plain_headers(prepared_request, previous) and carried:
+                self._warn_off_server(str(prepared_request.url))
+        except ValueError as error:
+            # A Location header with a port that is not a number or is out of range is a bad URL.
+            raise requests.exceptions.InvalidURL(f"Invalid redirect address: {error}") from error
+
+    def _warn_off_server(self, url: str) -> None:
+        if self.warned_off_server:
+            return
+        self.warned_off_server = True
+        target = urlsplit(url)
+        hostname = target.hostname or ""
+        host = f"[{hostname}]" if ":" in hostname else hostname
+        address = f"{target.scheme}://{host}" + (f":{target.port}" if target.port else "") + target.path
+        util.logger.warning(f"{self.label} Warning: The server redirected a request to {address}. Kometa did not send the token to that address. If the server is at that address, set url to its final address")
+
+    def _carries_added_headers(self, prepared: requests.PreparedRequest) -> bool:
+        """Return True when ``prepared`` holds a header that this session added and a plain session does not send."""
+        plain = {name.lower() for name in default_headers()}
+        return any(prepared.headers.get(name) == value for name, value in self.headers.items() if name.lower() not in plain)
+
+    def _use_plain_headers(self, prepared: requests.PreparedRequest, previous: str) -> bool:
+        """Give ``prepared`` the headers of a plain session when it leaves ``previous``. Return True when it leaves."""
+        if not self.should_strip_auth(previous, str(prepared.url or "")):
+            return False
+        plain = {name.lower(): value for name, value in default_headers().items()}
+        for name, value in self.headers.items():
+            if plain.get(name.lower()) == value or prepared.headers.get(name) != value:
+                continue
+            if name.lower() in plain:
+                prepared.headers[name] = plain[name.lower()]
+            else:
+                del prepared.headers[name]
+        return True
 
 
 class Support(Enum):

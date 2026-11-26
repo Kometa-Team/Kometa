@@ -1,6 +1,7 @@
 """Jellyfin and Emby media server client, capability matrix, and library operations."""
 
 import base64
+import tempfile
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -9,11 +10,13 @@ import pytest
 import requests
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
+import modules.library as library_module
 import modules.mediabrowser as browser_module
 from modules.media_server import Capability, Support, build_media_server, media_server_class
 from modules.mediabrowser import EMBY_CAPABILITIES, JELLYFIN_CAPABILITIES, Emby, EmbyMediaServer, Jellyfin, JellyfinMediaServer, MediaBrowserClient, MediaBrowserCollection, MediaBrowserItem
+from modules.request import Requests
 from modules.util import Failed
-from tests.conftest import FakeLogger, FakeResponse
+from tests.conftest import FakeLogger, FakeResponse, recording_session
 
 browser_module.logger = FakeLogger()
 
@@ -2442,3 +2445,36 @@ def test_targeted_native_catalog_reads_preserve_complete_cache(kind, keys):
     assert library.client.session.calls == []
     assert library.get_rating_keys(f"{kind}_all", "item", target_keys=keys) == ([("episode-1", "ratingKey")] if keys else [])
     assert library.fetch_item.call_count == 2 * len(keys)
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_url_artwork_download_does_not_carry_the_server_credential(monkeypatch: pytest.MonkeyPatch, kind: str) -> None:
+    # The library lends its session to image downloads (download_url_assets: true). The key goes to the server poster only.
+    monkeypatch.setattr(library_module, "logger", FakeLogger())
+    client = MediaBrowserClient(_server(kind))
+    adapter = recording_session(client.session)
+    library = _library(client, kind)
+    library.session = client.session
+    library.config.Requests = Requests("2.5.5", "14", "master", "nightly")
+    with tempfile.TemporaryDirectory() as directory:
+        library.pick_image("Title", {"url_poster": "https://images.example.invalid/poster.png"}, False, True, directory, image_type="poster", image_name="poster")
+        library.check_image_for_overlay("http://media:8096/Items/movie-1/Images/Primary?tag=abc", directory)
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == [None, "token"]
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_client_api_request_carries_the_credential(kind: str) -> None:
+    client = MediaBrowserClient(_server(kind))
+    adapter = recording_session(client.session)
+    client.request("GET", "/System/Info")
+    assert adapter.requests[0].headers["X-Emby-Token"] == "token"
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_client_drops_the_credential_on_a_server_redirect(monkeypatch: pytest.MonkeyPatch, kind: str, patch_util_logger: FakeLogger) -> None:
+    # The server sends the request to another port or scheme. The token stays behind, and the user gets one warning.
+    client = MediaBrowserClient(_server(kind))
+    adapter = recording_session(client.session, redirect="https://media:8920/System/Info")
+    client.request("GET", "/System/Info")
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == ["token", None]
+    assert len(patch_util_logger.warning_messages) == 1

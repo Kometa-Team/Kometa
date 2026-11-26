@@ -112,6 +112,8 @@ def test_collection_template_overrides_automatic_shelf(explicit):
 
 
 def test_automatic_shelf_survives_disabled_heading_in_real_metadata_file(monkeypatch):
+    # meta.py captures its logger at import, so patch it here instead of relying on another test on the same worker.
+    monkeypatch.setattr("modules.meta.logger", FakeLogger())
     root = Path(__file__).parent / "fixtures/multi_server"
     data = YAML(typ="safe").load((root / "shelves-default.yml").read_text())
     monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: data)
