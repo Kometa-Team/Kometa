@@ -131,7 +131,7 @@ python scripts/compare_people_posters.py                        # default sample
 python scripts/compare_people_posters.py "Tom Hanks" --styles bw rainier --output /tmp/people-check
 ```
 
-Sheets go to `config/people-poster-comparison/` by default. It needs network access to `raw.githubusercontent.com`.
+Sheets go to `config/people-poster-comparison/` by default. It needs network access to `raw.githubusercontent.com`. See [the full guide](compare_people_posters.md) for every option and how to read the results.
 
 ## `validate_multi_server.py` — shared-library validation
 
