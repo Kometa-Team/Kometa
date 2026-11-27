@@ -707,6 +707,9 @@ def start(attrs):
             # Shut down the run's thread pool before closing Cache - no worker may still be touching the SQLite connection during teardown
             if config.thread_pool:
                 config.thread_pool.shutdown(wait=True)
+            people_posters = getattr(config, "PeoplePosters", None)
+            if people_posters:
+                people_posters.finish()
             # Close cache connection to clean up WAL/SHM files
             if config.Cache:
                 config.Cache.close()

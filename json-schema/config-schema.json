@@ -93,6 +93,9 @@
     "github": {
       "$ref": "#/definitions/github-api"
     },
+    "people_posters": {
+      "$ref": "#/definitions/people-posters"
+    },
     "playlist_files": {
       "$ref": "#/definitions/playlist-path"
     },
@@ -1368,6 +1371,50 @@
       },
       "required": [],
       "title": "github"
+    },
+    "people-posters": {
+      "description": "Where Kometa gets People Poster source images and how it caches the posters it generates from them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "original_repo": {
+          "description": "GitHub repository (owner/name) holding the original person photographs, used as-is for the original style.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+          "default": "Kometa-Team/People-Images-1500"
+        },
+        "transparent_repo": {
+          "description": "GitHub repository (owner/name) holding the transparent person images that styled posters are generated from.",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$",
+          "default": "Kometa-Team/People-Images-transparent-1500"
+        },
+        "branch": {
+          "description": "Branch to read from both repositories. Leave blank to use each repository's default branch.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prune_days": {
+          "description": "Delete cached posters and source images that have not been used for this many days. 0 keeps them forever.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 90
+        },
+        "render_limit": {
+          "description": "Maximum number of posters to generate in one run; the rest are generated on later runs. 0 means no limit.",
+          "type": "integer",
+          "minimum": 0,
+          "default": 250
+        }
+      },
+      "required": [],
+      "title": "people_posters"
     },
     "simkl-api": {
       "type": "object",

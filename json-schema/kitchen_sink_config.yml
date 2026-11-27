@@ -892,6 +892,12 @@ tracearr:                                           # Can be individually specif
   url: http://10.10.10.11:3019
   apikey: trr_pub_THIS_IS_A_FAKE_TOKEN
   server_id: 550e8400-e29b-41d4-a716-446655440000  # Optional unless server name matching is ambiguous
+people_posters:
+  original_repo: Kometa-Team/People-Images-1500
+  transparent_repo: Kometa-Team/People-Images-transparent-1500
+  branch: main
+  prune_days: 90
+  render_limit: 250
 omdb:
   apikey: THIS_IS_A_FAKE_TOKEN
   cache_expiration: 60

@@ -4,7 +4,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-from modules import lidarr, operations, radarr, sonarr, util
+from modules import lidarr, operations, people_posters, radarr, sonarr, util
 from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.apprise_notify import AppriseNotify
@@ -33,6 +33,7 @@ from modules.notifiarr import Notifiarr
 from modules.ntfy import Ntfy
 from modules.omdb import OMDb
 from modules.overlays import Overlays
+from modules.people_posters import PeoplePosters
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.rating_operations import BROWSER_SOURCES, SILO_OPERATIONS, SILO_SOURCES, configure_rating_updates
@@ -500,6 +501,8 @@ class ConfigFile:
             self.data["webhooks"] = temp
         if "github" in self.data:
             self.data["github"] = self.data.pop("github")
+        if "people_posters" in self.data:
+            self.data["people_posters"] = self.data.pop("people_posters")
         if "plex" in self.data:
             self.data["plex"] = self.data.pop("plex")
         if "tmdb" in self.data:
@@ -1027,6 +1030,24 @@ class ConfigFile:
             self.Cache = None
 
         self.GitHub = GitHub(self.Requests, {"token": check_for_attribute(self.data, "token", parent="github", default_is_none=True)})
+
+        try:
+            self.PeoplePosters = PeoplePosters(
+                self.Requests,
+                self.GitHub,
+                self.Cache,
+                self.default_dir,
+                {
+                    "original_repo": check_for_attribute(self.data, "original_repo", parent="people_posters", default=people_posters.DEFAULT_ORIGINAL_REPO),
+                    "transparent_repo": check_for_attribute(self.data, "transparent_repo", parent="people_posters", default=people_posters.DEFAULT_TRANSPARENT_REPO),
+                    "branch": check_for_attribute(self.data, "branch", parent="people_posters", default_is_none=True),
+                    "prune_days": check_for_attribute(self.data, "prune_days", parent="people_posters", var_type="int", default=people_posters.DEFAULT_PRUNE_DAYS),
+                    "render_limit": check_for_attribute(self.data, "render_limit", parent="people_posters", var_type="int", default=people_posters.DEFAULT_RENDER_LIMIT),
+                },
+            )
+        except Failed as e:
+            logger.error(e)
+            self.PeoplePosters = None
 
         logger.separator()
 

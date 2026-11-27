@@ -487,6 +487,12 @@ tracearr:                        # Can be individually specified per library as 
   server_id: 550e8400-e29b-41d4-a716-446655440000  # Optional unless server name matching is ambiguous
 github:
   token: Enter GitHub Personal Access Token
+people_posters:
+  original_repo: Kometa-Team/People-Images-1500
+  transparent_repo: Kometa-Team/People-Images-transparent-1500
+  branch: main
+  prune_days: 90
+  render_limit: 250
 omdb:
   apikey: Enter OMDb API Key
   cache_expiration: 60

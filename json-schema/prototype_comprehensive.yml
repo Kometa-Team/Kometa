@@ -100,6 +100,13 @@ anidb:
 github:
   token: YOUR_GITHUB_PAT
 
+people_posters:
+  original_repo: Kometa-Team/People-Images-1500
+  transparent_repo: Kometa-Team/People-Images-transparent-1500
+  branch: main
+  prune_days: 90
+  render_limit: 250
+
 notifiarr:
   apikey: YOUR_NOTIFIARR_API_KEY
 
