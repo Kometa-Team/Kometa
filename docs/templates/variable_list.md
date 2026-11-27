@@ -258,7 +258,7 @@
 <!--collectionless-->
 <!--people-data-->
 | `data` | Replaces the `data` dynamic collection value. | <table class="clearTable"><tr><th>Attribute</th><th>Description</th><th>Values</th></tr><tr><td><code>depth</code></td><td>Controls the depth within the casting credits to search for common actors</td><td><strong>Default:</strong> 5<br>Number greater than 0</td></tr><tr><td><code>limit</code></td><td>Controls the maximum number of collections to create</td><td><strong>Default:</strong> 25<br>Number greater than 0</td></tr></table> |
-| `style` | Controls the visual theme of the collections created. | **Default:** `bw`<br>`bw`, `rainier`, `signature`, `diiivoy`, or `diiivoycolor` |
+| `style` | Controls the visual theme of the collections created. | **Default:** `bw`<br>`bw`, `rainier`, `signature`, `diiivoy`, `diiivoycolor`, or `original` |
 <!--people-data-->
 <!--award-data-->
 | `data` | Replaces the `data` dynamic collection value. | <table class="clearTable"><tr><th>Attribute</th><th>Description</th><th>Values</th></tr><tr><td><code>starting</code></td><td>Controls the starting year for collections</td><td><strong>Default:</strong> latest-5<br>Number greater than 0</td></tr><tr><td><code>ending</code></td><td>Controls the ending year for collections</td><td><strong>Default:</strong> latest<br>Number greater than 1</td></tr><tr><td><code>increment</code></td><td>Controls the increment (i.e. every 5th year)</td><td><strong>Default:</strong> 1<br>Number greater than 0</td></tr></table><ul><li><strong><code>starting</code> and <code>ending</code> can also have the value <code>latest</code></strong></li><li><strong>You can also use a value relative to the <code>latest</code> by doing <code>latest-5</code></strong></li></ul> |

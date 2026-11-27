@@ -28,6 +28,7 @@ from modules import (
     mal,
     mdblist,
     mojo,
+    people_posters,
     plex,
     radarr,
     serializd,
@@ -253,7 +254,7 @@ summary_details = [
     "flicklist_description",
     "wetrakr_description",
 ]
-poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
+poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster", "people_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
 logo_details = ["url_logo", "file_logo"]
 square_art_details = ["url_square_art", "file_square_art"]
@@ -2266,7 +2267,8 @@ class CollectionBuilder:
     def _poster(self, method_name, method_data):
         if method_name == "url_poster":
             try:
-                if not method_data.startswith("https://theposterdb.com/api/assets/"):
+                generated = getattr(self.config, "PeoplePosters", None) and people_posters.legacy_spec(method_data)
+                if not generated and not method_data.startswith("https://theposterdb.com/api/assets/"):
                     self.config.Requests.get_image(method_data, validate_only=True)
                 self.posters[method_name] = method_data
             except ImageNotFound:
@@ -2297,6 +2299,8 @@ class CollectionBuilder:
                 self.posters[method_name] = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Poster Path Does Not Exist: {os.path.abspath(method_data)}")
+        elif method_name == "people_poster":
+            self.posters[method_name] = people_posters.parse_spec(method_data, source=self.Type)
 
     def _background(self, method_name, method_data):
         if method_name == "url_background":

@@ -48,6 +48,7 @@ class Requests:
         self.calls = []
         self.etag = etag
         self.tree_status = 200
+        self.tree_failures = []
         self.content = PNG
         self.set_people(people or {"Tom Hanks": PNG_SHA})
 
@@ -59,6 +60,8 @@ class Requests:
     def get(self, url, headers=None):
         self.calls.append((url, dict(headers or {})))
         if url.startswith("https://api.github.com/"):
+            if self.tree_failures:
+                return Response(self.tree_failures.pop(0))
             if self.tree_status != 200:
                 return Response(self.tree_status)
             if headers and headers.get("If-None-Match") == self.etag:
@@ -81,6 +84,7 @@ def fake_logger(monkeypatch):
     from modules import cache as cache_module
 
     monkeypatch.setattr(cache_module, "logger", logger)
+    monkeypatch.setattr(people_posters_module, "TREE_RETRY_WAIT", 0)
     return logger
 
 
@@ -241,6 +245,22 @@ def test_tree_failure_uses_previous_list(tmp_path, fake_logger):
     assert any("using the list from a previous run" in m for m in fake_logger.warning_messages)
 
 
+def test_tree_server_error_is_retried(tmp_path):
+    requests = Requests()
+    requests.tree_failures = [500, 502]
+    posters = _make(tmp_path, requests)
+    assert posters.get("Tom Hanks", "bw") is not None
+    assert len(requests.tree_calls()) == 3
+
+
+def test_tree_client_error_is_not_retried(tmp_path):
+    requests = Requests()
+    requests.tree_failures = [404]
+    with pytest.raises(Failed):
+        _make(tmp_path, requests).get("Tom Hanks", "bw")
+    assert len(requests.tree_calls()) == 1
+
+
 def test_tree_failure_without_previous_list_fails_once(tmp_path):
     requests = Requests()
     requests.tree_status = 403
@@ -318,6 +338,50 @@ def test_cache_disabled_creates_no_directory_until_needed(tmp_path, monkeypatch)
     monkeypatch.setattr(people_posters_module.tempfile, "mkdtemp", lambda **kwargs: created.append(kwargs) or str(tmp_path / "temp"))
     _make(tmp_path, Requests(), cache=None).finish()
     assert created == []
+
+
+@pytest.mark.parametrize(
+    "data, expected",
+    [
+        ("Tom Hanks", {"name": "Tom Hanks", "style": "bw"}),
+        ({"name": "Tom Hanks"}, {"name": "Tom Hanks", "style": "bw"}),
+        ({"Name": " Tom Hanks ", "STYLE": "Rainier"}, {"name": "Tom Hanks", "style": "rainier"}),
+        ({"name": "Tom Hanks", "style": "1500"}, {"name": "Tom Hanks", "style": "1500"}),
+    ],
+)
+def test_parse_spec(data, expected):
+    assert people_posters_module.parse_spec(data) == expected
+
+
+@pytest.mark.parametrize("data, error", [({"name": ""}, "requires a name"), ({"name": "A", "style": "sepia"}, "invalid"), ({"name": "A", "size": 1}, "unknown attributes")])
+def test_parse_spec_errors(data, error):
+    with pytest.raises(Failed, match=error):
+        people_posters_module.parse_spec(data)
+
+
+@pytest.mark.parametrize(
+    "url, expected",
+    [
+        ("https://raw.githubusercontent.com/Kometa-Team/People-Images-bw/master/T/Images/Tom%20Hanks.jpg", {"name": "Tom Hanks", "style": "bw"}),
+        ("https://raw.githubusercontent.com/Kometa-Team/People-Images-diiivoycolor/main/%23/Images/50%20Cent%20(2).jpg", {"name": "50 Cent (2)", "style": "diiivoycolor"}),
+        ("https://raw.githubusercontent.com/Kometa-Team/People-Images-1500/master/T/Images/Tom%20Hanks.jpg", None),
+        ("https://raw.githubusercontent.com/Someone/People-Images-bw/master/T/Images/Tom%20Hanks.jpg", None),
+        ("https://example.com/People-Images-bw/master/T/Images/Tom%20Hanks.jpg", None),
+    ],
+)
+def test_legacy_spec(url, expected):
+    assert people_posters_module.legacy_spec(url) == expected
+
+
+def test_image_for_original_and_transparent_styles(tmp_path):
+    requests = Requests({"Tom Hanks": "sha"})
+    posters = _make(tmp_path, requests, original_repo=TRANSPARENT)
+    original = posters.image({"name": "Tom Hanks", "style": "original"})
+    transparent = posters.image({"name": "Tom Hanks", "style": "transparent"})
+    assert original.is_url and original.location.endswith("/master/T/Images/Tom%20Hanks.png")
+    assert transparent.is_url and transparent.location.startswith(f"https://raw.githubusercontent.com/{TRANSPARENT}/")
+    assert original.compare == transparent.compare == "sha"
+    assert posters.rendered == 0
 
 
 def test_cache_disabled_always_fetches_full_tree(tmp_path):

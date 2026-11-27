@@ -26,6 +26,7 @@ tags:
   - tvdb_poster
   - tvdb_list_poster
   - file_poster
+  - people_poster
   - url_background
   - tmdb_background
   - tvdb_background
@@ -166,6 +167,23 @@ sources accept the corresponding movie/show ID or URL.
 | TMDb list | `tmdb_list_poster` | - | TMDb list ID |
 | TVDb list | `tvdb_list_poster` | - | TVDb list URL |
 | TMDb person | `tmdb_profile` | - | TMDb person ID |
+| [People Poster](../config/people_posters.md) | `people_poster` | - | A person's name, or a mapping with `name` and `style` |
+
+`people_poster` styles are `bw` (the default), `diiivoy`, `diiivoycolor`, `rainier`
+and `signature`, which Kometa generates locally, plus `original` for the
+plain photograph. The name must match the file name in the People-Images
+repositories.
+
+```yaml
+collections:
+  Tom Hanks:
+    plex_search:
+      all:
+        actor: Tom Hanks
+    people_poster:
+      name: Tom Hanks
+      style: rainier
+```
 
 <span id="logo-collectionplaylist-metadata-updates"></span>
 <span id="square-art-collectionplaylist-metadata-updates"></span>
@@ -183,7 +201,7 @@ or playlist name, or `name_mapping` when set.
 
 | Artwork | Supported asset names | Standard priority, highest first |
 |:--------|:----------------------|:---------------------------------|
-| Poster | `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, `movie.ext` | `url_poster`, `file_poster`, `tmdb_poster`, `tvdb_poster`, assets, `tmdb_person`, `tmdb_collection_details`, other `_details` methods |
+| Poster | `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, `movie.ext` | `url_poster`, `file_poster`, `people_poster`, `tmdb_poster`, `tvdb_poster`, assets, `tmdb_person`, `tmdb_collection_details`, other `_details` methods |
 | Background | `background.ext`, `art.ext`, `backdrop.ext`, `fanart.ext` | `url_background`, `file_background`, `tmdb_background`, `tvdb_background`, assets |
 | Logo | `logo.ext`, `clearlogo.ext` | `url_logo`, `file_logo`, assets |
 | Square art | `square.ext`, `square_art.ext`, `squareArt.ext`, `backgroundSquare.ext` | `url_square_art`, `file_square_art`, assets |
@@ -192,9 +210,15 @@ or playlist name, or `name_mapping` when set.
 
 ??? info "Person-image validation and fallback"
 
-    People-Images URLs are checked before selection. Missing images log a warning
-    and fall back to the next poster source, such as the profile from `tmdb_person`.
-    Existing images retain their usual priority. Successful and missing-image
+    `people_poster` and `url_poster` values pointing at the styled
+    `People-Images-<style>` repositories are [generated locally](../config/people_posters.md)
+    rather than downloaded. If the person has no image, Kometa logs a warning and
+    falls back to the next poster source, such as the profile from `tmdb_person`.
+    If the run's `render_limit` has been reached, the current poster is left
+    unchanged and the new one is generated on a later run.
+
+    Other `url_poster` URLs are checked before selection. Missing images log a
+    warning and fall back to the next poster source. Successful and missing-image
     checks are cached for the run and checked again next run; each distinct URL
     requires a HEAD request. Rate-limit, server, and network failures also fall
     back, but are logged as validation failures rather than confirmed missing
