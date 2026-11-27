@@ -514,6 +514,28 @@ def test_client_pages_items_and_picks_an_administrator():
     assert session.headers["X-Emby-Token"] == "token"
 
 
+@pytest.mark.parametrize("kind,expected", [("jellyfin", 'MediaBrowser Token="token"'), ("emby", None)])
+def test_client_sends_the_authorization_header_to_jellyfin_only(monkeypatch: pytest.MonkeyPatch, kind: str, expected: str | None) -> None:
+    # Jellyfin 12 no longer reads X-Emby-Token by default, so a Jellyfin server also gets `Authorization: MediaBrowser Token="..."`. Emby requests are unchanged.
+    sent: list[requests.PreparedRequest] = []
+
+    def send(_session: requests.Session, request: requests.PreparedRequest, **_kwargs: object) -> FakeResponse:
+        sent.append(request)
+        return FakeResponse({})
+
+    monkeypatch.setattr(requests.Session, "send", send)
+    client = MediaBrowserClient(_server(kind))
+    client.session.trust_env = False  # a matching netrc entry would replace the Authorization header under test
+    client.request("GET", "/System/Info")
+    client.upload_image("movie-1", "Primary", b"poster", "image/png")
+    client.session.get("https://images.example.invalid/poster.png")
+    assert [request.headers.get("Authorization") for request in sent[:2]] == [expected] * 2
+    assert [request.headers["X-Emby-Token"] for request in sent[:2]] == ["token"] * 2
+    assert sent[1].headers["Content-Type"] == "image/png"
+    assert sent[2].headers.get("Authorization") is None
+    assert sent[2].headers.get("X-Emby-Token") is None
+
+
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
 @pytest.mark.parametrize("exists", [True, False])
 def test_builder_adds_to_collection_by_title(monkeypatch, kind, exists):
