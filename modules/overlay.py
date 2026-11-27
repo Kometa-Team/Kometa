@@ -320,7 +320,7 @@ class Overlay:
                 if not os.path.exists(font) and os.path.exists(os.path.join(code_base, font)):
                     font = os.path.join(code_base, font)
                 if not os.path.exists(font):
-                    kometa_fonts = os.listdir(font_base)
+                    kometa_fonts = [f for f in os.listdir(font_base) if os.path.isfile(os.path.join(font_base, f))]
                     fonts = util.get_system_fonts() + kometa_fonts
                     if font not in fonts:
                         raise OverlayError(f"Overlay Error: Overlay font '{os.path.abspath(font)}' not found. Available fonts: {', '.join(fonts)}")

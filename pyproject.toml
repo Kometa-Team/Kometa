@@ -8,6 +8,7 @@ dependencies = [
     "apprise>=2.2.0",
     "arrapi==1.5.1",
     "cloudscraper==1.2.71",
+    "fonttools==4.69.1",
     "gitpython==3.2.1",
     "jsonschema==4.26.0",
     "langcodes==3.5.1",
@@ -31,6 +32,7 @@ dependencies = [
     "setuptools==84.2.1",
     "tenacity==9.2.1",
     "tmdbapis==1.3.1",
+    "uharfbuzz==0.57.0",
     "ytmusicapi==1.12.3",
 ]
 
