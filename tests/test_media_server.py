@@ -289,8 +289,8 @@ def test_server_session_refuses_a_redirect_to_a_malformed_address() -> None:
     assert len(adapter.requests) == 1
 
 
-def test_server_session_warning_names_the_final_address(patch_util_logger: FakeLogger) -> None:
-    # The user copies that address into url, so it keeps the path and brackets an IPv6 host.
+def test_server_session_warning_names_the_server_address(patch_util_logger: FakeLogger) -> None:
+    # The user copies that address into url. It keeps a configured path prefix, drops the request path, and brackets an IPv6 host.
     session = ServerSession("http://media:8080/jellyfin", "Jellyfin")
     session.headers["X-Emby-Token"] = "token"
     recording_session(session, redirect="https://media/jellyfin/System/Info")
@@ -299,8 +299,16 @@ def test_server_session_warning_names_the_final_address(patch_util_logger: FakeL
     session.headers["X-Emby-Token"] = "token"
     recording_session(session, redirect="https://[::1]:8920/System/Info")
     session.get("http://[::1]:8096/System/Info")
-    assert "redirected a request to https://media/jellyfin/System/Info." in patch_util_logger.warning_messages[0]
-    assert "redirected a request to https://[::1]:8920/System/Info." in patch_util_logger.warning_messages[1]
+    session = ServerSession("http://silo:8090/api/v2", "Silo")
+    session.headers["Authorization"] = "Bearer token"
+    recording_session(session, redirect="https://silo:8920/api/v2/system/info")
+    session.get("http://silo:8090/api/v2/system/info")
+    assert "Set url to https://media/jellyfin" in patch_util_logger.warning_messages[0]
+    assert "System/Info" not in patch_util_logger.warning_messages[0]
+    assert "Set url to https://[::1]:8920" in patch_util_logger.warning_messages[1]
+    assert "System/Info" not in patch_util_logger.warning_messages[1]
+    assert "Set url to https://silo:8920/api/v2" in patch_util_logger.warning_messages[2]
+    assert "system/info" not in patch_util_logger.warning_messages[2]
 
 
 def test_server_session_does_not_warn_when_the_request_held_no_token(patch_util_logger: FakeLogger) -> None:

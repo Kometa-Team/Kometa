@@ -71,15 +71,24 @@ class ServerSession(requests.Session):
             # A Location header with a port that is not a number or is out of range is a bad URL.
             raise requests.exceptions.InvalidURL(f"Invalid redirect address: {error}") from error
 
+    def _redirect_address(self, url: str) -> str:
+        """Return the server address to use as ``url``, without the path of the request that was redirected."""
+        target = urlsplit(url)
+        hostname = target.hostname or ""
+        host = f"[{hostname}]" if ":" in hostname else hostname
+        address = f"{target.scheme}://{host}" + (f":{target.port}" if target.port else "")
+        prefix = urlsplit(self.base).path.rstrip("/")
+        path = target.path.rstrip("/")
+        if prefix and (path == prefix or path.startswith(f"{prefix}/")):
+            address += prefix
+        return address
+
     def _warn_off_server(self, url: str) -> None:
         if self.warned_off_server:
             return
         self.warned_off_server = True
-        target = urlsplit(url)
-        hostname = target.hostname or ""
-        host = f"[{hostname}]" if ":" in hostname else hostname
-        address = f"{target.scheme}://{host}" + (f":{target.port}" if target.port else "") + target.path
-        util.logger.warning(f"{self.label} Warning: The server redirected a request to {address}. Kometa did not send the token to that address. If the server is at that address, set url to its final address")
+        address = self._redirect_address(url)
+        util.logger.warning(f"{self.label} Warning: The server redirected a request to {address}. Kometa did not send the token to that address. Set url to {address}")
 
     def _carries_added_headers(self, prepared: requests.PreparedRequest) -> bool:
         """Return True when ``prepared`` holds a header that this session added and a plain session does not send."""

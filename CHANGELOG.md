@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- A Jellyfin or Emby server that redirects a request to another port or scheme no longer receives `token` on the redirected request, and Kometa logs one warning. Set `url` to the final address of the server.
+- A Jellyfin, Emby, or Silo server that redirects a request to another host, port, or scheme no longer receives `token` on the redirected request. Kometa logs one warning with the address to use as `url`, without the path of the request that was redirected.
 
 ### Fixed
 
@@ -65,7 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-- `modules/mediabrowser.py`, `modules/silo.py`: the Jellyfin, Emby, and Silo `token` now goes only to the server that `url` names. An image download from another host, and a redirect to another server, no longer carry it. If the server redirects a request to another host, port, or scheme, set `url` to that address.
+- `modules/mediabrowser.py`, `modules/silo.py`: the Jellyfin, Emby, and Silo `token` now goes only to the server that `url` names. An image download from another host, and a redirect to another host, port, or scheme, no longer carry it. The warning names the address to use as `url`.
 
 ### Docs
 
