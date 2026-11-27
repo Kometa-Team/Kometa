@@ -208,20 +208,24 @@ templates:
 
   tmdb_person:
     default:
-      url_poster: https://raw.githubusercontent.com/Kometa-Team/People-Images-<<style>>/master/<<key_name_first_letter>>/Images/<<key_encoded>><<extra>>.jpg
       url_poster_<<key>>: <<url_poster>>
+      people_poster_<<key>>: <<key>><<extra>>
       tmdb_person_offset_<<key>>: <<tmdb_person_offset>>
     optional:
       - tmdb_person
       - tmdb_person_offset
       - tmdb_birthday
       - tmdb_deathday
+      - url_poster
     tmdb_person: <<tmdb_person>>
     tmdb_birthday: <<tmdb_birthday>>
     tmdb_deathday: <<tmdb_deathday>>
     tmdb_person_offset: <<tmdb_person_offset_<<key>>>>
     delete_not_scheduled: true
     url_poster: <<url_poster_<<key>>>>
+    people_poster:
+      name: <<people_poster_<<key>>>>
+      style: <<style>>
     conditionals:
       extra:
         default: ""

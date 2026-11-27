@@ -27,6 +27,12 @@ people_posters:
 | `prune_days`       | Delete cached posters and source images that no run has used for this many days. `0` keeps them forever. | Integer, e.g. **`90`**                                   | :fontawesome-solid-circle-xmark:{ .red } |
 | `render_limit`     | Maximum number of posters to generate in one run. `0` means no limit.                                | Integer, e.g. **`250`**                                  | :fontawesome-solid-circle-xmark:{ .red } |
 
+## Where People Posters are used
+
+* The `actor`, `director`, `producer` and `writer` defaults use People Posters automatically; their `style` template variable picks the style.
+* Any collection or playlist can use the [`people_poster`](../files/updates.md#artwork-sources) attribute.
+* A `url_poster` pointing at one of the old styled repositories, such as `https://raw.githubusercontent.com/Kometa-Team/People-Images-rainier/master/T/Images/Tom%20Hanks.jpg`, is generated locally in the same style instead of being downloaded, in collections, playlists and metadata files.
+
 ## How the cache works
 
 Generated posters are saved in `cache/people_posters/<style>/<first letter>/<name>.jpg` next to your config file, and the cache database records which source image and which version of the poster artwork each one was made from.

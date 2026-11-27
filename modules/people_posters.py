@@ -8,7 +8,7 @@ import threading
 import time
 import unicodedata
 from io import BytesIO
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 from pathvalidate import sanitize_filename
 from PIL import Image, UnidentifiedImageError
@@ -27,7 +27,13 @@ DEFAULT_ORIGINAL_REPO = "Kometa-Team/People-Images-1500"
 DEFAULT_TRANSPARENT_REPO = "Kometa-Team/People-Images-transparent-1500"
 DEFAULT_PRUNE_DAYS = 90
 DEFAULT_RENDER_LIMIT = 250
+TREE_ATTEMPTS = 3
+TREE_RETRY_WAIT = 2
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+ORIGINAL_STYLES = ("original", "orig", "1500")
+TRANSPARENT_STYLES = ("transparent", "transparent-1500")
+ALL_STYLES = (*STYLES, *ORIGINAL_STYLES, *TRANSPARENT_STYLES)
+LEGACY_URL_RE = re.compile(rf"^https://raw\.githubusercontent\.com/Kometa-Team/People-Images-({'|'.join(STYLES)})/[^/]+/[^/]+/Images/([^/]+)\.(?:jpg|png)$", re.IGNORECASE)
 
 
 def person_key(name):
@@ -37,6 +43,30 @@ def person_key(name):
 def git_blob_sha(content):
     """Return the SHA-1 Git stores for a blob, which is the SHA in a repository tree listing."""
     return hashlib.sha1(f"blob {len(content)}\0".encode("ascii") + content).hexdigest()
+
+
+def parse_spec(data, source="People Poster"):
+    """Validates a ``people_poster`` value: a person's name, or a mapping with ``name`` and an optional ``style`` (default ``bw``)."""
+    if isinstance(data, dict):
+        lowered = {str(k).lower(): v for k, v in data.items()}
+        unknown = set(lowered) - {"name", "style"}
+        if unknown:
+            raise Failed(f"{source} Error: people_poster has unknown attributes: {', '.join(sorted(unknown))}")
+        name, style = lowered.get("name"), lowered.get("style") or "bw"
+    else:
+        name, style = data, "bw"
+    if not name or not str(name).strip():
+        raise Failed(f"{source} Error: people_poster requires a name")
+    style = str(style).strip().lower()
+    if style not in ALL_STYLES:
+        raise Failed(f"{source} Error: people_poster style {style} is invalid; use one of {', '.join(ALL_STYLES)}")
+    return {"name": str(name).strip(), "style": style}
+
+
+def legacy_spec(url):
+    """Returns the person and style of a ``People-Images-<style>`` poster URL, which Kometa now generates locally."""
+    match = LEGACY_URL_RE.match(str(url))
+    return {"name": unquote(match.group(2)), "style": match.group(1).lower()} if match else None
 
 
 class PeoplePosters:
@@ -95,13 +125,19 @@ class PeoplePosters:
         if etag and stored is not None:
             headers["If-None-Match"] = etag
         url = f"{base_url}/repos/{repo}/git/trees/{self.branch}?recursive=1"
-        try:
-            response = self.requests.get(url, headers=headers)
-        except (RequestException, RetryError) as e:
-            response = None
-            error = str(e)
-        else:
+        # GitHub can answer a large recursive tree request with a 5xx while it builds the listing, then succeed shortly after.
+        for attempt in range(TREE_ATTEMPTS):
+            try:
+                response = self.requests.get(url, headers=headers)
+            except (RequestException, RetryError) as e:
+                response = None
+                error = str(e)
+                break
             error = f"{response.status_code} {response.reason}"
+            if response.status_code < 500 or attempt == TREE_ATTEMPTS - 1:
+                break
+            logger.debug(f"People Posters: {repo} file list returned {error}; retrying")
+            time.sleep(TREE_RETRY_WAIT * (attempt + 1))
         if response is not None and response.status_code == 304 and stored is not None:
             logger.debug(f"People Posters: {repo} file list unchanged")
             return stored
@@ -154,6 +190,17 @@ class PeoplePosters:
         """Returns the raw URL of a person's original photograph, which is used as-is without rendering."""
         path, _ = self._lookup(self.original_repo, name)
         return f"{raw_url}/{self.original_repo}/{self.branch}/{quote(path)}"
+
+    def image(self, spec):
+        """Returns the poster for a parsed ``people_poster`` spec, or ``None`` when this run's render limit has been reached."""
+        name, style = spec["name"], spec["style"]
+        if style in ORIGINAL_STYLES:
+            path, sha = self._lookup(self.original_repo, name)
+            return ImageData("people_poster", f"{raw_url}/{self.original_repo}/{self.branch}/{quote(path)}", prefix=f"{name}'s ", compare=sha)
+        if style in TRANSPARENT_STYLES:
+            path, sha = self._lookup(self.transparent_repo, name)
+            return ImageData("people_poster", f"{raw_url}/{self.transparent_repo}/{self.branch}/{quote(path)}", prefix=f"{name}'s ", compare=sha)
+        return self.get(name, style)
 
     def _source_path(self, sha):
         return os.path.join(self.cache_dir, "_source", sha[:2], f"{sha}.png")

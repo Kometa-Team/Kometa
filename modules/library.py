@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import time
 from abc import ABC, abstractmethod
 from contextlib import nullcontext
@@ -11,7 +12,7 @@ from typing import cast
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
 
-from modules import timings, util
+from modules import people_posters, timings, util
 from modules.media_server import Capability
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
@@ -600,6 +601,21 @@ class Library(ABC):
 
         return Plex.prefetch_mdblist(cast("Plex", self), [item for item in items if getattr(item, "type", None) not in ("season", "episode")])
 
+    def _people_poster(self, title, spec, attr):
+        """Returns the People Poster for ``spec``; ``None`` to leave the current poster unchanged this run; ``False`` to try the next poster source."""
+        generator = getattr(self.config, "PeoplePosters", None)
+        if generator is None:
+            logger.error(f"People Posters Error: {attr} for {title} skipped because People Posters are unavailable this run")
+            return False
+        try:
+            image = generator.image(spec)
+        except Failed as e:
+            logger.warning(e)
+            return False
+        if image is None:
+            logger.info(f"Metadata: {title}'s poster will be generated on a later run")
+        return image
+
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:
             image_name = image_type
@@ -613,6 +629,7 @@ class Library(ABC):
                 "style_data",
                 f"url_{image_type}",
                 f"file_{image_type}",
+                "people_poster",
                 f"tmdb_{image_type}",
                 "tmdb_profile",
                 "tmdb_list_poster",
@@ -636,7 +653,28 @@ class Library(ABC):
                 "tmdb_show_details",
             ]:
                 if attr in images:
-                    if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
+                    if image_type == "poster" and attr in ["style_data", "url_poster", "people_poster"]:
+                        if attr == "people_poster":
+                            spec = images[attr]
+                        else:
+                            spec = people_posters.legacy_spec(images[attr]) if getattr(self.config, "PeoplePosters", None) else None
+                        if spec:
+                            people_image = self._people_poster(title, spec, attr)
+                            if people_image is False:
+                                continue
+                            if people_image is None:
+                                return None
+                            if people_image.is_url:
+                                images = {**images, attr: people_image.location}
+                            elif download_url_assets and item_dir:
+                                if "asset_directory" in images:
+                                    return images["asset_directory"]
+                                asset_path = os.path.join(item_dir, f"{image_name}{os.path.splitext(people_image.location)[1]}")
+                                shutil.copyfile(people_image.location, asset_path)
+                                return ImageData("asset_directory", asset_path, prefix=f"{title}'s ", image_type=image_type, is_url=False)
+                            else:
+                                return people_image
+                    if attr in ["style_data", f"url_{image_type}", "people_poster"] and download_url_assets and item_dir:
                         if "asset_directory" in images:
                             return images["asset_directory"]
                         else:
