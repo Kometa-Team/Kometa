@@ -36,6 +36,15 @@ Each target must have an override dictionary; use `{}` when no overrides are nee
 Targets have unique mapping names such as `Movies@my-silo`, used for default reports, overlay backups, and caches.
 Explicit output paths should be overridden per target to avoid sharing files.
 Select all targets with `--libraries Movies`, or select one with `--libraries Movies@my-silo`.
+You can also combine the shared name with a server filter:
+
+```bash
+python kometa.py -rl "Movies" --silo-only
+python kometa.py -rl "Movies" --run-servers "my-silo"
+```
+
+`--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only` select a server type; use only one at a time. `--run-servers` (`-rs`) selects exact names from `media_servers`, with `|` separating multiple names. Type and name filters intersect with library selection. For example, two Silo servers both match `--silo-only`, while `--run-servers my-silo` selects just that named connection. `--plex-only` also includes legacy Plex libraries without a named server. Unknown names and filters that select no libraries produce an error before library connections begin.
+
 Playlist library references must use the target mapping name; existing playlist server restrictions still apply.
 Each target runs against its own catalog and supports the features available through its server adapter.
 

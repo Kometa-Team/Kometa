@@ -2598,3 +2598,18 @@ def test_native_all_builder_rejects_wrong_server(method):
     with pytest.raises(Failed, match="requires a"):
         builder._plex(method, True)
     assert builder.builders == []
+
+
+def test_silo_item_metadata_skips_labels_without_reading_them(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+    library = BatchLabelLibrary(1)
+    library.server = SimpleNamespace(type_name="silo")
+    library.item_labels = MagicMock(side_effect=AssertionError("Silo has no labels"))
+    library.item_has_overlay = MagicMock(return_value=False)
+    builder = make_builder(library=library, libraries=[library], items=[label_item(1)], item_details={"item_label": ["Favorite"], "non_item_remove_label": ["Old"]})
+    builder.update_item_details()
+    library.item_labels.assert_not_called()
+    library.search.assert_not_called()
+    assert len(logger.warning_messages) == 2
+    assert not logger.error_messages

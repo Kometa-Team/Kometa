@@ -98,6 +98,29 @@ def test_real_parser_selection(tmp_path, adapters, selection, expected):
     assert [kind for kind, _ in adapters] == expected
 
 
+@pytest.mark.parametrize("attrs,expected", [({"libraries": "Movies", "server_types": ["silo"]}, ["Silo"]), ({"servers": "my-plex|my-emby"}, ["Plex", "Emby"]), ({"libraries": "Movies", "servers": "my-silo", "server_types": ["silo"]}, ["Silo"])])
+def test_real_parser_server_filters_connect_only_selected_targets(tmp_path, adapters, attrs, expected):
+    make_config(tmp_path, config_yaml=dump(load("shared.yml")), attrs=attrs)
+    assert [kind for kind, _ in adapters] == expected
+
+
+def test_exact_server_filter_distinguishes_two_silo_servers(tmp_path, adapters):
+    data = load("shared.yml")
+    data["media_servers"]["second-silo"] = dict(data["media_servers"]["my-silo"])
+    data["libraries"]["Movies"]["servers"]["second-silo"] = {}
+    config = make_config(tmp_path, config_yaml=dump(data), attrs={"libraries": "Movies", "servers": "second-silo"})
+    assert [kind for kind, _ in adapters] == ["Silo"]
+    assert list(config.library_map) == ["Movies@second-silo"]
+
+
+def test_exact_server_selection_bypasses_library_schedule(tmp_path, adapters):
+    data = load("shared.yml")
+    data["libraries"]["Movies"]["schedule"] = "never"
+    config = make_config(tmp_path, config_yaml=dump(data), attrs={"servers": "my-silo"})
+    assert [kind for kind, _ in adapters] == ["Silo"]
+    assert list(config.library_map) == ["Movies@my-silo"]
+
+
 def test_connection_failure_does_not_stop_later_targets(tmp_path, adapters):
     data = load("shared.yml")
     data["media_servers"]["my-plex"]["url"] = "http://127.0.0.1:1"

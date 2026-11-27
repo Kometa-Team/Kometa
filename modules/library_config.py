@@ -5,8 +5,14 @@ from copy import deepcopy
 from modules.util import Failed
 
 
-def expand_libraries(libraries, media_servers, requested=None):
-    """Return (identity, settings) pairs; select by shared name or target identity."""
+def expand_libraries(libraries, media_servers, requested=None, requested_servers=None, server_types=None):
+    """Intersect library selection with optional named-server and backend filters."""
+    if requested_servers:
+        unknown = [name for name in requested_servers if name not in media_servers]
+        if unknown:
+            raise Failed(f"Config Error: Requested media server(s) not defined: {', '.join(unknown)}")
+    elif requested_servers is not None:
+        raise Failed("Config Error: Server selection must contain nonempty server names")
     resolved = []
     identities = set()
     for name, settings in libraries.items():
@@ -37,5 +43,13 @@ def expand_libraries(libraries, media_servers, requested=None):
                 raise Failed(f"Config Error: Duplicate library identity '{identity}'")
             identities.add(identity)
             if not requested or name in requested or identity in requested:
+                server_name = target.get("server") if isinstance(target, dict) else None
+                if requested_servers and server_name not in requested_servers:
+                    continue
+                backend = getattr(media_servers.get(server_name), "type_name", None) if server_name else "plex"
+                if server_types and backend not in server_types:
+                    continue
                 resolved.append((identity, target))
+    if (requested_servers or server_types) and not resolved:
+        raise Failed("Config Error: No libraries match the requested server filters")
     return resolved

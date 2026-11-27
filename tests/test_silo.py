@@ -794,7 +794,7 @@ def test_silo_metadata_resolves_local_collection_artwork(tmp_path, monkeypatch, 
         obj=SiloCollection(record),
         name="Star Trek Stuff",
         summaries={},
-        details={"name_mapping": "Trek", "sort_title": "!001 Star Trek", "collection_order": "release", "label": ["Award"], "label.remove": ["Old"], "label.sync": ["Award"], "visible_home": True, "visible_shared": True, "visible_library": False},
+        details={"name_mapping": "Trek", "sort_title": "!001 Star Trek", "collection_order": "release", "label": ["Award"], "label.remove": ["Old"], "label.sync": ["Award"]},
         mapping_name="Star Trek Stuff",
         collection_asset_directory=[str(tmp_path)],
         collection_assets_configured=True,
@@ -815,17 +815,7 @@ def test_silo_metadata_resolves_local_collection_artwork(tmp_path, monkeypatch, 
         assert session.calls[2]["url"].endswith("/col-trek/backdrop")
 
 
-@pytest.mark.parametrize("field", ["content_rating", "collection_mode", "collection_filtering"])
-def test_silo_collection_metadata_reports_unsupported_options(field):
-    record = {"id": "col-trek", "title": "Star Trek Stuff"}
-    session = FakeSession([FakeResponse(record)])
-    library = _library(SiloClient(_server(), session=session))
-    with pytest.raises(Failed, match=f"Collection metadata attribute {field} is not supported"):
-        library.update_collection_details(SiloCollection(record), None, {field: "value"})
-    assert len(session.calls) == 1
-
-
-@pytest.mark.parametrize("field", ["label", "label.remove", "label.sync", "visible_library", "visible_home", "visible_shared"])
+@pytest.mark.parametrize("field", ["content_rating", "collection_mode", "collection_filtering", "label", "label.remove", "label.sync", "sort_title"])
 def test_silo_collection_labels_warn_without_blocking_summary(field, monkeypatch):
     logger = FakeLogger()
     monkeypatch.setattr(silo_module, "logger", logger)
@@ -835,6 +825,7 @@ def test_silo_collection_labels_warn_without_blocking_summary(field, monkeypatch
     assert library.update_collection_details(SiloCollection(record), "Award winners", {field: ["Cannes"]}) == ["Metadata"]
     assert session.calls[1]["json"] == {"description": "Award winners"}
     assert any(f"skipping {field}" in message for message in logger.warning_messages)
+    assert not logger.error_messages
 
 
 @pytest.mark.parametrize("tag,field", [("genre", "genres"), ("studio", "studios"), ("network", "networks")])

@@ -1215,7 +1215,7 @@ tmdb:
     assert captured[0]["mass_silo_tomatoes_rating_update"] == ["imdb", "clear"]
     assert captured[0]["mass_silo_user_rating_update"] == [7.0]
     assert captured[0]["mass_critic_rating_update"] is None
-    assert any("ratings.critic is unsupported on Silo" in message for message in config_module.logger.error_messages)
+    assert any("ratings.critic is unsupported on Silo" in message for message in config_module.logger.warning_messages)
 
 
 @pytest.mark.parametrize("kind,class_name", [("silo", "Silo"), ("jellyfin", "Jellyfin"), ("emby", "Emby")])
@@ -1271,7 +1271,7 @@ tmdb:
     assert bool(params["mass_added_at_update"]) is (kind != "silo")
     assert bool(params["mass_imdb_parental_labels"]) is (kind != "silo")
     assert bool(params["mass_square_art_update"]) is (kind != "silo")
-    assert any("not supported" in message for message in config_module.logger.error_messages)
+    assert any("not supported" in message for message in config_module.logger.warning_messages)
 
 
 @pytest.mark.parametrize("value,expected", [("all", "all"), ("5", 5), ("99999", 99999)])

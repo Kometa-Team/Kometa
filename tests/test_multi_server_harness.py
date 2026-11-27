@@ -140,3 +140,26 @@ def test_shelves_case_requires_each_collection_to_be_assigned_on_silo(tmp_path, 
 
     monkeypatch.setattr(harness.subprocess, "run", fake_run)
     assert harness.live(Namespace(directory=output, case=["shelves"], target="my-silo", timeout=10)) == (0 if status in ("Assigned", "Unchanged") else 1)
+
+
+@pytest.mark.parametrize("case", ["visibility", "visibility-disabled"])
+@pytest.mark.parametrize("status", ["Updated", "Unchanged", "missing", "wrong-server"])
+def test_visibility_case_requires_silo_promotion_confirmations(tmp_path, monkeypatch, case, status):
+    output = prepare_config(tmp_path)
+
+    def fake_run(command, *, stdout, **kwargs):
+        assert command[command.index("--libraries") + 1] == "Movies@my-silo"
+        config = harness.read_yaml(Path(command[command.index("--config") + 1]))
+        assert Path(config["libraries"]["Movies"]["collection_files"][0]["file"]).name == f"{case}.yml"
+        stdout.write("Movies (Movies@my-silo) Library Connection Successful\nMovies (Movies@my-silo) Summary\n")
+        for title in ("Library", "Home", "Shared"):
+            name = f"Kometa Multi-Server Visibility {title}"
+            stdout.write(f"Finished {name} Collection\n")
+            if status != "missing":
+                target = "my-emby" if status == "wrong-server" else "my-silo"
+                flags = ", ".join(f"visible_{key}={str(case == 'visibility' and key == title.lower()).lower()}" for key in ("library", "home", "shared"))
+                stdout.write(f"Silo Visibility: Movies@{target} | {name} | {flags} | {status}\n")
+        return SimpleNamespace(returncode=0)
+
+    monkeypatch.setattr(harness.subprocess, "run", fake_run)
+    assert harness.live(Namespace(directory=output, case=[case], target="my-silo", timeout=10)) == (0 if status in ("Updated", "Unchanged") else 1)

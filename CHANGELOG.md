@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support Silo collection promotion with `visible_library`, `visible_home`, and `visible_shared` using native section rows and acting-profile overrides, with optional multi-server promotion validation cases.
+
+- Filter library runs by named servers with `--run-servers` or by backend with `--plex-only`, `--silo-only`, `--emby-only`, and `--jellyfin-only`, including environment variable support and combined library selection.
+
 - Place Silo category shelves at the top using the defaults' resolved `collection_section`, including template variable overrides, then sort shelves without a section alphabetically by name, including “No heading”.
 
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
@@ -18,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
 
 ### Fixed
+
+- Warn and skip metadata, collection display, sorting, and operation settings unsupported by a native server while continuing supported updates.
 
 - Avoid a false blank collections error when every static collection is intentionally disabled, including disabled separators in dynamic defaults.
 

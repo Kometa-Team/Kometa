@@ -107,6 +107,11 @@ arguments = {
     "overlays-only": {"args": ["ov", "overlay", "overlays", "overlay-only"], "type": "bool", "help": "Run only overlay files"},
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
+    "run-servers": {"args": ["rs", "server", "servers", "run-server"], "type": "str", "help": "Process only specified named media servers (pipe-separated list '|')"},
+    "plex-only": {"args": [], "type": "bool", "help": "Process only Plex libraries"},
+    "silo-only": {"args": [], "type": "bool", "help": "Process only Silo libraries"},
+    "emby-only": {"args": [], "type": "bool", "help": "Process only Emby libraries"},
+    "jellyfin-only": {"args": [], "type": "bool", "help": "Process only Jellyfin libraries"},
     "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
     "mode": {"args": [], "type": "str", "help": "Override library schedule modes for this run"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
@@ -194,6 +199,11 @@ if run_args["mode"] is not None:
     run_args["mode"] = run_args["mode"].strip().lower()
     if not run_args["mode"]:
         parser.error("--mode / KOMETA_MODE must specify a schedule mode")
+server_only = [kind for kind in ("plex", "silo", "emby", "jellyfin") if run_args[f"{kind}-only"]]
+if len(server_only) > 1:
+    parser.error("Choose only one of --plex-only, --silo-only, --emby-only, or --jellyfin-only")
+if run_args["run-servers"] is not None and any(not name.strip() for name in run_args["run-servers"].split("|")):
+    parser.error("--run-servers / KOMETA_RUN_SERVERS must contain nonempty server names")
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
@@ -587,6 +597,8 @@ def start(attrs):
         attrs["playlist_only"] = run_args["playlists-only"]
         attrs["operations_only"] = run_args["operations-only"]
         attrs["overlays_only"] = run_args["overlays-only"]
+        attrs["servers"] = run_args["run-servers"]
+        attrs["server_types"] = server_only
         attrs["plex_url"] = plex_url
         attrs["plex_token"] = plex_token
 
@@ -1600,7 +1612,18 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
+        if (
+            run_args["run"]
+            or run_args["tests"]
+            or run_args["run-collections"]
+            or run_args["run-libraries"]
+            or run_args["run-servers"]
+            or run_args["run-files"]
+            or run_args["resume"]
+            or run_args["validate"]
+            or run_args["validate-file"]
+            or run_args["validate-dir"]
+        ):
             exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
             sys.exit(exit_code)
         else:
