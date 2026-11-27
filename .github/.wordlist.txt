@@ -32,6 +32,7 @@ Babygirl
 BAFTA
 bafta
 Bambara
+Battlestar
 BBFC
 Beetlejuice
 beetlejuice
@@ -165,6 +166,7 @@ FSK
 fuboTV
 FullyQualifiedErrorId
 fwlink
+Galactica
 Galician
 generalizable
 Ghibli
@@ -175,6 +177,7 @@ Gotify
 Grenvilles
 GUID
 GUIDs
+Gundam
 gzip
 hayu
 HD
@@ -455,6 +458,7 @@ Springland
 src
 SSL
 ssl
+Stargate
 Starz
 stdlib
 stealthgyro
