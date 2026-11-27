@@ -528,9 +528,12 @@ def test_client_sends_the_authorization_header_to_jellyfin_only(monkeypatch: pyt
     client.session.trust_env = False  # a matching netrc entry would replace the Authorization header under test
     client.request("GET", "/System/Info")
     client.upload_image("movie-1", "Primary", b"poster", "image/png")
-    assert [request.headers.get("Authorization") for request in sent] == [expected] * 2
-    assert [request.headers["X-Emby-Token"] for request in sent] == ["token"] * 2
+    client.session.get("https://images.example.invalid/poster.png")
+    assert [request.headers.get("Authorization") for request in sent[:2]] == [expected] * 2
+    assert [request.headers["X-Emby-Token"] for request in sent[:2]] == ["token"] * 2
     assert sent[1].headers["Content-Type"] == "image/png"
+    assert sent[2].headers.get("Authorization") is None
+    assert sent[2].headers.get("X-Emby-Token") is None
 
 
 @pytest.mark.parametrize("kind", ["jellyfin", "emby"])
