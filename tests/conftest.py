@@ -7,13 +7,16 @@ for logger patching.
 
 from __future__ import annotations
 
+import base64
 import copy
 import json
+from collections.abc import Sequence
 from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from lxml import html as lxml_html
 
 # Documentation checks run separately with their own dependency group.
@@ -119,6 +122,48 @@ class FakeResponse:
         if self.json_error:
             raise self.json_error
         return self.payload
+
+
+# A valid 1x1 transparent PNG, so that an image download path can decode the answer.
+_PNG = base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==")
+
+
+class RecordingAdapter(requests.adapters.BaseAdapter):
+    """HTTP transport that makes no network call. It records each prepared request and answers with an image.
+
+    ``redirects`` holds one 302 location for each request at the start of the chain, in order.
+    """
+
+    def __init__(self, redirects: Sequence[str] = ()) -> None:
+        self.redirects = list(redirects)
+        self.requests: list[requests.PreparedRequest] = []
+
+    def send(self, request: requests.PreparedRequest, **_kwargs: object) -> requests.Response:
+        self.requests.append(request)
+        response = requests.Response()
+        response.request = request
+        response.url = str(request.url)
+        if self.redirects:
+            response.status_code = 302
+            response.headers["Location"] = self.redirects.pop(0)
+            response._content = b""
+        else:
+            response.status_code = 200
+            response.headers["Content-Type"] = "image/png"
+            response._content = _PNG
+        return response
+
+    def close(self) -> None:
+        return None
+
+
+def recording_session(session: requests.Session, redirect: str | Sequence[str] | None = None) -> RecordingAdapter:
+    """Replace the HTTP transport of ``session`` with a ``RecordingAdapter``. Ignore the environment of the test machine."""
+    session.trust_env = False
+    adapter = RecordingAdapter([redirect] if isinstance(redirect, str) else redirect or ())
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return adapter
 
 
 class FakeRequests:

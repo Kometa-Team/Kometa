@@ -1,11 +1,16 @@
-"""Capability matrix and Plex media server object."""
+"""Capability matrix, Plex media server object, and the credential scope of a server session."""
 
+import base64
 from types import SimpleNamespace
+
+import pytest
+import requests
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.library import Library
-from modules.media_server import CAPABILITY_INFO, PLEX_CAPABILITIES, Capability, CapabilityMatrix, CapabilityStatus, MediaServer, PlexMediaServer, Support, media_server_class
+from modules.media_server import CAPABILITY_INFO, PLEX_CAPABILITIES, Capability, CapabilityMatrix, CapabilityStatus, MediaServer, PlexMediaServer, ServerSession, Support, media_server_class
 from modules.util import Failed
+from tests.conftest import FakeLogger, recording_session
 from tests.factories import make_plex, make_plex_item
 
 
@@ -188,3 +193,142 @@ def test_plex_operation_stops_before_the_backend_call_when_unsupported():
     else:
         raise AssertionError("delete continued without collection support")
     item.delete.assert_not_called()
+
+
+def test_server_session_sends_the_credential_only_to_the_server() -> None:
+    session = ServerSession("HTTP://Media:8096/", "Jellyfin")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session)
+    for url in ("http://media:8096/System/Info", "https://images.example.invalid/poster.png", "http://media:8097/System/Info", "https://media:8096/System/Info", "http://media.evil.invalid/System/Info"):
+        session.get(url)
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == ["token", None, None, None, None]
+
+
+def test_server_session_scopes_a_bearer_credential_to_the_server_origin() -> None:
+    # A Silo poster sits outside the /api/v2 base path, so the rule is the origin and not the path.
+    session = ServerSession("http://silo:8090/api/v2", "Silo")
+    session.headers["Authorization"] = "Bearer token"
+    adapter = recording_session(session)
+    session.get("http://silo:8090/posters/movie-1.png")
+    session.get("https://cdn.example.invalid/poster.png")
+    assert [request.headers.get("Authorization") for request in adapter.requests] == ["Bearer token", None]
+
+
+@pytest.mark.parametrize(
+    "base,target,kept",
+    [
+        ("http://media:8096", "https://other.example.invalid/System/Info", False),
+        ("http://media:8096", "https://media:8920/System/Info", False),
+        ("http://media:8096", "http://media:8096/System/Info/", True),
+        ("http://media", "https://media/System/Info", True),
+    ],
+)
+def test_server_session_applies_the_redirect_rule_of_requests_to_each_credential_header(base: str, target: str, kept: bool) -> None:
+    # requests drops Authorization on a redirect by itself. X-Emby-Token needs the same rule.
+    session = ServerSession(base, "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session, redirect=target)
+    session.get(f"{base}/System/Info")
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == ["token", "token" if kept else None]
+
+
+def test_server_session_warns_once_when_the_server_redirects_off_its_origin(patch_util_logger: FakeLogger) -> None:
+    session = ServerSession("http://media:8096", "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    for _attempt in (1, 2):
+        recording_session(session, redirect="https://media:8920/System/Info")
+        session.get("http://media:8096/System/Info")
+    assert len(patch_util_logger.warning_messages) == 1
+    assert "https://media:8920" in patch_util_logger.warning_messages[0]
+
+
+def test_server_session_does_not_warn_for_an_external_download_redirect(patch_util_logger: FakeLogger) -> None:
+    session = ServerSession("http://media:8096", "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    recording_session(session, redirect="https://cdn.example.invalid/poster.png")
+    session.get("https://images.example.invalid/poster.png")
+    assert patch_util_logger.warning_messages == []
+
+
+def test_server_session_keeps_a_credential_that_the_caller_supplies() -> None:
+    session = ServerSession("http://media:8096", "Jellyfin")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session)
+    session.get("https://images.example.invalid/poster.png", headers={"X-Emby-Token": "image host key"})
+    assert adapter.requests[0].headers["X-Emby-Token"] == "image host key"
+
+
+def test_server_session_keeps_the_credentials_of_the_server_url() -> None:
+    # A reverse proxy can ask for HTTP basic authentication with user:password@ in the URL. requests turns that into Authorization.
+    session = ServerSession("http://silo:8090/api/v2", "Silo")
+    session.headers["Authorization"] = "Bearer token"
+    adapter = recording_session(session)
+    session.get("http://user:pass@silo:8090/api/v2/system/info")
+    assert adapter.requests[0].headers["Authorization"] == "Basic " + base64.b64encode(b"user:pass").decode()
+
+
+def test_server_session_normalizes_the_server_address() -> None:
+    # The server address in the configuration can spell the host in Unicode or in punycode. Both compare equal.
+    punycode = "média.test".encode("idna").decode()
+    session = ServerSession(f"http://{punycode}:8096", "Jellyfin")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session)
+    session.get("http://média.test:8096/System/Info")
+    session.get(f"http://{punycode}:8096/System/Info")
+    session.get("http://other.test:8096/System/Info")
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == ["token", "token", None]
+
+
+def test_server_session_refuses_a_redirect_to_a_malformed_address() -> None:
+    # A bad port in the redirect must fail like a bad URL, not with a ValueError that the clients do not catch.
+    session = ServerSession("http://media:8096", "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session, redirect="https://media:abc/System/Info")
+    with pytest.raises(requests.exceptions.InvalidURL):
+        session.get("http://media:8096/System/Info")
+    assert len(adapter.requests) == 1
+
+
+def test_server_session_warning_names_the_server_address(patch_util_logger: FakeLogger) -> None:
+    # The user copies that address into url. It keeps a configured path prefix, drops the request path, and brackets an IPv6 host.
+    session = ServerSession("http://media:8080/jellyfin", "Jellyfin")
+    session.headers["X-Emby-Token"] = "token"
+    recording_session(session, redirect="https://media/jellyfin/System/Info")
+    session.get("http://media:8080/jellyfin/System/Info")
+    session = ServerSession("http://[::1]:8096", "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    recording_session(session, redirect="https://[::1]:8920/System/Info")
+    session.get("http://[::1]:8096/System/Info")
+    session = ServerSession("http://silo:8090/api/v2", "Silo")
+    session.headers["Authorization"] = "Bearer token"
+    recording_session(session, redirect="https://silo:8920/api/v2/system/info")
+    session.get("http://silo:8090/api/v2/system/info")
+    assert "Set url to https://media/jellyfin" in patch_util_logger.warning_messages[0]
+    assert "System/Info" not in patch_util_logger.warning_messages[0]
+    assert "Set url to https://[::1]:8920" in patch_util_logger.warning_messages[1]
+    assert "System/Info" not in patch_util_logger.warning_messages[1]
+    assert "Set url to https://silo:8920/api/v2" in patch_util_logger.warning_messages[2]
+    assert "system/info" not in patch_util_logger.warning_messages[2]
+
+
+def test_server_session_does_not_warn_when_the_request_held_no_token(patch_util_logger: FakeLogger) -> None:
+    # An external image can redirect to the server and away again. That chain never held the token.
+    session = ServerSession("http://media:8096", "Emby")
+    session.headers["X-Emby-Token"] = "token"
+    adapter = recording_session(session, redirect=["http://media:8096/System/Info", "https://other.example.invalid/System/Info"])
+    session.get("https://images.example.invalid/poster.png")
+    assert patch_util_logger.warning_messages == []
+    assert [request.headers.get("X-Emby-Token") for request in adapter.requests] == [None, None, None]
+
+
+def test_server_session_scopes_a_header_added_after_construction() -> None:
+    # No header names are listed, so a credential that a later change adds is scoped from its first commit.
+    session = ServerSession("http://media:8096", "Jellyfin")
+    session.headers["Accept"] = "application/json"
+    session.headers["Authorization"] = 'MediaBrowser Token="token"'
+    adapter = recording_session(session)
+    session.get("http://media:8096/System/Info")
+    session.get("https://images.example.invalid/poster.png")
+    server, external = adapter.requests
+    assert (server.headers["Authorization"], server.headers["Accept"]) == ('MediaBrowser Token="token"', "application/json")
+    assert ("Authorization" not in external.headers, external.headers["Accept"]) == (True, "*/*")

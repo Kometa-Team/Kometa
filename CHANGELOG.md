@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
 - Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
 
+### Changed
+
+- A Jellyfin, Emby, or Silo server that redirects a request to another host, port, or scheme no longer receives `token` on the redirected request. Kometa logs one warning with the address to use as `url`, without the path of the request that was redirected.
+
 ### Fixed
 
 - Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
@@ -58,6 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
 - Skip `docker-bake.hcl` in Docker source integrity scans while continuing to verify it in source checkouts.
+
+### Security
+
+- `modules/mediabrowser.py`, `modules/silo.py`: the Jellyfin, Emby, and Silo `token` now goes only to the server that `url` names. An image download from another host, and a redirect to another host, port, or scheme, no longer carry it. The warning names the address to use as `url`.
 
 ### Docs
 

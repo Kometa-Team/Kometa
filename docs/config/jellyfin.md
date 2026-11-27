@@ -12,7 +12,7 @@ For migration and behavior changes, see [Jellyfin: differences from Plex](jellyf
 
 Collection name lookups reuse one in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data.
 
-Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
+Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header, and only to the scheme, host, and port that `url` names. An image download from another host does not carry it. If the server redirects a request to another host, port, or scheme, the header is dropped and Kometa logs the address to use as `url`: the scheme, host, port, and any path prefix, without the path of the request. A redirect from `http` on port 80 to `https` on port 443 keeps the header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
 
 Connection logs include the remote server name, version, and available OS information from `/System/Info`. Missing OS details are logged as not reported. Failure to read this optional information warns without preventing library setup.
 

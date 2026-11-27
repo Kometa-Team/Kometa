@@ -24,7 +24,7 @@ import requests
 
 from modules import util
 from modules.library import Library
-from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
+from modules.media_server import Capability, CapabilityMatrix, MediaServer, ServerSession, log_server_connection, register_media_server
 from modules.mediabrowser_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_media
 from modules.mediabrowser_search import values as search_values
 from modules.native_metadata import NativeItemMetadata
@@ -144,7 +144,7 @@ class MediaBrowserClient:
         self.server = server
         self.base = str(server.url).rstrip("/")
         self.user_id = server.user_id
-        self.session = session or requests.Session()
+        self.session = session or ServerSession(self.base, server.type_label)
         self.session.headers["X-Emby-Token"] = server.token
         self.session.headers["Accept"] = "application/json"
         if server.verify_ssl is False:
