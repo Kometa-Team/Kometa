@@ -286,6 +286,7 @@ mediastinger
 Mediastingers
 MediUX
 mediux
+Meryl
 Metacritic
 metacritic
 metacriticuser
@@ -393,6 +394,7 @@ rebased
 Reddit
 reddit
 REMUX
+renderer
 Repo
 repo
 Repos
@@ -462,6 +464,7 @@ StevenLu
 StevenLu's
 stevenlus
 stonecutter
+Streep
 strftime
 subdirectory
 subPath

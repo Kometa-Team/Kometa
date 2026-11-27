@@ -122,6 +122,17 @@ python scripts/verify_runtime_dependencies.py requirements.txt
 
 It exits 0 when everything matches, 1 with one line per mismatch, and 2 on bad usage. The `Dockerfile` runs it after the source copy, so a build on a stale base fails instead of publishing. Run it with the interpreter that holds the dependencies (`/.venv/bin/python3` in the image).
 
+## `compare_people_posters.py` — People Poster visual check
+
+Renders People Posters with `modules/people_render.py` and compares them with the published `People-Images-<style>` repositories, which are resized to 1000 × 1500 for the comparison. It prints the mean pixel difference per person and style, and writes side-by-side images with an `index.html` overview. Run it after changing the renderer, its artwork or its fonts.
+
+```bash
+python scripts/compare_people_posters.py                        # default sample of people, all styles
+python scripts/compare_people_posters.py "Tom Hanks" --styles bw rainier --output /tmp/people-check
+```
+
+Sheets go to `config/people-poster-comparison/` by default. It needs network access to `raw.githubusercontent.com`. See [the full guide](compare_people_posters.md) for every option and how to read the results.
+
 ## `validate_multi_server.py` — shared-library validation
 
 Runs fixture-driven offline parser and isolation checks, prepares private live configurations from existing connections, and runs bounded live smoke cases with retained logs. See [the validation guide](../tests/fixtures/multi_server/README.md) for commands, coverage, known gaps, and manual checks.

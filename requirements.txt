@@ -39,6 +39,8 @@ docopt==0.6.2
     # via num2words
 fastfingertips==0.1.4
     # via letterboxdpy
+fonttools==4.69.1
+    # via kometa
 gitdb==4.0.12
     # via gitpython
 gitpython==3.2.1
@@ -174,6 +176,8 @@ tzdata==2026.6
     # via
     #   apprise
     #   python-dateutil
+uharfbuzz==0.57.0
+    # via kometa
 urllib3==2.8.0
     # via
     #   apprise

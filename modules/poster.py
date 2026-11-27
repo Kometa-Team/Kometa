@@ -155,7 +155,7 @@ class Component(ImageBase):
         self.addon_offset = util.parse("Posters", "addon_offset", self.data, datatype="int", methods=self.methods, default=0, minimum=0) if "stroke_width" in self.methods else 0
         if "text" in self.methods:
             font_base = os.path.join(self.code_base, "fonts")
-            kometa_fonts = os.listdir(font_base)
+            kometa_fonts = [f for f in os.listdir(font_base) if os.path.isfile(os.path.join(font_base, f))]
             all_fonts = {s: s for s in util.get_system_fonts()}
             for font_name in kometa_fonts:
                 all_fonts[font_name] = os.path.join(font_base, font_name)
