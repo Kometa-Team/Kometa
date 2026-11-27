@@ -221,6 +221,7 @@ Configuration = [
 ] },
     { "Other Connections" = [
     { GitHub = "config/github.md" },
+    { "People Posters" = "config/people_posters.md" },
     { "Kometa Utilities Authentication" = "config/authentication.md" },
 ] },
     { Notifications = [

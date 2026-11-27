@@ -436,6 +436,19 @@ class Cache:
                         people_data TEXT,
                         expiration_date TEXT,
                         UNIQUE(item_id, people_type))""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS people_posters (
+                    key TEXT PRIMARY KEY,
+                    style TEXT,
+                    name TEXT,
+                    path TEXT,
+                    source_sha TEXT,
+                    renderer_fp TEXT,
+                    created TEXT,
+                    last_used TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS people_poster_trees (
+                    repo TEXT PRIMARY KEY,
+                    etag TEXT,
+                    fetched TEXT)""")
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute("SELECT DISTINCT library FROM image_map")
@@ -1338,6 +1351,53 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
                 cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))  # nosec B608 - identifiers validated by sql_identifier()
+
+    def query_people_poster(self, key):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM people_posters WHERE key = ?", (key,))
+                row = cursor.fetchone()
+                return dict(row) if row else None
+
+    def update_people_poster(self, key, style, name, path, source_sha, renderer_fp):
+        now = datetime.now().isoformat(timespec="seconds")
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO people_posters(key, created) VALUES(?, ?)", (key, now))
+                cursor.execute(
+                    "UPDATE people_posters SET style = ?, name = ?, path = ?, source_sha = ?, renderer_fp = ?, last_used = ? WHERE key = ?",
+                    (style, name, path, source_sha, renderer_fp, now, key),
+                )
+
+    def touch_people_poster(self, key):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("UPDATE people_posters SET last_used = ? WHERE key = ?", (datetime.now().isoformat(timespec="seconds"), key))
+
+    def query_unused_people_posters(self, days):
+        cutoff = (datetime.now() - timedelta(days=days)).isoformat(timespec="seconds")
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT key, path FROM people_posters WHERE last_used < ?", (cutoff,))
+                return [(row["key"], row["path"]) for row in cursor.fetchall()]
+
+    def delete_people_posters(self, keys):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany("DELETE FROM people_posters WHERE key = ?", [(k,) for k in keys])
+
+    def query_people_poster_tree(self, repo):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT etag FROM people_poster_trees WHERE repo = ?", (repo,))
+                row = cursor.fetchone()
+                return row["etag"] if row else None
+
+    def update_people_poster_tree(self, repo, etag):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO people_poster_trees(repo) VALUES(?)", (repo,))
+                cursor.execute("UPDATE people_poster_trees SET etag = ?, fetched = ? WHERE repo = ?", (etag, datetime.now().isoformat(timespec="seconds"), repo))
 
     def query_overlay_poster(self, rating_key, table_name):
         table_name = sql_identifier(table_name)

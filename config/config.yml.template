@@ -133,6 +133,12 @@ tracearr:                          # Can be individually specified per library a
   server_id:                       # Enter Tracearr Plex Server UUID when automatic matching is ambiguous (Optional)
 github:
   token:                           # Enter GitHub Personal Access Token (Optional)
+people_posters:
+  original_repo: Kometa-Team/People-Images-1500
+  transparent_repo: Kometa-Team/People-Images-transparent-1500
+  branch:                          # Leave blank for each repository's default branch
+  prune_days: 90                   # Delete cached People Posters unused for this many days (0 = never)
+  render_limit: 250                # Maximum People Posters generated per run (0 = no limit)
 omdb:
   apikey:                          # Enter OMDb API Key (Optional)
   cache_expiration: 60
