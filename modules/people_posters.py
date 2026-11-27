@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import re
@@ -6,10 +7,11 @@ import tempfile
 import threading
 import time
 import unicodedata
+from io import BytesIO
 from urllib.parse import quote
 
 from pathvalidate import sanitize_filename
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException
 from tenacity import RetryError
 
@@ -30,6 +32,11 @@ REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 def person_key(name):
     return unicodedata.normalize("NFC", str(name)).casefold()
+
+
+def git_blob_sha(content):
+    """Return the SHA-1 Git stores for a blob, which is the SHA in a repository tree listing."""
+    return hashlib.sha1(f"blob {len(content)}\0".encode("ascii") + content).hexdigest()
 
 
 class PeoplePosters:
@@ -148,27 +155,49 @@ class PeoplePosters:
         path, _ = self._lookup(self.original_repo, name)
         return f"{raw_url}/{self.original_repo}/{self.branch}/{quote(path)}"
 
+    def _source_path(self, sha):
+        return os.path.join(self.cache_dir, "_source", sha[:2], f"{sha}.png")
+
+    def _discard_source(self, source_path):
+        try:
+            os.remove(source_path)
+        except FileNotFoundError:
+            pass
+
+    def _open_source(self, content, source_path, sha):
+        try:
+            with Image.open(BytesIO(content)) as image:
+                image.load()
+                return image.copy()
+        except (UnidentifiedImageError, Image.DecompressionBombError) as error:
+            self._discard_source(source_path)
+            raise Failed(f"People Posters Error: Source image {sha} is not a usable image ({error})") from error
+
     def _source(self, path, sha):
         """Returns the transparent source image, downloading it unless this exact blob is already cached."""
-        source_path = os.path.join(self.cache_dir, "_source", sha[:2], f"{sha}.png")
+        source_path = self._source_path(sha)
         if os.path.exists(source_path):
-            os.utime(source_path)
-        else:
-            url = f"{raw_url}/{self.transparent_repo}/{self.branch}/{quote(path)}"
-            try:
-                response = self.requests.get(url)
-            except (RequestException, RetryError) as e:
-                raise Failed(f"People Posters Error: Could not download {url} ({e})")
-            if response.status_code != 200:
-                raise Failed(f"People Posters Error: Could not download {url} ({response.status_code} {response.reason})")
-            os.makedirs(os.path.dirname(source_path), exist_ok=True)
-            temp_path = f"{source_path}.tmp"
-            with open(temp_path, "wb") as handle:
-                handle.write(response.content)
-            os.replace(temp_path, source_path)
-        with Image.open(source_path) as image:
-            image.load()
-            return image.copy()
+            with open(source_path, "rb") as handle:
+                content = handle.read()
+            if git_blob_sha(content) == sha:
+                os.utime(source_path)
+                return self._open_source(content, source_path, sha)
+            self._discard_source(source_path)
+        url = f"{raw_url}/{self.transparent_repo}/{self.branch}/{quote(path)}"
+        try:
+            response = self.requests.get(url)
+        except (RequestException, RetryError) as error:
+            raise Failed(f"People Posters Error: Could not download {url} ({error})") from error
+        if response.status_code != 200:
+            raise Failed(f"People Posters Error: Could not download {url} ({response.status_code} {response.reason})")
+        if git_blob_sha(response.content) != sha:
+            raise Failed(f"People Posters Error: Downloaded {url} did not match blob {sha}")
+        os.makedirs(os.path.dirname(source_path), exist_ok=True)
+        temp_path = f"{source_path}.tmp"
+        with open(temp_path, "wb") as handle:
+            handle.write(response.content)
+        os.replace(temp_path, source_path)
+        return self._open_source(response.content, source_path, sha)
 
     def poster_path(self, name, style):
         filename = sanitize_filename(unicodedata.normalize("NFC", name)) or "_"

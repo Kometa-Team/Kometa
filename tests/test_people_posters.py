@@ -19,15 +19,16 @@ ORIGINAL = "Kometa-Team/People-Images-1500"
 TREE_URL = f"https://api.github.com/repos/{TRANSPARENT}/git/trees/master?recursive=1"
 
 
-def _png():
+def _png(color=(200, 60, 40)):
     image = Image.new("RGBA", (1000, 1500))
-    ImageDraw.Draw(image).ellipse((250, 100, 750, 1500), fill=(200, 60, 40, 255))
+    ImageDraw.Draw(image).ellipse((250, 100, 750, 1500), fill=(*color, 255))
     buffer = BytesIO()
     image.save(buffer, "PNG")
     return buffer.getvalue()
 
 
 PNG = _png()
+PNG_SHA = people_posters_module.git_blob_sha(PNG)
 
 
 class Response:
@@ -47,7 +48,8 @@ class Requests:
         self.calls = []
         self.etag = etag
         self.tree_status = 200
-        self.set_people(people or {"Tom Hanks": "sha-tom"})
+        self.content = PNG
+        self.set_people(people or {"Tom Hanks": PNG_SHA})
 
     def set_people(self, people):
         self.people = people
@@ -62,7 +64,7 @@ class Requests:
             if headers and headers.get("If-None-Match") == self.etag:
                 return Response(304)
             return Response(payload={"tree": self.tree, "truncated": False}, headers={"ETag": self.etag})
-        return Response(content=PNG, headers={"Content-Type": "image/png"})
+        return Response(content=self.content, headers={"Content-Type": "image/png"})
 
     def downloads(self):
         return [url for url, _ in self.calls if url.startswith("https://raw.githubusercontent.com/")]
@@ -100,7 +102,7 @@ def test_renders_and_caches_poster(tmp_path):
     image = posters.get("Tom Hanks", "rainier")
     assert image.location == os.path.join(str(tmp_path), "cache", "people_posters", "rainier", "T", "Tom Hanks.jpg")
     assert image.is_url is False
-    assert image.compare.startswith("sha-tom:")
+    assert image.compare.startswith(f"{PNG_SHA}:")
     with Image.open(image.location) as saved:
         assert saved.size == (1000, 1500)
     assert posters.rendered == 1
@@ -122,12 +124,14 @@ def test_second_run_reuses_cached_poster(tmp_path):
 def test_changed_source_sha_rerenders(tmp_path):
     requests = Requests()
     first = _make(tmp_path, requests).get("Tom Hanks", "rainier")
-    requests.set_people({"Tom Hanks": "sha-tom-2"})
+    other = _png((10, 20, 30))
+    requests.content = other
+    requests.set_people({"Tom Hanks": people_posters_module.git_blob_sha(other)})
     requests.etag = '"v2"'
     posters = _make(tmp_path, requests)
     second = posters.get("Tom Hanks", "rainier")
     assert posters.rendered == 1
-    assert second.compare.startswith("sha-tom-2:") and second.compare != first.compare
+    assert second.compare.startswith(f"{people_posters_module.git_blob_sha(other)}:") and second.compare != first.compare
 
 
 def test_changed_renderer_fingerprint_rerenders_without_download(tmp_path, monkeypatch):
@@ -166,7 +170,7 @@ def test_same_poster_is_rendered_once_per_run(tmp_path):
 
 
 def test_tree_is_requested_once_per_run(tmp_path):
-    requests = Requests({"Tom Hanks": "a", "Meryl Streep": "b"})
+    requests = Requests({"Tom Hanks": PNG_SHA, "Meryl Streep": PNG_SHA})
     posters = _make(tmp_path, requests)
     posters.get("Tom Hanks", "bw")
     posters.get("Meryl Streep", "bw")
@@ -188,12 +192,12 @@ def test_missing_person_fails(tmp_path):
 
 @pytest.mark.parametrize("name", ["Zoë Saldaña", "50 Cent", "'Weird Al' Yankovic", "İlker Kaleli"])
 def test_lookup_uses_file_name_not_folder(tmp_path, name):
-    posters = _make(tmp_path, Requests({name: "sha"}))
-    assert posters.get(name, "bw").compare.startswith("sha:")
+    posters = _make(tmp_path, Requests({name: PNG_SHA}))
+    assert posters.get(name, "bw").compare.startswith(f"{PNG_SHA}:")
 
 
 def test_lookup_matches_decomposed_unicode(tmp_path):
-    posters = _make(tmp_path, Requests({"Zoë Saldaña": "sha"}))
+    posters = _make(tmp_path, Requests({"Zoë Saldaña": PNG_SHA}))
     assert posters.get("Zoe\u0308 Saldan\u0303a", "bw") is not None
 
 
@@ -208,7 +212,7 @@ def test_invalid_repo_fails(tmp_path):
 
 
 def test_render_limit_skips_and_warns_once(tmp_path, fake_logger):
-    requests = Requests({"Tom Hanks": "a", "Meryl Streep": "b", "Viola Davis": "c"})
+    requests = Requests({"Tom Hanks": PNG_SHA, "Meryl Streep": PNG_SHA, "Viola Davis": PNG_SHA})
     posters = _make(tmp_path, requests, render_limit=1)
     assert posters.get("Tom Hanks", "bw") is not None
     assert posters.get("Meryl Streep", "bw") is None
@@ -220,7 +224,7 @@ def test_render_limit_skips_and_warns_once(tmp_path, fake_logger):
 
 
 def test_render_limit_does_not_block_cached_posters(tmp_path):
-    requests = Requests({"Tom Hanks": "a", "Meryl Streep": "b"})
+    requests = Requests({"Tom Hanks": PNG_SHA, "Meryl Streep": PNG_SHA})
     _make(tmp_path, requests).get("Tom Hanks", "bw")
     posters = _make(tmp_path, requests, render_limit=1)
     assert posters.get("Meryl Streep", "bw") is not None
@@ -321,3 +325,23 @@ def test_cache_disabled_always_fetches_full_tree(tmp_path):
     _make(tmp_path, requests, cache=None).get("Tom Hanks", "bw")
     _make(tmp_path, requests, cache=None).get("Tom Hanks", "bw")
     assert all("If-None-Match" not in headers for headers in requests.tree_calls())
+
+
+def test_download_that_does_not_match_the_blob_is_rejected(tmp_path):
+    requests = Requests({"Tom Hanks": "a" * 40})
+    with pytest.raises(Failed, match="did not match blob"):
+        _make(tmp_path, requests).get("Tom Hanks", "bw")
+    assert list(os.walk(os.path.join(str(tmp_path), "cache", "people_posters", "_source"))) == []
+
+
+def test_unreadable_cached_source_is_deleted(tmp_path):
+    garbage = b"not a png"
+    sha = people_posters_module.git_blob_sha(garbage)
+    posters = _make(tmp_path, Requests({"Tom Hanks": sha}))
+    source_path = posters._source_path(sha)
+    os.makedirs(os.path.dirname(source_path), exist_ok=True)
+    with open(source_path, "wb") as handle:
+        handle.write(garbage)
+    with pytest.raises(Failed, match="not a usable image"):
+        posters.get("Tom Hanks", "bw")
+    assert not os.path.exists(source_path)
