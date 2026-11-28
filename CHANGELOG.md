@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
 - Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
+- Add Alien & Predator, Babylon 5, Battlestar Galactica, Middle-Earth, Mobile Suit Gundam, Stargate, Sword Art Online, and The Walking Dead Universe playlists to the `playlist` default file.
 
 ### Changed
 
