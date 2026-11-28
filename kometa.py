@@ -1048,7 +1048,10 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
-                library.map_guids(temp_items)
+                # Playlists resolve provider IDs through these shared maps and are
+                # not scoped. Keep processing scoped via temp_items, but map the
+                # full snapshot, including after an items(plex:...) direct fetch.
+                library.map_guids(library.get_cached_items())
             library_status[library.original_mapping_name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
             config.run_libraries.append(library)
 

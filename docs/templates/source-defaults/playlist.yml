@@ -16,16 +16,32 @@ templates:
         # check1
           - key: arrow
             value: https://www.imdb.com/list/ls566667558/
+          - key: avp
+            value: https://www.imdb.com/list/ls527553583/
+          - key: babylon
+            value: https://www.imdb.com/list/ls539933811/
+          - key: bsg
+            value: https://www.imdb.com/list/ls4116764680/
           - key: clonewars
             value: https://www.imdb.com/list/ls544963772/
           - key: dcau
             value: https://www.imdb.com/list/ls566357882/
+          - key: gundam
+            value: https://www.imdb.com/list/ls4113763025/
+          - key: jrrt
+            value: https://www.imdb.com/list/ls523029960/
           - key: mcu
             value: https://www.imdb.com/list/ls539646485/
-          - key: starwars
-            value: https://www.imdb.com/list/ls501373412/
+          - key: sao
+            value: https://www.imdb.com/list/ls4179334155/
+          - key: stargate
+            value: https://www.imdb.com/list/ls4158213596/
           - key: startrek
             value: https://www.imdb.com/list/ls547463722/
+          - key: starwars
+            value: https://www.imdb.com/list/ls501373412/
+          - key: wdu
+            value: https://www.imdb.com/list/ls024407790/
           - key: xmen
             value: https://www.imdb.com/list/ls567618635/
         # check2
@@ -158,4 +174,70 @@ playlists:
     template:
       - name: playlist
         summary_dragonball: Dragon Ball follows the adventures of an extraordinarily strong young boy named Goku as he searches for the seven dragon balls. These balls, when combined, can grant the owner any one wish he desires. Along the way he makes many new friends, and enemies, and he trains to become the strongest fighter in the world.
+      - name: arr
+
+  Alien & Predator (Timeline Order):
+    variables:
+      key: avp
+    template:
+      - name: playlist
+        summary_avp: The Alien and Predator universe is a series of films and other media that depicts a series of violent encounters between humans and the Xenomorphs (ferocious, endoparasitoid creatures) as well as the Predators (technologically advanced warriors that hunt for sport and honor).
+      - name: arr
+
+  Babylon 5 (Timeline Order):
+    variables:
+      key: babylon
+    template:
+      - name: playlist
+        summary_babylon: The Babylon 5 chronological order of the storyline for the episodes as well as the movies, as indicated by J. Michael Straczynski.
+      - name: arr
+
+  Battlestar Galactica (Reboot) (Proper Viewing Order):
+    variables:
+      key: bsg
+    template:
+      - name: playlist
+        url_poster_bsg: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/Battlestar%20Galactica%20(Timeline%20Order).jpg
+        summary_bsg: The proper viewing order for Battlestar Galactica, while not set up in the traditional timeline order of other playlists, this order is done so that the show makes sense to new viewers. With so many off-shoots, extended episodes, webisodes, one-off movies and weird bits and pieces it's very hard for a new Battlestar Galactica fan to know exactly what order to watch everything in.
+      - name: arr
+
+  Middle-Earth (Timeline Order):
+    variables:
+      key: jrrt
+    template:
+      - name: playlist
+        url_poster_jrrt: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/Middle-earth%20(Timeline%20Order).jpg
+        summary_jrrt: J.R.R. Tolkien's Middle-Earth universe organized chronologically.
+      - name: arr
+
+  Mobile Suit Gundam (Timeline Order):
+    variables:
+      key: gundam
+    template:
+      - name: playlist
+        summary_gundam: Gundam franchise sorted by timeline, then by release date within timelines. Order sometimes altered to put sequels together.
+      - name: arr
+
+  Stargate (Timeline Order):
+    variables:
+      key: stargate
+    template:
+      - name: playlist
+        summary_stargate: Stargate is a military science fiction media franchise based on the film directed by Roland Emmerich, which he co-wrote with producer Dean Devlin. The franchise is based on the idea of an alien Einstein–Rosen bridge device (the Stargate) that enables nearly instantaneous travel across the cosmos.
+      - name: arr
+
+  Sword Art Online (Timeline Order):
+    variables:
+      key: sao
+    template:
+      - name: playlist
+        summary_sao: In the near future video games are played in virtual reality using a system referred to as nerve gear. Kazuto Kirigaya known online as Kirito, logs in for the launch of a new VRMMORPG (Virtual Reality Massive Multiplayer Online Role Playing Game) only to discover that he and every other person who has joined are stuck within the game with the only option to win or die. This list follows the chronological events of the show, movie, and its spin-offs.
+      - name: arr
+
+  The Walking Dead Universe (Timeline Order):
+    variables:
+      key: wdu
+    template:
+      - name: playlist
+        summary_wdu: The Walking Dead franchise is an American zombie apocalypse media franchise and a shared universe that is centered on a number of interconnected television series based on the comic book of the same name. Set in the fictional universe, the franchise has developed with crossover plot elements, settings, and characters.
       - name: arr
