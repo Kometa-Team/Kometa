@@ -80,11 +80,35 @@ def test_diff_target_keys_expands_shows_to_seasons_and_episodes():
     assert Library.diff_target_keys(library, [show]) == {10, 11, 111, 112}
 
 
-def test_diff_target_keys_gathers_library_wide_outside_diff_or_when_too_large(monkeypatch):
+def test_diff_target_keys_limits_added_and_index_runs_to_the_items_in_scope():
+    items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+
+    for mode in ("added(12h)", "index(A-F)", "items(tmdb:603)"):
+        assert Library.diff_target_keys(_diff_library(schedule_mode=mode), items) == {1, 2}
+    assert Library.diff_target_keys(_diff_library(schedule_mode="added(12h)"), []) == set()
+
+
+def test_diff_target_keys_expands_shows_in_added_runs():
+    show = SimpleNamespace(ratingKey=10)
+    subitems = {"seasons": [SimpleNamespace(ratingKey=11)], "episodes": [SimpleNamespace(ratingKey=111)]}
+    library = _diff_library(schedule_mode="added(12h)", is_show=True, cached_item_subitems=lambda item, method_name: subitems[method_name] if item is show else [])
+
+    assert Library.diff_target_keys(library, [show]) == {10, 11, 111}
+
+
+def test_diff_target_keys_limits_added_and_index_runs_only_on_plex():
+    items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+    jellyfin = SimpleNamespace(type_name="jellyfin")
+
+    assert Library.diff_target_keys(_diff_library(schedule_mode="added(12h)", server=SimpleNamespace(type_name="plex")), items) == {1, 2}
+    assert Library.diff_target_keys(_diff_library(schedule_mode="added(12h)", server=jellyfin), items) is None
+    assert Library.diff_target_keys(_diff_library(schedule_mode="diff", server=jellyfin), items) == {1, 2}
+
+
+def test_diff_target_keys_gathers_library_wide_for_full_music_remove_overlays_or_when_too_large(monkeypatch):
     items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
 
     assert Library.diff_target_keys(_diff_library(schedule_mode="full"), items) is None
-    assert Library.diff_target_keys(_diff_library(schedule_mode="added(7d)"), items) is None
     assert Library.diff_target_keys(_diff_library(is_music=True), items) is None
     assert Library.diff_target_keys(_diff_library(remove_overlays=True), items) is None
     monkeypatch.setitem(Library.diff_target_keys.__globals__, "DIFF_TARGET_KEY_LIMIT", 1)

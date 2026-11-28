@@ -844,12 +844,15 @@ class Library(ABC):
         raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<positive integer>[m|h|d]), index(<range>), or items(<ids>)")
 
     def diff_target_keys(self, items):
-        """Return the rating keys a diff run's overlays can be limited to, or None to gather library-wide.
+        """Return the rating keys a scoped run's overlays can be limited to, or None to gather library-wide.
 
         Shows expand to their seasons and episodes, because season- and episode-level
         overlay searches match those keys rather than the show's.
         """
-        if self.schedule_mode != "diff" or getattr(self, "is_music", False) or self.remove_overlays:
+        if self.schedule_mode == "full" or getattr(self, "is_music", False) or self.remove_overlays:
+            return None
+        # Jellyfin, Emby and Silo ignore the overlay level when given target keys, so only diff runs use them there.
+        if self.schedule_mode != "diff" and getattr(getattr(self, "server", None), "type_name", "plex") != "plex":
             return None
         keys = set()
         for item in items:

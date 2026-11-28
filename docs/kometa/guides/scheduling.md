@@ -509,7 +509,7 @@ This checks for movies added in the previous six hours at the selected run hours
 
 `diff` compares Plex rating keys with the previous library snapshot. In a show library, it also checks whether seasons have changed so newly added episodes can bring their parent show into scope.
 
-Overlay runs in `diff` mode only search the items in scope (and, for shows, their seasons and episodes), and are skipped when nothing is new. If that adds up to more than 500 items, counting seasons and episodes, overlays search the whole library as in a `full` run.
+Overlay runs in `diff` mode only search the items in scope (and, for shows, their seasons and episodes), and are skipped when nothing is new. Plex libraries do the same in `added`, `index` and `items` modes. If that adds up to more than 500 items, counting seasons and episodes, overlays search the whole library as in a `full` run.
 
 ```yaml
 libraries:
