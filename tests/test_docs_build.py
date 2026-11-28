@@ -1,8 +1,11 @@
 """Checks for RTD version URLs and branch-local release notes."""
 
 import importlib.util
+import json
 import os
+import shutil
 import subprocess
+import sys
 import tempfile
 import tomllib
 import unittest
@@ -20,6 +23,38 @@ SPEC.loader.exec_module(build_docs)
 
 
 class DocumentationBuildTests(unittest.TestCase):
+    def test_analytics_scripts_render_configured_urls(self):
+        project = tomllib.loads((ROOT / "zensical.toml").read_text(encoding="utf-8"))["project"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "docs").mkdir()
+            (root / "docs/index.md").write_text("# Test\n", encoding="utf-8")
+            template = Path("partials/integrations/analytics/plausible.html")
+            (root / "overrides" / template).parent.mkdir(parents=True)
+            shutil.copyfile(ROOT / "docs/overrides" / template, root / "overrides" / template)
+            config = '[project]\nsite_name = "Test"\n[project.theme]\ncustom_dir = "overrides"\n'
+            for name in ("analytics", "gcanalytics"):
+                config += f"\n[project.extra.{name}]\n"
+                config += "".join(f"{key} = {json.dumps(value)}\n" for key, value in project["extra"][name].items())
+            (root / "zensical.toml").write_text(config, encoding="utf-8")
+            subprocess.run([sys.executable, "-m", "zensical", "build", "--clean"], cwd=root, check=True, capture_output=True, text=True)
+
+            class ScriptParser(HTMLParser):
+                def __init__(self):
+                    super().__init__()
+                    self.scripts = []
+
+                def handle_starttag(self, tag, attrs):
+                    if tag == "script":
+                        self.scripts.append(dict(attrs))
+
+            parser = ScriptParser()
+            parser.feed((root / "site/index.html").read_text(encoding="utf-8"))
+            plausible = project["extra"]["analytics"]
+            goatcounter = project["extra"]["gcanalytics"]
+            self.assertTrue(any(script.get("data-domain") == plausible["domain"] and script.get("src") == plausible["src"] for script in parser.scripts))
+            self.assertTrue(any(script.get("data-goatcounter") == goatcounter["endpoint"] and script.get("src") == goatcounter["src"] for script in parser.scripts))
+
     def test_rtd_versions_and_pr_preview_keep_paths_and_remove_temporary_config(self):
         urls = ["https://kometa.wiki/en/latest/", "https://kometa.wiki/en/develop/", "https://kometa.wiki/en/nightly/", "https://kometa--42.org.readthedocs.build/en/42/"]
         for url in urls:
