@@ -24,7 +24,7 @@ import requests
 
 from modules import util
 from modules.library import Library
-from modules.media_server import Capability, CapabilityMatrix, MediaServer, log_server_connection, register_media_server
+from modules.media_server import Capability, CapabilityMatrix, MediaServer, ServerSession, log_server_connection, register_media_server
 from modules.native_metadata import NativeItemMetadata
 from modules.silo_search import FIELD_TYPES, SORT_FIELDS, compile_selector, requires_details
 from modules.silo_search import values as search_values
@@ -167,7 +167,7 @@ class SiloClient:
     def __init__(self, server, session=None):
         self.server = server
         self.base = api_base(server.url)
-        self.session = session or requests.Session()
+        self.session = session or ServerSession(self.base, server.type_label)
         self.session.headers["Authorization"] = f"Bearer {server.token}"
         self.session.headers["Accept"] = "application/json"
         if server.profile_id:

@@ -1,5 +1,6 @@
 """Silo media server client, capability matrix, and library operations."""
 
+import tempfile
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -7,11 +8,13 @@ from unittest.mock import MagicMock
 import pytest
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
+import modules.library as library_module
 import modules.silo as silo_module
 from modules.media_server import Capability, Support, build_media_server, media_server_class
+from modules.request import Requests
 from modules.silo import SILO_CAPABILITIES, Silo, SiloClient, SiloCollection, SiloItem, SiloMediaServer, _SiloSection, api_base
 from modules.util import BuilderValidationError, CollectionNotFound, Failed
-from tests.conftest import FakeLogger, FakeResponse
+from tests.conftest import FakeLogger, FakeResponse, recording_session
 
 silo_module.logger = FakeLogger()
 
@@ -117,6 +120,39 @@ def _library(client, **overrides):
     for name, value in overrides.items():
         setattr(library, name, value)
     return library
+
+
+def test_url_artwork_download_does_not_carry_the_silo_token(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The library lends its session to image downloads (download_url_assets: true). The token goes to the server poster only.
+    monkeypatch.setattr(library_module, "logger", FakeLogger())
+    client = SiloClient(_server(pace_requests=False))
+    adapter = recording_session(client.session)
+    library = _library(client)
+    library.session = client.session
+    library.config.Requests = Requests("2.5.5", "14", "master", "nightly")
+    with tempfile.TemporaryDirectory() as directory:
+        library.pick_image("Title", {"url_poster": "https://images.example.invalid/poster.png"}, False, True, directory, image_type="poster", image_name="poster")
+        # A Silo poster sits outside the /api/v2 base path
+        library.check_image_for_overlay("http://silo:8090/posters/movie-1.png", directory)
+    assert [request.headers.get("Authorization") for request in adapter.requests] == [None, "Bearer token"]
+
+
+def test_client_api_request_carries_the_token() -> None:
+    client = SiloClient(_server(pace_requests=False))
+    adapter = recording_session(client.session)
+    with pytest.raises(Failed):
+        client.request("GET", "/system/info")
+    assert adapter.requests[0].headers["Authorization"] == "Bearer token"
+
+
+def test_client_drops_the_token_on_a_server_redirect(patch_util_logger: FakeLogger) -> None:
+    # The server sends the request to another port or scheme. The token stays behind, and the user gets one warning.
+    client = SiloClient(_server(pace_requests=False))
+    adapter = recording_session(client.session, redirect="https://silo:8920/api/v2/system/info")
+    with pytest.raises(Failed):
+        client.request("GET", "/system/info")
+    assert [request.headers.get("Authorization") for request in adapter.requests] == ["Bearer token", None]
+    assert len(patch_util_logger.warning_messages) == 1
 
 
 def test_silo_aspect_overlay_filters_use_track_metadata(monkeypatch):

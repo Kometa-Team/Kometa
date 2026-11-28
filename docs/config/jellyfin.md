@@ -12,9 +12,11 @@ For migration and behavior changes, see [Jellyfin: differences from Plex](jellyf
 
 Collection name lookups reuse one in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data.
 
-Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
+Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header, and only to the scheme, host, and port that `url` names. An image download from another host does not carry it. If the server redirects a request to another host, port, or scheme, the header is dropped and Kometa logs the address to use as `url`: the scheme, host, port, and any path prefix, without the path of the request. A redirect from `http` on port 80 to `https` on port 443 keeps the header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
 
 Connection logs include the remote server name, version, and available OS information from `/System/Info`. Missing OS details are logged as not reported. Failure to read this optional information warns without preventing library setup.
+
+Jellyfin 12 and later ignore `X-Emby-Token` unless legacy authorization is enabled, so Kometa also sends the key to Jellyfin as `Authorization: MediaBrowser Token="<key>"`. That header follows the same rule as `X-Emby-Token` and goes only to the server named by `url`. Do not put `user:password@` in `url`. Those credentials replace the `Authorization` header, so Jellyfin 12 does not receive the key.
 
 Movie and TV libraries can build boxset collections and playlists. Kometa can edit titles, summaries, tags, genres, and studios, and it can upload poster, backdrop, logo, banner, and overlay images. A local file is uploaded as bytes. A URL is sent to the server, which downloads it. Plex smart-filter addresses are not accepted. A collection that needs a dynamic Plex filter stops with an error for that collection.
 

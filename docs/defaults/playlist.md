@@ -13,17 +13,25 @@ use the `libraries` template variable which is outlined in the [Template Variabl
 
 ## Playlists
 
-| Playlist                                     | Key          | Description                                                                       |
-|:---------------------------------------------|:-------------|:----------------------------------------------------------------------------------|
-| `Arrowverse (Timeline Order)`                | `arrow`      | Playlist of Movies and Episodes in the Arrowverse (Timeline Order)                |
-| `DC Animated Universe (Timeline Order)`      | `dcau`       | Playlist of Movies and Episodes in the DC Animated Universe (Timeline Order)      |
-| `Dragon Ball (Timeline Order)`               | `dragonball` | Playlist of Movies and Episodes in the Dragon Ball (Timeline Order)               |
-| `Marvel Cinematic Universe (Timeline Order)` | `mcu`        | Playlist of Movies and Episodes in the Marvel Cinematic Universe (Timeline Order) |
-| `Pokémon (Timeline Order)`                   | `pokemon`    | Playlist of Movies and Episodes in the Pokémon (Timeline Order)                   |
-| `Star Trek (Timeline Order)`                 | `startrek`   | Playlist of Movies and Episodes in the Star Trek (Timeline Order)                 |
-| `Star Wars (Timeline Order)`                 | `starwars`   | Playlist of Movies and Episodes in the Star Wars (Timeline Order)                 |
-| `Star Wars The Clone Wars (Timeline Order)`  | `clonewars`  | Playlist of Movies and Episodes in the Star Wars The Clone Wars (Timeline Order)  |
-| `X-Men (Timeline Order)`                     | `xmen`       | Playlist of Movies and Episodes in the X-Men (Timeline Order)                     |
+| Playlist                                               | Key          | Description                                                                                 |
+|:-------------------------------------------------------|:-------------|:--------------------------------------------------------------------------------------------|
+| `Alien & Predator (Timeline Order)`                    | `avp`        | Playlist of Movies and Episodes in the Alien & Predator (Timeline Order)                    |
+| `Arrowverse (Timeline Order)`                          | `arrow`      | Playlist of Movies and Episodes in the Arrowverse (Timeline Order)                          |
+| `Babylon 5 (Timeline Order)`                           | `babylon`    | Playlist of Movies and Episodes in the Babylon 5 (Timeline Order)                           |
+| `Battlestar Galactica (Reboot) (Proper Viewing Order)` | `bsg`        | Playlist of Movies and Episodes in the Battlestar Galactica (Reboot) (Proper Viewing Order) |
+| `DC Animated Universe (Timeline Order)`                | `dcau`       | Playlist of Movies and Episodes in the DC Animated Universe (Timeline Order)                |
+| `Dragon Ball (Timeline Order)`                         | `dragonball` | Playlist of Movies and Episodes in the Dragon Ball (Timeline Order)                         |
+| `Marvel Cinematic Universe (Timeline Order)`           | `mcu`        | Playlist of Movies and Episodes in the Marvel Cinematic Universe (Timeline Order)           |
+| `Middle-Earth (Timeline Order)`                        | `jrrt`       | Playlist of Movies and Episodes in the Middle-Earth (Timeline Order)                        |
+| `Mobile Suit Gundam (Timeline Order)`                  | `gundam`     | Playlist of Movies and Episodes in the Mobile Suit Gundam (Timeline Order)                  |
+| `Pokémon (Timeline Order)`                             | `pokemon`    | Playlist of Movies and Episodes in the Pokémon (Timeline Order)                             |
+| `Star Trek (Timeline Order)`                           | `startrek`   | Playlist of Movies and Episodes in the Star Trek (Timeline Order)                           |
+| `Star Wars (Timeline Order)`                           | `starwars`   | Playlist of Movies and Episodes in the Star Wars (Timeline Order)                           |
+| `Star Wars The Clone Wars (Timeline Order)`            | `clonewars`  | Playlist of Movies and Episodes in the Star Wars The Clone Wars (Timeline Order)            |
+| `Stargate (Timeline Order)`                            | `stargate`   | Playlist of Movies and Episodes in the Stargate (Timeline Order)                            |
+| `Sword Art Online (Timeline Order)`                    | `sao`        | Playlist of Movies and Episodes in the Sword Art Online (Timeline Order)                    |
+| `The Walking Dead Universe (Timeline Order)`           | `wdu`        | Playlist of Movies and Episodes in the The Walking Dead Universe (Timeline Order)           |
+| `X-Men (Timeline Order)`                               | `xmen`       | Playlist of Movies and Episodes in the X-Men (Timeline Order)                               |
 
 ## Config
 

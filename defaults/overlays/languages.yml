@@ -524,17 +524,17 @@ overlays:
     template: [name: flags, name: standard]
 
   sinhala:
-    variables: {key: si, text: SI, weight:21, country: lk}
+    variables: {key: si, text: SI, weight: 21, country: lk}
     template: [name: flags, name: standard]
 
   armenian:
-    variables: {key: hy, text: AM, weight:22, country: am}
+    variables: {key: hy, text: AM, weight: 22, country: am}
     template: [name: flags, name: standard]
 
   southern sotho:
-    variables: {key: st, text: LS, weight:23, country: ls}
+    variables: {key: st, text: LS, weight: 23, country: ls}
     template: [name: flags, name: standard]
 
   dzongkha:
-    variables: {key: dz, text: BT, weight:24, country: bt}
+    variables: {key: dz, text: BT, weight: 24, country: bt}
     template: [name: flags, name: standard]

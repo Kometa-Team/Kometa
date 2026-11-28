@@ -17,10 +17,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create or reuse Silo collection shelves with `silo_shelf`, including custom collection templates, and automatically group category collections with the opt-in `silo_shelves` library setting. Add a multi-server shelf validation case.
 - Extend the multi-server validation harness with shared and selected-target overlay runs and local metadata backup operations, including artifact checks.
 - Share a library definition across named servers using `servers` with per-server overrides and independent target mapping names.
+- Add Alien & Predator, Babylon 5, Battlestar Galactica, Middle-Earth, Mobile Suit Gundam, Stargate, Sword Art Online, and The Walking Dead Universe playlists to the `playlist` default file.
+
+### Changed
+
+- A Jellyfin, Emby, or Silo server that redirects a request to another host, port, or scheme no longer receives `token` on the redirected request. Kometa logs one warning with the address to use as `url`, without the path of the request that was redirected.
 
 ### Fixed
 
 - Map the full library during scoped schedule runs so provider-ID playlists retain existing members and do not treat out-of-scope items as missing. #3903
+- Fix library connections that returned HTTP 401 on Jellyfin 12 with legacy authorization disabled by also sending the key in the `Authorization` header.
 - Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
 - Skip the existing-collection lookup for overlay definitions, which never build a collection; a missed title search fell back to listing every collection in the library once per overlay.
 
@@ -59,6 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid Jellyfin playback-state aggregation when reloading collection metadata during collection operations.
 - Use lightweight pages for Jellyfin/Emby collection listings to avoid repeated expensive metadata timeouts, and stop collection creation when an existence lookup fails.
 - Skip `docker-bake.hcl` in Docker source integrity scans while continuing to verify it in source checkouts.
+
+### Security
+
+- `modules/mediabrowser.py`, `modules/silo.py`: the Jellyfin, Emby, and Silo `token` now goes only to the server that `url` names. An image download from another host, and a redirect to another host, port, or scheme, no longer carry it. The warning names the address to use as `url`.
 
 ### Docs
 

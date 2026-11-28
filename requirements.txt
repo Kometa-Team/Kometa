@@ -6,7 +6,7 @@ anyio==4.16.0
     # via
     #   httpx
     #   httpx2
-apprise==2.2.0
+apprise==2.3.0
     # via kometa
 arrapi==1.5.1
     # via kometa
@@ -49,11 +49,11 @@ h11==0.16.0
     #   httpcore2
 httpcore==1.0.9
     # via httpx
-httpcore2==2.16.0 ; sys_platform != 'emscripten'
+httpcore2==2.16.2 ; sys_platform != 'emscripten'
     # via httpx2
 httpx==0.28.1
     # via serializd-py
-httpx2==2.16.0
+httpx2==2.16.2
     # via pylast
 httpx2-jsfetch==1.0 ; sys_platform == 'emscripten'
     # via httpx2
@@ -147,7 +147,7 @@ setuptools==84.2.1
     #   tmdbapis
 smmap==5.0.3
     # via gitdb
-soupsieve==4.1
+soupsieve==4.1.1
     # via beautifulsoup4
 tenacity==9.2.1
     # via kometa
@@ -178,5 +178,5 @@ urllib3==2.8.0
     # via
     #   apprise
     #   requests
-ytmusicapi==1.12.3
+ytmusicapi==1.12.4
     # via kometa
