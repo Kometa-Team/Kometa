@@ -1634,11 +1634,14 @@ class MediaBrowser(Library):
             return collections
         return [collection for collection in collections if str(label) in list(getattr(collection, "tags", None) or [])]
 
-    def _collections(self, include_counts=True):
+    def _collections(self, include_counts: bool = True) -> list[MediaBrowserCollection]:
         self.require(Capability.GET_ALL_COLLECTIONS)
-        if "_collection_catalog" not in self.__dict__:
+        # A listing loaded without item counts cannot answer a request that needs them: collection operations load
+        # that listing, then the collections step needs the item count of each existing collection.
+        if "_collection_catalog" not in self.__dict__ or (include_counts and not self.__dict__.get("_collection_catalog_include_counts")):
             fields = COLLECTION_FIELDS if include_counts else ",".join(field for field in COLLECTION_FIELDS.split(",") if field not in ("ChildCount", "RecursiveItemCount"))
             self._collection_catalog = [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true", "limit": 20, "fields": fields, "enableUserData": "false"})]
+            self._collection_catalog_include_counts = include_counts
         return list(self._collection_catalog)
 
     def _playlists(self):

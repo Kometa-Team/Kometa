@@ -10,7 +10,7 @@ For migration and behavior changes, see [Jellyfin: differences from Plex](jellyf
 
 [Jellyfin](https://jellyfin.org/) and [Emby](https://emby.media/) are media servers. A library uses one when its [`server`](libraries.md#server) attribute names a `media_servers` entry with `type: jellyfin` or `type: emby`. That library does not need a `plex` block. [`tmdb`](tmdb.md) stays required.
 
-Collection name lookups reuse one in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data.
+Collection name lookups reuse the in-memory collection listing during the run, including missing-name results. Collection creation/deletion invalidates that listing; explicit collection-list reloads fetch fresh data. A request for the collection listing loads it again, with item counts, when the current listing was loaded without them.
 
 Both servers use the MediaBrowser API. Kometa sends `token` on the `X-Emby-Token` header, and only to the scheme, host, and port that `url` names. An image download from another host does not carry it. If the server redirects a request to another host, port, or scheme, the header is dropped and Kometa logs the address to use as `url`: the scheme, host, port, and any path prefix, without the path of the request. A redirect from `http` on port 80 to `https` on port 443 keeps the header. `user` selects the user for catalog and playlist calls. When `user` is omitted, Kometa uses the first administrator from `/Users`.
 
@@ -154,6 +154,8 @@ Collection operations refresh the paginated collection listing once, including t
 Reads of known Jellyfin collections before metadata writes also disable user-data aggregation. Those reads retain the broader metadata fields needed to preserve existing values during the update.
 
 Set `delete_collections.less: all` to disable size filtering explicitly. Collection operations omit expensive count fields when `less` is `all` or absent, while retaining configured/managed checks. Numeric thresholds keep their exact meaning and require counts.
+
+Collection definitions need the item count of an existing collection for `minimum_items` and `delete_below_minimum`. When collection operations omit the item counts, the first request that needs them loads the listing again, with the item counts. That request is usually a collection name lookup. The later lookups reuse that listing.
 
 Network dynamic collections discover and filter shows using their stored `Studios` values: The Jellyfin TMDb series provider stores TV networks in this field. Results depend on the metadata populated by your chosen provider or local metadata files. No extra per-show external network lookup is performed.
 

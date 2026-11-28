@@ -1976,6 +1976,45 @@ def test_collection_listing_can_omit_expensive_counts(kind):
     assert "RecursiveItemCount" not in fields
 
 
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_collection_lookup_loads_item_counts_after_a_listing_that_omits_them(kind):
+    # Collection operations list the collections without item counts. The collections step then needs the item
+    # count of an existing collection for minimum_items. A count of 0 set the status "Minimum 1 Not Met", skipped the
+    # detail updates, and deleted the collection when delete_below_minimum was enabled.
+    row = {"Id": "box", "Name": "Heat", "Type": "BoxSet", "Tags": ["Kometa"]}
+    session = FakeSession([FakeResponse({"Items": [row], "TotalRecordCount": 1}), FakeResponse({"Items": [{**row, "ChildCount": 3}], "TotalRecordCount": 1})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+
+    assert library.get_all_collections(load=True, include_counts=False)[0].childCount == 0
+    assert "ChildCount" not in session.calls[0]["params"]["fields"].split(",")
+
+    collection = library.get_collection("Heat")
+
+    assert collection.childCount == 3
+    assert "ChildCount" in session.calls[1]["params"]["fields"].split(",")
+    # Each later caller in the run reuses the listing that has the item counts.
+    assert library.get_collection("Heat") is collection
+    assert library.get_all_collections()[0].childCount == 3
+    assert library.get_all_collections(include_counts=False)[0].childCount == 3
+    assert len(session.calls) == 2
+
+
+@pytest.mark.parametrize("kind", ["jellyfin", "emby"])
+def test_failed_item_count_listing_stops_the_collection_lookup(monkeypatch, kind):
+    # A lookup must not fall back to the listing that has no item counts. Its count of 0 deletes the collection.
+    monkeypatch.setattr(browser_module.time, "sleep", lambda seconds: None)
+    row = {"Id": "box", "Name": "Heat", "Type": "BoxSet"}
+    session = FakeSession([FakeResponse({"Items": [row], "TotalRecordCount": 1}), *[requests.exceptions.ConnectionError("reset") for _ in range(3)], FakeResponse({"Items": [{**row, "ChildCount": 3}], "TotalRecordCount": 1})])
+    library = _library(MediaBrowserClient(_server(kind), session=session), kind=kind)
+    library.get_all_collections(load=True, include_counts=False)
+    with pytest.raises(Failed, match="GET /Items failed: reset"):
+        library.get_collection("Heat")
+    # The next lookup loads the item counts again.
+    assert library.get_collection("Heat").childCount == 3
+    assert all("ChildCount" in call["params"]["fields"] for call in session.calls[1:])
+    assert len(session.calls) == 5
+
+
 def test_jellyfin_network_discovery_and_search_share_stored_studios():
     library = _library(MediaBrowserClient(_server(), session=FakeSession([])))
     library.is_show = True
