@@ -77,6 +77,11 @@ provider = "plausible"
 domain = "kometa.wiki"
 src = "https://analytics.kometa.wiki/js/script.js"
 
+[project.extra.gcanalytics]
+provider = "goatcounter"
+endpoint = "https://stats.kometa.wiki/count"
+src = "//stats.kometa.wiki/count.js"
+
 [project.markdown_extensions.abbr]
 
 [project.markdown_extensions.admonition]
