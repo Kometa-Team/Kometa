@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix the item count of an existing Jellyfin or Emby collection after collection operations list the collections without item counts. A collection that gained no item in a run was reported below `minimum_items`, received no detail update, and was deleted with `delete_below_minimum` enabled. With the true count, `limit` and `sync_mode: sync` now apply to an existing collection as they do on Plex.
 - Map the full library during scoped schedule runs so provider-ID playlists retain existing members and do not treat out-of-scope items as missing. #3903
 - Fix library connections that returned HTTP 401 on Jellyfin 12 with legacy authorization disabled by also sending the key in the `Authorization` header.
 - Compare Docker source integrity against the commit baked into the image (`.kometa_sha`) instead of a container `KOMETA_GIT_SHA` kept from an older image, which reported unmodified images as `MODIFIED`; warn when the two disagree, and show the compared upstream commit and its date in `MODIFIED` results.
